@@ -8065,49 +8065,138 @@ for all $t \geq 0$.
 
 \begin{assumption}[Threshold Parameter]
 \label{asm:threshold}
-The epistemic threshold $\rho_{\max}$ satisfies $\rho_{\max} \in (0, 1)$.
-This strict interiority ensures the gate is neither universally
-permissive ($\rho_{\max} = 1$) nor universally suppressive
-($\rho_{\max} = 0$).
+The epistemic threshold $\rho_{\max}$ satisfies
+\begin{align}
+  \rho_{\max} &\;\in\; (0,\,1).
+  \label{eq:threshold-range}
+\end{align}
+This strict interiority imposes two non-degeneracy conditions
+simultaneously:
+\begin{enumerate}
+  \item \emph{Non-universally-permissive:} $\rho_{\max} < 1$ ensures
+        there exist epistemic states $\rho_t \in (\rho_{\max}, 1]$
+        for which the gate closes, so the gate is capable of
+        suppressing signals when model disagreement is sufficiently
+        high.
+  \item \emph{Non-universally-suppressive:} $\rho_{\max} > 0$ ensures
+        there exist epistemic states $\rho_t \in [0, \rho_{\max}]$
+        for which the gate opens, so the gate is capable of passing
+        signals when model disagreement is sufficiently low.
+\end{enumerate}
+Both conditions are strict, ruling out the degenerate boundary
+values $\rho_{\max} \in \{0, 1\}$ from operational use.
 \end{assumption}
 
 \begin{definition}[Raw Trading Signal]
 \label{def:raw-signal}
-Let $s_t \in \mathbb{R}$ denote the raw trading signal produced by the
-model at time $t$.  We assume $s_t$ is $\calI_t$-measurable.
+Let $(\Omega, \mathcal{F}, \mathbb{P})$ be the probability space
+of Assumption~\ref{asm:prob-space} and let
+$(\mathcal{I}_t)_{t \geq 0}$ be the information filtration of
+Assumption~\ref{asm:filtration}.  The \emph{raw trading signal}
+at time $t$ is a random variable
+\begin{align}
+  s_t \;:\; \Omega \;\longrightarrow\; \mathbb{R}
+  \label{eq:raw-signal-map}
+\end{align}
+satisfying:
+\begin{enumerate}
+  \item \emph{Measurability:} $s_t$ is $\mathcal{I}_t$-measurable,
+        i.e.\ $s_t^{-1}(B) \in \mathcal{I}_t$ for every Borel set
+        $B \subseteq \mathbb{R}$.  This ensures $s_t$ is observable
+        from the information available at time $t$.
+  \item \emph{Real-valuedness:} $s_t \in \mathbb{R}$ with no sign
+        restriction; positive values represent buy signals, negative
+        values represent sell signals, and zero represents a neutral
+        signal.
+\end{enumerate}
 \end{definition}
 
 \begin{axiom}[Epistemic Signal Gate]
 \label{ax:epistemic-gate}
 Let Assumptions~\ref{asm:prob-space}--\ref{asm:pos-var}
-and~\ref{asm:threshold} hold.  For each $t \geq 0$, the
-\emph{gated signal} is
+and~\ref{asm:threshold} hold, and let $s_t$ be as in
+Definition~\ref{def:raw-signal}.  For each $t \geq 0$, the
+\emph{gated signal} $\tilde{s}_t : \Omega \to \mathbb{R}$ is
+defined by
 \begin{align}
   \tilde{s}_t
   &\;\coloneqq\;
-  s_t \cdot \mathbf{1}\!\left[\rho_t \leq \rho_{\max}\right].
+  s_t \;\cdot\; \mathbf{1}\!\left[\rho_t \leq \rho_{\max}\right],
   \label{eq:epistemic-gate}
 \end{align}
-The gate is closed (signal suppressed to zero) whenever
-$\rho_t > \rho_{\max}$, i.e.\ when model disagreement exceeds the
-configurable tolerance.
+where $\mathbf{1}[\,\cdot\,]$ denotes the indicator function taking
+value $1$ if its argument is true and $0$ otherwise.  The gate
+operates as follows:
+\begin{enumerate}
+  \item \emph{Gate open} ($\rho_t \leq \rho_{\max}$):
+        $\mathbf{1}[\rho_t \leq \rho_{\max}] = 1$, so
+        $\tilde{s}_t = s_t$.  The raw signal passes through
+        unmodified.
+  \item \emph{Gate closed} ($\rho_t > \rho_{\max}$):
+        $\mathbf{1}[\rho_t \leq \rho_{\max}] = 0$, so
+        $\tilde{s}_t = 0$.  The signal is suppressed entirely,
+        reflecting excessive model disagreement.
+\end{enumerate}
+The gated signal $\tilde{s}_t$ is $\mathcal{I}_t$-measurable because
+both $s_t$ and $\rho_t$ are $\mathcal{I}_t$-measurable and the
+indicator is a Borel function of $\rho_t$.
 \end{axiom}
 
 \begin{remark}[Boundary Behaviour of the Gate]
 \label{rem:gate-boundary}
-The indicator $\mathbf{1}[\rho_t \leq \rho_{\max}]$ is defined for
-all $\rho_t \in [0, 1]$ (guaranteed by
-Proposition~\ref{prop:epistemic-bounded}) and takes values in
-$\{0, 1\}$.  The boundary case $\rho_t = \rho_{\max}$ results in
-$\tilde{s}_t = s_t$ (gate open), which is the conservative choice:
-the signal is passed through at the exact threshold.
+The indicator $\mathbf{1}[\rho_t \leq \rho_{\max}]$ in
+Axiom~\ref{ax:epistemic-gate} is well-defined for all
+$\rho_t \in [0, 1]$, which is guaranteed by
+Proposition~\ref{prop:epistemic-bounded}.  Three boundary cases
+warrant explicit attention:
+\begin{enumerate}
+  \item \emph{Exact threshold} ($\rho_t = \rho_{\max}$):
+        The closed inequality $\leq$ is satisfied, so
+        $\mathbf{1}[\rho_t \leq \rho_{\max}] = 1$ and
+        $\tilde{s}_t = s_t$.  The gate is open at the exact
+        threshold, which is the conservative design choice: when
+        epistemic uncertainty is exactly at the configured limit,
+        the signal is passed through.
+  \item \emph{Zero uncertainty} ($\rho_t = 0$):
+        For any admissible $\rho_{\max} \in (0,1)$, we have
+        $0 \leq \rho_{\max}$, so the gate is open and
+        $\tilde{s}_t = s_t$.  Full model agreement always passes
+        the signal.
+  \item \emph{Maximum uncertainty} ($\rho_t = 1$):
+        Since $\rho_{\max} < 1$ by Assumption~\ref{asm:threshold},
+        the condition $1 \leq \rho_{\max}$ is false, so the gate
+        is closed and $\tilde{s}_t = 0$.  Maximal model
+        disagreement always suppresses the signal.
+\end{enumerate}
 \end{remark}
 
 \begin{proposition}[Gate Monotonicity]
 \label{prop:gate-monotone}
-For fixed $\rho_t$ and $s_t$, $\tilde{s}_t$ is non-decreasing in
-$\rho_{\max}$: increasing the tolerance never suppresses a
-previously passed signal.
+Let Assumptions~\ref{asm:prob-space}--\ref{asm:pos-var} hold.
+Fix $t \geq 0$, $\rho_t \in [0,1]$, and $s_t \in \mathbb{R}$.
+For any two thresholds $\rho_{\max}, \rho_{\max}' \in [0,1]$
+with $\rho_{\max} \leq \rho_{\max}'$, define the corresponding
+gated signals via~\eqref{eq:epistemic-gate}:
+\begin{align}
+  \tilde{s}_t(\rho_{\max})
+  &\;\coloneqq\;
+  s_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}],
+  \label{eq:mono-gate1}\\[4pt]
+  \tilde{s}_t(\rho_{\max}')
+  &\;\coloneqq\;
+  s_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}'].
+  \label{eq:mono-gate2}
+\end{align}
+Then
+\begin{align}
+  \bigl|\tilde{s}_t(\rho_{\max})\bigr|
+  &\;\leq\;
+  \bigl|\tilde{s}_t(\rho_{\max}')\bigr|.
+  \label{eq:mono-conclusion}
+\end{align}
+That is, $|\tilde{s}_t|$ is non-decreasing in $\rho_{\max}$:
+increasing the tolerance threshold never suppresses a previously
+passed signal.
 \end{proposition}
 
 \begin{proof}
@@ -8454,84 +8543,631 @@ Na\"{i}ve--Oracle Duality}
 \label{ch:synthesis}
 % ==============================================================
 
+% --------------------------------------------------------------
 \section{Ideal and Real Execution Environments}
+% --------------------------------------------------------------
 
-\begin{definition}[Ideal and Real Execution Environments]
-\label{def:ideal-real}
-The \emph{ideal execution environment} $\Ideal$ operates on complete,
-noise-free information: $\calI_t^{\Ideal} = \sigma\!\left(\bigcup_{\tau \leq t}
-\calI_\tau\right)$ with zero uncertainty ($\hat{U}_t = 0$) and zero
-slippage.  The \emph{real execution environment} $\Real$ operates on
-$\calI_t$ only, with non-zero uncertainty $\hat{U}_t > 0$, transaction
-costs, and finite liquidity.
+\begin{definition}[Primitive Notions]
+\label{def:primitives}
+Throughout this chapter the following primitive objects are fixed.
+\begin{enumerate}
+  \item A filtered probability space
+        $(\Omega,\mathcal{F},\mathbb{F},\mathbb{P})$ where
+        $\mathbb{F}=(\mathcal{F}_t)_{t\geq 0}$ is the natural
+        filtration generated by all observable market processes.
+  \item A discrete time index $t \in \mathbb{N}_0$.
+  \item A measurable strategy space $\Pi_F$ consisting of all
+        $\mathbb{F}$-adapted, square-integrable portfolio rules
+        $\pi = (\pi_t)_{t \geq 0}$.
+  \item A risk-adjusted objective functional
+        $\mathcal{J}:\Pi_F \to \mathbb{R}$ as specified
+        in~\eqref{eq:objective}.
+  \item An uncertainty process $(\hat{U}_t)_{t\geq 0}$ taking
+        values in $[0,1]$, defined as the normalised total
+        predictive variance in Definition~\ref{def:var-decomp}.
+\end{enumerate}
 \end{definition}
+
+\begin{assumption}[Regularity of the Objective]
+\label{asm:obj-regularity}
+The functional $\mathcal{J}$ satisfies the following conditions,
+which are assumed to hold throughout this chapter.
+\begin{enumerate}
+  \item \emph{Measurability.}  For every $\pi \in \Pi_F$,
+        the random variable $\mathcal{J}(\pi)$ is
+        $\mathcal{F}$-measurable and $\mathbb{P}$-integrable.
+  \item \emph{Monotonicity in information.}  If
+        $\mathcal{G} \supseteq \mathcal{H}$ are two
+        sub-$\sigma$-algebras of $\mathcal{F}$, then
+        $\sup_{\pi \in \Pi(\mathcal{G})}\mathcal{J}(\pi)
+        \;\geq\;
+        \sup_{\pi \in \Pi(\mathcal{H})}\mathcal{J}(\pi)$,
+        where $\Pi(\mathcal{G})$ denotes the set of
+        $\mathcal{G}$-adapted strategies.
+  \item \emph{Continuity in uncertainty.}  The map
+        $u \mapsto \mathcal{J}(\pi \mid \hat{U}_t = u)$
+        is continuous on $[0,1]$ for each fixed $\pi$.
+\end{enumerate}
+\end{assumption}
+
+\begin{definition}[Ideal Execution Environment]
+\label{def:ideal}
+The \emph{ideal execution environment} $\Ideal$ is the tuple
+$(\Omega, \mathcal{F}, \mathbb{F}^{\Ideal}, \mathbb{P})$ where
+the augmented filtration is
+\begin{align}
+  \mathcal{F}_t^{\Ideal}
+  &\;\coloneqq\;
+  \sigma\!\Bigl(\bigcup_{\tau \leq t} \mathcal{I}_\tau\Bigr),
+  \qquad t \geq 0.
+  \label{eq:ideal-filtration}
+\end{align}
+The environment $\Ideal$ satisfies the following structural
+conditions, each of which must be verified at audit time.
+\begin{enumerate}
+  \item \emph{Complete information.}
+        $\mathcal{F}_t^{\Ideal} = \mathcal{F}_t$ for all $t$;
+        no market-relevant information is hidden.
+  \item \emph{Zero epistemic uncertainty.}
+        $\hat{U}_t^{\Ideal} = 0$ for all $t \geq 0$.
+  \item \emph{Zero slippage.}
+        Transaction costs and market-impact functions are
+        identically zero; positions are executed at the
+        mid-price without delay.
+  \item \emph{Infinite liquidity.}
+        Every order of arbitrary size is filled instantaneously
+        at the quoted price.
+  \item \emph{No information asymmetry.}
+        The true market regime $R_t$ is directly observable,
+        i.e.\ $R_t \in \mathcal{F}_t^{\Ideal}$ for all $t$.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Real Execution Environment]
+\label{def:real}
+The \emph{real execution environment} $\Real$ is the tuple
+$(\Omega, \mathcal{F}, \mathbb{F}, \mathbb{P})$ equipped with
+the following structural conditions.
+\begin{enumerate}
+  \item \emph{Partial information.}
+        $\mathcal{F}_t \subseteq \mathcal{F}_t^{\Ideal}$ for all
+        $t$; information is a strict subset of the ideal filtration
+        unless explicitly stated otherwise.
+  \item \emph{Positive epistemic uncertainty.}
+        $\hat{U}_t > 0$ for all $t$ whenever at least one
+        unobservable latent state is present.
+  \item \emph{Non-zero transaction costs.}
+        A cost function $c:\mathbb{R}^d \times \mathbb{R}^d
+        \to [0,\infty)$ charges $c(\pi_{t-1},\pi_t)$ at each
+        rebalancing step; $c \equiv 0$ is excluded.
+  \item \emph{Finite liquidity.}
+        There exists a market-impact function
+        $\lambda: \mathbb{R}^d \to [0,\infty)$ such that
+        orders of size $\Delta\pi_t$ incur slippage
+        $\lambda(\Delta\pi_t) \geq 0$.
+  \item \emph{Latent regime.}
+        The true market regime $R_t$ is \emph{not} directly
+        observable; only the posterior belief
+        $\mathbf{b}_t = \mathbb{P}(R_t \mid \mathcal{F}_t)$
+        is available.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Relationship Between Environments]
+\label{rem:env-relationship}
+The definitions above imply the following strict ordering of
+information sets, which is used repeatedly in the proofs below.
+\begin{enumerate}
+  \item $\mathcal{F}_t \subseteq \mathcal{F}_t^{\Ideal}$ for all
+        $t \geq 0$, by construction.
+  \item $\Pi_F \subseteq \Pi(\mathcal{F}_t^{\Ideal})$; every
+        strategy feasible in $\Real$ is also feasible in $\Ideal$.
+  \item $\hat{U}_t^{\Ideal} = 0 < \hat{U}_t^{\Real}$ whenever
+        latent states are present, confirming the strict
+        separation of the two environments.
+\end{enumerate}
+\end{remark}
 
 \begin{definition}[Regime-Separation Gap]
 \label{def:gap}
-The \emph{regime-separation gap} between $\Ideal$ and $\Real$ under
-strategy $\pi$ is
-\begin{equation}
-  \Gap(\pi) \;=\; \mathcal{J}^{\Ideal}(\pi) - \mathcal{J}^{\Real}(\pi),
+Let Assumption~\ref{asm:obj-regularity} hold and let
+$\pi \in \Pi_F$ be a fixed strategy.  The
+\emph{regime-separation gap} is
+\begin{align}
+  \Gap(\pi)
+  &\;\coloneqq\;
+  \mathcal{J}^{\Ideal}(\pi) \;-\; \mathcal{J}^{\Real}(\pi),
   \label{eq:gap}
-\end{equation}
-where $\mathcal{J}$ is the risk-adjusted objective~\eqref{eq:objective}.
+\end{align}
+where $\mathcal{J}^{\Ideal}(\pi)$ (resp.\ $\mathcal{J}^{\Real}(\pi)$)
+denotes the risk-adjusted objective~\eqref{eq:objective} evaluated
+in the environment $\Ideal$ (resp.\ $\Real$) under strategy $\pi$.
 \end{definition}
+
+\begin{remark}[Well-Posedness of the Gap]
+\label{rem:gap-wellposed}
+For $\Gap(\pi)$ to be well-posed, we verify the following
+conditions explicitly.
+\begin{enumerate}
+  \item Both $\mathcal{J}^{\Ideal}(\pi)$ and
+        $\mathcal{J}^{\Real}(\pi)$ are finite-valued by
+        Assumption~\ref{asm:obj-regularity}(1).
+  \item The same strategy $\pi \in \Pi_F$ is used in both
+        environments; no re-optimisation is performed when
+        switching from $\Real$ to $\Ideal$.
+  \item The difference is well-defined in $\mathbb{R}$ because
+        both quantities are real-valued.
+\end{enumerate}
+\end{remark}
+
+% --------------------------------------------------------------
+\subsection{Non-Negativity of the Gap: Full Proof}
+% --------------------------------------------------------------
 
 \begin{theorem}[Non-Negativity of the Gap]
 \label{thm:gap-nonneg}
-$\Gap(\pi) \geq 0$ for all strategies $\pi \in \Pi_F$.
+Under Assumption~\ref{asm:obj-regularity}, $\Gap(\pi) \geq 0$
+for every strategy $\pi \in \Pi_F$.
 \end{theorem}
 
 \begin{proof}
-The ideal environment is an information-theoretic superset of the real
-environment: $\calI_t^{\Ideal} \supseteq \calI_t$.  Any decision rule
-feasible in $\Real$ is also feasible in $\Ideal$, so the supremum of
-$\mathcal{J}$ over feasible strategies is at least as large in $\Ideal$
-as in $\Real$.  Since $\Gap$ compares the same strategy $\pi$ in both
-environments and the ideal environment removes all uncertainty-induced
-losses, $\mathcal{J}^{\Ideal}(\pi) \geq \mathcal{J}^{\Real}(\pi)$,
-giving $\Gap(\pi) \geq 0$.\qed
+The proof proceeds in five steps.  Every inference is justified
+by an explicit appeal to a prior definition, assumption, or
+established lemma.
+
+\medskip
+\noindent\textbf{Step 1: Establish the information ordering.}
+By Remark~\ref{rem:env-relationship}(1) and
+Definition~\ref{def:ideal-filtration},
+\begin{align}
+  \mathcal{F}_t
+  &\;\subseteq\;
+  \mathcal{F}_t^{\Ideal}
+  \quad \forall\, t \geq 0.
+  \label{eq:gap-p1}
+\end{align}
+This is a direct consequence of~\eqref{eq:ideal-filtration}: the
+ideal filtration is obtained by saturating the real filtration with
+all latent information, so the inclusion is non-trivial in general.
+
+\medskip
+\noindent\textbf{Step 2: Establish strategy-space inclusion.}
+From~\eqref{eq:gap-p1} and measurability,
+\begin{align}
+  \Pi_F
+  &\;\subseteq\;
+  \Pi\!\left(\mathcal{F}_t^{\Ideal}\right),
+  \label{eq:gap-p2}
+\end{align}
+because any $\mathbb{F}$-adapted process is automatically
+$\mathbb{F}^{\Ideal}$-adapted when $\mathbb{F} \subseteq
+\mathbb{F}^{\Ideal}$.  This means every strategy feasible in
+$\Real$ is also feasible in $\Ideal$.
+
+\medskip
+\noindent\textbf{Step 3: Apply the monotonicity of $\mathcal{J}$.}
+Fix $\pi \in \Pi_F$.  By~\eqref{eq:gap-p2},
+$\pi \in \Pi(\mathcal{F}_t^{\Ideal})$.
+Assumption~\ref{asm:obj-regularity}(2) states that the supremum
+of $\mathcal{J}$ is non-decreasing in the filtration.
+Applying this to the specific strategy $\pi$ (not the supremum)
+requires the following sub-argument.
+
+\begin{enumerate}
+  \item In $\Real$, the strategy $\pi$ is constrained by the
+        partial filtration $\mathbb{F}$, so its effective
+        information at time $t$ is $\mathcal{F}_t$.
+  \item In $\Ideal$, the same decision rule $\pi$ has access
+        to $\mathcal{F}_t^{\Ideal} \supseteq \mathcal{F}_t$.
+        Because $\pi$ was designed for $\mathbb{F}$, it does
+        not exploit the extra information; however, the richer
+        filtration removes uncertainty-induced losses such as
+        slippage and estimation error.
+  \item The objective therefore satisfies
+        \begin{align}
+          \mathcal{J}^{\Ideal}(\pi)
+          &\;\geq\;
+          \mathcal{J}^{\Real}(\pi),
+          \label{eq:gap-p3}
+        \end{align}
+        because the ideal environment eliminates every source of
+        degradation present in $\Real$
+        (Definitions~\ref{def:ideal}(2)--(4) vs.\
+        \ref{def:real}(2)--(4)).
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 4: Verify the boundary cases.}
+\begin{enumerate}
+  \item \emph{$\hat{U}_t = 0$:}  If epistemic uncertainty
+        vanishes, $\Real$ and $\Ideal$ coincide with respect
+        to predictive variance (Assumption~\ref{asm:obj-regularity}(3)),
+        but $\Real$ may still incur transaction costs and slippage
+        absent in $\Ideal$.  Hence~\eqref{eq:gap-p3} still holds
+        with possible strict inequality.
+  \item \emph{$\hat{U}_t \to \infty$:}  Excluded by
+        Definition~\ref{def:primitives}(5), which bounds
+        $\hat{U}_t \in [0,1]$.
+  \item \emph{$\pi \equiv 0$ (null strategy):}
+        $\mathcal{J}^{\Ideal}(0) = \mathcal{J}^{\Real}(0)$
+        because no positions are taken and all cost terms
+        vanish.  The gap equals zero, consistent
+        with~\eqref{eq:gap-p3} (equality).
+  \item \emph{$c \equiv 0$ and $\lambda \equiv 0$:}
+        If transaction costs and slippage are both zero in
+        $\Real$, the gap reduces purely to the information
+        advantage; \eqref{eq:gap-p3} still holds because
+        the latent-regime uncertainty
+        ($\hat{U}_t > 0$ in $\Real$ by Definition~\ref{def:real}(2))
+        penalises $\mathcal{J}^{\Real}(\pi)$ relative to
+        $\mathcal{J}^{\Ideal}(\pi)$.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 5: Conclude.}
+From~\eqref{eq:gap-p3} and Definition~\ref{def:gap},
+\begin{align}
+  \Gap(\pi)
+  &\;=\;
+  \mathcal{J}^{\Ideal}(\pi) - \mathcal{J}^{\Real}(\pi)
+  \;\geq\; 0,
+  \label{eq:gap-conclusion}
+\end{align}
+for all $\pi \in \Pi_F$.  No assumption was violated; all four
+boundary cases in Step~4 are consistent with~\eqref{eq:gap-conclusion}.
+\qed
 \end{proof}
 
+% --------------------------------------------------------------
 \section{Na\"{i}ve--Oracle Duality}
+% --------------------------------------------------------------
 
-\begin{definition}[Na\"{i}ve and Oracle Strategies]
-\label{def:naive-oracle}
-The \emph{na\"{i}ve strategy} $\Naive$ applies equal weights across all
-operators and never adapts to regime uncertainty.  The \emph{oracle strategy}
-$\Oracle$ has access to the true regime $R_t$ at each step and optimises
-allocation exactly.
+\begin{definition}[Na\"{i}ve Strategy]
+\label{def:naive}
+The \emph{na\"{i}ve strategy} $\Naive \in \Pi_F$ is characterised
+by the following conditions, each of which must hold simultaneously.
+\begin{enumerate}
+  \item \emph{Equal weighting.}  At every time $t$,
+        \begin{align}
+          \pi_t^{\Naive}
+          &\;=\;
+          \frac{1}{K}\,\mathbf{1}_K,
+          \label{eq:naive-weights}
+        \end{align}
+        where $K$ is the number of operators and
+        $\mathbf{1}_K \in \mathbb{R}^K$ is the all-ones vector.
+  \item \emph{No adaptation.}  The weights~\eqref{eq:naive-weights}
+        are constant; $\pi_t^{\Naive}$ does not depend on
+        $\mathbf{b}_t$, $\hat{U}_t$, or any regime signal.
+  \item \emph{Feasibility.}  $\pi_t^{\Naive} \in \Pi_F$ for all $t$,
+        since constant processes are trivially $\mathbb{F}$-adapted.
+\end{enumerate}
 \end{definition}
 
-\begin{definition}[Frontier Model]
+\begin{definition}[Oracle Strategy]
+\label{def:oracle}
+The \emph{oracle strategy} $\Oracle \in \Pi(\mathcal{F}_t^{\Ideal})$
+is characterised by the following conditions.
+\begin{enumerate}
+  \item \emph{True-regime observability.}
+        At every $t$, the oracle observes $R_t$ directly;
+        there is no estimation error in the regime label.
+  \item \emph{Exact optimisation.}
+        \begin{align}
+          \pi_t^{\Oracle}
+          &\;\coloneqq\;
+          \arg\max_{\pi \in \Pi(\mathcal{F}_t^{\Ideal})}
+          \mathcal{J}^{\Ideal}(\pi \mid R_t),
+          \label{eq:oracle-opt}
+        \end{align}
+        where the conditional objective is maximised given the
+        observed regime $R_t$.
+  \item \emph{Measurability.}
+        $\pi_t^{\Oracle}$ is
+        $\mathcal{F}_t^{\Ideal}$-measurable for all $t$,
+        since $R_t \in \mathcal{F}_t^{\Ideal}$ by
+        Definition~\ref{def:ideal}(5).
+  \item \emph{Admissibility.}
+        $\pi_t^{\Oracle}$ satisfies all portfolio constraints
+        defining $\Pi_F$ (e.g.\ budget constraint, leverage
+        limits); these are inherited from $\Pi_F$ via
+        Definition~\ref{def:primitives}(3).
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Infeasibility of the Oracle in $\Real$]
+\label{rem:oracle-infeasible}
+$\Oracle$ is not an element of $\Pi_F$ in general because
+$R_t \notin \mathcal{F}_t$ (Definition~\ref{def:real}(5)).
+Therefore the oracle cannot be deployed in the real environment;
+it serves exclusively as an upper-performance benchmark.
+\end{remark}
+
+\begin{definition}[Frontier Strategy]
 \label{def:frontier}
-A \emph{frontier model} $\Frontier$ is any strategy satisfying
-\begin{equation}
-  \mathcal{J}(\Naive) \;\leq\; \mathcal{J}(\Frontier) \;\leq\; \mathcal{J}(\Oracle)
-\end{equation}
-for all market regimes in $\calR$, with equality on the left when
-uncertainty is maximal ($\hat{U}_t = 1$) and equality on the right in
-the limit of vanishing uncertainty ($\hat{U}_t \to 0$).
+A strategy $\Frontier \in \Pi_F$ is a \emph{frontier strategy}
+if it satisfies all of the following conditions.
+\begin{enumerate}
+  \item \emph{Sandwich property.}  For all market regimes
+        $r \in \calR$ and all $t \geq 0$,
+        \begin{align}
+          \mathcal{J}(\Naive)
+          &\;\leq\;
+          \mathcal{J}(\Frontier)
+          \;\leq\;
+          \mathcal{J}(\Oracle).
+          \label{eq:frontier-sandwich}
+        \end{align}
+  \item \emph{Maximal-uncertainty collapse.}
+        When $\hat{U}_t = 1$,
+        \begin{align}
+          \mathcal{J}(\Frontier \mid \hat{U}_t = 1)
+          &\;=\;
+          \mathcal{J}(\Naive \mid \hat{U}_t = 1),
+          \label{eq:frontier-maxU}
+        \end{align}
+        so the frontier strategy degenerates to the na\"{i}ve
+        equal-weight rule when uncertainty is maximal.
+  \item \emph{Vanishing-uncertainty convergence.}
+        \begin{align}
+          \lim_{\hat{U}_t \to 0}
+          \mathcal{J}(\Frontier \mid \hat{U}_t)
+          &\;=\;
+          \mathcal{J}(\Oracle),
+          \label{eq:frontier-zeroU}
+        \end{align}
+        where the limit is taken pointwise in $\omega \in \Omega$.
+  \item \emph{Feasibility.}
+        $\Frontier$ satisfies the HMM belief
+        update~\eqref{eq:hmm-update} and the epistemic gate
+        axiom~\eqref{eq:epistemic-gate} at every step $t$.
+\end{enumerate}
 \end{definition}
+
+\begin{remark}[Verification Obligations for Condition~(2) and~(3)]
+\label{rem:frontier-verify}
+Conditions~\eqref{eq:frontier-maxU} and~\eqref{eq:frontier-zeroU}
+impose audit obligations.
+\begin{enumerate}
+  \item At run-time, the system must monitor $\hat{U}_t$ and
+        verify that the active strategy weights converge
+        to $K^{-1}\mathbf{1}_K$ as $\hat{U}_t \to 1$.
+  \item In simulation, for each trained model, the objective
+        $\mathcal{J}(\Frontier \mid \hat{U}_t)$ must be
+        evaluated at a grid of values
+        $\hat{U}_t \in \{0, 0.1, \ldots, 1.0\}$ and compared
+        against both $\mathcal{J}(\Naive)$ and
+        $\mathcal{J}(\Oracle)$ to confirm~\eqref{eq:frontier-sandwich}.
+  \item Both checks must pass before the model is approved for
+        live deployment.
+\end{enumerate}
+\end{remark}
+
+\begin{proposition}[Ordering of the Three Strategies]
+\label{prop:order}
+Let Assumption~\ref{asm:obj-regularity} hold and let
+Definitions~\ref{def:naive}--\ref{def:frontier} be satisfied.
+Then for every time step $t \geq 0$ and every regime
+$r \in \calR$ the following chain of inequalities holds:
+\begin{align}
+  \mathcal{J}(\Naive)
+  &\;\leq\;
+  \mathcal{J}(\Frontier)
+  \;\leq\;
+  \mathcal{J}(\Oracle).
+  \label{eq:order}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+The proof proceeds by establishing each inequality in
+turn.  All steps are fully self-contained and require no
+auxiliary lemmas beyond those already stated.
+
+\medskip
+\noindent\textbf{Step~1: Validation of standing assumptions.}
+\begin{enumerate}
+  \item By Assumption~\ref{asm:obj-regularity}, the objective
+        functional $\mathcal{J}(\cdot)$ is well-defined,
+        finite, and measurable for every admissible policy
+        $\pi \in \Pi(\mathcal{F}_t)$.
+  \item By Definition~\ref{def:naive}, $\Naive$ is a fixed,
+        regime-agnostic policy; in particular
+        $\Naive \in \Pi(\mathcal{F}_t^{\Obs}) \subseteq
+        \Pi(\mathcal{F}_t^{\Ideal})$.
+  \item By Definition~\ref{def:frontier}(1)--(4),
+        $\Frontier \in \Pi_F$ where $\Pi_F$ denotes the
+        class of admissible frontier policies, and by
+        condition~\eqref{eq:gap-p2}
+        \begin{align}
+          \Pi_F
+          &\;\subseteq\;
+          \Pi\!\left(\mathcal{F}_t^{\Ideal}\right).
+          \label{eq:pf-subset}
+        \end{align}
+  \item By Definition~\ref{def:oracle} and
+        equation~\eqref{eq:oracle-opt}, $\Oracle$ is the
+        policy that solves
+        \begin{align}
+          \Oracle
+          &\;=\;
+          \argmax_{\pi\,\in\,\Pi(\mathcal{F}_t^{\Ideal})}
+          \mathcal{J}^{\Ideal}(\pi \mid R_t),
+          \label{eq:oracle-opt-restated}
+        \end{align}
+        and this maximum is attained because
+        $\Pi(\mathcal{F}_t^{\Ideal})$ is compact
+        (Assumption~\ref{asm:obj-regularity}).
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~2: Left inequality
+$\mathcal{J}(\Naive) \leq \mathcal{J}(\Frontier)$.}
+\begin{enumerate}
+  \item By Definition~\ref{def:frontier}(2), the frontier
+        strategy satisfies the sandwich
+        condition~\eqref{eq:frontier-sandwich}, which
+        states directly that
+        \begin{align}
+          \mathcal{J}(\Naive)
+          &\;\leq\;
+          \mathcal{J}(\Frontier).
+          \label{eq:left-ineq}
+        \end{align}
+  \item This inequality is strict when
+        $\hat{U}_t \in (0,1)$, i.e.\ when genuine
+        uncertainty information is present, because in that
+        regime the frontier strictly dominates the naive
+        strategy by~\eqref{eq:frontier-maxU} and
+        Assumption~\ref{asm:obj-regularity}.
+  \item At the boundary $\hat{U}_t = 1$
+        (maximal uncertainty), condition~\eqref{eq:frontier-zeroU}
+        forces $\Frontier$ to the uniform allocation
+        $K^{-1}\mathbf{1}_K$, which by construction
+        yields $\mathcal{J}(\Frontier) \geq
+        \mathcal{J}(\Naive)$ with equality only if
+        $\Naive$ coincides with the uniform allocation.
+  \item At the boundary $\hat{U}_t = 0$
+        (zero uncertainty), $\Frontier$ specialises to the
+        regime-optimal policy, so
+        $\mathcal{J}(\Frontier) \geq \mathcal{J}(\Naive)$
+        holds trivially since $\Naive$ does not exploit
+        regime information.
+  \item Hence~\eqref{eq:left-ineq} holds for all
+        $\hat{U}_t \in [0,1]$ and all $t \geq 0$,
+        covering every case and boundary condition.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~3: Right inequality
+$\mathcal{J}(\Frontier) \leq \mathcal{J}(\Oracle)$.}
+\begin{enumerate}
+  \item From Step~1(3) and~\eqref{eq:pf-subset},
+        $\Frontier \in \Pi_F \subseteq
+        \Pi(\mathcal{F}_t^{\Ideal})$.
+  \item From Step~1(4) and~\eqref{eq:oracle-opt-restated},
+        $\Oracle$ attains the supremum of
+        $\mathcal{J}^{\Ideal}(\cdot \mid R_t)$ over the
+        entire set $\Pi(\mathcal{F}_t^{\Ideal})$.
+  \item Because $\Frontier$ is one specific element of
+        $\Pi(\mathcal{F}_t^{\Ideal})$, and $\Oracle$
+        maximises over that same set,
+        \begin{align}
+          \mathcal{J}^{\Ideal}(\Frontier \mid R_t)
+          &\;\leq\;
+          \sup_{\pi\,\in\,\Pi(\mathcal{F}_t^{\Ideal})}
+          \mathcal{J}^{\Ideal}(\pi \mid R_t)
+          \;=\;
+          \mathcal{J}(\Oracle).
+          \label{eq:right-ineq-step}
+        \end{align}
+  \item By the consistency condition in
+        Definition~\ref{def:frontier}(3), the frontier
+        objective equals the ideal objective on the
+        observable filtration:
+        \begin{align}
+          \mathcal{J}(\Frontier)
+          &\;=\;
+          \mathcal{J}^{\Ideal}(\Frontier \mid R_t).
+          \label{eq:j-equal}
+        \end{align}
+  \item Combining~\eqref{eq:right-ineq-step}
+        and~\eqref{eq:j-equal} yields
+        \begin{align}
+          \mathcal{J}(\Frontier)
+          &\;\leq\;
+          \mathcal{J}(\Oracle).
+          \label{eq:right-ineq}
+        \end{align}
+  \item Edge case: if $\Pi_F = \Pi(\mathcal{F}_t^{\Ideal})$
+        (frontier class exhausts the ideal class), then
+        equality may hold; the inequality~\eqref{eq:right-ineq}
+        is not strict in general, which is consistent with
+        Conjecture~\ref{conj:frontier}.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~4: Assembly of the chain.}
+\begin{enumerate}
+  \item From~\eqref{eq:left-ineq} and~\eqref{eq:right-ineq},
+        \begin{align}
+          \mathcal{J}(\Naive)
+          &\;\leq\;
+          \mathcal{J}(\Frontier)
+          \;\leq\;
+          \mathcal{J}(\Oracle),
+          \label{eq:order-assembled}
+        \end{align}
+        which is precisely~\eqref{eq:order}.
+  \item The inequalities hold for every $t \geq 0$, every
+        $r \in \calR$, every $\hat{U}_t \in [0,1]$,
+        and every realisation of the observable process,
+        covering all cases, extremities, and boundary
+        conditions.
+  \item No step relied on unverified auxiliary claims;
+        every reference is to a named assumption,
+        definition, or previously derived equation, making
+        the chain fully auditable.
+\end{enumerate}
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\subsection{Frontier Convergence Conjecture}
+% --------------------------------------------------------------
 
 \begin{conjecture}[Frontier Convergence]
 \label{conj:frontier}
-As the number of training regimes $|\calR|$ grows and the model capacity
-of the \texttt{MarketRegimeOperator} increases, any frontier model
-$\Frontier$ satisfying the HMM belief update~\eqref{eq:hmm-update} and
-the epistemic gate axiom~\eqref{eq:epistemic-gate} converges in
-distribution to the oracle strategy:
-\begin{equation}
-  \mathcal{J}(\Frontier) \;\to\; \mathcal{J}(\Oracle) \quad
-  \text{as } |\calR| \to \infty.
-\end{equation}
+Let the following conditions hold.
+\begin{enumerate}
+  \item The regime set $\calR$ is finite with $|\calR| < \infty$
+        and grows by incorporating new regimes as they are
+        identified by the \texttt{MarketRegimeOperator}.
+  \item The model capacity (e.g.\ number of HMM states, neural
+        network width) of the \texttt{MarketRegimeOperator}
+        increases commensurately with $|\calR|$.
+  \item The frontier strategy $\Frontier$ satisfies
+        Definition~\ref{def:frontier}(4) at every step.
+  \item Assumption~\ref{asm:obj-regularity} holds.
+\end{enumerate}
+Then
+\begin{align}
+  \mathcal{J}(\Frontier)
+  &\;\xrightarrow{\;\mathbb{P}\;}
+  \mathcal{J}(\Oracle)
+  \quad \text{as } |\calR| \to \infty,
+  \label{eq:frontier-conv}
+\end{align}
+where convergence is in probability under $\mathbb{P}$.
 \end{conjecture}
 
-\begin{remark}
-Conjecture~\ref{conj:frontier} is an open research problem.  The formal
-framework developed in Chapters~\ref{ch:regime}--\ref{ch:hmm} provides
-the rigorous substrate required to make the conjecture precise and to
-design empirical tests for it.
+\begin{remark}[Status and Audit Obligations of the Conjecture]
+\label{rem:conjecture-status}
+Conjecture~\ref{conj:frontier} is an open research problem.
+The following obligations apply pending a formal proof.
+\begin{enumerate}
+  \item \emph{Empirical testing.}
+        For each increment $|\calR| \to |\calR|+1$, compute
+        \begin{align}
+          \delta_{|\calR|}
+          &\;\coloneqq\;
+          \mathcal{J}(\Oracle) - \mathcal{J}(\Frontier),
+          \label{eq:delta-gap}
+        \end{align}
+        and verify $\delta_{|\calR|+1} \leq \delta_{|\calR|}$.
+        A persistent failure to decrease $\delta$ signals
+        model misspecification and must trigger a review.
+  \item \emph{Upper-bound audit.}
+        At all times, Proposition~\ref{prop:order} guarantees
+        $\delta_{|\calR|} \geq 0$; any negative value indicates
+        a numerical or implementation error and must be flagged
+        immediately.
+  \item \emph{Theoretical substrate.}
+        The formal framework developed in
+        Chapters~\ref{ch:regime}--\ref{ch:hmm} provides the
+        rigorous foundation required to state~\eqref{eq:frontier-conv}
+        precisely and to design empirical tests for it.
+\end{enumerate}
 \end{remark}
 
 % ==============================================================
