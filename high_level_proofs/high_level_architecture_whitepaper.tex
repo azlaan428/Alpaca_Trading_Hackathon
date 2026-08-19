@@ -20,6 +20,7 @@
 \usepackage{caption}
 \usepackage{multirow}
 \usepackage{makecell}
+\usepackage[numbers,sort&compress]{natbib}
 
 % ============================================================
 % GEOMETRY AND LAYOUT SETTINGS
@@ -172,45 +173,169 @@ walk-forward validation, polyglot architecture, Python, C++, Rust, Go.
 
 \subparagraph{Platform Vision.}
 The platform described in this whitepaper is a cross-market adaptive financial
-decision system. Rather than deploying a single monolithic predictive model,
-it composes small, independently verifiable Operators into larger Agents and
-orchestrated systems. Every decision the platform produces is traceable,
-auditable, and reproducible from first principles.
+decision system designed to operate coherently across equities, futures,
+foreign exchange, and cryptocurrency venues without requiring fundamental
+re-engineering at the strategy layer. Rather than deploying a single
+monolithic predictive model that attempts to encode all market knowledge into
+one undifferentiated parameter space, the platform composes small,
+independently verifiable functional units called \emph{Operators} into larger
+deliberative entities called \emph{Agents}, which are in turn orchestrated by
+a top-level \emph{System} layer that governs capital allocation, risk
+aggregation, and execution sequencing. Every decision the platform produces is
+traceable to a deterministic chain of typed inputs, versioned model artifacts,
+and immutable data snapshots, making every output auditable and fully
+reproducible from first principles without reliance on global mutable state or
+external side-effects. This compositional, provenance-first design is not an
+engineering preference; it is a direct response to the observation that opaque,
+monolithic financial models fail in ways that are difficult to diagnose,
+impossible to certify, and catastrophic when deployed at scale.
 
 \subparagraph{Core Problem Statement.}
-Financial markets present a fundamentally ill-posed prediction problem.
-Prices are driven by the interaction of rational agents, behavioural biases,
-macroeconomic shocks, regulatory changes, and emergent systemic dynamics.
-No single model can capture all of these forces simultaneously with consistent
-accuracy. The architecture therefore does not attempt to maximise a single
-predicted profit metric. Instead, it asks: \emph{Given all information
-legitimately available at time~$t$, what market regime is most probable,
-what risks currently dominate, how uncertain is that assessment, and what
-portfolio allocation, hedge, or trading action provides the best
-risk-adjusted response?}
+Financial markets present a fundamentally ill-posed prediction problem that
+cannot be resolved by simply increasing model capacity or training data volume.
+Prices are driven simultaneously by the interaction of rational utility-
+maximising agents, systematic behavioural biases such as momentum-chasing and
+loss-aversion anchoring, low-frequency macroeconomic shocks originating in
+central bank policy and fiscal intervention, medium-frequency regulatory and
+structural changes including circuit-breaker rules and tick-size regimes, and
+high-frequency emergent systemic dynamics arising from the co-location of
+algorithmic market-makers operating on microsecond latencies. Each of these
+forces operates on a different temporal scale, responds to different
+information sets, and interacts non-linearly with the others, producing a joint
+data-generating process whose stationarity properties are time-varying by
+construction. No single model class---whether linear factor models, gradient-
+boosted trees, recurrent neural networks, or transformer-based sequence
+models---can capture all of these forces simultaneously with consistent,
+out-of-sample accuracy across all market regimes and instrument classes.
+The architecture therefore does not attempt to maximise a single predicted
+profit metric, nor does it seek a unified ``alpha model'' that encodes
+universal market knowledge. Instead, it poses the decision problem as a
+structured sequence of conditional queries: \emph{Given all information
+legitimately available at time~$t$, what market regime is most probable and
+with what posterior uncertainty; what risk factors currently dominate the
+cross-sectional covariance matrix; how confident is the ensemble of models in
+its current assessment; and what portfolio allocation, directional hedge, or
+discrete trading action provides the best risk-adjusted response given the
+full distribution of plausible outcomes rather than merely the modal
+forecast?} This reframing converts an intractable prediction problem into a
+tractable decision problem under uncertainty, which admits principled
+engineering solutions.
 
 \subparagraph{Architectural Philosophy.}
-The platform rests on six non-negotiable architectural principles:
+The platform rests on six non-negotiable architectural principles that were
+derived not from theoretical preference but from the systematic failure modes
+observed in production financial systems and academic backtesting literature.
+Each principle carries an associated enforcement mechanism that is embedded in
+the type system, the data pipeline, or the deployment contract, rather than
+left to developer discipline alone.
 \begin{enumerate}
-    \item \textbf{Operator composition over monolithic models.} Complex behaviour
-          emerges from the composition of small, typed, testable units.
-    \item \textbf{Risk gates every signal.} A profitable-looking signal never
-          automatically produces an order.
-    \item \textbf{Simulation before live trading.} The platform is a research and
-          paper-trading environment first.
-    \item \textbf{Provenance is first-class.} Every decision is reconstructable
-          from its data sources, operator versions, and model outputs.
-    \item \textbf{Temporal correctness is a hard requirement.} A strategy that
-          sees future data is invalid regardless of reported profitability.
-    \item \textbf{Uncertainty is information.} Disagreement between models is
-          surfaced and acted upon, not silently collapsed.
+    \item \textbf{Operator composition over monolithic models.} Complex
+          decision-making behaviour emerges from the composition of small,
+          typed, independently testable, and formally specified functional
+          units called Operators. Each Operator declares its input schema,
+          output schema, temporal alignment requirements, and computational
+          complexity class. Operators may be stateless transformations, such
+          as a volatility normalisation step, or stateful accumulators, such
+          as a hidden Markov model over rolling regime windows, but in all
+          cases their dependencies are explicit and their outputs are
+          inspectable. The composition graph is a directed acyclic graph
+          whose topological sort determines evaluation order, enabling
+          parallel evaluation of independent branches and deterministic
+          replay of any historical computation path.
+
+    \item \textbf{Risk gates every signal.} A signal that appears profitable
+          under historical simulation never automatically produces a live or
+          paper order. Every candidate action---whether a full position entry,
+          a partial size adjustment, or a hedge overlay---must pass through a
+          dedicated \texttt{RiskOperator} stage that evaluates the proposed
+          action against a configurable policy set encompassing position
+          concentration limits, drawdown thresholds, volatility-adjusted
+          Kelly fraction bounds, correlation-based portfolio heat metrics, and
+          regime-conditional exposure rules. The \texttt{RiskOperator} may
+          reject the action outright, reduce its notional size, substitute an
+          alternative instrument with lower correlation to existing holdings,
+          delay execution pending a volatility cooldown window, or attach a
+          mandatory hedge leg. Only actions that satisfy all active risk
+          policies are forwarded to the execution layer; the decision and its
+          policy evaluation trace are recorded unconditionally.
+
+    \item \textbf{Simulation before live trading.} The platform is designed
+          as a research and paper-trading environment first, and a live
+          execution system second. Historical replay, walk-forward
+          backtesting, Monte Carlo scenario generation, and stress testing
+          against synthetic crisis regimes are first-class capabilities with
+          dedicated pipeline stages and output schemas. The simulation
+          environment enforces temporal correctness at the API boundary,
+          making look-ahead access to future data a type error rather than a
+          runtime failure. Paper execution is implemented as a high-fidelity
+          market microstructure simulation that models bid-ask spread,
+          partial fill probability, market impact as a function of order
+          size relative to average daily volume, and queue position dynamics
+          for limit orders, providing a realistic bridge between backtest
+          performance and live execution expectation.
+
+    \item \textbf{Provenance is first-class.} Every decision the platform
+          produces is reconstructable from its constituent data sources,
+          operator version identifiers, model checkpoint hashes, and
+          configuration snapshots. The provenance record is not an optional
+          audit log appended after the fact; it is a typed output of the
+          execution pipeline that is produced unconditionally and stored
+          atomically with the decision itself. This enables not only
+          post-hoc audit and regulatory review but also automated regression
+          testing: any change to an Operator, model, or schema version that
+          produces a different decision for an identical historical input is
+          flagged as a provenance divergence requiring explicit review before
+          deployment.
+
+    \item \textbf{Temporal correctness is a hard requirement.} A strategy
+          that accesses data from time $t' > t$ during a decision that is
+          nominally made at time $t$ is invalid regardless of its reported
+          backtest profitability, Sharpe ratio, or maximum drawdown
+          statistics. Temporal leakage---the inadvertent use of future
+          information through lookahead bias, survivorship bias, or
+          point-in-time data misalignment---is the single most common source
+          of inflated backtest performance in the academic and practitioner
+          literature. The platform enforces temporal correctness through a
+          time-indexed data access interface that makes out-of-window queries
+          a checked runtime error in simulation mode and a hard type error in
+          the static analysis pipeline, ensuring that no operator or model
+          can silently consume future data.
+
+    \item \textbf{Uncertainty is information.} Disagreement between models,
+          widening confidence intervals, and elevated entropy in regime
+          probability distributions are not failure states to be suppressed
+          or averaged away; they are first-class signals that carry decision-
+          relevant information about the reliability of the current forecast.
+          When the ensemble of regime classifiers disagrees significantly,
+          the appropriate response is not to take the majority vote and
+          proceed; it is to widen risk limits, reduce position sizes, increase
+          hedge ratios, and surface the disagreement explicitly to any
+          downstream consumer. Uncertainty quantification is therefore a
+          mandatory output of every predictive Operator, expressed as a
+          calibrated probability distribution or, where distributional
+          assumptions are untenable, as a set-valued or interval-valued
+          estimate that is propagated faithfully through the composition graph.
 \end{enumerate}
 
 \subparagraph{Scope.}
-The initial platform targets historical replay, walk-forward backtesting,
-Monte Carlo simulation, stress testing, and paper execution. Live-trading
-adapters are architecturally separated and deliberately absent from the
-initial implementation scope.
+The initial platform implementation targets five primary operational modes:
+historical replay for deterministic reconstruction of past market conditions;
+walk-forward backtesting with configurable retraining and re-optimisation
+windows to measure strategy robustness across distributional shifts; Monte
+Carlo simulation for generating synthetic scenario ensembles that stress-test
+strategy behaviour under tail-risk regimes not present in the historical
+record; stress testing against hand-constructed crisis scenarios calibrated to
+historical episodes such as the 2008 credit crisis, the 2020 pandemic shock,
+and the 2022 rate-normalisation regime; and paper execution through a
+microstructure-realistic simulation layer that records order lifecycle events
+against a live or replayed market feed without committing capital. Live-trading
+adapters that connect the execution layer to exchange APIs, prime broker
+order-management systems, or direct-market-access gateways are architecturally
+separated into a dedicated integration boundary with a well-specified contract,
+and are deliberately absent from the initial implementation scope in order to
+ensure that the research, simulation, and risk infrastructure reaches full
+maturity and passes independent correctness review before any capital is placed
+at risk.
 
 % ============================================================
 % KEY FINDINGS
@@ -313,16 +438,25 @@ The platform described in this whitepaper has the following primary objectives:
           analysis, and paper trading as first-class operational modes.
 \end{enumerate}
 
+The first objective—modularity and composability—addresses a pervasive structural deficiency in proprietary trading systems: the tendency for research codebases to accumulate tightly coupled, monolithic scripts in which data ingestion, feature engineering, signal generation, position sizing, and execution are interleaved without clear boundaries. When every component depends implicitly on the global state of every other component, the cost of replacing or improving any single element grows super-linearly with system complexity. The operator framework described in Chapter~3 resolves this by defining a strict functional interface for every computational unit: an operator consumes a temporally indexed, schema-validated input bundle and emits an output bundle of declared type, with no permitted side-effects on shared mutable state. Composition is achieved through a directed acyclic graph (DAG) of operator nodes, where edges carry typed data streams. This design enables any sub-graph to be extracted, unit-tested in isolation, and replaced without disturbing the remainder of the pipeline. The composability property further allows complex multi-asset, multi-horizon strategies to be expressed as hierarchical operator trees, with higher-level \emph{agent} nodes delegating sub-computations to specialised child operators while aggregating their outputs into coherent portfolio-level decisions.
+
+The second objective—temporal correctness—is elevated from a software quality concern to an architectural guarantee. In a naive implementation, the burden of avoiding look-ahead bias falls entirely on the discipline of individual researchers, a burden that historical experience demonstrates is routinely violated under deadline pressure or through subtle misunderstanding of dataset construction. This platform instead encodes the information horizon of every data element as a first-class type parameter: every tensor, frame, or signal carries a \texttt{ValidFrom} timestamp indicating the earliest point in time at which that datum was legitimately observable by a market participant. The operator execution engine enforces, as a hard invariant, that no operator node may consume any input whose \texttt{ValidFrom} exceeds the operator's declared evaluation timestamp. Violations raise typed exceptions that propagate to the DAG scheduler and abort execution rather than silently contaminating downstream computations. This invariant is preserved across all operational modes—backtesting, walk-forward analysis, paper trading, and live execution—through a unified time-travel abstraction layer detailed in Chapter~4.
+
+The third objective—calibrated probabilistic regime classification—reflects the empirical observation that a single statistical model of market dynamics is inadequate across the full range of macroeconomic and microstructure regimes that characterise modern equity, fixed-income, and derivatives markets. High-volatility stress regimes, low-volatility trending regimes, mean-reverting range-bound regimes, and crisis liquidity regimes each exhibit qualitatively different return distributions, autocorrelation structures, and cross-asset correlation patterns. The regime engine described in Chapter~5 maintains an ensemble of $K$ heterogeneous classifiers—including hidden Markov models, threshold autoregressive models, and gradient-boosted discriminative classifiers—each of which produces a posterior distribution $p_k(\mathcal{R}_t \mid \mathcal{F}_t)$ over a shared discrete regime vocabulary $\mathcal{R} = \{r_1, \ldots, r_M\}$ conditioned on the information set $\mathcal{F}_t$ available at time $t$. These posteriors are aggregated into a consensus distribution through a Bayesian model averaging scheme with dynamically updated model weights, yielding a final regime distribution $\bar{p}(\mathcal{R}_t \mid \mathcal{F}_t)$ that explicitly quantifies inter-model disagreement. Downstream operators condition their parameter sets and position limits on this distribution rather than on a hard regime label, propagating uncertainty throughout the decision pipeline in a mathematically coherent manner.
+
+The fourth objective—mandatory risk gating—enforces a hard architectural separation between the signal generation layer and the order generation layer. In many production systems this separation is advisory rather than structural: a risk check may be implemented as a function called at the discretion of the strategy author, which may be omitted, misconfigured, or overridden under operational pressure. In this platform, the execution adapter will not accept an order object that does not carry a cryptographically signed approval token issued by the \texttt{RiskOperator} node. The \texttt{RiskOperator} evaluates each proposed action against a hierarchy of constraints: per-instrument notional limits, portfolio-level gross and net exposure bounds, Value-at-Risk and Conditional Value-at-Risk budgets computed under the current regime distribution, maximum allowable drawdown thresholds, and concentration limits expressed as fractions of average daily volume. Approval tokens are time-stamped and expire after a configurable staleness window, ensuring that a signal generated under one risk state cannot be executed after market conditions have materially changed without passing through a fresh risk evaluation cycle.
+
+The fifth objective—provenance tracking—responds to the growing regulatory and operational demand for full explainability of automated trading decisions. Regulators in multiple jurisdictions now require that algorithmic trading firms be able to reconstruct, from durable audit records, the complete causal chain from raw input data to executed order for any transaction under scrutiny. This platform satisfies that requirement by attaching a structured provenance graph to every output produced by every operator node. The provenance graph is a directed acyclic graph whose nodes are immutable data artefacts identified by content-addressed hashes, and whose edges record the operator name, operator version, parameter set hash, and wall-clock execution timestamp of each transformation. This design ensures that any output can be deterministically reproduced from its recorded inputs and operator version, subject only to the availability of the corresponding source data in the data lake. Provenance metadata is stored in a separate append-only ledger, partitioned by trading date, to facilitate efficient retrieval during regulatory examinations without imposing runtime latency on the critical trading path.
+
+The sixth objective—multi-modal operational support—recognises that a quantitative strategy must be validated through a sequence of increasingly demanding testing regimes before it is entrusted with real capital. The platform provides four first-class operational modes that share a common codebase and differ only in their clock and data source implementations. In \emph{historical simulation} mode, a monotonically advancing synthetic clock drives the operator DAG over a fixed historical window, with all data sourced from the immutable data lake; this mode is optimised for throughput and supports vectorised batch evaluation. In \emph{walk-forward backtesting} mode, the historical window is partitioned into an expanding sequence of in-sample training periods and out-of-sample test periods, with model re-fitting occurring at each fold boundary; this mode produces performance statistics that are substantially more predictive of live performance than those produced by a single in-sample backtest. In \emph{paper trading} mode, the system consumes live market data feeds but routes all order objects to a simulated execution engine that applies realistic latency, partial fill, and market impact models rather than forwarding orders to a live broker. In \emph{live trading} mode, orders are forwarded through the Alpaca API adapter with full pre-trade risk checks and post-trade reconciliation. The four modes are distinguished by a single configuration parameter; all operator logic and risk gating code is identical across modes, eliminating the class of bugs that arises when production code diverges from research code.
+
 \section{Document Organisation}
 
-Chapter~2 describes the four-domain financial model. Chapter~3 presents
-the operator and agent composition framework. Chapter~4 covers the data
-pipeline architecture. Chapter~5 details the market regime engine.
-Chapter~6 specifies the risk management framework. Chapter~7 covers the
-execution and simulation layers. Chapter~8 addresses the polyglot
-implementation architecture. Chapter~9 describes the testing and validation
-taxonomy. Chapter~10 covers observability, provenance, and audit.
-Chapter~11 presents deployment and operational considerations.
+Chapter~2 describes the four-domain financial model, elaborating the conceptual taxonomy that partitions the platform's financial scope into the Earth, Air, Fire, and Water domains, the directed cross-domain influence graph that governs information flow between them, and the formal specification of the cross-domain influence matrix $\Gamma \in \mathbb{R}^{4 \times 4}$ whose entries quantify the directed signal coupling between domain pairs. Chapter~3 presents the operator and agent composition framework in full formal detail, including the typed operator interface, the DAG scheduling semantics, the distinction between stateless and stateful operators, the agent hierarchy that enables multi-level abstraction, and the mechanisms by which operator outputs are versioned and cached. Chapter~4 covers the data pipeline architecture, including the temporal correctness enforcement mechanism, the schema validation layer, the data lake partitioning strategy, the feed normalisation adapters for equity, options, futures, and macroeconomic data sources, and the point-in-time reconstruction service that supports accurate historical simulation.
+
+Chapter~5 details the market regime engine, including the mathematical specification of each constituent classifier, the Bayesian model averaging scheme, the regime vocabulary definition process, the regime-conditional parameter switching mechanism, and the empirical calibration procedures used to ensure that the ensemble posterior is a well-calibrated probability distribution rather than a miscalibrated confidence score. Chapter~6 specifies the risk management framework in full, including the formal constraint hierarchy, the Value-at-Risk and Conditional Value-at-Risk estimation procedures under non-Gaussian return distributions, the cryptographic approval token protocol, the position limit computation methodology, and the drawdown circuit-breaker logic. Chapter~7 covers the execution and simulation layers, including the order routing state machine, the Alpaca API integration, the simulated execution engine's latency and market impact models, and the post-trade reconciliation and attribution pipeline.
+
+Chapter~8 addresses the polyglot implementation architecture, providing a principled justification for the assignment of Python to research and orchestration, C++ to performance-critical numerical computation, Rust to data integrity and storage, and Go to network services and API adapters, together with a description of the language-neutral schema layer that prevents interface divergence across language boundaries. Chapter~9 describes the testing and validation taxonomy, covering unit testing of individual operators, integration testing of operator sub-graphs, statistical validation of regime classifiers, adversarial temporal correctness testing, and the performance benchmarking suite that guards against regression in execution latency. Chapter~10 covers observability, provenance, and audit, including the structured logging schema, the distributed tracing integration, the provenance ledger format, and the regulatory reporting interface. Chapter~11 presents deployment and operational considerations, including the containerisation strategy, the configuration management discipline, the operational runbook for mode transitions, and the incident response procedures for anomalous trading behaviour.
 
 % ============================================================
 % CHAPTER 2: FOUR-DOMAIN FINANCIAL MODEL
@@ -550,7 +684,7 @@ decision is illustrated conceptually in Table~\ref{tab:pipeline_stages}.
 \caption{End-to-end operator pipeline stages.}
 \label{tab:pipeline_stages}
 \small
-\begin{tabularx}{\textwidth}{p{0.6cm} p{3.8cm} p{10.0cm}}
+\begin{tabularx}{\textwidth}{p{1.2cm} p{3.8cm} p{10.0cm}}
 \toprule
 \textbf{Stage} & \textbf{Operator} & \textbf{Output Type and Description} \\
 \midrule
@@ -600,23 +734,21 @@ decision is illustrated conceptually in Table~\ref{tab:pipeline_stages}.
 
 \section{Data Categories}
 
-The platform ingests data across six primary categories:
+The platform ingests, normalises, and version-controls data across six primary categories, each of which imposes distinct contractual requirements on latency, quality assurance, and temporal alignment. The heterogeneity of these categories is a deliberate design feature rather than an accidental consequence of market structure: different asset classes trade on different venues, publish data under different licensing regimes, and update at frequencies spanning several orders of magnitude. A unified ingestion framework must therefore treat each category as a first-class citizen with its own \texttt{IngestionPolicy}, specifying acceptable staleness bounds, quality-flag thresholds, and the identity of the upstream \texttt{NormalisationOperator} responsible for transforming raw vendor payloads into the canonical internal schema.
 
-\begin{enumerate}
-    \item \textbf{Price and volume data}: OHLCV bars at multiple frequencies
-          (tick, 1-minute, 5-minute, daily), trades, quotes, and order-book
-          snapshots.
-    \item \textbf{Derivatives data}: options chains, implied volatility
-          surfaces, futures curves, and Greeks.
-    \item \textbf{Macroeconomic data}: interest rates, yield curves, inflation
-          releases, central bank communications, and employment data.
-    \item \textbf{Fundamental data}: earnings, revenue, balance sheets,
-          cash flows, dividends, and analyst estimates.
-    \item \textbf{Alternative data}: satellite imagery, credit card transactions,
-          web traffic, social sentiment, and supply chain indicators.
-    \item \textbf{News and events}: earnings announcements, regulatory filings,
-          geopolitical events, and technology news.
-\end{enumerate}
+\textbf{Price and volume data} constitutes the highest-frequency and lowest-latency category ingested by the platform. Raw market data is consumed at the tick level from direct exchange feeds and consolidated tape providers, capturing every trade print and every change to the national best bid and offer (NBBO). From these atomic events the platform derives a hierarchy of OHLCV bar aggregates at standardised frequencies: 1-second, 1-minute, 5-minute, 15-minute, 1-hour, and daily. Each bar is stamped with both the exchange timestamp and the local ingestion timestamp, and the two are reconciled to detect clock skew in excess of configurable tolerances. Order-book snapshots at configurable depth levels (L1, L2, and L3 where available) are maintained in a rolling buffer, enabling microstructure features such as bid-ask spread, depth imbalance, and weighted mid-price to be computed on demand by downstream \texttt{FeatureOperator} instances. All price data is adjusted for corporate actions --- splits, dividends, rights issues --- using a deterministic adjustment chain that is itself versioned, so that any historical price series can be reproduced exactly from its adjustment-chain version identifier.
+
+\textbf{Derivatives data} introduces additional dimensionality relative to equities because each underlying asset is associated with a potentially large and dynamically evolving set of listed instruments. Options chains are ingested at the full strike-expiry grid, with implied volatility surfaces constructed by the \texttt{VolatilitySurfaceOperator} using a no-arbitrage interpolation scheme that enforces calendar-spread monotonicity and butterfly positivity. The resulting surface is parameterised as a SSVI (Surface Stochastic Volatility Inspired) functional form, enabling efficient interpolation and extrapolation while respecting the static arbitrage constraints derived by Gatheral and Jacquier. Futures curves are handled separately, with explicit modelling of roll dates, basis, and carry. Greeks (delta, gamma, vega, theta, rho, and higher-order cross-derivatives) are computed analytically where closed-form expressions exist and via automatic differentiation for more complex payoff structures. All derivatives data objects carry a reference to the underlying asset identifier, the pricing model version, and the interest-rate curve used, ensuring full reproducibility of any computed quantity.
+
+\textbf{Macroeconomic data} differs fundamentally from market data in that its release schedule is known in advance but its values are not, and in that its impact on asset prices is typically non-linear and regime-dependent. The platform maintains a structured economic calendar that records, for each scheduled release, the consensus forecast, the previous realised value, the revision history, and the release timestamp down to the millisecond. Surprise factors --- the standardised deviation of the actual release from the consensus --- are computed immediately upon ingestion and propagated as derived features to all dependent operators. Central bank communications, including meeting minutes, speeches, and policy statements, are ingested as raw text and processed by the \texttt{NLPOperator} to extract sentiment scores, topic vectors, and forward-guidance signals. Yield curve data is represented as a Nelson-Siegel-Svensson parameterisation updated at each tenor point revision, with the full parameter vector and its covariance structure stored alongside the raw zero-coupon rates.
+
+\textbf{Fundamental data} is characterised by its low update frequency, its high information content, and the significant complexity of its accounting interpretation. Financial statements --- income statements, balance sheets, and cash flow statements --- are ingested from both primary sources (EDGAR filings, exchange announcements) and normalised vendor feeds, with systematic reconciliation between the two to detect vendor errors or restatements. The platform applies a configurable set of accounting normalisation adjustments, including operating-lease capitalisation, R\&D capitalisation, and pension liability recognition, each of which is independently versioned. Point-in-time databases are maintained to ensure that backtests only use information that was publicly available at the time of the simulated decision: restated figures are stored with their restatement dates, and the original as-reported values are preserved in a separate column family. Analyst estimate revisions, earnings surprise histories, and guidance changes are tracked at the individual analyst level where data permits, enabling the construction of estimate dispersion and revision momentum features.
+
+\textbf{Alternative data} encompasses the rapidly expanding universe of non-traditional information sources that carry predictive signal orthogonal to conventional financial data. Satellite imagery of retail car parks, industrial facilities, and agricultural land is processed by computer vision pipelines to generate foot-traffic counts, capacity utilisation estimates, and crop yield forecasts. Anonymised and aggregated credit card transaction data is ingested at weekly intervals and normalised to same-store revenue proxies on a per-merchant and per-sector basis. Web traffic data from panel providers is used to construct digital engagement metrics for e-commerce and SaaS companies. Social sentiment is derived from large-scale analysis of financial discussion forums, news comment sections, and professional networks, with entity-linking to map free-text mentions to canonical security identifiers. Supply chain indicators, including shipping container tracking data and procurement tender announcements, are processed to construct network-graph representations of inter-company dependencies. Because alternative data carries substantially higher legal and ethical risk than exchange data, every alternative data source is subject to a \texttt{DataGovernanceReview} before ingestion, and its license terms are stored as a structured metadata object alongside every derived feature.
+
+\textbf{News and events data} bridges the structured world of corporate disclosures and the unstructured world of real-time narrative. Earnings announcements and earnings call transcripts are ingested immediately upon release and processed through a multi-stage NLP pipeline that extracts quantitative guidance revisions, management sentiment, and question-and-answer sentiment asymmetry. Regulatory filings, including 8-Ks, 13-Fs, 13-Ds, and SEC comment letters, are parsed with schema-aware extractors that map filing sections to structured data fields. Geopolitical event streams are sourced from specialised providers and classified by event type, geographic scope, and estimated market impact severity. Technology news is monitored for product launches, patent grants, partnership announcements, and executive changes, with each event linked to one or more affected security identifiers. All events are stored in a unified event store with a common schema that records the event type, the affected entities, the publication timestamp, the ingestion timestamp, and a confidence score reflecting the extraction quality.
+
+
 
 \section{Provenance Requirements}
 
@@ -628,7 +760,7 @@ attributes:
 \caption{Required provenance attributes for all data objects.}
 \label{tab:provenance}
 \small
-\begin{tabularx}{\textwidth}{p{4.0cm} p{10.5cm}}
+\begin{tabularx}{\textwidth}{p{4.0cm} X}
 \toprule
 \textbf{Attribute} & \textbf{Description} \\
 \midrule
@@ -656,17 +788,97 @@ macroeconomic releases arrive at irregular intervals; alternative data
 has its own update cadence. The \texttt{TemporalAlignmentOperator} is
 responsible for:
 
-\begin{enumerate}
-    \item Converting all timestamps to UTC, explicitly recording the
-          source time zone and whether daylight saving time was in effect.
-    \item Aligning data to the target frequency grid using forward-fill
-          semantics (never look-ahead interpolation).
-    \item Identifying and flagging gaps exceeding a configurable staleness
-          threshold as \texttt{STALE} quality status.
-    \item Enforcing that no datum with a source timestamp $\tau_s > t$
-          appears in the information set $\mathcal{I}_t$ used by any
-          operator at time $t$.
-\end{enumerate}
+
+\paragraph{UTC Canonicalisation and Time Zone Provenance.}
+The first and most foundational responsibility of the \texttt{TemporalAlignmentOperator} is the
+conversion of every ingested timestamp into Coordinated Universal Time (UTC), accompanied by the
+explicit annotation of the originating time zone and a boolean flag indicating whether Daylight
+Saving Time (DST) was in effect at the moment of observation. This requirement is non-trivial in
+practice: financial data vendors routinely publish timestamps in local exchange time, which
+introduces a two-dimensional ambiguity — the offset from UTC is both jurisdiction-dependent and
+seasonally variable. For example, the New York Stock Exchange operates on Eastern Standard Time
+(UTC$-$5) during winter months and Eastern Daylight Time (UTC$-$4) during summer, while the
+London Stock Exchange alternates between GMT (UTC$+$0) and BST (UTC$+$1). Failing to account for
+these transitions produces systematic one-hour displacements in aligned time series that are
+notoriously difficult to detect post-hoc. The operator therefore maintains a versioned, auditable
+time zone database (conforming to the IANA \texttt{tzdata} standard) and applies it deterministically
+at ingestion time. The resulting metadata tuple $(\tau_{\mathrm{UTC}},\, \mathrm{tz\_origin},\,
+\mathrm{dst\_flag})$ is persisted alongside the datum and is immutable for the lifetime of the
+record. Any downstream reprocessing that alters the canonical UTC value must produce a new record
+version rather than overwriting the original, thereby preserving the complete audit trail.
+
+\paragraph{Frequency Grid Alignment via Causal Forward-Fill.}
+Having canonicalised all timestamps to UTC, the operator must reconcile the heterogeneous update
+cadences of disparate data sources onto a single, uniform target frequency grid $\mathcal{G}_\Delta$,
+where $\Delta$ denotes the grid resolution (e.g., $\Delta = 1\,\text{minute}$, $\Delta =
+1\,\text{day}$). The alignment procedure follows strictly causal, forward-fill semantics: for any
+grid point $t_k \in \mathcal{G}_\Delta$, the value assigned to a series $X$ is the most recently
+observed value $X_{\tau}$ such that $\tau \leq t_k$. Formally, the aligned value is:
+\begin{equation}
+    \tilde{X}_{t_k} \;=\; X_{\tau^*}, \quad \text{where} \quad
+    \tau^* = \sup\bigl\{\tau \in \mathcal{T}_X : \tau \leq t_k\bigr\},
+\end{equation}
+where $\mathcal{T}_X$ is the set of timestamps at which source $X$ was actually observed. This
+construction guarantees that $\tilde{X}_{t_k}$ is measurable with respect to $\mathcal{I}_{t_k}$
+and introduces no look-ahead bias. Any interpolation scheme that uses future observations — linear
+interpolation being the most prevalent offender — is categorically prohibited because it implicitly
+conditions on $\mathcal{I}_{t_{k+j}}$ for $j \geq 1$, constituting a temporal leakage violation.
+The operator is further responsible for handling irregularly spaced source grids, such as
+macroeconomic release calendars or corporate earnings announcement schedules, by treating them as
+special cases of the general forward-fill mechanism with potentially large inter-observation gaps.
+The filled values carry a provenance annotation indicating that they derive from a prior observation
+rather than a contemporaneous one, enabling downstream consumers to condition their behaviour on
+data freshness when necessary.
+
+\paragraph{Staleness Detection and Quality Flag Propagation.}
+Not all silences in a time series are semantically equivalent. A forward-filled value that is one
+tick old in a high-frequency equity series is qualitatively different from a macroeconomic
+indicator that has not been refreshed in several days. The \texttt{TemporalAlignmentOperator}
+therefore implements a configurable staleness threshold $\delta_{\max}$, specified per data
+source and per asset class, such that any aligned grid point $t_k$ for which
+$t_k - \tau^* > \delta_{\max}$ receives a \texttt{STALE} quality flag rather than a
+\texttt{CLEAN} one. More precisely, let $\Delta\tau_k = t_k - \tau^*$ denote the age of the
+most recent observation at grid point $t_k$. Then:
+\begin{equation}
+    \mathrm{quality\_status}_{t_k} =
+    \begin{cases}
+        \texttt{CLEAN}  & \text{if } \Delta\tau_k \leq \delta_{\max}, \\
+        \texttt{STALE}  & \text{if } \Delta\tau_k > \delta_{\max}.
+    \end{cases}
+\end{equation}
+The threshold $\delta_{\max}$ is not a single global constant but a source-specific configuration
+parameter stored in the operator's versioned parameter manifest. For liquid equity mid-prices,
+a reasonable default might be $\delta_{\max} = 5\,\text{minutes}$; for daily macroeconomic
+series, $\delta_{\max}$ might be set to $3\,\text{business days}$. Critically, the \texttt{STALE}
+flag is propagated transitively: if a derived feature $F_t = f(\tilde{X}_t, \tilde{Y}_t)$ depends
+on any input carrying a \texttt{STALE} flag, the feature itself inherits the worst-case quality
+status of its inputs. This monotone degradation of quality metadata ensures that no derived signal
+can silently present stale constituent data as fresh, and that portfolio construction and risk
+management layers can make informed decisions about whether to trust any given feature value.
+
+\paragraph{Strict Enforcement of the Information Boundary.}
+The final and most rigorous responsibility of the \texttt{TemporalAlignmentOperator} is the
+enforcement of the hard causal information boundary: no datum whose source timestamp $\tau_s$ is
+strictly greater than the current processing time $t$ may appear in the information set
+$\mathcal{I}_t$ made available to any downstream operator at time $t$. Formally, this is the
+constraint:
+\begin{equation}
+    \forall\, d \in \mathcal{I}_t :\quad \tau_s(d) \leq t,
+\end{equation}
+where $\tau_s(d)$ denotes the source-assigned timestamp of datum $d$. This constraint must be
+enforced both in live trading and — critically — during historical backtesting, where the
+temptation to use the full dataset as a convenient lookup table is a persistent source of
+inadvertent leakage. The operator implements this boundary through a \emph{point-in-time cursor}
+mechanism: for any query at logical time $t$, the operator materialises the state of every source
+series as it would have appeared at time $t$, using only observations with $\tau_s \leq t$.
+This is technically equivalent to maintaining a bi-temporal data model in which one temporal axis
+records the source timestamp and the other records the ingestion timestamp, and queries are always
+evaluated against a snapshot of the former axis at or before $t$. Violations of this constraint
+are not merely statistical errors; they constitute a fundamental breach of the strategy's causal
+validity and will produce backtested performance figures that are irreproducible in live deployment.
+The platform enforces this invariant at the infrastructure level rather than relying on operator
+discipline, making it structurally impossible for any consumer of $\mathcal{I}_t$ to access a
+datum with $\tau_s > t$ regardless of the query pattern employed.
 
 \section{The Temporal Leakage Invariant}
 
@@ -722,13 +934,9 @@ Future news leakage &
 
 \section{Motivation}
 
-Market regime is the single most important conditioning variable in any
-quantitative strategy. A momentum strategy that performs well in trending,
-low-volatility markets becomes a reliable loss generator in choppy,
-mean-reverting environments. A short-volatility strategy that earns
-steady premium in calm periods suffers catastrophic losses during
-volatility spikes. Without explicit regime awareness, strategy parameters
-optimised in one regime are silently misapplied in another.
+Market regime is the single most important conditioning variable in any quantitative strategy, yet it is also among the most frequently neglected. The failure mode is insidious: a strategy calibrated exclusively in one market environment accumulates risk exposures that are entirely invisible until the environment shifts, at which point the strategy may suffer rapid, severe drawdowns that are structurally impossible to hedge within the strategy's own parameter space. A momentum strategy that performs well in trending, low-volatility markets becomes a reliable loss generator in choppy, mean-reverting environments because the directional persistence assumption embedded in its signal construction is simply no longer satisfied by the data-generating process. A short-volatility strategy that earns steady option premium in calm periods suffers catastrophic, often gap-risk-induced losses during volatility spikes precisely because the return distribution's tail mass expands far beyond the Gaussian approximation on which most option pricing models are implicitly conditioned. The cross-sectional dispersion of individual equity returns, the autocorrelation structure of price increments, the co-integration relationships between related assets, and even the microstructure properties of bid-ask spreads all shift materially across regimes. Without an explicit, probabilistically coherent representation of the current regime, strategy parameters optimised in one regime are silently misapplied in another, producing what practitioners sometimes call ``regime contamination'' of the signal-to-noise ratio.
+
+The platform therefore elevates regime identification to a first-class architectural concern, treating it not as an optional enrichment layer but as the foundational conditioning variable through which every downstream operator---signal generation, portfolio optimisation, execution sizing, and risk limit selection---is filtered. This design choice reflects a fundamental epistemic commitment: uncertainty about which market regime is currently active must be represented explicitly as a probability distribution, not collapsed into a single point estimate, because the cost of a regime misclassification is asymmetric and non-linear. Propagating the full posterior $\boldsymbol{\beta}_t$ throughout the computation graph allows every downstream module to form its own regime-weighted expectation, gracefully degrading toward more conservative behaviour as regime uncertainty grows.
 
 \section{Regime State Representation}
 
@@ -742,61 +950,85 @@ The \texttt{MarketRegimeState} at time $t$ is a tuple:
 where:
 \begin{enumerate}
     \item $\boldsymbol{\beta}_t \in \Delta^{K-1}$ is the posterior probability
-          vector over $K$ regime labels.
-    \item $H_t = -\sum_{k=1}^K \beta_t(k) \ln \beta_t(k)$ is the regime
-          entropy.
-    \item $\hat{U}_t = H_t / \ln K \in [0, 1]$ is the normalised uncertainty.
-    \item $\mathbf{f}_t$ is the contributing feature vector used by the
-          regime classifier.
-    \item $v_t$ is the model version string of the regime estimator.
+          vector over $K$ regime labels, lying in the $(K-1)$-dimensional
+          probability simplex so that $\beta_t(k) \geq 0$ for all $k$ and
+          $\sum_{k=1}^{K} \beta_t(k) = 1$.
+    \item $H_t = -\sum_{k=1}^K \beta_t(k) \ln \beta_t(k)$ is the Shannon
+          entropy of the regime posterior, attaining its minimum value of zero
+          when the classifier is certain and its maximum value of $\ln K$ when
+          all regimes are equiprobable.
+    \item $\hat{U}_t = H_t / \ln K \in [0, 1]$ is the normalised uncertainty
+          index, scaled so that $\hat{U}_t = 0$ denotes complete certainty and
+          $\hat{U}_t = 1$ denotes maximal ignorance regardless of the number of
+          regime labels $K$.
+    \item $\mathbf{f}_t \in \mathbb{R}^d$ is the contributing feature vector
+          consumed by the regime classifier at time $t$, stored verbatim for
+          post-hoc attribution, debugging, and model monitoring purposes.
+    \item $v_t \in \mathbb{S}$ is the model version string of the regime
+          estimator that produced $\boldsymbol{\beta}_t$, enabling downstream
+          consumers to condition their behaviour on known model-specific
+          biases or calibration epochs.
 \end{enumerate}
 \end{definition}
+
+The five-component structure of $\mathcal{R}_t$ is deliberate. Storing only the MAP estimate $\hat{R}_t$ would discard the posterior's shape, making it impossible to distinguish between a confident classification and a near-uniform distribution over all regimes---two situations that demand qualitatively different downstream responses. Including the raw feature vector $\mathbf{f}_t$ as part of the state record creates a complete, self-contained audit trail: given $\mathcal{R}_t$ and the model identified by $v_t$, the regime posterior can be exactly reproduced offline without access to any other runtime state. This property is essential for regulatory auditability, for debugging anomalous trading behaviour, and for the continuous model validation processes that compare live regime outputs against retrospective ground-truth regime labels derived from realised return statistics.
 
 The MAP regime estimate is:
 \begin{equation}
     \hat{R}_t = \arg\max_{k \in \{1,\ldots,K\}} \beta_t(k).
 \end{equation}
-However, $\hat{R}_t$ alone is never passed downstream. The full
-$\boldsymbol{\beta}_t$ is always propagated so that downstream operators
-can weight their outputs by regime probability.
+Critically, $\hat{R}_t$ alone is never passed downstream as the sole regime signal. The full posterior vector $\boldsymbol{\beta}_t$ is always propagated so that downstream operators can form regime-weighted expectations of their outputs. For instance, a signal generator computing expected return $\mu_t$ would compute the regime-weighted blend $\mu_t = \sum_{k=1}^{K} \beta_t(k)\, \mu_t^{(k)}$, where $\mu_t^{(k)}$ is the expected return conditional on regime $k$ being active. This soft-assignment approach is strictly superior to hard regime switching, which introduces discontinuous jumps in strategy behaviour at regime boundaries and creates well-known problems with look-ahead bias during backtesting, since the transition points at which a hard classifier changes its output are retrospectively identifiable with far greater precision than is possible in real time.
 
 \section{Hidden Markov Model Foundation}
 
-The regime sequence $\{R_t\}_{t \geq 0}$ is modelled as a first-order
-Markov chain with transition matrix $\Pi \in \mathbb{R}^{K \times K}$:
+The regime sequence $\{R_t\}_{t \geq 0}$ is modelled as a discrete-state, first-order Markov chain with finite state space $\mathcal{S} = \{r_1, r_2, \ldots, r_K\}$ and row-stochastic transition matrix $\Pi \in \mathbb{R}^{K \times K}$:
 \begin{equation}
     P(R_{t+1} = r_j \mid R_t = r_i) = \Pi_{ij}, \qquad \sum_{j=1}^K \Pi_{ij} = 1 \quad \forall i.
 \end{equation}
-The observation model assumes that the feature vector $\mathbf{x}_t \in \mathbb{R}^d$
-is drawn from a regime-conditioned Gaussian:
+The Markov property encodes the economically motivated assumption that the regime at time $t+1$ depends on history only through the current regime $R_t$, not through the entire trajectory $\{R_s\}_{s < t}$. This is a modelling simplification; longer-range dependencies can be partially accommodated by increasing $K$ or by augmenting the state space with lagged regime indicators, but empirical studies on monthly equity data suggest that the first-order approximation captures the majority of regime persistence structure at the horizons relevant to daily trading.
+
+The transition matrix $\Pi$ encodes the persistence and typical duration of each regime. The expected sojourn time in regime $r_i$ before a transition occurs is $\mathbb{E}[\tau_i] = (1 - \Pi_{ii})^{-1}$, a quantity that is directly observable from historical data and serves as a sanity check during model validation: a bull-market regime in equity indices should have $\mathbb{E}[\tau_i]$ measured in months to years, while a crisis regime should have a shorter expected duration but a heavier tail, reflecting the possibility of prolonged distress periods such as those observed during the 2008--2009 global financial crisis or the 2020 pandemic shock. Off-diagonal elements $\Pi_{ij}$ for $i \neq j$ carry the probability of transitioning from regime $r_i$ to regime $r_j$ in a single time step; in practice, many of these entries are estimated to be very small, as direct transitions between structurally distant regimes (e.g., from a low-volatility trending regime directly to a crisis regime, bypassing an intermediate elevated-volatility regime) are relatively rare.
+
+The observation model assumes that the feature vector $\mathbf{x}_t \in \mathbb{R}^d$ is drawn from a regime-conditioned multivariate Gaussian:
 \begin{equation}
-    \mathbf{x}_t \mid R_t = r_k \;\sim\; \mathcal{N}(\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k).
+    \mathbf{x}_t \mid R_t = r_k \;\sim\; \mathcal{N}(\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k),
 \end{equation}
-The filtered belief update is:
+where $\boldsymbol{\mu}_k \in \mathbb{R}^d$ and $\boldsymbol{\Sigma}_k \in \mathbb{S}_{++}^d$ are the regime-specific mean vector and positive definite covariance matrix. The Gaussian assumption is a pragmatic choice that admits closed-form evaluation of the likelihood $p(\mathbf{x}_t \mid R_t = r_k)$ and lends itself to efficient Baum-Welch parameter estimation via the expectation-maximisation algorithm. In practice, the tails of financial return distributions are heavier than Gaussian, and regime-conditioned Student-$t$ observation models have been studied as alternatives; however, for the feature vectors used here---which include volatility estimates, momentum signals, and macro indicators rather than raw returns---the Gaussian approximation is substantially more defensible, and robustness to tail misspecification is further mitigated by the ensemble architecture described in Section~\ref{sec:regime_ensemble}.
+
+The real-time filtered belief update at each new observation $\mathbf{x}_t$ follows the standard HMM forward algorithm, which applies Bayes' rule conditioned on the Markov transition:
 \begin{equation}
     \beta_t(k) = \frac{p(\mathbf{x}_t \mid R_t = r_k)\, \sum_{i=1}^{K} \Pi_{ik}\, \beta_{t-1}(i)}
     {\displaystyle\sum_{j=1}^{K} p(\mathbf{x}_t \mid R_t = r_j)\, \sum_{i=1}^{K} \Pi_{ij}\, \beta_{t-1}(i)}.
     \label{eq:hmm_filter}
 \end{equation}
+The numerator decomposes into two interpretable factors: $\sum_{i=1}^{K} \Pi_{ik}\, \beta_{t-1}(i)$ is the one-step-ahead predictive probability of being in regime $r_k$ at time $t$, obtained by marginalising the previous posterior through the transition matrix, and $p(\mathbf{x}_t \mid R_t = r_k)$ is the likelihood of the observed feature vector under the emission model for regime $r_k$. The denominator is the total predictive likelihood, serving as the normalisation constant that ensures $\boldsymbol{\beta}_t \in \Delta^{K-1}$. This recursive update is $\mathcal{O}(K^2 d)$ per time step, making it computationally tractable even for large feature dimensions $d$ and moderately large regime counts $K \leq 12$.
+
+Model parameters $\theta = \{\Pi, \{\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k\}_{k=1}^K\}$ are estimated offline via the Baum-Welch algorithm applied to a training corpus spanning at least one full market cycle, ideally encompassing multiple distinct volatility and trend regimes. The resulting parameter estimates are treated as fixed during live operation and refreshed on a scheduled cadence, with the model version string $v_t$ updated upon each re-estimation. A shadow deployment infrastructure runs the newly estimated model in parallel for a configurable validation period before it replaces the production model, preventing silent degradation from parameter drift.
 
 \section{Multi-Model Regime Ensemble}
+\label{sec:regime_ensemble}
 
-The platform runs multiple independent regime estimators in parallel:
+No single modelling approach to regime identification is universally dominant across all market conditions, feature sets, and estimation horizons. Gaussian HMMs are well-suited to capturing slow-moving, persistent structural shifts but can be slow to respond to sudden regime transitions, particularly in crisis periods where the feature distribution shifts abruptly and the filtered belief update requires several observations before the posterior concentrates on the new regime. Threshold-based classifiers respond immediately to threshold crossings in observable stress indicators but are brittle to the specific threshold values chosen and can generate spurious regime switches during brief, transient spikes in those indicators. Machine-learning classifiers can exploit non-linear interactions among high-dimensional feature sets that are invisible to parametric models, but they require careful regularisation to avoid overfitting to historical crisis episodes that may not repeat in precisely the same form. Cross-asset correlation regime detectors capture systemic risk propagation dynamics that are invisible to single-asset feature sets, but they require sufficient cross-sectional breadth to be statistically reliable and are inherently lagging due to the rolling estimation windows required. For these reasons, the platform runs four complementary regime estimators in parallel, each contributing an independent posterior distribution over the same $K$-label regime space:
+
 \begin{enumerate}
-    \item A Gaussian mixture HMM fitted on price-based features
-          (volatility, momentum, volume).
-    \item A threshold-based regime classifier using the VIX, credit
-          spreads, and yield curve slope.
-    \item A machine-learning classifier (gradient boosting) trained
-          on macroeconomic features.
-    \item A rolling-window correlation regime detector that identifies
-          structural breaks in cross-asset correlations.
+    \item \textbf{Gaussian Mixture HMM.} A Hidden Markov Model with Gaussian mixture emission densities, fitted on a $d_1$-dimensional price-based feature vector encompassing realised volatility at multiple horizons (5-day, 21-day, 63-day), signed momentum at those same horizons, volume-weighted average price deviation from moving averages, and the ratio of upward to downward daily closes over rolling windows. The mixture emission model, with $M$ components per regime, relaxes the unimodal Gaussian constraint and accommodates the multimodal feature distributions that arise when a single economic regime label subsumes structurally distinct sub-periods.
+
+    \item \textbf{Threshold-Based Macro Stress Classifier.} A rule-based regime classifier that maps observable macro-financial stress indicators to regime labels via learned threshold functions. The primary indicators include the CBOE Volatility Index (VIX) and its term structure (VIX3M/VIX ratio), investment-grade and high-yield credit spreads, the slope and curvature of the US Treasury yield curve, and the TED spread as a measure of interbank funding stress. Thresholds are calibrated on historical data using isotonic regression to respect the natural ordering of stress levels across regime labels. This classifier has zero latency relative to the HMM's multi-step belief convergence and serves as an early-warning layer in crisis onset scenarios.
+
+    \item \textbf{Gradient-Boosted Macro Classifier.} A supervised gradient boosting classifier (XGBoost with depth-limited trees and $\ell_2$ regularisation) trained on a $d_3$-dimensional macroeconomic feature vector that includes industrial production growth, PMI survey readings, leading economic index components, consumer confidence indices, housing starts, and labour market indicators. The training labels are derived from retrospective regime annotations produced by a panel of domain experts cross-validated against quantitative regime clustering on realised return data. Probabilistic outputs are obtained via Platt scaling applied to the raw classifier scores, yielding calibrated posterior probabilities that are directly comparable to the HMM and threshold classifier outputs.
+
+    \item \textbf{Rolling-Window Correlation Regime Detector.} A structural break detector that operates on the $(n \times n)$ cross-asset realised correlation matrix $\mathbf{C}_t$, estimated over a rolling window of $\tau$ trading days using the DCC-GARCH framework to control for heteroskedasticity-induced correlation distortion. Regime transitions are detected by monitoring the Frobenius-norm distance $\|\mathbf{C}_t - \mathbf{C}_{t-\tau}\|_F$ and the leading eigenvalue $\lambda_1(\mathbf{C}_t)$, which measures the degree of synchronisation across assets and is known to spike sharply during systemic risk episodes. This detector is particularly sensitive to the onset of correlation breakdowns---periods during which historically low-correlated assets suddenly co-move, eliminating the diversification benefits assumed by portfolio construction models calibrated in normal regimes.
 \end{enumerate}
-The disagreement between estimators is computed as the pairwise
-Jensen-Shannon divergence between their output distributions. When
-disagreement exceeds a configurable threshold, the uncertainty flag
-$\hat{U}_t$ is elevated and downstream operators apply more conservative
-sizing rules.
+
+The four estimators produce independent posterior distributions $\boldsymbol{\beta}_t^{(m)}$ for $m \in \{1, 2, 3, 4\}$ over the shared $K$-label regime space. Their outputs are fused into an ensemble posterior via a learned convex combination:
+\begin{equation}
+    \boldsymbol{\beta}_t^{\mathrm{ens}} = \sum_{m=1}^{4} w_m\, \boldsymbol{\beta}_t^{(m)}, \qquad w_m \geq 0,\quad \sum_{m=1}^{4} w_m = 1,
+\end{equation}
+where the mixture weights $\{w_m\}$ are estimated by maximising the log predictive score of the ensemble on a held-out validation set. The disagreement between estimators is quantified as the average pairwise Jensen-Shannon divergence:
+\begin{equation}
+    D_t^{\mathrm{JSD}} = \frac{2}{M(M-1)} \sum_{m < m'} \mathrm{JSD}\!\left(\boldsymbol{\beta}_t^{(m)} \,\|\, \boldsymbol{\beta}_t^{(m')}\right),
+\end{equation}
+where $\mathrm{JSD}(P \| Q) = \frac{1}{2} D_{\mathrm{KL}}(P \| M) + \frac{1}{2} D_{\mathrm{KL}}(Q \| M)$ with $M = \frac{1}{2}(P + Q)$, and $D_{\mathrm{KL}}$ denotes the Kullback-Leibler divergence. The Jensen-Shannon divergence is chosen over the raw KL divergence because it is symmetric, always finite (even when one distribution assigns zero probability to a label that another assigns positive probability), and bounded in $[0, \ln 2]$, making it amenable to threshold-based flagging. When $D_t^{\mathrm{JSD}}$ exceeds a configurable threshold $\delta_{\mathrm{JSD}}$, the normalised uncertainty flag $\hat{U}_t$ is elevated irrespective of the entropy of the ensemble posterior itself, and all downstream operators receiving $\mathcal{R}_t$ apply more conservative position sizing, widen their stop-loss tolerances, and increase their required signal-to-noise thresholds before committing capital.
 
 \section{Regime Features}
 
@@ -1028,56 +1260,43 @@ is:
 
 \section{Transaction Cost Model}
 
-Naive backtesting that ignores transaction costs systematically overstates
-strategy performance. The platform implements a layered transaction cost model:
+Naive backtesting that ignores transaction costs systematically overstates strategy performance, often by margins large enough to render an apparently profitable strategy unprofitable in live deployment. The failure mode is well-documented in the academic literature and stems from the implicit assumption that every trade executes at the quoted mid-price with zero friction---an assumption that is never satisfied in practice. To prevent this class of overfitting, the platform implements a layered, composable transaction cost model in which every simulated order is subjected to four distinct cost components, each modelled separately and applied in sequence before the resulting net P\&L is recorded.
 
-\begin{enumerate}
-    \item \textbf{Commission}: fixed cost per trade, configurable by asset class
-          and broker tier.
-    \item \textbf{Bid-ask spread}: half-spread cost modelled from rolling
-          microstructure estimates.
-    \item \textbf{Market impact}: price impact of order execution, modelled
-          using the Almgren-Chriss square-root law:
-          \begin{equation}
-              \text{Impact} = \gamma \cdot \sigma \cdot \sqrt{\frac{V}{\text{ADV}}},
-          \end{equation}
-          where $V$ is order size, $\text{ADV}$ is average daily volume,
-          $\sigma$ is daily volatility, and $\gamma$ is a liquidity coefficient.
-    \item \textbf{Slippage}: timing slippage modelled from the historical
-          distribution of intraday price moves during the execution window.
-\end{enumerate}
+\textbf{Commission} represents the explicit, contractual cost charged by the executing broker for each completed trade. This cost is configurable at the asset-class level and further parameterised by broker tier, reflecting the reality that institutional clients operating under prime brokerage agreements face materially lower per-share or per-contract fees than retail participants. Commissions are expressed in basis points of notional value for equity and fixed-income instruments, and in per-contract dollar terms for listed derivatives. The configuration is loaded at initialisation time from a typed \texttt{CommissionSchedule} object, ensuring that any downstream change to broker terms is immediately and consistently propagated to all simulated execution paths.
+
+\textbf{Bid-ask spread} captures the implicit cost of crossing the market. Rather than treating the spread as a fixed constant---a common but inaccurate simplification---the platform estimates the half-spread dynamically from a rolling microstructure model calibrated to recent order-book data. Specifically, the half-spread $s_t$ at time $t$ is estimated as a weighted average of the Roll implied spread estimator \citep{Roll1984} and the Corwin--Schultz high-low estimator, with the weighting determined by the availability and quality of tick-level data. For each simulated order, the fill price is penalised by $s_t$ relative to the mid-price, so that a buy order executes at the ask side and a sell order executes at the bid side of the estimated spread. This approach captures the time-varying nature of liquidity costs across different market regimes and intraday periods, since spreads widen significantly during the open and close auctions, around macroeconomic announcements, and during stress episodes.
+
+\textbf{Market impact} accounts for the adverse price movement caused by the act of executing a large order relative to the prevailing liquidity. The platform models temporary market impact using the Almgren--Chriss square-root law \citep{AlmgrenChriss2001}, which has strong empirical support across asset classes and is derived from a continuous-time optimal execution framework. The impact cost assigned to an order of size $V$ executed against an instrument with average daily volume $\text{ADV}$ and daily volatility $\sigma$ is:
+\begin{equation}
+    \text{Impact}(V) = \gamma \cdot \sigma \cdot \sqrt{\frac{V}{\text{ADV}}},
+\end{equation}
+where $\gamma > 0$ is a dimensionless liquidity coefficient that is calibrated instrument-by-instrument from historical execution data or, in the absence of proprietary execution records, sourced from published empirical estimates in the market microstructure literature. The square-root functional form reflects the concavity of the price-impact schedule: doubling the order size increases costs by a factor of $\sqrt{2}$, not $2$, because larger orders tend to attract more passive liquidity as they work through the book. Permanent impact---the component of price displacement that persists after the order is complete---is modelled separately as a linear fraction $\eta \cdot V / \text{ADV}$ and is applied to the mark-to-market price of the position for all subsequent periods, correctly capturing the information signal that large trades convey to the broader market.
+
+\textbf{Slippage} models the residual timing cost that arises from the latency between a signal being generated and the order being filled. Even after accounting for the bid-ask spread and market impact, a realised fill price will typically differ from the signal price due to intraday price drift during the execution window. The platform models this component by drawing timing slippage realisations from the empirical distribution of intraday price moves observed during the execution window, conditioned on the prevailing volatility regime and time-of-day. Concretely, for each simulated order, a slippage draw $\varepsilon \sim \hat{F}_{\text{slip}}(\cdot \mid \sigma_t, \text{tod})$ is sampled from the regime-conditioned empirical distribution estimated over the trailing lookback window, and the fill price is further adjusted by $\varepsilon$. This approach captures the asymmetric and fat-tailed nature of timing slippage that is missed by Gaussian approximations, and ensures that the backtesting engine does not implicitly assume instantaneous, costless execution.
+
+The total round-trip transaction cost for a trade of size $V$ is therefore the sum of all four components, computed independently for the entry and exit legs. The \texttt{TransactionCostEngine} exposes a typed interface that accepts an \texttt{OrderIntent} and returns a \texttt{CostBreakdown} struct, making the individual cost components auditable and allowing research analysts to isolate the contribution of each layer to overall strategy drag. Strategies that remain profitable after subtracting the full layered cost model are substantially more likely to replicate that performance in live execution.
 
 \section{Walk-Forward Backtesting}
 
-Walk-forward validation partitions the data into sequential in-sample and
-out-of-sample windows. For a window of size $W$ and step size $S$:
+Walk-forward validation is the methodological standard for evaluating predictive models in financial time series, and the platform enforces it as the default validation protocol for all strategy evaluation pipelines. The core motivation is straightforward: financial return data exhibit non-stationarity, structural breaks, and slow-moving regime changes that render cross-validation schemes designed for i.i.d. data---such as $k$-fold or shuffle-split---fundamentally invalid. A model that is evaluated on data that temporally precedes its training set has implicitly been granted access to future information, a condition known as look-ahead bias, which produces wildly optimistic performance estimates that cannot be reproduced in deployment. Walk-forward validation eliminates this failure mode by enforcing strict temporal ordering: the model is always tested on data that lies entirely in the future of its training set.
 
-\begin{enumerate}
-    \item Train on $[t_0,\, t_0 + W)$.
-    \item Apply a purging window of length $P$ and embargo of length $E$
-          to prevent contamination.
-    \item Test on $[t_0 + W + P + E,\, t_0 + W + P + E + S)$.
-    \item Advance $t_0 \leftarrow t_0 + S$ and repeat.
-\end{enumerate}
+Formally, let $\mathcal{D} = \{(x_t, y_t)\}_{t=1}^{T}$ denote the full dataset ordered chronologically. The walk-forward scheme is parameterised by an in-sample window size $W$, a step size $S$, a purging window $P$, and an embargo $E$. Beginning at anchor $t_0$, the procedure iterates as follows. In the first step, the model is trained on the in-sample window $[t_0,\, t_0 + W)$, which contains $W$ consecutive observations. The training objective, regularisation hyperparameters, and feature selection are all determined exclusively from this window, with no reference to any data outside it. In the second step, a purging window of length $P$ immediately following the training set is excluded from both training and testing. The purpose of purging is to eliminate observations whose labels $y_t$ overlap in time with the training labels, a subtle but critical source of leakage identified by \citet{Lopez2018} that arises whenever the target variable is computed over a multi-period horizon, such as a five-day forward return. In the third step, an embargo of length $E$ is additionally excluded immediately after the purging window. The embargo guards against the residual autocorrelation structure of financial returns causing the model to effectively ``see'' features from the training period through their lagged influence on the test period. Only after both the purging and embargo windows have been skipped does the test window begin, spanning $[t_0 + W + P + E,\, t_0 + W + P + E + S)$. Performance metrics are recorded for this test window, and the anchor is then advanced by $t_0 \leftarrow t_0 + S$. The entire procedure repeats until the test window would exceed the end of the dataset.
 
-The purging and embargo windows are not optional. They are enforced by
-the \texttt{ValidationOperator} at each fold boundary.
+The resulting sequence of out-of-sample performance observations $\{\widehat{\text{SR}}_k\}_{k=1}^{K}$ constitutes the walk-forward performance profile, where $K = \lfloor (T - W - P - E) / S \rfloor$ is the number of folds. The platform reports the time-averaged Sharpe ratio, its standard error across folds, the fraction of folds with positive returns, and the worst-fold drawdown, providing a distributional view of strategy robustness rather than a single point estimate. Strategies with high mean Sharpe but large inter-fold variance are flagged as regime-sensitive and subjected to additional stress testing before live deployment approval.
+
+The purging and embargo windows are not optional configuration parameters; they are enforced programmatically by the \texttt{ValidationOperator} at each fold boundary. Any attempt to instantiate a walk-forward experiment without specifying non-negative values for $P$ and $E$ raises a \texttt{ValidationConfigurationError} at initialisation time. The default values are $P = 5$ trading days and $E = 2$ trading days, reflecting a five-day forward return horizon and a two-day autocorrelation decay buffer, but these defaults are overridden automatically when the \texttt{StrategyManifest} declares a different label horizon. This tight coupling between the strategy definition and the validation protocol ensures that the appropriate anti-leakage windows are always applied without requiring the researcher to manually compute and set them.
 
 \section{Monte Carlo Simulation}
 
-The Monte Carlo engine generates synthetic price paths for stress testing
-by:
+The Monte Carlo simulation engine provides a complementary stress-testing capability to the walk-forward backtester, addressing the fundamental limitation that historical data contains only one realisation of the market process. No matter how carefully a walk-forward experiment is conducted, it evaluates the strategy against a single historical path, which may be atypically benign or atypically hostile in ways that are difficult to diagnose. Monte Carlo simulation addresses this by generating a large ensemble of synthetic price paths that are statistically consistent with the estimated data-generating process but span a much wider range of market conditions than any single historical record, enabling the analyst to form a distributional view of strategy performance under genuine uncertainty about future market dynamics.
 
-\begin{enumerate}
-    \item Sampling from the estimated regime-conditioned return distribution
-          using the filtered posterior $\boldsymbol{\beta}_t$.
-    \item Drawing correlated factor shocks from the regime-conditioned
-          covariance matrix $\boldsymbol{\Sigma}^{(r)}$.
-    \item Applying fat-tail corrections via Student-$t$ residuals with
-          calibrated degrees of freedom.
-    \item Generating $N = 10{,}000$ independent paths and computing the
-          empirical CVaR directly from the resulting P\&L distribution.
-\end{enumerate}
+The engine operates in four stages. In the first stage, the regime-conditioned return distribution is estimated from the filtered posterior $\boldsymbol{\beta}_t$ produced by the Hidden Markov Model described in Chapter~5. Conditional on the current regime $r \in \{1, \ldots, K\}$, the factor return vector $\mathbf{f}_t \in \mathbb{R}^d$ is modelled as a multivariate location-scale distribution with regime-specific mean $\boldsymbol{\mu}^{(r)}$ and covariance $\boldsymbol{\Sigma}^{(r)}$. The regime probabilities at the simulation start date are drawn from the filtered posterior, so that the ensemble of paths correctly reflects the current uncertainty about which regime the market is operating in, rather than conditioning on a single point estimate of the regime state.
+
+In the second stage, correlated factor shocks are drawn jointly from the regime-conditioned covariance matrix $\boldsymbol{\Sigma}^{(r)}$ using a Cholesky decomposition. Let $\boldsymbol{\Sigma}^{(r)} = \mathbf{L}^{(r)} (\mathbf{L}^{(r)})^\top$ be the Cholesky factorisation. Each factor shock vector is constructed as $\mathbf{f}_t^{(r)} = \boldsymbol{\mu}^{(r)} + \mathbf{L}^{(r)} \mathbf{z}_t$, where $\mathbf{z}_t$ is a vector of i.i.d.\ standardised draws. This construction ensures that the cross-sectional dependence structure encoded in $\boldsymbol{\Sigma}^{(r)}$ is preserved across all simulated paths, which is essential for correctly capturing diversification effects and tail dependence during stress scenarios.
+
+In the third stage, fat-tail corrections are applied by drawing the standardised innovations $\mathbf{z}_t$ from a multivariate Student-$t$ distribution rather than from a multivariate Gaussian. The degrees-of-freedom parameter $\nu^{(r)}$ is calibrated separately for each regime by maximum likelihood estimation on the historical residuals after removing the Gaussian mean and covariance structure. Empirically, $\nu^{(r)}$ ranges from approximately $4$ in high-volatility regimes---where tail events are frequent---to $8$--$12$ in low-volatility regimes where the return distribution is closer to Gaussian. The Student-$t$ residuals introduce the excess kurtosis necessary to generate the occasional large-magnitude shocks that characterise financial markets but are systematically underrepresented in Gaussian simulations, ensuring that risk measures derived from the simulation are not overly optimistic about tail behaviour.
+
+In the fourth stage, $N = 10{,}000$ independent paths are generated by applying the above procedure sequentially over the simulation horizon $H$, with regime transitions drawn from the estimated HMM transition matrix $\mathbf{A}$ at each step. The resulting ensemble of $N$ P\&L trajectories is used to compute the empirical CVaR at confidence levels $\alpha \in \{0.95, 0.99\}$ directly from the sorted order statistics of the terminal P\&L distribution, without parametric distributional assumptions. In addition to CVaR, the engine computes the full distribution of maximum drawdown across paths, the probability of ruin (defined as the probability that the portfolio NAV falls below a configurable floor), and the expected number of margin calls under standard initial and maintenance margin rules. These outputs are surfaced through the \texttt{StressTestReport} data class and are required inputs to the pre-deployment risk approval workflow.
 
 % ============================================================
 % CHAPTER 8: POLYGLOT IMPLEMENTATION ARCHITECTURE
@@ -1273,24 +1492,154 @@ Performance regression &
 
 \section{CI/CD Pipeline Gate Sequence}
 
+The CI/CD pipeline is structured as a strict, sequential gate sequence in which each gate must pass completely before the subsequent gate is entered. No partial advancement is permitted: a single failing assertion in any gate causes the entire pipeline to be marked failed, the corresponding pull request to be blocked from merging, and a structured failure report to be emitted to the team notification channel. This design reflects a zero-tolerance policy toward defect propagation: the cost of catching a fault at the format gate is measured in seconds, whereas the cost of the same fault reaching the performance regression gate—or, critically, a live trading session—grows by several orders of magnitude. The gate sequence is therefore both an engineering discipline and a risk-management instrument.
+
 \begin{enumerate}
-    \item \textbf{Format}: All source files conform to language-specific
-          formatting standards (\texttt{black}, \texttt{clang-format},
-          \texttt{rustfmt}, \texttt{gofmt}).
-    \item \textbf{Lint}: Zero warnings from \texttt{ruff}, \texttt{clang-tidy},
-          \texttt{clippy}, and \texttt{golangci-lint}.
-    \item \textbf{Static analysis}: Zero findings from \texttt{mypy}
-          (strict mode), C++ static analyser, and Rust borrow checker.
-    \item \textbf{Build}: All language targets compile without errors or warnings.
-    \item \textbf{Unit tests}: All categories from Table~\ref{tab:testing_taxonomy}
-          pass sequentially.
-    \item \textbf{Temporal leakage gate}: \texttt{TemporalLeakageDetector} passes.
-    \item \textbf{Security scan}: Secret scanning and dependency vulnerability
-          check pass with zero critical findings.
-    \item \textbf{Performance regression}: No latency budget exceeded.
-    \item \textbf{Documentation validation}: All public interfaces have
-          docstrings; whitepaper compiles without errors.
+    \item \textbf{Format}: All source files must conform to language-specific,
+          tool-enforced formatting standards: \texttt{black} (line length 88) for
+          Python, \texttt{clang-format} (Google style, version-pinned) for C++,
+          \texttt{rustfmt} (edition 2021, \texttt{max\_width = 100}) for Rust, and
+          \texttt{gofmt} for Go. Formatting is verified by running each tool in
+          \emph{check} mode and asserting a zero-diff output. Because formatting is
+          entirely mechanical and has zero semantic content, any formatting violation
+          is unambiguously an author oversight; the gate enforces that such oversights
+          are resolved before reviewers expend attention on substantive review. All
+          formatting tool versions are pinned in the repository's \texttt{.tool-versions}
+          and \texttt{pyproject.toml} manifest files, ensuring deterministic formatting
+          across developer workstations and CI runners alike.
+
+    \item \textbf{Lint}: Zero warnings are permitted from \texttt{ruff} (configured
+          with the full \texttt{E}, \texttt{F}, \texttt{W}, \texttt{N}, \texttt{UP},
+          and \texttt{ANN} rule sets enabled), \texttt{clang-tidy} (with the
+          \texttt{modernize-*}, \texttt{readability-*}, and \texttt{performance-*}
+          check families active), \texttt{clippy} (invoked with
+          \texttt{-D warnings -D clippy::pedantic}), and \texttt{golangci-lint}
+          (running \texttt{staticcheck}, \texttt{errcheck}, \texttt{govet}, and
+          \texttt{ineffassign} at minimum). The lint gate closes an entire class of
+          latent defects—unused imports, shadowed variables, unchecked error returns,
+          unnecessary allocations, and misused APIs—before any human reviewer is
+          involved. Rule sets are reviewed and potentially extended on a quarterly
+          cadence; newly activated rules are introduced with a dedicated remediation
+          sprint to avoid gate failures on existing code.
+
+    \item \textbf{Static analysis}: Zero findings at any severity level are permitted
+          from the language-level static analysis tier. For Python, \texttt{mypy} is
+          invoked in strict mode (\texttt{--strict --disallow-any-generics
+          --warn-return-any}), requiring fully annotated signatures for all public and
+          private functions, and prohibiting implicit \texttt{Any} propagation. For
+          C++, a dedicated static analyser pass (Clang Static Analyzer or an equivalent
+          commercial tool) is run over all translation units, checking for null
+          dereferences, use-after-free, uninitialized memory reads, and integer overflow
+          paths. For Rust, the borrow checker, lifetime checker, and \texttt{unsafe}
+          block auditor are run as part of \texttt{cargo check --all-features}, and any
+          \texttt{unsafe} block introduced since the last release must be accompanied by
+          a formal safety comment documenting the invariants it relies upon. The static
+          analysis gate collectively provides a machine-verified approximation of
+          memory safety and type soundness across the entire polyglot codebase.
+
+    \item \textbf{Build}: All language targets must compile without errors or warnings
+          under a clean, hermetically isolated build environment. Build hermiticity is
+          enforced by running all compilation steps inside a pinned container image with
+          no network access and a read-only dependency cache derived from the repository's
+          lockfiles (\texttt{poetry.lock}, \texttt{Cargo.lock}, \texttt{go.sum},
+          \texttt{conanfile.lock}). Any implicit dependency on the host environment—an
+          undeclared system library, a globally installed tool, an environment variable
+          side-channel—will cause the hermetic build to fail even if the developer's
+          local build succeeds. Build warnings are treated identically to errors by
+          passing \texttt{-Werror} (C++), \texttt{RUSTFLAGS="-D warnings"} (Rust), and
+          equivalent flags for all other targets. The resulting build artefacts are
+          content-addressed and stored in the artefact registry for use by downstream
+          gates, ensuring that test gates execute against exactly the binaries that
+          passed compilation rather than rebuilding from source.
+
+    \item \textbf{Unit tests}: All test categories enumerated in
+          Table~\ref{tab:testing_taxonomy} must pass sequentially in the order listed.
+          Test execution is isolated: each test case runs in its own subprocess with a
+          freshly initialised state, a deterministic random seed derived from the test
+          name, and no shared mutable global state. Tests are further partitioned into
+          shards and executed in parallel across CI runner nodes, with shard assignment
+          determined by a consistent-hash of the test identifier to maintain
+          reproducible assignment across runs. Coverage is measured at the branch level;
+          the minimum aggregate branch coverage threshold is 90\%, and any new code
+          path introduced by a pull request that is not exercised by at least one test
+          case causes the gate to fail. Flaky tests—those that do not produce identical
+          results across three consecutive re-executions on identical inputs—are
+          automatically quarantined, filed as high-priority defects, and excluded from
+          gate coverage accounting until repaired.
+
+    \item \textbf{Temporal leakage gate}: The \texttt{TemporalLeakageDetector} is
+          executed against the full feature operator graph using the most recent
+          historical dataset partition. The detector constructs, for each operator
+          node $v$ in the directed acyclic computation graph $\mathcal{G}$, the set of
+          data dependencies $\mathcal{D}(v)$, and verifies that for every dependency
+          $d \in \mathcal{D}(v)$ with observation timestamp $\tau_d$ and operator
+          evaluation timestamp $\tau_v$, the strict inequality $\tau_d < \tau_v$ holds.
+          Any operator that consumes data with $\tau_d \geq \tau_v$—even by a single
+          millisecond—is flagged as a temporal leakage violation and the gate fails
+          immediately. In addition, the detector performs a statistical cross-validation
+          test: model performance metrics computed on the in-sample partition are
+          compared against an out-of-sample holdout, and an anomalously small
+          performance gap (below a configurable threshold $\epsilon_{\text{gap}}$)
+          triggers a leakage warning that is escalated to a human reviewer. This gate
+          is the single most important correctness gate in the pipeline, as temporal
+          leakage produces strategies that appear profitable in simulation but are
+          fundamentally non-executable in live trading.
+
+    \item \textbf{Security scan}: The security gate comprises two independent
+          sub-checks that must both pass with zero critical findings. The first
+          sub-check is secret scanning: the full repository history, including all
+          commits reachable from the pull request branch, is scanned for high-entropy
+          strings, known API key patterns, private key PEM headers, and credential
+          patterns using \texttt{trufflehog} and \texttt{gitleaks}. Any detected
+          credential—even one that has been revoked—causes an immediate gate failure
+          and triggers an automated credential rotation workflow. The second sub-check
+          is software composition analysis (SCA): all direct and transitive
+          dependencies across all language ecosystems are cross-referenced against the
+          National Vulnerability Database (NVD) and the GitHub Advisory Database.
+          Findings at CVSS severity 7.0 or above are treated as critical and block
+          the gate; findings between 4.0 and 6.9 are treated as warnings and must
+          be acknowledged with a documented risk acceptance before the gate is
+          considered passing. The SCA database is refreshed every six hours on CI
+          runners to ensure that newly published advisories are reflected promptly.
+
+    \item \textbf{Performance regression}: Each operator in the pipeline has a
+          documented $p_{99}$ latency budget specified in its interface contract,
+          expressed in microseconds. The performance regression gate executes a
+          standardised benchmark suite against the build artefacts from the Build
+          gate, using a dedicated, bare-metal benchmark runner with a fixed CPU
+          affinity mask, disabled hyper-threading, and a pinned CPU frequency governor
+          to minimise measurement variance. The $p_{99}$ latency is estimated using
+          HDR histograms over $10^5$ iterations per operator, with the first $10^3$
+          iterations discarded as JIT and cache warm-up. If any operator's measured
+          $p_{99}$ latency exceeds its budget by more than 5\%, the gate fails and
+          the pull request author receives a structured performance regression report
+          identifying the offending operator, the measured versus budgeted latency,
+          and the commit that introduced the regression (via binary search over the
+          commit history using \texttt{git bisect} executed automatically by the CI
+          system). Latency budgets are reviewed at the start of each quarter and
+          may be tightened—but never relaxed without a formal architectural review—as
+          operator implementations mature.
+
+    \item \textbf{Documentation validation}: The documentation gate enforces two
+          independent correctness properties over the codebase's documentation
+          artefacts. First, all public interfaces—functions, methods, classes,
+          modules, and configuration schema fields—must have non-empty, structurally
+          valid docstrings that include at minimum a one-sentence summary, a
+          \texttt{Parameters} section for every non-trivial argument, a
+          \texttt{Returns} section, and a \texttt{Raises} section listing all
+          documented exception types. Compliance is checked programmatically using
+          \texttt{pydocstyle} (convention \texttt{numpy}) for Python and equivalent
+          tooling for other languages. Second, this whitepaper and all companion
+          formal specification documents must compile without errors or warnings
+          using \texttt{pdflatex} or \texttt{lualatex} under a pinned \TeX{} Live
+          distribution. Broken cross-references, undefined labels, missing bibliography
+          entries, and overfull hboxes exceeding 5pt are all treated as warnings that
+          must be resolved before the gate passes. This ensures that the formal
+          documentation remains a living, compilable artefact that accurately reflects
+          the implemented system rather than drifting into obsolescence.
 \end{enumerate}
+
+
 
 % ============================================================
 % CHAPTER 10: OBSERVABILITY, PROVENANCE, AND AUDIT
@@ -1313,8 +1662,21 @@ to reconstruct, post hoc, the complete causal chain:
     \item What the resulting portfolio state was.
 \end{enumerate}
 
-Every object passing through the pipeline carries a \texttt{correlation\_id}
-that is preserved through all transformations, enabling end-to-end tracing.
+The reconstruction requirement is not merely a convenience for post-mortem debugging—it is a foundational epistemic guarantee that the platform makes to its operators, regulators, and auditors. In quantitative trading systems operating at high frequency or across multiple asset classes simultaneously, the causal pathway from a raw market datum to an executed order can traverse dozens of stateful operators, probabilistic models, and asynchronous message queues. Without a rigorous and formally specified reconstruction mechanism, any post-hoc attribution of a trading outcome to a specific model decision or data artefact becomes speculative at best and legally indefensible at worst. The platform therefore treats full causal reconstructibility as a hard invariant that must be preserved under all operating conditions, including partial node failure, network partition, operator restarts, and schema migrations.
+
+Formally, let $\mathcal{D} = \{d_1, d_2, \ldots, d_n\}$ denote the set of raw data records ingested during a session window $[t_0, t_1)$. Each record $d_i$ carries a provenance tuple $\pi(d_i) = (\texttt{source\_id}, \texttt{feed\_version}, \texttt{ingestion\_timestamp}, \texttt{checksum})$ that uniquely identifies its origin and content integrity. The platform guarantees that for every downstream artefact $a$ produced by the pipeline, there exists a computable provenance function $\Pi(a) \subseteq \mathcal{D}$ that enumerates the minimal set of raw records from which $a$ was derived. This guarantee extends transitively through all intermediate operators: if operator $O_k$ consumes artefact $a_{k-1}$ and produces $a_k$, then $\Pi(a_k) = \bigcup_{a \in \mathrm{inputs}(O_k)} \Pi(a)$, and the operator's version identifier and parameter snapshot are recorded alongside the output so that the transformation itself can be replayed deterministically.
+
+The normalisation and feature computation layer amplifies the complexity of this provenance graph considerably. A single feature vector presented to a regime classification model may depend on rolling window statistics computed over hundreds of historical bars, each of which was itself the product of corporate action adjustments, timezone normalisation, outlier truncation, and interpolation across missing values. The platform addresses this by requiring every \texttt{FeatureOperator} to emit a \texttt{FeatureLineageRecord} alongside each output batch, containing the operator class name, its semantic version, the hash of its frozen parameter configuration, the closed interval of input timestamps consumed, and the list of \texttt{correlation\_id} values for all upstream records that contributed to the computation. These lineage records are stored in a dedicated append-only lineage store, indexed by both \texttt{correlation\_id} and output feature name, enabling sub-second retrieval of the full dependency graph for any feature at any historical timestamp.
+
+The regime posterior distribution produced by the Hidden Markov Model or Bayesian switching model introduces a probabilistic dimension to the causal chain that requires careful handling. Because the posterior $P(s_t \mid \mathbf{x}_{1:t})$ is computed by a sequential inference algorithm whose state depends on the entire history of observations $\mathbf{x}_{1:t}$, reconstruction requires not only the current observation $\mathbf{x}_t$ but also the model's internal belief state at time $t-1$. The platform therefore snapshots the full belief state vector—represented as a probability simplex over the $K$ latent regime states—at every inference step and persists it to the audit store with a pointer to the model artefact (identified by its content-addressed hash in the model registry). This ensures that the exact posterior can be reproduced by re-running forward inference from the snapshotted belief state, even if the upstream observation history has been compacted or archived.
+
+Signal generation produces one or more typed signal objects, each carrying a confidence score derived from the regime posterior, the feature values, and the strategy-specific decision function. The reconstruction requirement mandates that the exact floating-point values of all inputs to the confidence scoring function be recorded, since even single-bit differences in intermediate computations can propagate through nonlinear transformations to produce materially different signal outcomes. To satisfy this requirement without incurring prohibitive storage overhead, the platform employs a selective snapshotting strategy: all inputs are hashed using a collision-resistant hash function (SHA-256), and the full input tensor is stored only when the resulting signal crosses a materiality threshold defined in the strategy configuration. For signals below the threshold, the hash alone is retained, enabling integrity verification without full replay capability. Above the threshold—that is, for any signal that influences an order decision—the complete input snapshot is mandatory and its absence is treated as a fatal audit violation.
+
+Risk evaluation applies a sequence of constraint checks and portfolio-level exposure computations to each candidate signal before authorising order submission. The reconstruction requirement for this stage demands that the exact portfolio state used as input to the risk engine—including all open positions, pending orders, margin utilisation, and drawdown watermarks—be recoverable for the timestamp at which the evaluation occurred. The platform satisfies this by maintaining a time-indexed portfolio state journal: every mutation to the portfolio state (position open, position close, fill receipt, margin call) is recorded as an immutable event in an event-sourced ledger, and the portfolio state at any past timestamp can be reconstructed by replaying the event stream up to that point. The risk evaluation record then stores only the timestamp and the hash of the reconstructed state, keeping storage costs proportional to the number of state-mutating events rather than the number of risk evaluations.
+
+Order submission and fill receipt are the two stages at which the platform's internal state interacts with the external world, and it is precisely at these boundaries that provenance chains are most vulnerable to breakage. Network failures, exchange-side rejections, partial fills, and latency-induced race conditions can all create discrepancies between the order the platform intended to submit and the order that was actually acknowledged by the broker. The platform mitigates this by treating every outbound order as a tentative event that transitions through a formally specified state machine: \texttt{PENDING\_SUBMIT} $\to$ \texttt{SUBMITTED} $\to$ \texttt{ACKNOWLEDGED} $\to$ \texttt{PARTIALLY\_FILLED} $\to$ \texttt{FILLED} (or \texttt{REJECTED} / \texttt{CANCELLED}). Each state transition is logged as an immutable audit event with a monotonically increasing sequence number, and the platform will not advance to a subsequent pipeline stage for a given \texttt{correlation\_id} until the order state machine has reached a terminal state or an explicit timeout has been recorded and escalated.
+
+Every object passing through the pipeline carries a \texttt{correlation\_id}—a UUID (version 4, randomly generated at ingestion time) that is propagated without modification through all transformations, fan-outs, and aggregations. When a single upstream event gives rise to multiple downstream artefacts (as occurs when a market data tick triggers feature recomputation for multiple strategies simultaneously), each derived artefact retains the original \texttt{correlation\_id} and additionally records a \texttt{parent\_correlation\_id} pointer forming a directed acyclic graph of causal relationships. This DAG is materialised in the audit store and can be queried using a graph traversal interface, enabling operators to answer questions of the form: ``For all orders submitted between $t_a$ and $t_b$ that resulted in a loss exceeding $\delta$ dollars, which raw data sources contributed to the signals that generated those orders, and did any of those sources share a common upstream feed that experienced anomalous latency during that interval?'' The ability to answer such queries efficiently and with formal correctness guarantees is what elevates the platform's observability infrastructure from a passive logging mechanism to an active instrument of risk governance.
 
 \section{Structured Logging Requirements}
 
@@ -1359,49 +1721,59 @@ of the audit log is detectable.
 
 \section{Environment Separation}
 
-The platform enforces strict separation between research, simulation,
-paper trading, and live environments. Environment-specific configuration
-is loaded from environment variables and validated at startup. Crosscontamination
-is prevented by:
+The platform enforces a rigorous, multi-layered separation between four distinct operational environments: \emph{research}, \emph{simulation}, \emph{paper trading}, and \emph{live production}. This separation is not merely a matter of convention or documentation; it is mechanically enforced at every level of the software stack, from the build system through to runtime assertions embedded in operator implementations. The rationale for this strictness stems from the asymmetric consequence model of trading systems: a misrouted order in production that was intended for a simulation environment can result in real financial loss, regulatory exposure, and reputational damage that far exceeds the cost of imposing robust environmental controls.
+
+Environment-specific configuration is loaded exclusively from environment variables and validated exhaustively against a typed schema at process startup. Any missing or malformed variable causes the process to abort with a structured error report before any operator is instantiated. This fail-fast posture prevents a partially-configured process from reaching a state where it might silently behave as a different environment. The schema validation is performed by a dedicated \texttt{EnvironmentBootstrapper} component that runs prior to dependency injection and operator graph construction, ensuring that no downstream component ever observes an inconsistent configuration state.
+
+Cross-contamination between environments is prevented by a defence-in-depth strategy comprising three independent enforcement layers. First, each environment maintains entirely separate configuration files, secrets stores, broker endpoint registries, and database connection pools. No file path, network socket, or storage volume is shared across environment boundaries; infrastructure-as-code tooling enforces this at the provisioning layer, and access control lists at the cloud provider level further restrict cross-environment network reachability. Second, the C++ and Rust compilation units that implement order routing and execution submission are guarded by compile-time feature flags (\texttt{\#ifdef LIVE\_EXECUTION} in C++ and Cargo feature gates in Rust) that unconditionally disable all live order-submission code paths in builds not explicitly tagged for production. This means that a simulation binary is physically incapable of submitting a live order, regardless of configuration, because the relevant code is absent from the compiled artefact. Third, every concrete implementation of \texttt{ExecutionOperator} contains a runtime assertion, evaluated on each invocation, that compares the active environment token embedded in the operator context against the environment token baked into the binary at compile time. If the two tokens disagree, the operator raises a \texttt{EnvironmentMismatchError} and halts the pipeline immediately, writing a \texttt{CRITICAL}-level audit record before terminating.
 
 \begin{enumerate}
-    \item Separate configuration files and secrets stores per environment.
-    \item Compile-time flags in C++ and Rust that disable live execution paths
-          in non-production builds.
-    \item Runtime assertion in all \texttt{ExecutionOperator} implementations
-          that the active environment matches the configured mode.
+    \item Separate configuration files and secrets stores per environment, with infrastructure-level access controls enforcing the boundary.
+    \item Compile-time flags in C++ and Rust that unconditionally exclude live execution code paths from non-production build artefacts.
+    \item Runtime assertion in all \texttt{ExecutionOperator} implementations that the active environment token matches the compiled-in environment token, with immediate pipeline halt on mismatch.
 \end{enumerate}
+
+The research environment additionally enforces read-only access to all market data stores, preventing accidental mutation of historical datasets that would corrupt the reproducibility of backtests. The simulation environment is granted write access only to ephemeral namespaces within the time-series database, and all records written therein are tagged with a \texttt{sim:} prefix that prevents them from being ingested by live data pipelines. Paper trading connects to broker sandbox APIs that are contractually guaranteed by the broker to never route orders to an exchange; the platform additionally validates, on each order acknowledgement, that the returned order identifier conforms to the sandbox identifier format defined in the broker's API specification.
 
 \section{Secret Management}
 
-No credentials, API keys, broker tokens, or database passwords appear in
-source code, configuration files, or log output. All secrets are managed via
-environment variables or a secrets manager. The CI/CD pipeline includes a
-secret-scanning gate that rejects any commit containing detected credentials.
+The platform enforces an absolute prohibition on the presence of credentials, API keys, broker authentication tokens, database passwords, cryptographic private keys, or any other secret material in source code, configuration files, build artefacts, log output, or inter-process communication payloads. This prohibition is not advisory: the CI/CD pipeline incorporates a secret-scanning gate, powered by a combination of entropy-based heuristics and a curated pattern library covering the credential formats of all brokers, cloud providers, and data vendors used by the platform. Any commit that triggers a detection is automatically rejected at the pull-request level, and the offending developer is notified with a remediation guide. The pattern library is versioned alongside the codebase and updated whenever a new credential format is introduced into the dependency graph.
+
+At runtime, secrets are sourced exclusively from two mechanisms. For local development and CI workers, secrets are injected as environment variables by the developer's shell profile or by the CI secret store (currently HashiCorp Vault, accessed via the Vault Agent Sidecar injector pattern). For production deployments, secrets are fetched at process startup by the \texttt{SecretsBootstrapper} component, which authenticates to the secrets manager using a short-lived, automatically-rotated machine identity credential issued by the cloud provider's identity and access management layer. The fetched secrets are held in memory in a \texttt{SecretString} type whose destructor overwrites the backing buffer with zeros before deallocation, reducing the window during which secret material is resident in a potentially-swappable memory page. The platform also disables core dumps in production, and the process memory lock flag (\texttt{mlockall} on Linux) is set to prevent secret-bearing pages from being swapped to disk.
+
+Secret rotation is handled without process restart: the \texttt{SecretsBootstrapper} subscribes to rotation events from the secrets manager and, upon receiving a rotation notification, fetches the new secret version and atomically replaces the in-memory reference using a reader-writer lock. Operators that hold a reference to a secret value access it through a \texttt{SecretRef} handle that dereferences through the lock on each use, ensuring that the first invocation after a rotation always observes the new value. All secret access events—including the initial fetch, each rotation, and each dereference—are recorded in the audit log with the secret's logical name and version identifier but never with the secret value itself.
 
 \section{Configuration Philosophy}
 
-All changeable parameters (risk limits, model hyperparameters, instrument
-universes, data source endpoints, simulation periods) are externalised to
-TOML or YAML configuration files. Configuration is validated against a
-schema at startup. Configuration files do not contain executable logic;
-all executable behaviour resides in source code.
+The platform draws a principled and strictly enforced boundary between \emph{behaviour}, which resides exclusively in source code, and \emph{parameters}, which reside exclusively in externalised configuration files. All changeable parameters—including risk limits per instrument and portfolio, model hyperparameters for each operator variant, instrument universe definitions, data source endpoint addresses, simulation time horizons, fee schedules, slippage model coefficients, and execution algorithm tuning constants—are expressed in TOML or YAML configuration files that are loaded at startup and never modified at runtime. The choice of TOML for operator-level configuration and YAML for infrastructure-level configuration reflects the differing readability and schema-expressiveness requirements of each layer: TOML's explicit typing and prohibition of implicit nulls reduce the risk of misconfiguration in numerically-sensitive operator parameters, while YAML's support for anchors and aliases reduces repetition in the multi-environment infrastructure configurations.
+
+Every configuration file is validated at startup against a JSON Schema document that precisely specifies the type, range, unit, and inter-field constraint for each parameter. For example, the risk configuration schema asserts that \texttt{max\_position\_fraction} must be a floating-point number in the open interval $(0, 1)$, that \texttt{max\_drawdown\_halt\_threshold} must be strictly less than \texttt{max\_drawdown\_warn\_threshold}, and that the set of instruments listed in the universe must be a non-empty subset of the instruments for which fee schedules are defined. Schema violations produce structured error messages that identify the offending field, the violated constraint, and the observed value, enabling rapid diagnosis without requiring the operator to inspect source code. The schema documents are themselves versioned and their compatibility with the running codebase is verified by a startup check that compares schema version hashes.
+
+Configuration files contain no executable logic whatsoever. Expressions, templating directives, scripting syntax, and embedded code are not permitted. This constraint is enforced by the configuration loader, which uses a strict-mode parser that rejects any input not conformable to the grammar of a pure data document. The motivation for this constraint is the reproducibility and auditability of system behaviour: a configuration file that contains executable logic can produce different effective configurations depending on the environment in which it is evaluated, undermining the guarantee that a known configuration file corresponds to a known, fixed set of parameter values. By restricting configuration to pure data, the platform ensures that a configuration file can be fully characterised by a content hash, and that two processes started with identical configuration file hashes and identical binary hashes will exhibit identical parameterisation.
 
 \section{Dependency Discipline}
 
-Before introducing any new dependency, the following questions must be
-answered affirmatively:
+The platform treats the introduction of a new third-party dependency as a significant architectural decision requiring explicit justification, not a trivial implementation convenience. This posture reflects the long-term costs that accrue from unchecked dependency growth: increased attack surface, supply-chain risk, build time inflation, licence compliance burden, and the cognitive load imposed on future maintainers who must understand each dependency's behaviour and failure modes. Every proposed new dependency must pass a six-criterion gate before it is approved for inclusion in the dependency manifest.
+
+The first criterion requires a documented demonstration that the C++ or Rust standard library does not already provide an adequate solution. Standard library facilities are preferred unconditionally because they carry no additional supply-chain risk, are subject to the most rigorous review of any code in the ecosystem, and impose no licence obligations beyond those already accepted. The second criterion requires a review of all existing approved dependencies to confirm that none of them already expose the required functionality, either directly or via a minor extension of their public interface. The third criterion requires evidence that the candidate dependency is actively maintained, defined as at least one substantive commit to its primary repository within the preceding twelve months and a responsive maintainer team with a documented process for accepting security disclosures. The licence must be compatible with the platform's own licence and with the licences of all existing dependencies, as verified by an automated licence-compatibility checker integrated into the dependency review workflow. The fourth criterion requires a scan of all known vulnerability databases (NVD, OSV, and the GitHub Advisory Database) confirming that the dependency has no open critical or high-severity vulnerabilities; any dependency with an open vulnerability of this severity is ineligible until a patched version is available and the platform has migrated to it. The fifth criterion requires a benchmark demonstrating that the runtime and compile-time costs introduced by the dependency are justified by the benefit it delivers, with specific reference to the latency budgets defined in Section~\ref{sec:performance_budgets}. The sixth criterion requires an assessment of cross-platform implications, including compatibility with all supported operating systems and processor architectures, and any platform-specific behaviour differences that could cause divergence between development and production environments.
 
 \begin{enumerate}
-    \item The standard library does not already solve the problem.
-    \item An existing dependency does not already solve the problem.
-    \item The dependency is actively maintained and has a compatible licence.
-    \item The dependency has no known critical security vulnerabilities.
-    \item The runtime and compile-time costs are justified by the benefit.
-    \item Cross-platform implications have been assessed.
+    \item The standard library does not already solve the problem, as demonstrated by explicit review of the relevant standard library documentation.
+    \item No existing approved dependency already solves the problem, as demonstrated by review of the current dependency manifest and its exposed APIs.
+    \item The dependency is actively maintained (substantive commit activity within twelve months), has a responsive security disclosure process, and carries a licence compatible with all existing dependencies and the platform's own licence.
+    \item The dependency has no open critical or high-severity vulnerabilities in NVD, OSV, or the GitHub Advisory Database as of the date of the review.
+    \item The runtime and compile-time costs introduced by the dependency are quantified by benchmark and are justified by the benefit, with explicit reference to the operator latency budgets.
+    \item Cross-platform implications have been assessed, including compatibility with all supported operating systems and architectures, and any platform-specific behavioural differences have been documented.
 \end{enumerate}
 
+Approved dependencies are pinned to exact versions in the manifest (using Cargo's \texttt{Cargo.lock} for Rust and a pip-compiled \texttt{requirements.txt} with hash verification for Python tooling), and automatic dependency update pull requests generated by Dependabot are gated on the same six-criterion review before being merged. This ensures that even routine patch-level updates receive security and compatibility scrutiny before reaching the main branch.
+
 \section{Performance Budgets}
+\label{sec:performance_budgets}
+
+The platform defines explicit, per-category latency budgets for every class of operator in the pipeline, expressed as $p_{99}$ wall-clock latency targets measured under representative production load on the reference hardware configuration. The $p_{99}$ metric is chosen rather than the mean or median because the pipeline is sensitive to tail latency: a single slow operator invocation at the $p_{99}$ or beyond will delay the entire pipeline tick, potentially causing the downstream \texttt{ExecutionOperator} to submit an order stale by one or more market data updates. The budgets are not aspirational targets but hard service-level objectives: any operator implementation that exceeds its budget at the $p_{99}$ percentile in the pre-deployment benchmark suite causes the CI pipeline to fail and blocks the release.
+
+The budget for the \texttt{DataOperator} category is set at 50 milliseconds at $p_{99}$, which is sufficient to accommodate a single round-trip network request to a co-located market data feed under normal network conditions, including the serialisation and deserialisation overhead of the chosen wire format. The \texttt{FeatureOperator} budget of 5 milliseconds reflects the fact that feature computation is performed entirely in-process on already-fetched data, and that the most computationally intensive features—rolling exponentially-weighted covariance matrices over a 252-bar lookback—have been benchmarked to complete in under 3 milliseconds on the reference hardware. The \texttt{MarketRegimeOperator} budget of 20 milliseconds accounts for the ensemble aggregation step in which outputs from multiple regime-detection sub-models (Hidden Markov Models, volatility-scaled momentum indicators, and cross-asset correlation monitors) are combined via a weighted soft-voting scheme whose weights are themselves updated on a rolling basis. The \texttt{SignalOperator} budget of 2 milliseconds per signal is the tightest non-execution budget in the pipeline and reflects the requirement that signal evaluation be reducible to a small number of vectorised floating-point operations on pre-computed feature values. Any signal design that requires iterative numerical solving or Monte Carlo sampling is categorically incompatible with this budget and must be reformulated or relegated to a lower-frequency pipeline tier. The \texttt{RiskOperator} budget of 10 milliseconds includes the time required to evaluate Conditional Value-at-Risk at the 95\% confidence level using a historical simulation over a 500-scenario window, as well as the evaluation of all per-instrument and portfolio-level hard limits. The \texttt{PortfolioOperator} budget of 15 milliseconds encompasses the convex optimisation solve for mean-variance or risk-parity portfolio construction, using a warm-started interior-point solver whose initial point is the previous period's optimal allocation; empirical benchmarks show that the solver converges in under 12 milliseconds for universes of up to 50 instruments. The \texttt{ExecutionSimulator} budget of 1 millisecond applies exclusively to the paper-trading fill simulation path, which involves no network I/O and consists solely of in-memory order-book traversal and fill model evaluation.
 
 \begin{table}[H]
 \centering
@@ -1412,13 +1784,13 @@ answered affirmatively:
 \toprule
 \textbf{Operator Category} & \textbf{$p_{99}$ Latency Budget} & \textbf{Notes} \\
 \midrule
-\texttt{DataOperator} & 50 ms & Includes network round trip. \\
-\texttt{FeatureOperator} & 5 ms & In-process computation only. \\
-\texttt{MarketRegimeOperator} & 20 ms & Includes ensemble aggregation. \\
-\texttt{SignalOperator} & 2 ms & Per signal, excluding regime. \\
-\texttt{RiskOperator} & 10 ms & Including CVaR computation. \\
-\texttt{PortfolioOperator} & 15 ms & Including optimisation solver. \\
-\texttt{ExecutionSimulator} & 1 ms & Paper fill, no network. \\
+\texttt{DataOperator} & 50 ms & Includes network round trip to co-located data feed, plus wire-format deserialisation. \\
+\texttt{FeatureOperator} & 5 ms & In-process computation only; rolling EW covariance benchmarked at $<$3 ms on reference hardware. \\
+\texttt{MarketRegimeOperator} & 20 ms & Includes HMM inference, volatility-scaled momentum evaluation, and ensemble soft-vote aggregation. \\
+\texttt{SignalOperator} & 2 ms & Per signal, excluding regime; requires signal reducibility to vectorised operations on pre-computed features. \\
+\texttt{RiskOperator} & 10 ms & Includes CVaR at 95\% over 500-scenario historical simulation window and all hard-limit evaluations. \\
+\texttt{PortfolioOperator} & 15 ms & Includes warm-started interior-point convex optimisation solve for universes up to 50 instruments. \\
+\texttt{ExecutionSimulator} & 1 ms & Paper fill only; no network I/O; in-memory order-book traversal and fill model evaluation. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1612,6 +1984,140 @@ Temporal leakage as CI gate &
 \bottomrule
 \end{tabularx}
 \end{table}
+
+
+
+% ============================================================
+% REFERENCES
+% ============================================================
+\chapter*{References}
+\addcontentsline{toc}{chapter}{References}
+
+\begin{thebibliography}{99}
+
+\bibitem{kelly1956}
+Kelly, J.~L. (1956).
+A new interpretation of information rate.
+\textit{Bell System Technical Journal}, 35(4), 917--926.
+
+\bibitem{rockafellar2000}
+Rockafellar, R.~T., \& Uryasev, S. (2000).
+Optimization of conditional value-at-risk.
+\textit{Journal of Risk}, 2(3), 21--41.
+
+\bibitem{hamilton1989}
+Hamilton, J.~D. (1989).
+A new approach to the economic analysis of nonstationary time series and the business cycle.
+\textit{Econometrica}, 57(2), 357--384.
+
+\bibitem{rabiner1989}
+Rabiner, L.~R. (1989).
+A tutorial on hidden Markov models and selected applications in speech recognition.
+\textit{Proceedings of the IEEE}, 77(2), 257--286.
+
+\bibitem{markowitz1952}
+Markowitz, H. (1952).
+Portfolio selection.
+\textit{The Journal of Finance}, 7(1), 77--91.
+
+\bibitem{blacklitterman1992}
+Black, F., \& Litterman, R. (1992).
+Global portfolio optimization.
+\textit{Financial Analysts Journal}, 48(5), 28--43.
+
+\bibitem{Lopez2018}
+Lopez de Prado, M. (2018).
+\textit{Advances in Financial Machine Learning}.
+John Wiley \& Sons.
+
+\bibitem{avellaneda2010}
+Avellaneda, M., \& Lee, J.-H. (2010).
+Statistical arbitrage in the US equities market.
+\textit{Quantitative Finance}, 10(7), 761--782.
+
+\bibitem{fama1970}
+Fama, E.~F. (1970).
+Efficient capital markets: A review of theory and empirical work.
+\textit{The Journal of Finance}, 25(2), 383--417.
+
+\bibitem{grinold1999}
+Grinold, R.~C., \& Kahn, R.~N. (1999).
+\textit{Active Portfolio Management: A Quantitative Approach for Producing Superior Returns and Controlling Risk} (2nd ed.).
+McGraw-Hill.
+
+\bibitem{engle1982}
+Engle, R.~F. (1982).
+Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation.
+\textit{Econometrica}, 50(4), 987--1007.
+
+\bibitem{bollerslev1986}
+Bollerslev, T. (1986).
+Generalized autoregressive conditional heteroskedasticity.
+\textit{Journal of Econometrics}, 31(3), 307--327.
+
+\bibitem{litterman1991}
+Litterman, R., \& Scheinkman, J. (1991).
+Common factors affecting bond returns.
+\textit{The Journal of Fixed Income}, 1(1), 54--61.
+
+\bibitem{carhart1997}
+Carhart, M.~M. (1997).
+On persistence in mutual fund performance.
+\textit{The Journal of Finance}, 52(1), 57--82.
+
+\bibitem{fama1993}
+Fama, E.~F., \& French, K.~R. (1993).
+Common risk factors in the returns on stocks and bonds.
+\textit{Journal of Financial Economics}, 33(1), 3--56.
+
+\bibitem{bishop2006}
+Bishop, C.~M. (2006).
+\textit{Pattern Recognition and Machine Learning}.
+Springer.
+
+\bibitem{goodfellow2016}
+Goodfellow, I., Bengio, Y., \& Courville, A. (2016).
+\textit{Deep Learning}.
+MIT Press.
+
+\bibitem{sutton2018}
+Sutton, R.~S., \& Barto, A.~G. (2018).
+\textit{Reinforcement Learning: An Introduction} (2nd ed.).
+MIT Press.
+
+\bibitem{nakamoto2008}
+Nakamoto, S. (2008).
+Bitcoin: A peer-to-peer electronic cash system.
+\textit{Cryptography Mailing List at metzdowd.com}.
+
+\bibitem{burns2021}
+Burns, B., Grant, B., Oppenheimer, D., Brewer, E., \& Wilkes, J. (2016).
+Borg, Omega, and Kubernetes.
+\textit{ACM Queue}, 14(1), 70--93.
+
+\bibitem{dean2004}
+Dean, J., \& Ghemawat, S. (2004).
+MapReduce: Simplified data processing on large clusters.
+\textit{Proceedings of the 6th USENIX Symposium on Operating Systems Design and Implementation (OSDI)}, 137--150.
+
+\bibitem{zaharia2016}
+Zaharia, M., Xin, R.~S., Wendell, P., Das, T., Armbrust, M., Dave, A., et~al. (2016).
+Apache Spark: A unified engine for big data processing.
+\textit{Communications of the ACM}, 59(11), 56--65.
+
+\bibitem{kleppmann2017}
+Kleppmann, M. (2017).
+\textit{Designing Data-Intensive Applications}.
+O'Reilly Media.
+
+\bibitem{fowler2002}
+Fowler, M. (2002).
+\textit{Patterns of Enterprise Application Architecture}.
+Addison-Wesley.
+
+\end{thebibliography}
+
+
 
 % ============================================================
 % CHANGELOG

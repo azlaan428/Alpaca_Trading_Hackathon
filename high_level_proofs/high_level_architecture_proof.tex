@@ -18,7 +18,7 @@
 \usepackage{float}
 \usepackage{longtable}
 \usepackage{ragged2e}
-% hypcap not needed: all tables use [H] placement where anchor adjustment is automatic
+\usepackage[all]{hypcap}    % prevents duplicate PDF anchors in [H] float environments
 \usepackage{thmtools}
 \usepackage{chngcntr}
 \counterwithout{table}{chapter}
