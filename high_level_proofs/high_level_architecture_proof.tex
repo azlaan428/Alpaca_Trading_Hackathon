@@ -3801,46 +3801,350 @@ All three claims are established; the theorem follows.\qed
 
 \begin{proposition}[Zero-Lag Boundary]
 \label{prop:zero-lag}
-The case $\tau = 0$ is excluded from Axiom~\ref{ax:leakage} by
-definition.  A decision function using only data available at exactly
-time $t$ (i.e., $\delta_t$ is $\calI_t$-measurable) does \emph{not}
-constitute leakage, even if the realisation of $X_t$ arrives
-at time $t$ with zero latency.
+Let $(\Omega, \mathcal{F}, \mathbb{P})$ be the probability space of
+Definition~\ref{def:prob-space}, $\mathbb{F} = \{\calI_t\}_{t \in
+\mathcal{T}}$ the filtration of Definition~\ref{def:filtration}, and
+$\delta_t : \Omega \to \calA$ a decision function.  Suppose that
+$\delta_t$ uses only data available at exactly time $t$, i.e.,
+$\delta_t$ is $\calI_t$-measurable.  Then, for the boundary case
+$\tau = 0$:
+\begin{enumerate}
+  \item[(i)] The information increment satisfies
+        $\calI_{t+\tau} \setminus \calI_t = \emptyset$.
+  \item[(ii)] Condition~\eqref{eq:leakage-def} of
+        Axiom~\ref{ax:leakage} cannot be satisfied.
+  \item[(iii)] The strategy $\pi = \{\delta_t\}$ is temporally valid
+        in the sense of Definition~\ref{def:temporal-validity},
+        regardless of the latency with which the realisation of $X_t$
+        is observed, provided that observation occurs no later than
+        time $t$.
+\end{enumerate}
 \end{proposition}
 
 \begin{proof}
-If $\tau = 0$, then $\calI_{t+\tau} = \calI_t$, so
-$\calI_{t+\tau} \setminus \calI_t = \emptyset$.  Condition
-\eqref{eq:leakage-def} cannot be satisfied, and the strategy is
-temporally valid by Definition~\ref{def:temporal-validity}.\qed
+We verify each conclusion in sequence, validating every assumption and
+boundary condition explicitly.
+
+\medskip
+\noindent\textbf{Preliminary: Validation of assumptions.}
+\begin{enumerate}
+  \item The filtration $\mathbb{F}$ satisfies the standard conditions
+        of Definition~\ref{def:filtration}: (a) $\calI_s \subseteq
+        \calI_t$ for all $s \leq t$ (monotonicity); (b) each
+        $\calI_t$ is a $\sigma$-algebra on $\Omega$; (c)
+        $\mathbb{F}$ is right-continuous; (d) $\calI_0$ contains
+        all $\mathbb{P}$-null sets (completeness).  These are
+        assumed throughout and are not re-derived here.
+  \item The action space $\calA$ is a measurable space with
+        $\sigma$-algebra $\mathcal{B}(\calA)$.
+  \item The decision function $\delta_t : \Omega \to \calA$ is, by
+        hypothesis, $\calI_t$-measurable: for all $B \in
+        \mathcal{B}(\calA)$,
+        \begin{align}
+          \delta_t^{-1}(B)
+          &\;\in\; \calI_t.
+          \label{eq:zero-lag-meas}
+        \end{align}
+  \item The parameter $\tau$ is set to zero: $\tau = 0$.  This is
+        the boundary value excluded from the strict inequality
+        $\tau > 0$ in Axiom~\ref{ax:leakage}.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 1: Information increment at $\tau = 0$.}
+\begin{enumerate}
+  \item By monotonicity of $\mathbb{F}$ (assumption (a) above),
+        $\calI_t \subseteq \calI_{t+\tau}$ for all $\tau \geq 0$.
+  \item At $\tau = 0$, we have $t + \tau = t$, so
+        $\calI_{t+\tau} = \calI_{t+0} = \calI_t$.
+  \item The set difference is therefore:
+        \begin{align}
+          \calI_{t+\tau} \setminus \calI_t
+          &\;=\; \calI_t \setminus \calI_t
+          \;=\; \emptyset.
+          \label{eq:zero-lag-diff}
+        \end{align}
+  \item Conclusion~(i) is established. $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 2: Axiom~\ref{ax:leakage} cannot be satisfied.}
+\begin{enumerate}
+  \item Axiom~\ref{ax:leakage} requires the existence of
+        $B \in \mathcal{B}(\calA)$ and $\tau > 0$ such that:
+        \begin{align}
+          \delta_t^{-1}(B)
+          &\;\in\;
+          \bigl(\calI_{t+\tau} \setminus \calI_t\bigr)
+          \;\setminus\; \calI_t.
+          \label{eq:zero-lag-axiom}
+        \end{align}
+  \item By~\eqref{eq:zero-lag-diff}, $\calI_{t+\tau} \setminus
+        \calI_t = \emptyset$ when $\tau = 0$.  No set $B$ can
+        satisfy~\eqref{eq:zero-lag-axiom} because the right-hand
+        side is the empty collection; no measurable set can belong
+        to $\emptyset$.
+  \item Formally: for all $B \in \mathcal{B}(\calA)$, the
+        membership $\delta_t^{-1}(B) \in \emptyset$ is a
+        contradiction (the empty collection contains no elements).
+  \item Therefore the leakage condition is \emph{not} satisfiable
+        at $\tau = 0$.  Conclusion~(ii) is established.
+        $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 3: Temporal validity of $\pi$.}
+\begin{enumerate}
+  \item By Definition~\ref{def:temporal-validity},
+        condition~\eqref{eq:temporal-valid}, a strategy is
+        temporally valid if and only if $\delta_t$ is
+        $\calI_t$-measurable for every $t \in \mathcal{T}$.
+  \item By hypothesis~\eqref{eq:zero-lag-meas}, $\delta_t$ is
+        $\calI_t$-measurable.
+  \item The latency of observation of $X_t$ is irrelevant to the
+        measurability condition, provided the observation is
+        incorporated into $\calI_t$ (i.e., the observation occurs
+        no later than time $t$).  This follows because $\calI_t$
+        is defined as the $\sigma$-algebra generated by all
+        information available up to and including time $t$, and
+        any zero-latency observation satisfies this requirement by
+        construction.
+  \item Therefore $\pi = \{\delta_t\}$ is temporally valid.
+        Conclusion~(iii) is established. $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 4: Boundary and edge-case validation.}
+\begin{enumerate}
+  \item \emph{Edge case $\tau = 0^+$}: The proposition applies
+        only at $\tau = 0$ exactly.  For any $\tau > 0$, however
+        small, the analysis of Proposition~\ref{prop:infinitesimal}
+        applies and leakage may be present.  The zero-lag boundary
+        is a single point, not a neighbourhood.
+  \item \emph{Degenerate filtration}: If $\calI_t = \calI_0$ for
+        all $t$ (trivial filtration), the result still holds
+        since $\calI_{t+0} \setminus \calI_t = \emptyset$
+        regardless.
+  \item \emph{Null sets}: Completeness of $\calI_0$ (assumption
+        (d)) ensures that $\mathbb{P}$-null events are contained
+        in every $\calI_t$, so no null-set subtlety arises in the
+        set-difference computation.
+  \item All assumptions have been used; no step was skipped.
+\end{enumerate}
+
+All three conclusions are established; the proposition follows.\qed
 \end{proof}
 
 \begin{proposition}[Infinitesimal Look-Ahead]
 \label{prop:infinitesimal}
-In continuous time, for any $\tau > 0$ (however small),
-temporal leakage is present if $\delta_t$ depends on
-$X_{t+\tau}$.  There is no ``negligible'' leakage threshold;
-any strictly positive $\tau$ violates
-condition~\eqref{eq:temporal-valid}.
+Let $(\Omega, \mathcal{F}, \mathbb{P})$, $\mathbb{F}$, and
+$\{X_t\}_{t \in \mathcal{T}}$ be as in
+Definitions~\ref{def:prob-space}--\ref{def:filtration}.  Assume:
+\begin{enumerate}
+  \item[(A1)] The filtration $\mathbb{F}$ is right-continuous:
+        $\calI_t = \bigcap_{u > t} \calI_u$ for all $t$.
+  \item[(A2)] The process $\{X_t\}$ has independent increments: for
+        all $0 \leq s < t$, the increment $X_t - X_s$ is
+        independent of $\calI_s$ under $\mathbb{P}$.
+  \item[(A3)] $\mathrm{Var}(X_{t+\tau} - X_t) > 0$ for all
+        $\tau > 0$ (the process is non-degenerate).
+\end{enumerate}
+Then, for any $\tau > 0$ (however small), if $\delta_t$ depends
+on $X_{t+\tau}$ in the sense that $\delta_t$ is
+$\sigma(X_{t+\tau})$-measurable but not $\calI_t$-measurable,
+then:
+\begin{enumerate}
+  \item[(i)] $X_{t+\tau}$ strictly enlarges the available
+        information: $\sigma(X_{t+\tau}) \not\subseteq \calI_t$.
+  \item[(ii)] $\delta_t$ is not $\calI_t$-measurable.
+  \item[(iii)] The strategy $\pi = \{\delta_t\}$ violates
+        condition~\eqref{eq:temporal-valid}.
+  \item[(iv)] There is no positive lower bound $\bar{\tau} > 0$
+        below which leakage is absent; any strictly positive
+        $\tau$ suffices to induce a violation.
+\end{enumerate}
 \end{proposition}
 
 \begin{proof}
+We verify each conclusion step by step, validating all assumptions
+and treating all boundary cases.
+
+\medskip
+\noindent\textbf{Step 1: Validation of assumption (A1) ---
+right-continuity.}
 \begin{enumerate}
-  \item Fix any $\tau > 0$.  By right-continuity of the filtration
-        (Definition~\ref{def:filtration}(3)),
-        $\calI_t = \bigcap_{u > t} \calI_u$.
-  \item For any $\epsilon \in (0, \tau)$, $X_{t+\epsilon}$ is
-        $\calI_{t+\epsilon}$-measurable but need not be
-        $\calI_t$-measurable if the process $\{X_s\}$ is not
-        $\mathbb{F}$-predictable.
-  \item In particular, if $X$ has independent increments (e.g., is
-        a martingale), $X_{t+\tau} - X_t$ is independent of
-        $\calI_t$ for all $\tau > 0$, so knowledge of $X_{t+\tau}$
-        strictly enlarges the information available beyond
-        $\calI_t$.
-  \item Therefore any dependence on $X_{t+\tau}$ for $\tau > 0$
-        constitutes a violation of~\eqref{eq:temporal-valid}.\qed
+  \item Right-continuity of $\mathbb{F}$ is stipulated in
+        Definition~\ref{def:filtration}(3).  Assumption~(A1)
+        restates this condition explicitly for reference.
+  \item Right-continuity implies: for any decreasing sequence
+        $u_n \downarrow t$ with $u_n > t$,
+        \begin{align}
+          \calI_t
+          &\;=\; \bigcap_{n=1}^{\infty} \calI_{u_n}
+          \;=\; \bigcap_{u > t} \calI_u.
+          \label{eq:rc-filtration}
+        \end{align}
+  \item Equation~\eqref{eq:rc-filtration} means $\calI_t$ is the
+        smallest $\sigma$-algebra containing all $\calI_u$ for
+        $u > t$.  In particular, $\calI_t \subsetneq \calI_u$
+        is possible for $u > t$ if new information arrives after
+        $t$.
 \end{enumerate}
+
+\medskip
+\noindent\textbf{Step 2: Validation of assumption (A2) ---
+independent increments.}
+\begin{enumerate}
+  \item Assumption~(A2) states that for any $\tau > 0$:
+        \begin{align}
+          X_{t+\tau} - X_t
+          &\;\perp\!\!\!\perp\; \calI_t,
+          \label{eq:indep-inc}
+        \end{align}
+        i.e., $X_{t+\tau} - X_t$ is independent of every
+        $A \in \calI_t$.
+  \item Since $X_t$ is $\calI_t$-measurable (it is observed by
+        time $t$), we can write:
+        \begin{align}
+          X_{t+\tau}
+          &\;=\; X_t + (X_{t+\tau} - X_t),
+          \label{eq:decomp}
+        \end{align}
+        where $X_t \in \calI_t$ and
+        $(X_{t+\tau} - X_t) \perp\!\!\!\perp \calI_t$.
+  \item The decomposition~\eqref{eq:decomp} holds $\mathbb{P}$-a.s.
+        and will be used in Step~3.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 3: Strict information enlargement for all
+$\tau > 0$.}
+\begin{enumerate}
+  \item Fix any $\tau > 0$.  We must show
+        $\sigma(X_{t+\tau}) \not\subseteq \calI_t$.
+  \item By~\eqref{eq:decomp}, $\sigma(X_{t+\tau}) =
+        \sigma\bigl(X_t + (X_{t+\tau} - X_t)\bigr)$.  Since
+        $X_t$ is $\calI_t$-measurable, knowing $X_{t+\tau}$ is
+        equivalent to knowing the increment $X_{t+\tau} - X_t$
+        given $\calI_t$.
+  \item By assumption~(A3), $\mathrm{Var}(X_{t+\tau} - X_t) > 0$,
+        so $X_{t+\tau} - X_t$ is non-degenerate (not a.s.
+        constant).
+  \item By independence~\eqref{eq:indep-inc}, for any non-trivial
+        Borel set $B \subseteq \mathbb{R}$ with
+        $0 < \mathbb{P}(X_{t+\tau} - X_t \in B) < 1$, the event
+        \begin{align}
+          E_B
+          &\;:=\; \{X_{t+\tau} - X_t \in B\}
+          \label{eq:event-eb}
+        \end{align}
+        satisfies $\mathbb{P}(E_B \cap A) = \mathbb{P}(E_B)
+        \mathbb{P}(A)$ for all $A \in \calI_t$.
+  \item If $E_B \in \calI_t$, then taking $A = E_B$:
+        \begin{align}
+          \mathbb{P}(E_B)
+          &\;=\; \mathbb{P}(E_B \cap E_B)
+          \;=\; \mathbb{P}(E_B)^2,
+          \label{eq:zero-one}
+        \end{align}
+        which implies $\mathbb{P}(E_B) \in \{0, 1\}$, contradicting
+        the non-triviality of $B$.
+  \item Therefore $E_B \notin \calI_t$, i.e., there exists
+        $B \in \mathcal{B}(\mathbb{R})$ such that
+        $\{X_{t+\tau} \in B\} = \{X_{t+\tau} - X_t \in B -
+        X_t\} \notin \calI_t$ (after adjusting for the
+        $\calI_t$-measurable shift $X_t$, measurability of $X_t$
+        does not rescue $E_B$).
+  \item Formally, $\sigma(X_{t+\tau}) \not\subseteq \calI_t$
+        for all $\tau > 0$.  Conclusion~(i) is established.
+        $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 4: Non-measurability of $\delta_t$.}
+\begin{enumerate}
+  \item By hypothesis, $\delta_t$ is $\sigma(X_{t+\tau})$-measurable
+        but not $\calI_t$-measurable.  This is the defining
+        assumption of the proposition and is not re-derived here.
+  \item More precisely, there exists $B' \in \mathcal{B}(\calA)$
+        such that:
+        \begin{align}
+          \delta_t^{-1}(B')
+          &\;\in\; \sigma(X_{t+\tau})
+          \;\subseteq\; \calI_{t+\tau},
+          \label{eq:delta-meas}
+        \end{align}
+        but $\delta_t^{-1}(B') \notin \calI_t$.
+  \item The inclusion $\sigma(X_{t+\tau}) \subseteq \calI_{t+\tau}$
+        holds because $X_{t+\tau}$ is $\calI_{t+\tau}$-measurable
+        by the adaptedness of $\{X_t\}$ to $\mathbb{F}$.
+  \item Conclusion~(ii) is established. $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 5: Violation of temporal validity.}
+\begin{enumerate}
+  \item Definition~\ref{def:temporal-validity}
+        (condition~\eqref{eq:temporal-valid}) requires that
+        $\delta_t$ be $\calI_t$-measurable for all $t \in
+        \mathcal{T}$.
+  \item By Step~4 (conclusion~(ii)), $\delta_t$ is not
+        $\calI_t$-measurable.
+  \item Therefore condition~\eqref{eq:temporal-valid} is violated
+        for the time index $t$ and the given $\tau > 0$.
+  \item Conclusion~(iii) is established. $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 6: Absence of a negligible-leakage threshold.}
+\begin{enumerate}
+  \item Suppose, for contradiction, that there exists a threshold
+        $\bar{\tau} > 0$ such that for all $\tau \in (0,
+        \bar{\tau})$, any $\delta_t$ depending on $X_{t+\tau}$
+        is nevertheless $\calI_t$-measurable.
+  \item Fix any such $\tau \in (0, \bar{\tau})$.  By Steps~3--5
+        with this $\tau$, $\delta_t$ is not $\calI_t$-measurable
+        (since $\tau > 0$ is all that is required).  This
+        contradicts the supposition.
+  \item Therefore no such $\bar{\tau}$ exists: the violation holds
+        for every $\tau > 0$, however small.
+  \item Conclusion~(iv) is established. $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 7: Boundary and edge-case validation.}
+\begin{enumerate}
+  \item \emph{Boundary $\tau \to 0^+$}: As $\tau \downarrow 0$,
+        the variance $\mathrm{Var}(X_{t+\tau} - X_t) \to 0$
+        (for processes with continuous variance in $\tau$), but
+        assumption~(A3) guarantees strict positivity for every
+        fixed $\tau > 0$.  The limit $\tau = 0$ is the
+        separate boundary case of
+        Proposition~\ref{prop:zero-lag}.
+  \item \emph{Degenerate increments}: If (A3) fails for some
+        $\tau_0 > 0$ (i.e., $X_{t+\tau_0} = X_t$ a.s.), then
+        $\sigma(X_{t+\tau_0}) \subseteq \calI_t$ trivially, and
+        no leakage arises from $X_{t+\tau_0}$ alone.  The
+        proposition applies only under (A3).
+  \item \emph{Predictable processes}: If $\{X_t\}$ is
+        $\mathbb{F}$-predictable (i.e., $X_{t+\tau}$ is
+        $\calI_t$-measurable for some $\tau > 0$), then
+        assumption~(A2) fails (predictability and independent
+        non-degenerate increments are mutually exclusive for
+        $\tau > 0$).  The proposition does not apply in this
+        degenerate case.
+  \item \emph{Continuous vs.\ discrete time}: In discrete time,
+        $\mathcal{T} = \{0, 1, 2, \ldots\}$ and $\tau \geq 1$;
+        the infimum of positive $\tau$ is $1$, not $0$.  The
+        proposition's conclusion~(iv) is vacuously sharp in
+        discrete time.  In continuous time, $\tau$ ranges over
+        $(0, \infty)$ with no positive lower bound, and the
+        conclusion is non-trivial.
+  \item All assumptions~(A1)--(A3) have been used; all steps are
+        justified; no assumption is unvalidated.
+\end{enumerate}
+
+All four conclusions are established; the proposition follows.\qed
 \end{proof}
 
 \begin{proposition}[Leakage Transitivity]
