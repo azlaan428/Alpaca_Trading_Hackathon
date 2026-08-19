@@ -1,0 +1,1640 @@
+\documentclass[12pt,openany]{book}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{makecell}
+
+% ============================================================
+% GEOMETRY AND LAYOUT SETTINGS
+% ============================================================
+\geometry{margin=1in, includefoot}
+\microtypesetup{expansion=true, final}
+\singlespacing
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0.5ex plus 0.2ex minus 0.1ex}
+\setlength{\emergencystretch}{1.5em}
+\tolerance=9999
+\hbadness=10000
+\vbadness=10000
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\raggedbottom
+\sloppy
+
+% ============================================================
+% SECTION FORMATTING
+% ============================================================
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries}
+    {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{50pt}{40pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus 0.2ex}{2.3ex plus 0.2ex}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus 0.2ex}{1.5ex plus 0.2ex}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{3ex plus 0.5ex minus 0.2ex}{1.5ex plus 0.2ex}
+
+% ============================================================
+% TABLE OF CONTENTS
+% ============================================================
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\setlength{\cftchapindent}{0em}
+\setlength{\cftsecindent}{1.5em}
+
+% ============================================================
+% HEADER AND FOOTER
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\thepage}
+\fancyhead[RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14.5pt}
+
+% ============================================================
+% EQUATION SETTINGS
+% ============================================================
+\allowdisplaybreaks[3]
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
+\numberwithin{equation}{chapter}
+
+% ============================================================
+% THEOREM ENVIRONMENTS
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{principle}[theorem]{Principle}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ============================================================
+% MISC
+% ============================================================
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\renewcommand{\arraystretch}{1.3}
+\setlength{\tabcolsep}{5pt}
+\setlist[enumerate]{leftmargin=*, partopsep=0.1ex}
+
+% ============================================================
+% CUSTOM MACROS
+% ============================================================
+\newcommand{\BigO}[1]{O\!\left(#1\right)}
+\DeclareMathOperator{\CVaR}{CVaR}
+\DeclareMathOperator{\VaR}{VaR}
+\DeclareMathOperator{\Sharpe}{Sharpe}
+\DeclareMathOperator{\tr}{tr}
+
+% ============================================================
+% TITLE
+% ============================================================
+\title{%
+    \textbf{High-Level Architecture Whitepaper}\\[0.5em]
+    \large A Multi-Agent, Cross-Market Quantitative Intelligence Platform\\
+    for Fintech, Portfolio Risk, and Algorithmic Trading
+}
+\author{Hadrian Hu}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+% ============================================================
+% ABSTRACT
+% ============================================================
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This whitepaper presents the complete high-level architecture of a
+multi-agent, cross-market quantitative intelligence platform designed
+for fintech research, portfolio risk management, market-regime classification,
+hedging optimisation, and algorithmic trading. The platform is composed
+of typed, composable software \emph{Operators} and \emph{Agents} implemented
+across Python, C++, Rust, and Go, forming a coherent pipeline that transforms
+raw market data into fully provenance-tracked, risk-gated trading decisions.
+
+The architecture is structured around four financial domains: Portfolio and
+Income (Earth), Hedging and Risk Control (Air), Volatility and Options Alpha
+(Fire), and Macro and Cross-Market Dynamics (Water). These domains interact
+through a shared operator graph that enforces temporal correctness, uncertainty
+quantification, and risk-before-execution discipline at every stage.
+
+The whitepaper establishes the foundational mathematical framework governing
+each major subsystem, provides formal definitions of the operator composition
+algebra, documents the data pipeline from raw ingestion through feature
+extraction and regime inference, and specifies the testing taxonomy and
+deployment constraints that distinguish this platform from naive backtesting
+environments. The platform is explicitly designed for paper trading and
+historical simulation as its initial mode of operation; live execution is
+architecturally separated and requires deliberate, explicit enablement.
+
+\paragraph*{Keywords:} quantitative finance, multi-agent systems, operator
+composition, market regime, Bayesian inference, portfolio optimisation,
+risk management, hedging, Kelly criterion, CVaR, temporal leakage, backtesting,
+walk-forward validation, polyglot architecture, Python, C++, Rust, Go.
+
+% ============================================================
+% EXECUTIVE SUMMARY
+% ============================================================
+\chapter*{Executive Summary}
+\addcontentsline{toc}{chapter}{Executive Summary}
+
+\subparagraph{Platform Vision.}
+The platform described in this whitepaper is a cross-market adaptive financial
+decision system. Rather than deploying a single monolithic predictive model,
+it composes small, independently verifiable Operators into larger Agents and
+orchestrated systems. Every decision the platform produces is traceable,
+auditable, and reproducible from first principles.
+
+\subparagraph{Core Problem Statement.}
+Financial markets present a fundamentally ill-posed prediction problem.
+Prices are driven by the interaction of rational agents, behavioural biases,
+macroeconomic shocks, regulatory changes, and emergent systemic dynamics.
+No single model can capture all of these forces simultaneously with consistent
+accuracy. The architecture therefore does not attempt to maximise a single
+predicted profit metric. Instead, it asks: \emph{Given all information
+legitimately available at time~$t$, what market regime is most probable,
+what risks currently dominate, how uncertain is that assessment, and what
+portfolio allocation, hedge, or trading action provides the best
+risk-adjusted response?}
+
+\subparagraph{Architectural Philosophy.}
+The platform rests on six non-negotiable architectural principles:
+\begin{enumerate}
+    \item \textbf{Operator composition over monolithic models.} Complex behaviour
+          emerges from the composition of small, typed, testable units.
+    \item \textbf{Risk gates every signal.} A profitable-looking signal never
+          automatically produces an order.
+    \item \textbf{Simulation before live trading.} The platform is a research and
+          paper-trading environment first.
+    \item \textbf{Provenance is first-class.} Every decision is reconstructable
+          from its data sources, operator versions, and model outputs.
+    \item \textbf{Temporal correctness is a hard requirement.} A strategy that
+          sees future data is invalid regardless of reported profitability.
+    \item \textbf{Uncertainty is information.} Disagreement between models is
+          surfaced and acted upon, not silently collapsed.
+\end{enumerate}
+
+\subparagraph{Scope.}
+The initial platform targets historical replay, walk-forward backtesting,
+Monte Carlo simulation, stress testing, and paper execution. Live-trading
+adapters are architecturally separated and deliberately absent from the
+initial implementation scope.
+
+% ============================================================
+% KEY FINDINGS
+% ============================================================
+\chapter*{Key Findings}
+\addcontentsline{toc}{chapter}{Key Findings}
+
+\begin{table}[H]
+\centering
+\caption{Key architectural findings and their implications.}
+\label{tab:key_findings}
+\small
+\begin{tabularx}{\textwidth}{p{0.5cm} p{5.5cm} p{8.5cm}}
+\toprule
+\textbf{\#} & \textbf{Finding} & \textbf{Implication} \\
+\midrule
+1 & Agents defined as Markdown files cannot be executable. &
+    All agent capabilities must be typed source-code objects. \\
+\midrule
+2 & Candlestick patterns are features, not oracles. &
+    Feature operators compute pattern presence; predictive value
+    is determined empirically. \\
+\midrule
+3 & Market regime is a probability distribution, not a label. &
+    \texttt{MarketRegimeState} carries a probability vector,
+    confidence score, and uncertainty estimate. \\
+\midrule
+4 & Model disagreement is itself information. &
+    Disagreement metrics must be computed and surfaced, not silently
+    collapsed into a single decision. \\
+\midrule
+5 & Temporal leakage is a correctness failure. &
+    A backtest that sees future data is invalid regardless of
+    reported profitability. \\
+\midrule
+6 & Risk approval is a separate pipeline stage. &
+    \texttt{RiskOperator} may reject, modify, size, delay, or hedge
+    any proposed action. \\
+\midrule
+7 & Four languages require four defensible roles. &
+    Python = research; C++ = numerics; Rust = integrity; Go = services. \\
+\midrule
+8 & Shared schemas prevent polyglot divergence. &
+    A single language-neutral schema layer governs all shared types. \\
+\midrule
+9 & Configuration must not become a programming language. &
+    Executable logic belongs in source code; configuration is
+    declarative only. \\
+\midrule
+10 & Success is not maximum profit. &
+    Success is defensible decisions under model disagreement, regime
+    change, forecast failure, and elevated uncertainty. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% CHAPTER 1: INTRODUCTION
+% ============================================================
+\chapter{Introduction}
+
+\section{Motivation}
+
+Modern financial markets generate terabytes of structured and unstructured
+data every trading day: price ticks, order-book snapshots, options chains,
+macroeconomic releases, central bank communications, earnings announcements,
+news headlines, and satellite imagery of industrial facilities. Extracting
+actionable, risk-adjusted decisions from this information requires a
+principled engineering architecture, not merely a collection of prediction
+scripts.
+
+The dominant failure mode in quantitative finance is not model inaccuracy
+per se. Backtesting frameworks routinely produce strategies with Sharpe
+ratios above three that collapse to near zero in live trading. The root
+causes are well documented: temporal data leakage, survivorship bias,
+overfitting to in-sample regime characteristics, failure to account for
+transaction costs and market impact, and the absence of robust risk
+controls that would have prevented catastrophic drawdowns. This platform
+is designed from first principles to address each of these failure modes
+systematically.
+
+\section{Scope and Objectives}
+
+The platform described in this whitepaper has the following primary objectives:
+
+\begin{enumerate}
+    \item Provide a modular, composable operator framework that enables rapid
+          development and independent testing of quantitative strategies.
+    \item Enforce temporal correctness at the architectural level, making
+          data leakage structurally impossible rather than merely discouraged
+          by convention.
+    \item Implement a multi-model market regime engine that produces calibrated
+          probability distributions over regime states, with explicit uncertainty
+          quantification.
+    \item Gate every trading decision through a typed risk evaluation pipeline
+          before it reaches an execution layer.
+    \item Produce fully provenance-tracked outputs that allow any decision to
+          be reconstructed and audited from its raw inputs.
+    \item Support historical simulation, walk-forward backtesting, Monte Carlo
+          analysis, and paper trading as first-class operational modes.
+\end{enumerate}
+
+\section{Document Organisation}
+
+Chapter~2 describes the four-domain financial model. Chapter~3 presents
+the operator and agent composition framework. Chapter~4 covers the data
+pipeline architecture. Chapter~5 details the market regime engine.
+Chapter~6 specifies the risk management framework. Chapter~7 covers the
+execution and simulation layers. Chapter~8 addresses the polyglot
+implementation architecture. Chapter~9 describes the testing and validation
+taxonomy. Chapter~10 covers observability, provenance, and audit.
+Chapter~11 presents deployment and operational considerations.
+
+% ============================================================
+% CHAPTER 2: FOUR-DOMAIN FINANCIAL MODEL
+% ============================================================
+\chapter{The Four-Domain Financial Model}
+
+\section{Overview}
+
+The platform organises its financial scope into four conceptual domains.
+These domains are not independent applications; they are four views of
+a single coherent system. Cross-domain information flow is explicit,
+typed, and subject to the same temporal correctness requirements that
+govern within-domain computation.
+
+\begin{table}[H]
+\centering
+\caption{Summary of the four financial domains.}
+\label{tab:four_domains}
+\small
+\begin{tabularx}{\textwidth}{p{2.2cm} p{3.0cm} p{4.5cm} p{4.5cm}}
+\toprule
+\textbf{Domain} & \textbf{Theme} & \textbf{Primary Focus} & \textbf{Key Operators} \\
+\midrule
+Earth & Portfolio and Income &
+    Equity allocation, dividend income, factor exposures, long-horizon rebalancing &
+    \texttt{PortfolioOpt}, \texttt{FactorExposure}, \texttt{Rebalancing} \\
+\midrule
+Air & Hedging and Risk &
+    Options hedging, futures overlays, delta/gamma management, tail risk mitigation &
+    \texttt{HedgeOpt}, \texttt{DeltaHedge}, \texttt{TailRisk} \\
+\midrule
+Fire & Volatility and Alpha &
+    Implied volatility surfaces, vol arbitrage, options pricing, tactical alpha &
+    \texttt{VolSurface}, \texttt{SkewAnalysis}, \texttt{GammaScalp} \\
+\midrule
+Water & Macro and Cross-Market &
+    Regime classification, macro factor extraction, cross-asset correlation,
+    currency and commodity dynamics &
+    \texttt{RegimeDetect}, \texttt{MacroFactor}, \texttt{CrossAsset} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Domain Interactions}
+
+The four domains interact through a directed influence graph. Let
+$\hat{y}_t^{(i)}$ denote the aggregate signal produced by domain $i$ at
+time $t$. The cross-domain influence matrix $\Gamma \in \mathbb{R}^{4 \times 4}$
+is defined entry-wise as:
+\begin{equation}
+    \Gamma_{ij} = \frac{\partial\, \hat{y}_t^{(i)}}{\partial\, \hat{y}_t^{(j)}}, \qquad i \neq j.
+\end{equation}
+Estimation of $\Gamma$ is performed by the \texttt{CrossDomainInfluenceOperator}
+using rolling-window regression on realised returns. The matrix is
+regime-conditioned, meaning a separate $\Gamma^{(r)}$ is maintained for
+each market regime $r \in \mathcal{R}$.
+
+\subparagraph{Earth--Air linkage.}
+Portfolio allocation decisions in the Earth domain drive hedging requirements
+in the Air domain. A large equity overweight triggers a request to the
+\texttt{HedgeOptimizationOperator} for protective puts or collar structures.
+
+\subparagraph{Water--all-domains linkage.}
+The Water domain's regime classifications condition the parameters used
+by every other domain. During a high-volatility, risk-off regime, the
+Earth domain reduces equity allocation, the Air domain increases hedge
+ratios, and the Fire domain shifts from short-volatility to long-volatility
+strategies.
+
+\subparagraph{Fire--Air arbitrage.}
+Implied volatility mispricings identified by the Fire domain create hedging
+opportunities in the Air domain: overpriced puts can be sold while delta
+hedging the residual directional risk.
+
+\section{Cross-Domain Allocation}
+
+Let $\mathcal{R} = \{r_1, \ldots, r_K\}$ be the set of $K$ market regimes,
+$\boldsymbol{\mu}^{(r)} \in \mathbb{R}^4$ the regime-conditioned expected
+return vector across the four domains, and $\boldsymbol{\Sigma}^{(r)} \in
+\mathbb{R}^{4 \times 4}$ the regime-conditioned covariance matrix. The
+optimal cross-domain allocation weight vector $\boldsymbol{\alpha}^{*}$,
+constrained to the probability simplex $\Delta^3$, solves:
+\begin{equation}
+    \boldsymbol{\alpha}^{*} = \arg\max_{\boldsymbol{\alpha} \in \Delta^3}
+    \left[
+        \boldsymbol{\alpha}^\top \boldsymbol{\mu}^{(r)}
+        - \lambda\, \boldsymbol{\alpha}^\top \boldsymbol{\Sigma}^{(r)} \boldsymbol{\alpha}
+    \right],
+    \label{eq:cross_domain_alloc}
+\end{equation}
+where $\lambda > 0$ is the risk-aversion parameter. The solution is updated
+each time the posterior regime distribution $P(R_t = r_k \mid \mathbf{x}_{1:t})$
+shifts materially, as determined by the regime entropy threshold
+$\hat{U}_t > \theta_U$.
+
+% ============================================================
+% CHAPTER 3: OPERATOR AND AGENT COMPOSITION FRAMEWORK
+% ============================================================
+\chapter{Operator and Agent Composition Framework}
+
+\section{Core Abstractions}
+
+The platform's execution model is built on three nested abstractions:
+Operators, Agents, and Systems.
+
+\begin{definition}[Operator]
+An \emph{Operator} is a typed, stateless, referentially transparent function:
+\begin{equation}
+    O : \mathcal{S} \times \mathcal{I}_t \rightarrow \mathcal{S}',
+\end{equation}
+where $\mathcal{S}$ is the shared state space, $\mathcal{I}_t$ is the
+information set legitimately available at time $t$, and $\mathcal{S}'$ is
+the output state space. An Operator must satisfy:
+\begin{enumerate}
+    \item \emph{Temporal validity}: $O(s, \mathcal{I}_t) \in \sigma(\mathcal{I}_t)$
+          for all $s \in \mathcal{S}$, $t \in \mathcal{T}$.
+    \item \emph{Referential transparency}: identical inputs produce identical outputs.
+    \item \emph{Failure transparency}: errors are surfaced as typed failure objects,
+          not silently swallowed.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Agent]
+An \emph{Agent} is a named, versioned composition of Operators:
+\begin{equation}
+    A = (O_1, O_2, \ldots, O_k, \mathbf{w}),
+\end{equation}
+where $\mathbf{w} \in \Delta^{k-1}$ is a weight vector on the $(k-1)$-dimensional
+probability simplex. The aggregated output is:
+\begin{equation}
+    \hat{y}_t = \sum_{i=1}^{k} w_i \cdot O_i(s, \mathcal{I}_t).
+\end{equation}
+\end{definition}
+
+\begin{definition}[System]
+A \emph{System} is an orchestrated collection of Agents whose dependency
+graph forms a directed acyclic graph (DAG). A topological execution order
+$\tau : V \rightarrow \{1, \ldots, |V|\}$ satisfies:
+\begin{equation}
+    (O_i, O_j) \in E \implies \tau(O_i) < \tau(O_j).
+\end{equation}
+\end{definition}
+
+\section{Operator Taxonomy}
+
+\begin{table}[H]
+\centering
+\caption{Primary operator categories and their responsibilities.}
+\label{tab:operator_taxonomy}
+\small
+\begin{tabularx}{\textwidth}{p{4.0cm} p{10.5cm}}
+\toprule
+\textbf{Operator Category} & \textbf{Responsibility} \\
+\midrule
+\texttt{DataOperator} &
+    Ingests and validates raw market data from exchanges, data vendors,
+    and alternative data sources. Enforces schema compliance and
+    provenance tagging. \\
+\midrule
+\texttt{FeatureOperator} &
+    Transforms validated, normalised data into typed feature vectors.
+    Includes technical indicators, candlestick pattern detectors,
+    volatility estimators, and factor exposures. \\
+\midrule
+\texttt{MarketRegimeOperator} &
+    Classifies the current market state into a probability distribution
+    over regime labels. Outputs \texttt{MarketRegimeState} with
+    posterior probabilities, confidence, and uncertainty. \\
+\midrule
+\texttt{SignalOperator} &
+    Generates directional or positioning signals in the range $[-1, 1]$
+    from feature vectors and regime state. Each signal carries an
+    associated confidence score. \\
+\midrule
+\texttt{RiskOperator} &
+    Evaluates proposed \texttt{OrderIntent} objects against multi-dimensional
+    risk constraints. May reject, resize, delay, or hedge any intent. \\
+\midrule
+\texttt{PortfolioOperator} &
+    Translates approved signals and risk assessments into target portfolio
+    weights. Enforces diversification, leverage, and concentration constraints. \\
+\midrule
+\texttt{ExecutionOperator} &
+    Simulates or routes order execution. Initial implementation targets
+    paper execution only. \\
+\midrule
+\texttt{ValidationOperator} &
+    Enforces temporal correctness, schema compliance, and invariant
+    preservation at each pipeline stage. \\
+\midrule
+\texttt{NewsOperator} &
+    Ingests, classifies, and extracts quantitative signals from
+    unstructured news and earnings communications. \\
+\midrule
+\texttt{SimulationOperator} &
+    Manages historical replay, Monte Carlo scenario generation,
+    and walk-forward test orchestration. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Operator Composition Algebra}
+
+Sequential composition of two operators $O_1$ and $O_2$ is defined as:
+\begin{equation}
+    (O_1 \circ O_2)(s, \mathcal{I}_t) = O_1\!\left(O_2(s, \mathcal{I}_t),\, \mathcal{I}_t\right).
+\end{equation}
+Composition is associative:
+\begin{equation}
+    (O_1 \circ O_2) \circ O_3 = O_1 \circ (O_2 \circ O_3).
+\end{equation}
+A valid pipeline $\Pi = O_n \circ \cdots \circ O_1$ satisfies the
+temporal validity invariant:
+\begin{equation}
+    \Pi(s, \mathcal{I}_t) \in \sigma(\mathcal{I}_t) \quad \forall\, s \in \mathcal{S},\; t \in \mathcal{T}.
+\end{equation}
+
+\section{The Full Operator Pipeline}
+
+The complete operator pipeline from raw data to risk-gated execution
+decision is illustrated conceptually in Table~\ref{tab:pipeline_stages}.
+
+\begin{table}[H]
+\centering
+\caption{End-to-end operator pipeline stages.}
+\label{tab:pipeline_stages}
+\small
+\begin{tabularx}{\textwidth}{p{0.6cm} p{3.8cm} p{10.0cm}}
+\toprule
+\textbf{Stage} & \textbf{Operator} & \textbf{Output Type and Description} \\
+\midrule
+1 & \texttt{DataOperator} &
+    \texttt{ValidatedMarketData} --- schema-validated, provenance-tagged
+    raw observations. \\
+\midrule
+2 & \texttt{NormalisationOperator} &
+    \texttt{NormalisedData} --- adjusted prices, aligned timestamps,
+    currency-normalised values, missing-value-handled series. \\
+\midrule
+3 & \texttt{FeatureOperator} &
+    \texttt{FeatureVector} --- technical indicators, volatility estimates,
+    pattern presence flags, factor exposures. \\
+\midrule
+4 & \texttt{MarketRegimeOperator} &
+    \texttt{MarketRegimeState} --- posterior probability vector over
+    regime labels, regime entropy $H_t$, normalised uncertainty $\hat{U}_t$. \\
+\midrule
+5 & \texttt{SignalOperator} &
+    \texttt{Signal} --- directional value in $[-1, 1]$ with confidence
+    $c \in (0, 1]$ and provenance metadata. \\
+\midrule
+6 & \texttt{PortfolioOperator} &
+    \texttt{OrderIntent} --- proposed target weights or order sizes
+    arising from the signal and current portfolio state. \\
+\midrule
+7 & \texttt{RiskOperator} &
+    \texttt{RiskDecision} --- approved, rejected, resized, or hedged
+    \texttt{OrderIntent} with detailed risk metadata. \\
+\midrule
+8 & \texttt{ExecutionOperator} &
+    \texttt{ExecutionRecord} --- simulated or live fill with timestamps,
+    costs, and a correlation ID linking back to stage~1. \\
+\midrule
+9 & \texttt{ValidationOperator} &
+    Cross-stage invariant check; emits \texttt{AuditRecord} for every
+    stage transition. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% CHAPTER 4: DATA PIPELINE ARCHITECTURE
+% ============================================================
+\chapter{Data Pipeline Architecture}
+
+\section{Data Categories}
+
+The platform ingests data across six primary categories:
+
+\begin{enumerate}
+    \item \textbf{Price and volume data}: OHLCV bars at multiple frequencies
+          (tick, 1-minute, 5-minute, daily), trades, quotes, and order-book
+          snapshots.
+    \item \textbf{Derivatives data}: options chains, implied volatility
+          surfaces, futures curves, and Greeks.
+    \item \textbf{Macroeconomic data}: interest rates, yield curves, inflation
+          releases, central bank communications, and employment data.
+    \item \textbf{Fundamental data}: earnings, revenue, balance sheets,
+          cash flows, dividends, and analyst estimates.
+    \item \textbf{Alternative data}: satellite imagery, credit card transactions,
+          web traffic, social sentiment, and supply chain indicators.
+    \item \textbf{News and events}: earnings announcements, regulatory filings,
+          geopolitical events, and technology news.
+\end{enumerate}
+
+\section{Provenance Requirements}
+
+Every datum used by any decision operator must carry the following provenance
+attributes:
+
+\begin{table}[H]
+\centering
+\caption{Required provenance attributes for all data objects.}
+\label{tab:provenance}
+\small
+\begin{tabularx}{\textwidth}{p{4.0cm} p{10.5cm}}
+\toprule
+\textbf{Attribute} & \textbf{Description} \\
+\midrule
+\texttt{source} & Originating data vendor or exchange identifier. \\
+\texttt{source\_timestamp} & The timestamp assigned by the data source. \\
+\texttt{ingestion\_timestamp} & The UTC wall-clock time at which the datum
+    was ingested by the platform. \\
+\texttt{normalisation\_version} & The version string of the normalisation
+    operator that processed the datum. \\
+\texttt{transformation\_version} & The version string of any feature-engineering
+    transformation applied downstream. \\
+\texttt{quality\_status} & Enumerated quality flag: \texttt{CLEAN},
+    \texttt{INTERPOLATED}, \texttt{STALE}, \texttt{SUSPECT}, \texttt{REJECTED}. \\
+\texttt{correlation\_id} & A UUID linking this datum to the decision record
+    it ultimately contributed to. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Temporal Alignment}
+
+Financial data sources operate on incompatible temporal grids. Equity
+prices are quoted on exchange calendars; futures roll on specific dates;
+macroeconomic releases arrive at irregular intervals; alternative data
+has its own update cadence. The \texttt{TemporalAlignmentOperator} is
+responsible for:
+
+\begin{enumerate}
+    \item Converting all timestamps to UTC, explicitly recording the
+          source time zone and whether daylight saving time was in effect.
+    \item Aligning data to the target frequency grid using forward-fill
+          semantics (never look-ahead interpolation).
+    \item Identifying and flagging gaps exceeding a configurable staleness
+          threshold as \texttt{STALE} quality status.
+    \item Enforcing that no datum with a source timestamp $\tau_s > t$
+          appears in the information set $\mathcal{I}_t$ used by any
+          operator at time $t$.
+\end{enumerate}
+
+\section{The Temporal Leakage Invariant}
+
+Let $\mathcal{I}_t$ denote the information set legitimately available at
+time $t$. A strategy $\pi$ is \emph{temporally valid} if and only if:
+\begin{equation}
+    \forall\, t :\quad \text{Decision}_t(\pi) \in \sigma(\mathcal{I}_t).
+\end{equation}
+A \emph{temporal leakage violation} occurs when:
+\begin{equation}
+    \exists\, t,\, \tau > 0 :\quad \text{Decision}_t(\pi)
+    \text{ depends on } \mathcal{I}_{t+\tau} \setminus \mathcal{I}_t.
+\end{equation}
+
+The most common sources of leakage are documented in Table~\ref{tab:leakage_sources}.
+
+\begin{table}[H]
+\centering
+\caption{Common sources of temporal data leakage and mitigations.}
+\label{tab:leakage_sources}
+\small
+\begin{tabularx}{\textwidth}{p{4.5cm} p{9.5cm}}
+\toprule
+\textbf{Leakage Source} & \textbf{Mitigation} \\
+\midrule
+Future price levels used in normalisation &
+    Normalise using only the rolling statistics available up to $t-1$. \\
+\midrule
+Revised macroeconomic data &
+    Use point-in-time (vintage) data series, not the latest revised release. \\
+\midrule
+Survivorship bias &
+    Include all instruments that were listed at time $t$, including
+    subsequently delisted securities. \\
+\midrule
+Train/validation contamination &
+    Enforce a purging window and embargo period around all walk-forward splits. \\
+\midrule
+Improperly adjusted prices &
+    Apply adjustments (splits, dividends) using only information known at $t$. \\
+\midrule
+Future news leakage &
+    Gate news data by ingestion timestamp, not publication date of the
+    post-processed version. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% CHAPTER 5: MARKET REGIME ENGINE
+% ============================================================
+\chapter{Market Regime Engine}
+
+\section{Motivation}
+
+Market regime is the single most important conditioning variable in any
+quantitative strategy. A momentum strategy that performs well in trending,
+low-volatility markets becomes a reliable loss generator in choppy,
+mean-reverting environments. A short-volatility strategy that earns
+steady premium in calm periods suffers catastrophic losses during
+volatility spikes. Without explicit regime awareness, strategy parameters
+optimised in one regime are silently misapplied in another.
+
+\section{Regime State Representation}
+
+\begin{definition}[MarketRegimeState]
+The \texttt{MarketRegimeState} at time $t$ is a tuple:
+\begin{equation}
+    \mathcal{R}_t = \left(
+        \boldsymbol{\beta}_t,\; H_t,\; \hat{U}_t,\; \mathbf{f}_t,\; v_t
+    \right),
+\end{equation}
+where:
+\begin{enumerate}
+    \item $\boldsymbol{\beta}_t \in \Delta^{K-1}$ is the posterior probability
+          vector over $K$ regime labels.
+    \item $H_t = -\sum_{k=1}^K \beta_t(k) \ln \beta_t(k)$ is the regime
+          entropy.
+    \item $\hat{U}_t = H_t / \ln K \in [0, 1]$ is the normalised uncertainty.
+    \item $\mathbf{f}_t$ is the contributing feature vector used by the
+          regime classifier.
+    \item $v_t$ is the model version string of the regime estimator.
+\end{enumerate}
+\end{definition}
+
+The MAP regime estimate is:
+\begin{equation}
+    \hat{R}_t = \arg\max_{k \in \{1,\ldots,K\}} \beta_t(k).
+\end{equation}
+However, $\hat{R}_t$ alone is never passed downstream. The full
+$\boldsymbol{\beta}_t$ is always propagated so that downstream operators
+can weight their outputs by regime probability.
+
+\section{Hidden Markov Model Foundation}
+
+The regime sequence $\{R_t\}_{t \geq 0}$ is modelled as a first-order
+Markov chain with transition matrix $\Pi \in \mathbb{R}^{K \times K}$:
+\begin{equation}
+    P(R_{t+1} = r_j \mid R_t = r_i) = \Pi_{ij}, \qquad \sum_{j=1}^K \Pi_{ij} = 1 \quad \forall i.
+\end{equation}
+The observation model assumes that the feature vector $\mathbf{x}_t \in \mathbb{R}^d$
+is drawn from a regime-conditioned Gaussian:
+\begin{equation}
+    \mathbf{x}_t \mid R_t = r_k \;\sim\; \mathcal{N}(\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k).
+\end{equation}
+The filtered belief update is:
+\begin{equation}
+    \beta_t(k) = \frac{p(\mathbf{x}_t \mid R_t = r_k)\, \sum_{i=1}^{K} \Pi_{ik}\, \beta_{t-1}(i)}
+    {\displaystyle\sum_{j=1}^{K} p(\mathbf{x}_t \mid R_t = r_j)\, \sum_{i=1}^{K} \Pi_{ij}\, \beta_{t-1}(i)}.
+    \label{eq:hmm_filter}
+\end{equation}
+
+\section{Multi-Model Regime Ensemble}
+
+The platform runs multiple independent regime estimators in parallel:
+\begin{enumerate}
+    \item A Gaussian mixture HMM fitted on price-based features
+          (volatility, momentum, volume).
+    \item A threshold-based regime classifier using the VIX, credit
+          spreads, and yield curve slope.
+    \item A machine-learning classifier (gradient boosting) trained
+          on macroeconomic features.
+    \item A rolling-window correlation regime detector that identifies
+          structural breaks in cross-asset correlations.
+\end{enumerate}
+The disagreement between estimators is computed as the pairwise
+Jensen-Shannon divergence between their output distributions. When
+disagreement exceeds a configurable threshold, the uncertainty flag
+$\hat{U}_t$ is elevated and downstream operators apply more conservative
+sizing rules.
+
+\section{Regime Features}
+
+\begin{table}[H]
+\centering
+\caption{Feature categories used by the market regime engine.}
+\label{tab:regime_features}
+\small
+\begin{tabularx}{\textwidth}{p{4.2cm} p{10.3cm}}
+\toprule
+\textbf{Feature Category} & \textbf{Examples} \\
+\midrule
+Trend indicators & 20/50/200-day moving average crossovers, ADX,
+    directional movement index. \\
+\midrule
+Volatility indicators & Realised volatility (1-day to 1-month),
+    implied volatility (VIX, VVIX), GARCH conditional volatility. \\
+\midrule
+Liquidity indicators & Bid-ask spreads, Amihud illiquidity ratio,
+    turnover relative to 90-day average. \\
+\midrule
+Cross-asset correlation & Rolling pairwise correlations between equities,
+    rates, credit, commodities, and currencies. \\
+\midrule
+Macroeconomic indicators & Yield curve slope (10y--2y spread), credit
+    spread (IG OAS), breakeven inflation, PMI, unemployment. \\
+\midrule
+Market microstructure & Order flow imbalance, quote stuffing frequency,
+    dark pool volume ratio, short interest. \\
+\midrule
+Dispersion indicators & Cross-sectional return dispersion, sector
+    rotation speed, factor loading stability. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% CHAPTER 6: RISK MANAGEMENT FRAMEWORK
+% ============================================================
+\chapter{Risk Management Framework}
+
+\section{The Risk-First Principle}
+
+The most dangerous failure mode in algorithmic trading is not a bad
+prediction; it is a good prediction that is acted upon without proper
+risk controls. The platform enforces the risk-first principle as an
+architectural invariant: every proposed action must pass through a
+\texttt{RiskOperator} before it reaches any execution layer. The
+\texttt{RiskOperator} is not advisory; it has veto power.
+
+\section{Position Sizing: Kelly Criterion}
+
+Given the win probability $p$ of a strategy, the loss probability
+$q = 1 - p$, and the win/loss payoff ratio $b$, the Kelly-optimal
+fraction of capital to allocate is:
+\begin{equation}
+    f^* = p - \frac{q}{b} = \frac{pb - q}{b}.
+    \label{eq:kelly}
+\end{equation}
+The second-order condition confirms this is a maximum:
+\begin{equation}
+    \frac{d^2G}{df^2} = -\frac{pb^2}{(1+bf)^2} - \frac{q}{(1-f)^2} < 0,
+\end{equation}
+where $G(f) = p \ln(1 + bf) + q\ln(1-f)$ is the expected logarithmic
+growth rate. The platform applies a fractional Kelly with parameter
+$\kappa \in (0,1]$:
+\begin{equation}
+    f = \kappa f^*,
+\end{equation}
+and always imposes a hard cap $f \leq f_{\max}$ regardless of the Kelly
+output, as a guard against estimation error in $p$ and $b$.
+
+\section{Risk Metrics}
+
+\subparagraph{Sharpe Ratio.}
+\begin{equation}
+    \Sharpe = \frac{\mathbb{E}[R_p - R_f]}{\sigma_p} \cdot \sqrt{T},
+\end{equation}
+where $R_p$ is portfolio return, $R_f$ is the risk-free rate, $\sigma_p$
+is annualised standard deviation, and $T$ is the number of periods per year.
+
+\subparagraph{Sortino Ratio.}
+\begin{equation}
+    \text{Sortino} = \frac{\mathbb{E}[R_p - R_f]}{\sigma_d} \cdot \sqrt{T},
+    \qquad
+    \sigma_d = \sqrt{\mathbb{E}\!\left[\min(R_p - R_{\mathrm{tgt}}, 0)^2\right]}.
+\end{equation}
+
+\subparagraph{Conditional Value-at-Risk.}
+For portfolio loss $L = -R_p$ at confidence level $\alpha \in (0,1)$:
+\begin{equation}
+    \VaR_\alpha = \inf\{l : P(L > l) \leq 1 - \alpha\},
+    \qquad
+    \CVaR_\alpha = \mathbb{E}[L \mid L \geq \VaR_\alpha].
+\end{equation}
+The linear programming formulation over $T$ empirical scenarios is:
+\begin{equation}
+    \CVaR_\alpha = \min_{z \in \mathbb{R}}
+    \left\{
+        z + \frac{1}{(1-\alpha)T} \sum_{t=1}^T \max(\ell_t - z, 0)
+    \right\}.
+    \label{eq:cvar_lp}
+\end{equation}
+
+\subparagraph{Maximum Drawdown.}
+\begin{equation}
+    \text{MaxDD} = \max_{t} \frac{\max_{s \leq t} W_s - W_t}{\max_{s \leq t} W_s},
+\end{equation}
+where $W_t$ is portfolio wealth at time $t$.
+
+\section{Risk Dimensions and Limits}
+
+\begin{table}[H]
+\centering
+\caption{Risk dimensions monitored by the \texttt{RiskOperator}.}
+\label{tab:risk_dimensions}
+\small
+\begin{tabularx}{\textwidth}{p{4.0cm} p{10.5cm}}
+\toprule
+\textbf{Risk Dimension} & \textbf{Measurement and Action} \\
+\midrule
+Market risk &
+    Portfolio delta, beta, and factor exposures. Excess exposure triggers
+    hedging request to \texttt{HedgeOptimizationOperator}. \\
+\midrule
+Volatility risk &
+    Ratio of current realised volatility to 90-day average. Position sizes
+    scaled inversely with volatility. \\
+\midrule
+Liquidity risk &
+    Order size relative to average daily volume. Orders exceeding 1\% of ADV
+    are split or rejected. \\
+\midrule
+Concentration risk &
+    Single-name, sector, and factor concentration limits. Breaches trigger
+    forced diversification. \\
+\midrule
+Correlation risk &
+    Rolling pairwise correlation between held positions. High correlation
+    reduces effective diversification benefit. \\
+\midrule
+Leverage &
+    Gross and net leverage relative to NAV. Hard ceiling enforced. \\
+\midrule
+Drawdown &
+    Current drawdown relative to high-water mark. Breaching soft limit
+    reduces position sizes; breaching hard limit halts new positions. \\
+\midrule
+Tail risk (CVaR) &
+    CVaR at 95\% confidence. Breaching limit halts new position-opening
+    until resolved. \\
+\midrule
+Model risk &
+    Regime uncertainty $\hat{U}_t$. When $\hat{U}_t > \theta_U$,
+    conservative sizing applies. \\
+\midrule
+Stale data risk &
+    Any input datum flagged \texttt{STALE} or \texttt{SUSPECT} triggers
+    a conservative fallback or order pause. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Minimum-Variance Hedge Ratio}
+
+The minimum-variance hedge ratio between a portfolio with return $R_V$
+and a hedge instrument with return $R_F$ is:
+\begin{equation}
+    h^* = \frac{\mathrm{Cov}(R_V, R_F)}{\mathrm{Var}(R_F)}
+        = \rho_{VF} \cdot \frac{\sigma_V}{\sigma_F},
+    \label{eq:hedge_ratio}
+\end{equation}
+with hedge effectiveness:
+\begin{equation}
+    \eta = 1 - \frac{\mathrm{Var}(R_H)}{\mathrm{Var}(R_V)} = \rho_{VF}^2.
+\end{equation}
+The \texttt{HedgeOptimizationOperator} recomputes $h^*$ dynamically
+using regime-conditioned correlation estimates from the
+\texttt{MarketRegimeOperator}.
+
+\section{Risk-Adjusted Objective Function}
+
+The platform optimises the risk-adjusted cumulative return over
+horizon $T$:
+\begin{equation}
+    \mathcal{J}(\pi) = \mathbb{E}\!\left[\sum_{t=0}^T \gamma^t r_t\right]
+    - \lambda_1 \cdot \CVaR_\alpha(\pi)
+    - \lambda_2 \cdot \text{MaxDD}(\pi),
+    \label{eq:objective}
+\end{equation}
+where $\gamma \in (0, 1]$ is the discount factor and $\lambda_1, \lambda_2 \geq 0$
+are penalty weights calibrated to the operator's risk tolerance.
+
+% ============================================================
+% CHAPTER 7: EXECUTION AND SIMULATION LAYERS
+% ============================================================
+\chapter{Execution and Simulation Layers}
+
+\section{Simulation-First Architecture}
+
+The platform is designed from the outset to operate in simulation mode.
+All execution components default to paper trading. The interface hierarchy
+is:
+
+\begin{table}[H]
+\centering
+\caption{Execution interface hierarchy.}
+\label{tab:exec_hierarchy}
+\small
+\begin{tabularx}{\textwidth}{p{4.5cm} p{10.0cm}}
+\toprule
+\textbf{Interface} & \textbf{Description} \\
+\midrule
+\texttt{ExecutionSimulator} &
+    Historical replay mode. Orders are filled at OHLCV prices with
+    configurable slippage and transaction cost models. \\
+\midrule
+\texttt{PaperBroker} &
+    Real-time paper trading mode. Orders are submitted to a
+    simulated order book with realistic latency and partial-fill modelling. \\
+\midrule
+\texttt{LiveBrokerAdapter} &
+    Live execution adapter, architecturally separated and deliberately
+    absent from the initial implementation. Requires explicit configuration
+    and environment flag to activate. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Transaction Cost Model}
+
+Naive backtesting that ignores transaction costs systematically overstates
+strategy performance. The platform implements a layered transaction cost model:
+
+\begin{enumerate}
+    \item \textbf{Commission}: fixed cost per trade, configurable by asset class
+          and broker tier.
+    \item \textbf{Bid-ask spread}: half-spread cost modelled from rolling
+          microstructure estimates.
+    \item \textbf{Market impact}: price impact of order execution, modelled
+          using the Almgren-Chriss square-root law:
+          \begin{equation}
+              \text{Impact} = \gamma \cdot \sigma \cdot \sqrt{\frac{V}{\text{ADV}}},
+          \end{equation}
+          where $V$ is order size, $\text{ADV}$ is average daily volume,
+          $\sigma$ is daily volatility, and $\gamma$ is a liquidity coefficient.
+    \item \textbf{Slippage}: timing slippage modelled from the historical
+          distribution of intraday price moves during the execution window.
+\end{enumerate}
+
+\section{Walk-Forward Backtesting}
+
+Walk-forward validation partitions the data into sequential in-sample and
+out-of-sample windows. For a window of size $W$ and step size $S$:
+
+\begin{enumerate}
+    \item Train on $[t_0,\, t_0 + W)$.
+    \item Apply a purging window of length $P$ and embargo of length $E$
+          to prevent contamination.
+    \item Test on $[t_0 + W + P + E,\, t_0 + W + P + E + S)$.
+    \item Advance $t_0 \leftarrow t_0 + S$ and repeat.
+\end{enumerate}
+
+The purging and embargo windows are not optional. They are enforced by
+the \texttt{ValidationOperator} at each fold boundary.
+
+\section{Monte Carlo Simulation}
+
+The Monte Carlo engine generates synthetic price paths for stress testing
+by:
+
+\begin{enumerate}
+    \item Sampling from the estimated regime-conditioned return distribution
+          using the filtered posterior $\boldsymbol{\beta}_t$.
+    \item Drawing correlated factor shocks from the regime-conditioned
+          covariance matrix $\boldsymbol{\Sigma}^{(r)}$.
+    \item Applying fat-tail corrections via Student-$t$ residuals with
+          calibrated degrees of freedom.
+    \item Generating $N = 10{,}000$ independent paths and computing the
+          empirical CVaR directly from the resulting P\&L distribution.
+\end{enumerate}
+
+% ============================================================
+% CHAPTER 8: POLYGLOT IMPLEMENTATION ARCHITECTURE
+% ============================================================
+\chapter{Polyglot Implementation Architecture}
+
+\section{Language Role Assignments}
+
+The platform is implemented across four languages, each assigned a
+defensible and distinct architectural role.
+
+\begin{table}[H]
+\centering
+\caption{Language role assignments and their justifications.}
+\label{tab:lang_roles}
+\small
+\begin{tabularx}{\textwidth}{p{1.8cm} p{3.8cm} p{9.0cm}}
+\toprule
+\textbf{Language} & \textbf{Primary Role} & \textbf{Justification} \\
+\midrule
+Python &
+    Research, orchestration, data science, ML inference &
+    Richest quantitative ecosystem (NumPy, pandas, scikit-learn, PyTorch).
+    Rapid strategy development and notebook-based research. Operator
+    orchestration via typed Python protocols. \\
+\midrule
+C++ &
+    Numerical kernels, pricing engines, high-throughput simulation &
+    Deterministic performance for latency-sensitive computations.
+    Mature linear algebra libraries (Eigen, BLAS). Options pricing,
+    covariance estimation, portfolio optimisation solvers. \\
+\midrule
+Rust &
+    Risk-critical infrastructure, concurrent event processing,
+    execution simulation &
+    Memory safety without garbage collection. Appropriate for the
+    execution simulation engine, order management, and any component
+    where correctness under concurrency is paramount. \\
+\midrule
+Go &
+    Network services, APIs, telemetry, operational tooling &
+    Excellent concurrency primitives, fast compilation, strong standard
+    library for network services. Appropriate for data ingestion
+    microservices, REST/gRPC APIs, and telemetry aggregation. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Shared Schema Layer}
+
+Because the platform spans four languages, shared data types must be defined
+once and generated for each language. The schema layer uses Protocol Buffers
+as the canonical definition format. Generated code is committed to the
+repository alongside the schema definitions. Manual duplication of shared
+type definitions across languages is prohibited.
+
+Core shared types include:
+
+\begin{table}[H]
+\centering
+\caption{Core shared schema types.}
+\label{tab:schemas}
+\small
+\begin{tabularx}{\textwidth}{p{4.5cm} p{10.0cm}}
+\toprule
+\textbf{Type} & \textbf{Key Fields} \\
+\midrule
+\texttt{Signal} &
+    \texttt{operator\_id}, \texttt{timestamp}, \texttt{value $\in [-1,1]$},
+    \texttt{confidence}, \texttt{regime\_id}, \texttt{correlation\_id}. \\
+\midrule
+\texttt{OrderIntent} &
+    \texttt{instrument\_id}, \texttt{side}, \texttt{quantity},
+    \texttt{signal\_id}, \texttt{risk\_budget}, \texttt{urgency}. \\
+\midrule
+\texttt{RiskDecision} &
+    \texttt{intent\_id}, \texttt{status} (APPROVED/REJECTED/RESIZED),
+    \texttt{final\_quantity}, \texttt{risk\_metrics}, \texttt{reason}. \\
+\midrule
+\texttt{ExecutionRecord} &
+    \texttt{decision\_id}, \texttt{fill\_price}, \texttt{fill\_quantity},
+    \texttt{commission}, \texttt{market\_impact}, \texttt{fill\_timestamp}. \\
+\midrule
+\texttt{MarketRegimeState} &
+    \texttt{timestamp}, \texttt{posteriors}, \texttt{entropy},
+    \texttt{normalised\_uncertainty}, \texttt{model\_version}. \\
+\midrule
+\texttt{AuditRecord} &
+    \texttt{stage}, \texttt{operator\_id}, \texttt{version},
+    \texttt{input\_hash}, \texttt{output\_hash}, \texttt{duration\_ms},
+    \texttt{correlation\_id}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Repository Directory Structure}
+
+The target repository layout follows domain-driven organisation:
+
+\begin{table}[H]
+\centering
+\caption{Top-level repository directory structure.}
+\label{tab:repo_structure}
+\small
+\begin{tabularx}{\textwidth}{p{4.5cm} p{10.0cm}}
+\toprule
+\textbf{Directory} & \textbf{Contents} \\
+\midrule
+\texttt{schemas/} & Protocol Buffer definitions for all shared types. \\
+\texttt{python/src/} & Python operator implementations, orchestration, research. \\
+\texttt{python/tests/} & Python unit, integration, and simulation tests. \\
+\texttt{cpp/include/} & C++ public headers for numerical kernels. \\
+\texttt{cpp/src/} & C++ pricing engines, optimisation solvers. \\
+\texttt{rust/crates/} & Rust crates for execution simulation and risk engine. \\
+\texttt{go/cmd/} & Go service entry points (data ingestion, API, telemetry). \\
+\texttt{go/internal/} & Go internal packages (schema adapters, middleware). \\
+\texttt{strategies/} & Strategy configuration and operator composition definitions. \\
+\texttt{simulations/} & Historical simulation configurations and scenario libraries. \\
+\texttt{dashboards/} & Performance and risk monitoring dashboard code. \\
+\texttt{docs/} & Architecture documentation, ADRs, and this whitepaper. \\
+\texttt{ci/} & CI/CD pipeline definitions and quality gate scripts. \\
+\texttt{config/} & Environment-specific configuration (TOML/YAML). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% CHAPTER 9: TESTING AND VALIDATION TAXONOMY
+% ============================================================
+\chapter{Testing and Validation Taxonomy}
+
+\section{Overview}
+
+The platform enforces a comprehensive testing taxonomy. Each test category
+targets a specific failure mode. No single test category is sufficient;
+all categories are required for a merge to be approved.
+
+\begin{table}[H]
+\centering
+\caption{Testing taxonomy: categories, targets, and mandatory gates.}
+\label{tab:testing_taxonomy}
+\small
+\begin{tabularx}{\textwidth}{p{3.8cm} p{5.2cm} p{5.5cm}}
+\toprule
+\textbf{Test Category} & \textbf{Primary Target} & \textbf{CI Gate Requirement} \\
+\midrule
+Unit correctness &
+    Individual operator calculation accuracy &
+    100\% of operator unit tests pass. \\
+\midrule
+Property correctness &
+    Mathematical invariants (bounds, monotonicity, idempotency) &
+    All invariant assertions pass on randomised inputs. \\
+\midrule
+Numerical correctness &
+    Floating-point accuracy relative to analytical solutions &
+    Maximum relative error below $10^{-8}$ for all closed-form tests. \\
+\midrule
+Temporal correctness &
+    Absence of forward-looking data in any pipeline stage &
+    \texttt{TemporalLeakageDetector} passes with zero violations. \\
+\midrule
+Integration correctness &
+    Correct data flow between composed operators &
+    All integration tests pass in isolated test environment. \\
+\midrule
+Cross-language correctness &
+    Numerical agreement between Python, C++, Rust, Go implementations &
+    Pairwise agreement within $10^{-6}$ on shared test vectors. \\
+\midrule
+Strategy correctness &
+    Strategy behaviour matches specification on canonical scenarios &
+    All named scenario tests pass. \\
+\midrule
+Risk correctness &
+    Risk operator correctly enforces all limit types &
+    All risk boundary and veto tests pass. \\
+\midrule
+Simulation correctness &
+    Deterministic replay of historical scenarios &
+    Bit-identical output on identical seed and data. \\
+\midrule
+Regression correctness &
+    No degradation of known-good historical cases &
+    All regression snapshots pass. \\
+\midrule
+Performance regression &
+    Operator latency within defined budgets &
+    No operator exceeds its $p_{99}$ latency budget. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{CI/CD Pipeline Gate Sequence}
+
+\begin{enumerate}
+    \item \textbf{Format}: All source files conform to language-specific
+          formatting standards (\texttt{black}, \texttt{clang-format},
+          \texttt{rustfmt}, \texttt{gofmt}).
+    \item \textbf{Lint}: Zero warnings from \texttt{ruff}, \texttt{clang-tidy},
+          \texttt{clippy}, and \texttt{golangci-lint}.
+    \item \textbf{Static analysis}: Zero findings from \texttt{mypy}
+          (strict mode), C++ static analyser, and Rust borrow checker.
+    \item \textbf{Build}: All language targets compile without errors or warnings.
+    \item \textbf{Unit tests}: All categories from Table~\ref{tab:testing_taxonomy}
+          pass sequentially.
+    \item \textbf{Temporal leakage gate}: \texttt{TemporalLeakageDetector} passes.
+    \item \textbf{Security scan}: Secret scanning and dependency vulnerability
+          check pass with zero critical findings.
+    \item \textbf{Performance regression}: No latency budget exceeded.
+    \item \textbf{Documentation validation}: All public interfaces have
+          docstrings; whitepaper compiles without errors.
+\end{enumerate}
+
+% ============================================================
+% CHAPTER 10: OBSERVABILITY, PROVENANCE, AND AUDIT
+% ============================================================
+\chapter{Observability, Provenance, and Audit}
+
+\section{The Reconstruction Requirement}
+
+For any decision produced by the platform at time $t$, it must be possible
+to reconstruct, post hoc, the complete causal chain:
+
+\begin{enumerate}
+    \item Which raw data were ingested, with what provenance attributes.
+    \item Which normalisation and feature operators ran, with what versions.
+    \item What regime posterior distribution was produced, by which model.
+    \item What signals were generated, with what confidence scores.
+    \item What risk evaluation was performed, with what outcome.
+    \item What order was submitted or paper-executed.
+    \item What fill was received (or simulated).
+    \item What the resulting portfolio state was.
+\end{enumerate}
+
+Every object passing through the pipeline carries a \texttt{correlation\_id}
+that is preserved through all transformations, enabling end-to-end tracing.
+
+\section{Structured Logging Requirements}
+
+The platform uses structured (JSON) logs exclusively. Every log record must
+include:
+
+\begin{table}[H]
+\centering
+\caption{Required fields in every structured log record.}
+\label{tab:log_fields}
+\small
+\begin{tabularx}{\textwidth}{p{4.2cm} p{10.3cm}}
+\toprule
+\textbf{Field} & \textbf{Description} \\
+\midrule
+\texttt{timestamp} & UTC ISO-8601 timestamp with millisecond precision. \\
+\texttt{level} & Log level: \texttt{DEBUG}, \texttt{INFO}, \texttt{WARN},
+    \texttt{ERROR}, \texttt{CRITICAL}. \\
+\texttt{operator\_id} & Unique identifier of the operator emitting the record. \\
+\texttt{version} & Operator version string. \\
+\texttt{correlation\_id} & UUID linking this record to the originating
+    pipeline invocation. \\
+\texttt{run\_id} & Identifier of the simulation run or live session. \\
+\texttt{event\_type} & Structured event type from the event taxonomy. \\
+\texttt{payload} & Event-specific structured data. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Audit Record Lifecycle}
+
+The \texttt{ValidationOperator} at each pipeline stage emits an
+\texttt{AuditRecord} that is persisted to an append-only audit log.
+The audit log is tamper-evident: each record includes a hash of the
+previous record, forming a cryptographic chain. Any post-hoc modification
+of the audit log is detectable.
+
+% ============================================================
+% CHAPTER 11: DEPLOYMENT AND OPERATIONAL CONSIDERATIONS
+% ============================================================
+\chapter{Deployment and Operational Considerations}
+
+\section{Environment Separation}
+
+The platform enforces strict separation between research, simulation,
+paper trading, and live environments. Environment-specific configuration
+is loaded from environment variables and validated at startup. Crosscontamination
+is prevented by:
+
+\begin{enumerate}
+    \item Separate configuration files and secrets stores per environment.
+    \item Compile-time flags in C++ and Rust that disable live execution paths
+          in non-production builds.
+    \item Runtime assertion in all \texttt{ExecutionOperator} implementations
+          that the active environment matches the configured mode.
+\end{enumerate}
+
+\section{Secret Management}
+
+No credentials, API keys, broker tokens, or database passwords appear in
+source code, configuration files, or log output. All secrets are managed via
+environment variables or a secrets manager. The CI/CD pipeline includes a
+secret-scanning gate that rejects any commit containing detected credentials.
+
+\section{Configuration Philosophy}
+
+All changeable parameters (risk limits, model hyperparameters, instrument
+universes, data source endpoints, simulation periods) are externalised to
+TOML or YAML configuration files. Configuration is validated against a
+schema at startup. Configuration files do not contain executable logic;
+all executable behaviour resides in source code.
+
+\section{Dependency Discipline}
+
+Before introducing any new dependency, the following questions must be
+answered affirmatively:
+
+\begin{enumerate}
+    \item The standard library does not already solve the problem.
+    \item An existing dependency does not already solve the problem.
+    \item The dependency is actively maintained and has a compatible licence.
+    \item The dependency has no known critical security vulnerabilities.
+    \item The runtime and compile-time costs are justified by the benefit.
+    \item Cross-platform implications have been assessed.
+\end{enumerate}
+
+\section{Performance Budgets}
+
+\begin{table}[H]
+\centering
+\caption{Operator latency budgets by category.}
+\label{tab:latency_budgets}
+\small
+\begin{tabularx}{\textwidth}{p{4.5cm} p{4.5cm} p{5.5cm}}
+\toprule
+\textbf{Operator Category} & \textbf{$p_{99}$ Latency Budget} & \textbf{Notes} \\
+\midrule
+\texttt{DataOperator} & 50 ms & Includes network round trip. \\
+\texttt{FeatureOperator} & 5 ms & In-process computation only. \\
+\texttt{MarketRegimeOperator} & 20 ms & Includes ensemble aggregation. \\
+\texttt{SignalOperator} & 2 ms & Per signal, excluding regime. \\
+\texttt{RiskOperator} & 10 ms & Including CVaR computation. \\
+\texttt{PortfolioOperator} & 15 ms & Including optimisation solver. \\
+\texttt{ExecutionSimulator} & 1 ms & Paper fill, no network. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% CHAPTER 12: SUMMARY OF KEY RESULTS AND FORMULAS
+% ============================================================
+\chapter{Summary of Key Results and Formulas}
+
+\begin{table}[H]
+\centering
+\caption{Summary of core mathematical formulas used across the platform (Part I).}
+\label{tab:formulas_1}
+\small
+\begin{tabularx}{\textwidth}{p{3.8cm} p{11.0cm}}
+\toprule
+\textbf{Formula} & \textbf{Expression and Context} \\
+\midrule
+Kelly fraction &
+    $f^* = p - q/b$, where $p$ is win probability, $q=1-p$, $b$ is payoff ratio.
+    Used by \texttt{PositionSizingOperator}. \\
+\midrule
+Confidence-weighted signal &
+    $S = \sum_i c_i s_i / \sum_i c_i$, with $S \in [-1,1]$.
+    Used by \texttt{ConfidenceAggregationOperator}. \\
+\midrule
+HMM belief update &
+    Equation~\eqref{eq:hmm_filter}: Bayesian filter update for regime posterior.
+    Used by \texttt{MarketRegimeOperator}. \\
+\midrule
+Regime entropy &
+    $H_t = -\sum_k \beta_t(k) \ln \beta_t(k)$, normalised as $\hat{U}_t = H_t/\ln K$.
+    Used to gate conservative sizing. \\
+\midrule
+Minimum-variance hedge ratio &
+    $h^* = \rho_{VF} \sigma_V / \sigma_F$, equation~\eqref{eq:hedge_ratio}.
+    Used by \texttt{HedgeOptimizationOperator}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Summary of core mathematical formulas used across the platform (Part II).}
+\label{tab:formulas_2}
+\small
+\begin{tabularx}{\textwidth}{p{3.8cm} p{11.0cm}}
+\toprule
+\textbf{Formula} & \textbf{Expression and Context} \\
+\midrule
+CVaR (LP formulation) &
+    Equation~\eqref{eq:cvar_lp}: $\CVaR_\alpha = \min_z \{z + \frac{1}{(1-\alpha)T}\sum_t \max(\ell_t - z, 0)\}$.
+    Used by \texttt{RiskOperator}. \\
+\midrule
+Risk-adjusted objective &
+    $\mathcal{J}(\pi) = \mathbb{E}[\sum_t \gamma^t r_t] - \lambda_1 \CVaR_\alpha - \lambda_2 \text{MaxDD}$,
+    equation~\eqref{eq:objective}. \\
+\midrule
+Cross-domain allocation &
+    $\boldsymbol{\alpha}^* = \arg\max_{\alpha \in \Delta^3}[\alpha^\top \mu^{(r)} - \lambda \alpha^\top \Sigma^{(r)} \alpha]$,
+    equation~\eqref{eq:cross_domain_alloc}. \\
+\midrule
+Market impact &
+    $\text{Impact} = \gamma \sigma \sqrt{V/\text{ADV}}$.
+    Used by \texttt{TransactionCostOperator}. \\
+\midrule
+Temporal validity invariant &
+    $\forall t: \text{Decision}_t(\pi) \in \sigma(\mathcal{I}_t)$.
+    Enforced by \texttt{TemporalLeakageDetector} CI gate. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% REFERENCES
+% ============================================================
+\chapter*{References}
+\addcontentsline{toc}{chapter}{References}
+
+\begin{enumerate}
+    \item Markowitz, H. (1952). Portfolio Selection. \textit{Journal of Finance}, 7(1), 77--91.
+    \item Kelly, J.\,L. (1956). A New Interpretation of Information Rate.
+          \textit{Bell System Technical Journal}, 35(4), 917--926.
+    \item Sharpe, W.\,F. (1966). Mutual Fund Performance.
+          \textit{Journal of Business}, 39(1), 119--138.
+    \item Sortino, F.\,A., \& van der Meer, R. (1991). Downside Risk.
+          \textit{Journal of Portfolio Management}, 17(4), 27--31.
+    \item Rockafellar, R.\,T., \& Uryasev, S. (2000). Optimisation of
+          Conditional Value-at-Risk. \textit{Journal of Risk}, 2(3), 21--41.
+    \item Hamilton, J.\,D. (1989). A New Approach to the Economic Analysis
+          of Nonstationary Time Series and the Business Cycle.
+          \textit{Econometrica}, 57(2), 357--384.
+    \item Ederington, L.\,H. (1979). The Hedging Performance of the New
+          Futures Markets. \textit{Journal of Finance}, 34(1), 157--170.
+    \item Lopez de Prado, M. (2018). \textit{Advances in Financial Machine Learning}.
+          Wiley.
+    \item Pardo, R. (2008). \textit{The Evaluation and Optimisation of Trading
+          Strategies} (2nd ed.). Wiley.
+    \item Almgren, R., \& Chriss, N. (2001). Optimal Execution of Portfolio
+          Transactions. \textit{Journal of Risk}, 3(2), 5--39.
+    \item Ben-Tal, A., \& Nemirovski, A. (1998). Robust Convex Optimisation.
+          \textit{Mathematics of Operations Research}, 23(4), 769--805.
+    \item Shannon, C.\,E. (1948). A Mathematical Theory of Communication.
+          \textit{Bell System Technical Journal}, 27(3), 379--423.
+\end{enumerate}
+
+% ============================================================
+% APPENDIX: DECISION RECONCILIATION MATRIX
+% ============================================================
+\appendix
+\chapter{Decision Reconciliation Matrix}
+
+The following table maps every major architectural decision to its
+justification, alternatives considered, and the conditions under which
+the decision should be revisited.
+
+\begin{table}[H]
+\centering
+\caption{Architectural decision reconciliation matrix (Part I).}
+\label{tab:decisions_1}
+\small
+\begin{tabularx}{\textwidth}{p{3.5cm} p{4.5cm} p{3.5cm} p{3.0cm}}
+\toprule
+\textbf{Decision} & \textbf{Justification} & \textbf{Alternatives Considered} & \textbf{Revisit Trigger} \\
+\midrule
+Operator composition over monolithic model &
+    Small typed units are independently testable and replaceable
+    without full system rewrite &
+    Single-model neural network end-to-end &
+    If composition overhead exceeds 10\% of total latency budget \\
+\midrule
+Python as research language &
+    Richest quantitative ecosystem; fastest strategy iteration &
+    Julia, R &
+    If Python runtime becomes a bottleneck for non-numerical code \\
+\midrule
+Rust for execution engine &
+    Memory safety and deterministic latency without GC pauses &
+    C++, Go &
+    If Rust ecosystem lacks required financial library support \\
+\midrule
+Protocol Buffers for shared schemas &
+    Mature, language-neutral, generates bindings for all four languages &
+    Apache Arrow, FlatBuffers, JSON Schema &
+    If schema evolution friction becomes unacceptable \\
+\midrule
+Simulation-first deployment &
+    Prevents accidental live trading; forces validation before exposure &
+    Direct live deployment with kill switch &
+    Never; live trading always requires explicit deliberate enablement \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Architectural decision reconciliation matrix (Part II).}
+\label{tab:decisions_2}
+\small
+\begin{tabularx}{\textwidth}{p{3.5cm} p{4.5cm} p{3.5cm} p{3.0cm}}
+\toprule
+\textbf{Decision} & \textbf{Justification} & \textbf{Alternatives Considered} & \textbf{Revisit Trigger} \\
+\midrule
+HMM for regime detection &
+    Well-understood Bayesian framework with calibrated uncertainty;
+    produces probability distributions not point labels &
+    K-means clustering, threshold rules, deep learning classifier &
+    If HMM posterior calibration degrades significantly in live data \\
+\midrule
+Kelly criterion with fractional scaling &
+    Theoretically optimal for log-wealth maximisation; fraction avoids
+    estimation-error sensitivity &
+    Fixed fractional, equal weighting &
+    If win probability and payoff ratio cannot be estimated reliably \\
+\midrule
+CVaR as primary tail risk metric &
+    Coherent risk measure; linear programming formulation is tractable;
+    better than VaR for tail events &
+    VaR, maximum drawdown alone &
+    Never; CVaR is strictly superior to VaR and is retained \\
+\midrule
+Append-only audit log with hash chain &
+    Tamper-evident; any modification detectable post hoc &
+    Mutable relational database &
+    If storage costs become prohibitive; consider archival tiering \\
+\midrule
+Temporal leakage as CI gate &
+    Makes correctness structural, not advisory; zero tolerance &
+    Code review only &
+    Never; temporal correctness is a hard requirement \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ============================================================
+% CHANGELOG
+% ============================================================
+\chapter*{Changelog}
+\addcontentsline{toc}{chapter}{Changelog}
+
+\begin{table}[H]
+\centering
+\caption{Document version history.}
+\label{tab:changelog}
+\small
+\begin{tabularx}{\textwidth}{p{2.8cm} p{2.8cm} p{2.8cm} p{6.0cm}}
+\toprule
+\textbf{Version} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
+\midrule
+2026.1.0.0 & 2025-08-18 & Hadrian Hu &
+    Initial creation. Full high-level architecture whitepaper covering
+    four-domain model, operator composition framework, data pipeline,
+    regime engine, risk management, polyglot architecture, testing
+    taxonomy, observability, and deployment. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\end{document}

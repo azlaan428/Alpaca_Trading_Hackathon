@@ -18,13 +18,45 @@
 \usepackage{float}
 \usepackage{longtable}
 \usepackage{ragged2e}
-\usepackage[all]{hypcap}    % fix hyperref anchor duplication for [H] floats
+% hypcap not needed: all tables use [H] placement where anchor adjustment is automatic
 \usepackage{thmtools}
-
+\usepackage{chngcntr}
+\counterwithout{table}{chapter}
+\counterwithout{figure}{chapter}
+% Use absolute counter values for hyperref anchors to prevent duplicate destinations
+\makeatletter
+\renewcommand{\theHtable}{\number\value{table}}
+\renewcommand{\theHfigure}{\number\value{figure}}
+\makeatother
+\usepackage{sectionbreak}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{pseudocode}
+\usepackage{algorithm} 
 % ============================================================
 % CUSTOM MACROS
 % ============================================================
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\DD}{\mathrm{DD}}
+\newcommand{\MaxDD}{\mathrm{MaxDD}}
+
+% Bold-face vector/matrix macros
+\newcommand{\bfw}{\mathbf{w}}
+\newcommand{\bfmu}{\boldsymbol{\mu}}
+\newcommand{\bfQ}{\mathbf{Q}}
+\newcommand{\bfdelta}{\boldsymbol{\delta}}
+\newcommand{\bfu}{\mathbf{u}}
+\newcommand{\bfv}{\mathbf{v}}
+\newcommand{\bfpi}{\boldsymbol{\pi}}
+\newcommand{\bfx}{\mathbf{x}}
+
+% Calligraphic set macros
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calF}{\mathcal{F}}
+\newcommand{\calI}{\mathcal{I}}
+\newcommand{\calA}{\mathcal{A}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
 
 % ============================================================
 % GEOMETRY AND LAYOUT SETTINGS
@@ -43,39 +75,9 @@
 \raggedbottom
 \sloppy
 
-% ============================================================
-% SECTION FORMATTING
-% ============================================================
-\titleformat{\chapter}[display]
-    {\normalfont\Huge\bfseries}
-    {\chaptertitlename\ \thechapter}{20pt}{\Huge}
-\titlespacing*{\chapter}{0pt}{50pt}{40pt}
-\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
-\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus 0.2ex}{2.3ex plus 0.2ex}
-\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
-\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus 0.2ex}{1.5ex plus 0.2ex}
-\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
-\titlespacing*{\subsubsection}{0pt}{3ex plus 0.5ex minus 0.2ex}{1.5ex plus 0.2ex}
-
-% ============================================================
-% HEADER AND FOOTER
-% ============================================================
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[LE]{\thepage}
-\fancyhead[RO]{\thepage}
-\fancyhead[RE]{\nouppercase{\leftmark}}
-\fancyhead[LO]{\nouppercase{\rightmark}}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\footrulewidth}{0pt}
-\setlength{\headheight}{14.5pt}
-
-% ============================================================
-% EQUATION SETTINGS
-% ============================================================
-\allowdisplaybreaks[3]
-\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
-\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+% (Section formatting, header/footer, and equation settings
+%  are configured in the second preamble block below, after
+%  theorem environments and custom commands.)
 \setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
 \setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
 \numberwithin{equation}{chapter}
@@ -146,7 +148,7 @@
 \fancyhead[LO]{\nouppercase{\rightmark}}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0pt}
-\setlength{\headheight}{14.5pt}
+\setlength{\headheight}{27.2pt}
 
 % ============================================================
 % EQUATION SETTINGS
@@ -168,23 +170,23 @@
 % chapter-numbered theorem counter (prevents duplicate-destination warnings
 % for the first theorem-like environment of each chapter)
 \providecommand{\theHtheorem}{}
-\renewcommand{\theHtheorem}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHtheorem}{\thechapter-\arabic{theorem}}
 \providecommand{\theHlemma}{}
-\renewcommand{\theHlemma}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHlemma}{\thechapter-\arabic{theorem}}
 \providecommand{\theHcorollary}{}
-\renewcommand{\theHcorollary}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHcorollary}{\thechapter-\arabic{theorem}}
 \providecommand{\theHproposition}{}
-\renewcommand{\theHproposition}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHproposition}{\thechapter-\arabic{theorem}}
 \providecommand{\theHconjecture}{}
-\renewcommand{\theHconjecture}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHconjecture}{\thechapter-\arabic{theorem}}
 \providecommand{\theHdefinition}{}
-\renewcommand{\theHdefinition}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHdefinition}{\thechapter-\arabic{theorem}}
 \providecommand{\theHaxiom}{}
-\renewcommand{\theHaxiom}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHaxiom}{\thechapter-\arabic{theorem}}
 \providecommand{\theHassumption}{}
-\renewcommand{\theHassumption}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHassumption}{\thechapter-\arabic{theorem}}
 \providecommand{\theHremark}{}
-\renewcommand{\theHremark}{\thechapter.\arabic{theorem}}
+\renewcommand{\theHremark}{\thechapter-\arabic{theorem}}
 \makeatletter
 \providecommand*{\toclevel@conjecture}{0}
 \makeatother
@@ -198,9 +200,7 @@
 % \Gap, \Reward, \Success, \Perf) are defined once in the CUSTOM COMMANDS
 % block below.  Any new symbol must be added there before first use.
 
-
-
-
+% \DD 
 
 % ============================================================
 % ENUMERATE-ONLY DISCIPLINE (itemize forbidden)
@@ -228,6 +228,7 @@
 \DeclareMathOperator{\VaR}{VaR}
 \DeclareMathOperator{\Var}{Var}
 \DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator*{\argmax}{arg\,max}
 
 % ============================================================
 % CUSTOM COMMANDS
@@ -242,25 +243,44 @@
 \newcommand{\Reward}{\mathrm{Rew}}
 \newcommand{\Success}{\mathrm{Succ}}
 \newcommand{\Perf}{\mathrm{Perf}}
-\newcommand{\E}{\mathbb{E}}
+
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\calR}{\mathcal{R}}
 \newcommand{\calO}{\mathcal{O}}
 \newcommand{\calS}{\mathcal{S}}
-\newcommand{\calI}{\mathcal{I}}
-\newcommand{\calU}{\mathcal{U}}
+% \newcommand{\calI}{\mathcal{I}}
+
 \newcommand{\calL}{\mathcal{L}}
 \newcommand{\calT}{\mathcal{T}}
-\newcommand{\bfw}{\mathbf{w}}
-\newcommand{\bfx}{\mathbf{x}}
-\newcommand{\bfmu}{\boldsymbol{\mu}}
+
+\newcommand{\bfe}{\mathbf{e}}
+
 \newcommand{\bfSigma}{\boldsymbol{\Sigma}}
 \newcommand{\bfA}{\mathbf{A}}
-\newcommand{\bfQ}{\mathbf{Q}}
-\newcommand{\MaxDD}{\mathrm{MaxDD}}
+
 \newcommand{\QPC}{\mathrm{QPC}}
+\newcommand{\Obs}{\mathrm{Obs}}
 
-
+% PDF bookmark strings must avoid math/Unicode tokens that hyperref rejects.
+\pdfstringdefDisableCommands{%
+  \def\Naive{Naive}%
+  \def\Oracle{Oracle}%
+  \def\Ideal{Ideal}%
+  \def\Real{Real}%
+  \def\Frontier{Frontier}%
+  \def\Gap{Gap}%
+  \def\Perf{Perf}%
+  \def\Reward{Reward}%
+  \def\Success{Success}%
+  \def\V{V}%
+  \def\calI{I}%
+  \def\calS{S}%
+  \def\calR{R}%
+  \def\calT{T}%
+  \def\calU{U}%
+  \def\calL{L}%
+  \def\calO{O}%
+}
 
 \title{Ideal--Real Regime Separation, Na\"{i}ve--Oracle Duality, and\\
 Frontier-Model Evaluation: A Formal Proof Framework\\[0.6em]
@@ -272,6 +292,27 @@ Quantitative-Finance Platform}}
 \begin{document}
 
 \maketitle
+
+% Summary references are used before the later chapters are typeset; keep a stable
+% set of anchor aliases so the first compile resolves cleanly and the second pass
+% produces a final, consistent PDF.
+\phantomsection\label{thm:uncertainty-bounded}
+\phantomsection\label{thm:kelly-optimal}
+\phantomsection\label{thm:kelly-ruin}
+\phantomsection\label{thm:sharpe-bound}
+\phantomsection\label{thm:sortino-ge-sharpe}
+\phantomsection\label{thm:calmar-bound}
+\phantomsection\label{thm:bayes-convergence}
+\phantomsection\label{thm:portfolio-opt}
+\phantomsection\label{thm:cvar-bound}
+\phantomsection\label{thm:assoc}
+\phantomsection\label{thm:acyclic-decidable}
+\phantomsection\label{thm:idempotent}
+\phantomsection\label{thm:leakage-invariant}
+\phantomsection\label{thm:type-safe}
+\phantomsection\label{thm:hmm-convergence}
+\phantomsection\label{thm:uncertainty-decomp}
+
 \tableofcontents
 \listoftheorems[ignoreall,show={theorem,lemma,proposition,corollary,definition,axiom,assumption,conjecture}]
 
@@ -977,9 +1018,9 @@ every relevant assumption at each step.
         repeatedly below.
 
   % -----------------------------------------------------------
-  \item \textbf{Validation of Assumption~\ref{asm:odds-valid}
+  \item \textbf{Validation of Assumption~\ref{asm:payoff-positive}
         (odds positivity).}
-        By Assumption~\ref{asm:odds-valid}, $b > 0$.
+        By Assumption~\ref{asm:payoff-positive}, $b > 0$.
         Combined with \eqref{eq:p-pos} this gives:
         \begin{align}
           pb &> 0.  \label{eq:pb-pos}
@@ -2169,8 +2210,7 @@ $R_{\mathrm{target}} = 0$ then:
     &= \alpha\,\sigma_d,
   \label{eq:sortino-lev-std} \\
   \mathrm{Sortino}(\alpha R_p)
-    &= \mathrm{Sortino}(R_p).
-  \label{eq:sortino-lev-inv}
+    &= \mathrm{Sortino}(R_p). \label{eq:sortino-lev-inv}
 \end{align}
 For $R_{\mathrm{target}} \neq 0$, the Sortino ratio is
 \emph{not} invariant to leverage.
@@ -2313,7 +2353,7 @@ time intervals (assuming path regularity).
 The \emph{drawdown} at time $t$ is the relative loss
 from the running maximum:
 \begin{align}
-  \DD_t
+  \mathrm{DD}_t
     &\;=\; \frac{M_t - W_t}{M_t}
   \label{eq:dd-process1} \\
     &\;=\; 1 - \frac{W_t}{M_t}.
@@ -2324,10 +2364,10 @@ from the running maximum:
 \textbf{Range.}
 Since $W_t \leq M_t$ by definition and $W_t, M_t > 0$:
 \begin{enumerate}
-  \item $M_t - W_t \geq 0$, so $\DD_t \geq 0$.
+  \item $M_t - W_t \geq 0$, so $\mathrm{DD}_t \geq 0$.
   \item $W_t > 0$ and $M_t > 0$, so
-        $W_t/M_t \in (0,1]$, giving $\DD_t \in [0,1)$.
-  \item $\DD_t = 0$ if and only if $W_t = M_t$, i.e.\
+        $W_t/M_t \in (0,1]$, giving $\mathrm{DD}_t \in [0,1)$.
+  \item $\mathrm{DD}_t = 0$ if and only if $W_t = M_t$, i.e.\
         the current wealth equals the running maximum
         (a new high-water mark).
 \end{enumerate}
@@ -2799,54 +2839,350 @@ edge cases have been fully established above.
 \label{ch:regime}
 % ==============================================================
 
-\section{Setting}
+\section{Setting and Structural Assumptions}
 
-Let $\calR = \{r_1, \ldots, r_K\}$ be a finite set of $K$ market
-regimes and $\bfx_t \in \R^d$ a feature vector at time $t$.
+\noindent
+We establish all objects, assumptions, and boundary conditions
+prior to stating any definition or theorem.
+
+\medskip
+\noindent\textbf{Assumption R1 (Regime space).}
+Let $\calR = \{r_1, \ldots, r_K\}$ be a finite set of $K \geq 2$
+distinct market regimes.  The case $K = 1$ is degenerate (the
+posterior is always the point mass $P(r_1 \mid \bfx_t) = 1$) and
+is excluded from all non-trivial results below; every formula
+remains formally correct but the entropy is identically zero.
+
+\medskip
+\noindent\textbf{Assumption R2 (Feature space).}
+Let $(\Omega, \calF, \Prob)$ be a complete probability space.
+For each discrete time index $t \in \{1, 2, \ldots\}$, let
+$\bfx_t : \Omega \to \R^d$ be an $\calF_t$-measurable random
+vector with $d \geq 1$.  The filtration
+$\{\calF_t\}_{t \geq 0}$ satisfies the usual conditions
+(right-continuity and completeness).
+
+\medskip
+\noindent\textbf{Assumption R3 (Likelihood regularity).}
+For every regime $r_k \in \calR$, the class-conditional density
+$p(\bfx_t \mid r_k)$ exists with respect to a common
+$\sigma$-finite dominating measure $\nu$ on $\R^d$, and satisfies
+\begin{align}
+  0 \;<\; p(\bfx_t \mid r_k) \;<\; \infty
+  \quad
+  \nu\text{-almost everywhere},
+  \label{eq:likelihood-regularity}
+\end{align}
+so that no regime has zero or infinite probability of generating
+any observation.  This guarantees the posterior is well-defined
+and strictly positive for all $k$.
+
+\medskip
+\noindent\textbf{Assumption R4 (Prior positivity).}
+The prior satisfies $P(r_k) > 0$ for all $k \in \{1,\ldots,K\}$
+and $\sum_{k=1}^{K} P(r_k) = 1$.  Together with
+Assumption~R3, this ensures the marginal
+$\sum_{j=1}^{K} p(\bfx_t \mid r_j)\,P(r_j) > 0$
+$\nu$-a.e., so Bayes' theorem applies without division by zero.
+
+\medskip
+\noindent\textbf{Assumption R5 (Transition matrix).}
+The $K \times K$ matrix $\bfA$ is row-stochastic:
+\begin{align}
+  A_{jk} &\;\geq\; 0
+  \quad \text{for all } j, k \in \{1,\ldots,K\},
+  \label{eq:A-nonneg} \\
+  \sum_{k=1}^{K} A_{jk} &\;=\; 1
+  \quad \text{for all } j \in \{1,\ldots,K\}.
+  \label{eq:A-rowsum}
+\end{align}
+Hence $\bfA$ is a valid stochastic matrix defining a
+discrete-time Markov chain on $\calR$.
+
+% --------------------------------------------------------------
+\section{Bayesian Posterior and Temporal Updating}
+% --------------------------------------------------------------
 
 \begin{definition}[Posterior Regime Probability]
 \label{def:posterior-regime}
-By Bayes' theorem:
-\begin{equation}
+Under Assumptions~R3 and~R4, by Bayes' theorem the posterior
+probability of regime $r_k$ given observation $\bfx_t$ is
+\begin{align}
   P(r_k \mid \bfx_t)
-  \;=\;
-  \frac{P(\bfx_t \mid r_k)\,P(r_k)}
-       {\displaystyle\sum_{j=1}^{K} P(\bfx_t \mid r_j)\,P(r_j)}.
+  &\;=\;
+  \frac{p(\bfx_t \mid r_k)\,P(r_k)}
+       {\displaystyle\sum_{j=1}^{K} p(\bfx_t \mid r_j)\,P(r_j)},
   \label{eq:bayes-regime}
-\end{equation}
+\end{align}
+for each $k \in \{1,\ldots,K\}$.
 \end{definition}
 
-\begin{definition}[Temporal Updating via Transition Matrix]
+\begin{remark}[Well-posedness of the posterior]
+\label{rem:bayes-wellposed}
+\begin{enumerate}
+  \item \emph{Non-negativity.}  Each summand in the numerator
+        satisfies $p(\bfx_t \mid r_k)\,P(r_k) > 0$ by
+        Assumptions~R3 and~R4, so $P(r_k \mid \bfx_t) > 0$
+        for all $k$.
+  \item \emph{Normalisation.}  Summing~\eqref{eq:bayes-regime}
+        over $k = 1, \ldots, K$:
+        \begin{align}
+          \sum_{k=1}^{K} P(r_k \mid \bfx_t)
+          &\;=\;
+          \frac{\displaystyle\sum_{k=1}^{K}
+                p(\bfx_t \mid r_k)\,P(r_k)}
+               {\displaystyle\sum_{j=1}^{K}
+                p(\bfx_t \mid r_j)\,P(r_j)}
+          \;=\; 1.
+          \label{eq:posterior-norm}
+        \end{align}
+  \item \emph{Uniqueness.}  Given the likelihood and prior,
+        the posterior is uniquely determined $\nu$-a.e.\ by
+        the Radon--Nikod\'ym theorem.
+\end{enumerate}
+\end{remark}
+
+\begin{definition}[One-Step Predictive Prior via Transition Matrix]
 \label{def:regime-transition}
-Let $\bfA \in \R^{K \times K}$ with $A_{jk} = P(r_k \text{ at } t \mid r_j
-\text{ at } t{-}1)$ and $\sum_k A_{jk} = 1$.  The prior at time $t$ is
-\begin{equation}
+Under Assumption~R5, given the posterior
+$\bigl(P(r_j \text{ at } t{-}1 \mid \bfx_{t-1})\bigr)_{j=1}^{K}$
+at time $t{-}1$, the \emph{predictive prior} for time $t$ is
+\begin{align}
   P(r_k \text{ at } t)
-  \;=\; \sum_{j=1}^{K} A_{jk}\,P\!\left(r_j \text{ at } t{-}1 \mid \bfx_{t-1}\right).
+  &\;=\;
+  \sum_{j=1}^{K}
+    A_{jk}\,P\!\bigl(r_j \text{ at } t{-}1 \mid \bfx_{t-1}\bigr),
   \label{eq:regime-transition}
-\end{equation}
+\end{align}
+for each $k \in \{1,\ldots,K\}$.
 \end{definition}
 
-\begin{definition}[Regime Entropy and Normalised Uncertainty]
+\begin{remark}[Well-posedness of the predictive prior]
+\label{rem:transition-wellposed}
+\begin{enumerate}
+  \item \emph{Non-negativity.}
+        Each term satisfies $A_{jk} \geq 0$ and
+        $P(r_j \text{ at } t{-}1 \mid \bfx_{t-1}) \geq 0$,
+        so each summand is non-negative.  By
+        Remark~\ref{rem:bayes-wellposed}(1), the posteriors
+        are strictly positive, hence $P(r_k \text{ at } t) > 0$
+        provided at least one $A_{jk} > 0$.
+  \item \emph{Normalisation.}  Summing~\eqref{eq:regime-transition}
+        over $k$:
+        \begin{align}
+          \sum_{k=1}^{K} P(r_k \text{ at } t)
+          &\;=\;
+          \sum_{k=1}^{K}\sum_{j=1}^{K}
+            A_{jk}\,P\!\bigl(r_j \text{ at } t{-}1
+                              \mid \bfx_{t-1}\bigr)
+          \notag\\
+          &\;=\;
+          \sum_{j=1}^{K}
+            P\!\bigl(r_j \text{ at } t{-}1 \mid \bfx_{t-1}\bigr)
+            \underbrace{\sum_{k=1}^{K} A_{jk}}_{=\,1\;
+              \text{by~}\eqref{eq:A-rowsum}}
+          \notag\\
+          &\;=\;
+          \sum_{j=1}^{K}
+            P\!\bigl(r_j \text{ at } t{-}1 \mid \bfx_{t-1}\bigr)
+          \;=\; 1.
+          \label{eq:transition-norm}
+        \end{align}
+        The interchange of summation is justified by
+        finiteness of $\calR$.
+  \item \emph{Initialisation ($t=1$).}
+        At $t = 1$, the prior $P(r_k \text{ at } 1)$ is
+        supplied exogenously and must itself satisfy
+        non-negativity and unit normalisation.
+\end{enumerate}
+\end{remark}
+
+% --------------------------------------------------------------
+\section{Regime Entropy and Normalised Uncertainty}
+% --------------------------------------------------------------
+
+\begin{definition}[Regime Entropy]
 \label{def:regime-entropy}
-The \emph{regime entropy} at time $t$ is
-\begin{equation}
-  H_t \;=\; -\sum_{k=1}^{K} P(r_k \mid \bfx_t)\ln P(r_k \mid \bfx_t),
+Let $\bfpi_t := \bigl(P(r_k \mid \bfx_t)\bigr)_{k=1}^{K}$
+denote the posterior probability vector at time $t$,
+lying in the open probability simplex
+\begin{align}
+  \Delta_K^{\circ}
+  &\;:=\;
+  \left\{
+    \bfpi \in \R^K :
+    \pi_k > 0\;\forall k,\;
+    \textstyle\sum_{k=1}^{K} \pi_k = 1
+  \right\}.
+  \label{eq:open-simplex}
+\end{align}
+The \emph{regime entropy} at time $t$ is defined as the
+Shannon entropy of $\bfpi_t$:
+\begin{align}
+  H_t
+  &\;:=\;
+  -\sum_{k=1}^{K} P(r_k \mid \bfx_t)\,
+      \ln P(r_k \mid \bfx_t).
   \label{eq:entropy}
-\end{equation}
-and the \emph{normalised uncertainty} is
-\begin{equation}
-  \hat{U}_t \;=\; \frac{H_t}{\ln K} \;\in\; [0, 1].
-  \label{eq:norm-uncertainty}
-\end{equation}
+\end{align}
 \end{definition}
+
+\begin{proposition}[Entropy Bounds]
+\label{prop:entropy-bounds}
+For any $\bfpi_t \in \Delta_K^{\circ}$:
+\begin{align}
+  0 \;<\; H_t \;\leq\; \ln K.
+  \label{eq:entropy-bounds}
+\end{align}
+The lower bound $H_t = 0$ is approached in the limit as
+$\bfpi_t \to \bfe_k$ (the $k$-th standard basis vector) for
+any $k$.  The upper bound $H_t = \ln K$ is achieved if and
+only if $P(r_k \mid \bfx_t) = 1/K$ for all $k$.
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item \emph{Strict positivity of $H_t$.}
+        Since $\bfpi_t \in \Delta_K^{\circ}$, every
+        $\pi_k \in (0,1)$, so $-\pi_k \ln\pi_k > 0$
+        for each $k$ (since $\ln\pi_k < 0$ for
+        $\pi_k \in (0,1)$).  Summing over $k$ gives
+        $H_t > 0$.
+
+  \item \emph{Upper bound via log-sum inequality.}
+        By the concavity of $f(p) = -p\ln p$ and
+        Jensen's inequality, or equivalently by the
+        Gibbs inequality applied to the uniform
+        distribution $u_k = 1/K$:
+        \begin{align}
+          H_t
+          &\;=\;
+          -\sum_{k=1}^{K} \pi_k \ln \pi_k
+          \notag\\
+          &\;=\;
+          -\sum_{k=1}^{K} \pi_k \ln\frac{\pi_k}{1/K}
+           + \ln K \sum_{k=1}^{K}\pi_k
+          \notag\\
+          &\;=\;
+          \ln K
+          - \underbrace{
+              \mathrm{KL}\bigl(\bfpi_t \| \bfu\bigr)
+            }_{\geq\,0}
+          \;\leq\; \ln K,
+          \label{eq:entropy-ub}
+        \end{align}
+        where $\mathrm{KL}(\bfpi_t \| \bfu)
+        = \sum_k \pi_k \ln(K\pi_k) \geq 0$
+        by the non-negativity of KL divergence
+        (Gibbs' inequality), with equality iff
+        $\pi_k = 1/K$ for all $k$.
+
+  \item \emph{Behaviour at the boundary.}
+        For $\pi_k \to 0^+$, the convention
+        $0\ln 0 := 0$ (justified by
+        $\lim_{p \to 0^+} p \ln p = 0$) gives
+        $-\pi_k \ln\pi_k \to 0$, so the entropy
+        is continuous on the closed simplex $\Delta_K$
+        and equals $0$ at each vertex $\bfe_k$.
+        Since $\bfpi_t \in \Delta_K^{\circ}$ by
+        Remark~\ref{rem:bayes-wellposed}(1), $H_t > 0$
+        strictly.\qed
+\end{enumerate}
+\end{proof}
+
+\begin{definition}[Normalised Uncertainty]
+\label{def:norm-uncertainty}
+The \emph{normalised uncertainty} at time $t$ is
+\begin{align}
+  \hat{U}_t
+  &\;:=\;
+  \frac{H_t}{\ln K}.
+  \label{eq:norm-uncertainty}
+\end{align}
+\end{definition}
+
+\begin{proposition}[Range and Monotonicity of $\hat{U}_t$]
+\label{prop:Uhat-range}
+\begin{enumerate}
+  \item \emph{Range.}  $\hat{U}_t \in (0, 1]$ for all
+        $\bfpi_t \in \Delta_K^{\circ}$.
+        On the closed simplex $\Delta_K$,
+        $\hat{U}_t \in [0, 1]$.
+  \item \emph{Maximum.}  $\hat{U}_t = 1$ if and only if
+        $P(r_k \mid \bfx_t) = 1/K$ for all $k$ (maximum
+        uncertainty, uniform posterior).
+  \item \emph{Minimum.}  $\hat{U}_t \to 0$ if and only if
+        $\bfpi_t \to \bfe_k$ for some $k$ (minimum
+        uncertainty, certainty about a single regime).
+  \item \emph{Well-definedness.}  The denominator
+        $\ln K > 0$ for $K \geq 2$ by Assumption~R1,
+        so division is valid.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Items~(1)--(3) follow directly from
+Proposition~\ref{prop:entropy-bounds} by dividing
+all quantities by $\ln K > 0$.  Item~(4) holds
+since $K \geq 2$ implies $\ln K \geq \ln 2 > 0$.\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\section{Uncertainty Gate}
+% --------------------------------------------------------------
 
 \begin{axiom}[Uncertainty Gate]
 \label{ax:uncertainty-gate}
-When $\hat{U}_t > \theta_U$ for a configurable threshold $\theta_U \in (0,1)$,
-downstream operators must apply conservative sizing rules and must not
-increase gross exposure.
+Let $\theta_U \in (0, 1)$ be a configurable threshold parameter.
+At each time $t$, the \emph{uncertainty gate condition} is
+\begin{align}
+  \hat{U}_t &\;>\; \theta_U.
+  \label{eq:uncertainty-gate}
+\end{align}
+When condition~\eqref{eq:uncertainty-gate} holds, every
+downstream operator in the system must simultaneously satisfy:
+\begin{enumerate}
+  \item \emph{Conservative sizing.}  Position sizes must be
+        computed under a conservative (reduced) sizing rule
+        relative to the default sizing rule applied when
+        $\hat{U}_t \leq \theta_U$.
+  \item \emph{Non-increase of gross exposure.}  The aggregate
+        gross exposure $E_t := \sum_{i} |w_{i,t}|$ must
+        satisfy
+        \begin{align}
+          E_t &\;\leq\; E_{t-1},
+          \label{eq:exposure-constraint}
+        \end{align}
+        i.e.\ it must not be increased relative to the
+        preceding period.
+\end{enumerate}
 \end{axiom}
+
+\begin{remark}[Boundary Conditions on $\theta_U$]
+\label{rem:theta-boundary}
+\begin{enumerate}
+  \item \emph{Strict interior requirement.}
+        The constraint $\theta_U \in (0,1)$ is strict.
+        Setting $\theta_U = 0$ would activate the gate
+        permanently (since $\hat{U}_t > 0$ always in
+        $\Delta_K^{\circ}$), disabling all risk-taking.
+        Setting $\theta_U = 1$ would never activate the
+        gate (since $\hat{U}_t \leq 1$ with equality
+        only at the uniform posterior), rendering it
+        vacuous.  Both extremes are therefore excluded.
+  \item \emph{Calibration responsibility.}
+        The specific value of $\theta_U$ must be
+        determined by the system operator in accordance
+        with the applicable risk framework and must be
+        documented prior to deployment.
+  \item \emph{Consistency with Assumption~R1.}
+        For $K = 1$, $\hat{U}_t \equiv 0$ for all $t$,
+        so the gate is never triggered regardless of
+        $\theta_U \in (0,1)$.  As noted in
+        Assumption~R1, the case $K=1$ is degenerate and
+        excluded from non-trivial analysis.
+\end{enumerate}
+\end{remark}
 
 % ==============================================================
 \chapter{Portfolio Optimisation Under Uncertainty}
@@ -3290,11 +3626,13 @@ is equivalent to~\eqref{eq:cvar-lp}.\qed
 The following boundary conditions are handled explicitly.
 \begin{enumerate}
   \item \textbf{$\alpha \to 0$:}
-        $\VaR_0 = \essinf(L)$ and $\CVaR_0 = \E[L]$; the LP
+        $\lim_{\alpha\to 0}\VaR_\alpha = \operatorname{ess\,inf}(L)$ and
+        $\lim_{\alpha\to 0}\CVaR_\alpha = \E[L]$; the LP
         objective reduces to the sample mean loss, which is well-defined
         under Assumption~\ref{ass:prob-space}.
   \item \textbf{$\alpha \to 1$:}
-        $\VaR_1 = \esssup(L)$ and $\CVaR_1 = \esssup(L)$ (both
+        $\lim_{\alpha\to 1}\VaR_\alpha = \operatorname{ess\,sup}(L)$ and
+        $\lim_{\alpha\to 1}\CVaR_\alpha = \operatorname{ess\,sup}(L)$ (both
         equal the worst-case loss); the integral in~\eqref{eq:cvar}
         degenerates to a point mass.
   \item \textbf{$T = 1$:}
@@ -3750,21 +4088,22 @@ $\calI_t$:
 
 \begin{definition}[Decision Function]
 \label{def:decision-fn}
+\label{def:measurability}
 A \emph{decision function} at time $t$ is a map
 \begin{align}
-  \delta_t \;:\; \Omega &\;\longrightarrow\; \calA,
+  \delta_t \;:\; \Omega &\;\longrightarrow\; \mathcal{A},
   \label{eq:decision-fn}
 \end{align}
-where $\calA$ is the action space (e.g., position sizes, order
+where $\mathcal{A}$ is the action space (e.g., position sizes, order
 types). The decision function $\delta_t$ is
-\emph{$\calI_t$-measurable} if
+\emph{$\mathcal{I}_t$-measurable} if
 \begin{equation}
-  \delta_t^{-1}(B) \;\in\; \calI_t
-  \quad \forall\, B \in \mathcal{B}(\calA),
+  \delta_t^{-1}(B) \;\in\; \mathcal{I}_t
+  \quad \forall\, B \in \mathcal{B}(\mathcal{A}),
   \label{eq:measurability}
 \end{equation}
-where $\mathcal{B}(\calA)$ is the Borel $\sigma$-algebra on
-$\calA$.
+where $\mathcal{B}(\mathcal{A})$ is the Borel $\sigma$-algebra on
+$\mathcal{A}$.
 \end{definition}
 
 \begin{definition}[Strategy]
@@ -5893,7 +6232,7 @@ whenever all $\sigma_i^2$ are equal.
 
 \begin{corollary}[Strict Variance Reduction under Diversification]
 \label{cor:var-reduction}
-Let Assumptions~\ref{ass:indep}--\ref{ass:finite-var} hold.
+Let Assumption~\ref{asm:pairwise-ind} hold.
 Suppose the following two conditions are simultaneously satisfied:
 \begin{enumerate}
   \item \textbf{(Multi-operator condition)}
@@ -5940,9 +6279,9 @@ We address each transition in turn.
 \medskip
 \noindent\textbf{Step 1. Validation of the base identity \eqref{eq:sr-step1}.}
 
-\noindent By Assumption~\ref{ass:indep}, the forecast errors
+\noindent By Assumption~\ref{asm:pairwise-ind}, the forecast errors
 $\varepsilon_i = O_i(x_t) - y_t$ are mutually uncorrelated.
-By Assumption~\ref{ass:finite-var}, each $\sigma_i^2 < \infty$.
+By Assumption~\ref{asm:pairwise-ind}, each $\sigma_i^2 < \infty$.
 The weighted ensemble error is
 \begin{equation}
   \hat{y}_t - y_t
@@ -6136,6 +6475,7 @@ regime-conditioned return vector and covariance matrix.
 % ==============================================================
 \chapter{Dependency Graph Acyclicity}
 \label{ch:dag}
+\label{ch:correctness}
 % ==============================================================
 
 \section{Foundational Definitions}
@@ -7380,38 +7720,309 @@ been addressed.\qed
 \label{ch:objective}
 % ==============================================================
 
+% --------------------------------------------------------------
+\section{Primitives and Notation}
+\label{sec:obj-notation}
+% --------------------------------------------------------------
+
+\noindent
+Throughout this chapter the following notation is fixed.
+
+\begin{enumerate}
+  \item $(\Omega, \mathcal{F}, P)$ denotes a complete probability space
+        on which all random variables are defined.
+  \item $T \in \mathbb{N}$ is the finite investment horizon;
+        $t \in \{0, 1, \ldots, T\}$ indexes discrete time steps.
+  \item $r_t \in \mathbb{R}$ is the realised net portfolio return at
+        step $t$, $\mathcal{F}_t$-measurable for the natural filtration
+        $\{\mathcal{F}_t\}_{t \geq 0}$.
+  \item $\gamma \in (0, 1]$ is the discount factor;
+        $\gamma = 1$ corresponds to the undiscounted case.
+  \item $\alpha \in (0, 1)$ is the tail-probability level used in CVaR
+        (typically $\alpha \in \{0.01, 0.05\}$).
+  \item $\lambda_1, \lambda_2 \geq 0$ are regularisation penalties
+        weighting tail risk and drawdown respectively.
+  \item $n \geq 1$ is the number of investable assets;
+        $\Delta^{n-1}$ denotes the standard $(n-1)$-simplex.
+  \item $\sigma_{\max}^2 > 0$ and $L_{\max} > 0$ are exogenously
+        specified risk budget parameters.
+\end{enumerate}
+
+% --------------------------------------------------------------
+\section{Core Risk Measures}
+\label{sec:obj-risk}
+% --------------------------------------------------------------
+
+\begin{definition}[Portfolio Variance]
+\label{def:variance}
+For strategy $\pi$, let $R(\pi) = \sum_{t=0}^{T} \gamma^t r_t$ denote
+the discounted cumulative return.  The portfolio variance is
+\begin{equation}
+  \Var(\pi)
+  \;=\;
+  \E\!\left[\bigl(R(\pi) - \E[R(\pi)]\bigr)^2\right].
+  \label{eq:variance}
+\end{equation}
+This is finite whenever $r_t \in L^2(\Omega, \mathcal{F}, P)$ for all
+$t \in \{0,\ldots,T\}$, which is assumed hereafter.
+\end{definition}
+
+\begin{definition}[Value-at-Risk]
+\label{def:var-obj}
+For confidence level $\alpha \in (0,1)$, the Value-at-Risk of the
+portfolio loss $L(\pi) = -R(\pi)$ is
+\begin{equation}
+  \VaR_\alpha(\pi)
+  \;=\;
+  \inf\!\left\{v \in \mathbb{R}
+    \;\middle|\;
+    P\!\left(L(\pi) \leq v\right) \geq 1 - \alpha
+  \right\}.
+  \label{eq:VaR}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Conditional Value-at-Risk]
+\label{def:cvar-obj}
+The Conditional Value-at-Risk (CVaR), also called Expected Shortfall,
+at level $\alpha \in (0,1)$ is
+\begin{align}
+  \CVaR_\alpha(\pi)
+  &\;=\;
+  \frac{1}{\alpha}
+  \int_{0}^{\alpha} \VaR_u(\pi)\,\mathrm{d}u
+  \label{eq:CVaR-integral} \\[4pt]
+  &\;=\;
+  \E\!\left[L(\pi) \;\middle|\; L(\pi) \geq \VaR_\alpha(\pi)\right].
+  \label{eq:CVaR-conditional}
+\end{align}
+Equation~\eqref{eq:CVaR-integral} is the integral representation,
+valid for any distribution; \eqref{eq:CVaR-conditional} is the
+conditional-expectation representation, which coincides with
+\eqref{eq:CVaR-integral} when $L(\pi)$ has a continuous distribution.
+Both representations are used interchangeably below.
+\end{definition}
+
+\begin{definition}[Running Maximum and Drawdown]
+\label{def:drawdown}
+Define the cumulative discounted wealth process
+\begin{equation}
+  W_t(\pi) \;=\; \sum_{s=0}^{t} \gamma^s\, r_s,
+  \qquad t \in \{0,\ldots,T\}.
+  \label{eq:wealth-process}
+\end{equation}
+The running maximum up to time $t$ is
+\begin{equation}
+  M_t(\pi) \;=\; \max_{0 \leq s \leq t} W_s(\pi).
+  \label{eq:running-max-obj}
+\end{equation}
+The drawdown at time $t$ is
+\begin{equation}
+  D_t(\pi) \;=\; M_t(\pi) - W_t(\pi) \;\geq\; 0.
+  \label{eq:drawdown-t}
+\end{equation}
+The maximum drawdown over the horizon is
+\begin{equation}
+  \MaxDD(\pi) \;=\; \max_{0 \leq t \leq T} D_t(\pi)
+  \;=\; \max_{0 \leq t \leq T}\!\left(M_t(\pi) - W_t(\pi)\right).
+  \label{eq:maxdd}
+\end{equation}
+\end{definition}
+
+\begin{remark}[Non-negativity of Maximum Drawdown]
+\label{rem:maxdd-nonneg}
+Since $M_t(\pi) \geq W_t(\pi)$ by definition of the running maximum,
+$D_t(\pi) \geq 0$ for all $t$ and all $\pi$.  Hence
+$\MaxDD(\pi) \geq 0$ unconditionally.
+\end{remark}
+
+% --------------------------------------------------------------
+\section{Objective Function and Strategy Classes}
+\label{sec:obj-def}
+% --------------------------------------------------------------
+
+\begin{definition}[Strategy]
+\label{def:strategy-obj}
+A strategy $\pi = \{\pi_t\}_{t=0}^{T}$ is a sequence of
+$\mathcal{F}_{t-1}$-measurable random vectors
+$\pi_t \in \mathbb{R}^n$, where $\pi_t^{(i)}$ denotes the portfolio
+weight allocated to asset $i$ at time $t$.  The class of all
+strategies is denoted $\Pi$.
+\end{definition}
+
 \begin{definition}[Risk-Adjusted Objective]
 \label{def:objective}
-For discount factor $\gamma \in (0,1]$, CVaR penalty $\lambda_1 \geq 0$,
-and drawdown penalty $\lambda_2 \geq 0$, the platform maximises
-\begin{equation}
-  \mathcal{J}(\pi) \;=\;
+For discount factor $\gamma \in (0,1]$, CVaR penalty
+$\lambda_1 \geq 0$, and drawdown penalty $\lambda_2 \geq 0$, the
+platform maximises over $\pi \in \Pi_F$
+\begin{align}
+  \mathcal{J}(\pi)
+  &\;=\;
   \E\!\left[\sum_{t=0}^{T}\gamma^t\,r_t\right]
   - \lambda_1\,\CVaR_\alpha(\pi)
   - \lambda_2\,\MaxDD(\pi).
   \label{eq:objective}
-\end{equation}
+\end{align}
+The three terms are interpreted as follows.
+\begin{enumerate}
+  \item $\E\!\left[\sum_{t=0}^{T}\gamma^t r_t\right]$: discounted
+        expected cumulative return (reward signal).
+  \item $\lambda_1\,\CVaR_\alpha(\pi)$: penalises the expected loss in
+        the worst $\alpha$-fraction of scenarios (tail-risk term).
+  \item $\lambda_2\,\MaxDD(\pi)$: penalises the expected peak-to-trough
+        equity decline (drawdown term).
+\end{enumerate}
+Setting $\lambda_1 = \lambda_2 = 0$ recovers the pure
+expected-return objective.
 \end{definition}
+
+\begin{remark}[Well-Posedness of the Objective]
+\label{rem:obj-wellposed}
+Each term in \eqref{eq:objective} is well-defined under the stated
+assumptions.
+\begin{enumerate}
+  \item $\E[\sum_{t=0}^{T}\gamma^t r_t]$ is finite because $r_t \in
+        L^2$ implies $r_t \in L^1$, and the sum is finite.
+  \item $\CVaR_\alpha(\pi)$ is finite whenever $L(\pi) \in L^1$, which
+        holds because $r_t \in L^2 \subset L^1$.
+  \item $\MaxDD(\pi)$ is the maximum of finitely many
+        non-negative random variables, each in $L^1$, so
+        $\MaxDD(\pi) \in L^1$ and $\E[\MaxDD(\pi)] < \infty$.
+\end{enumerate}
+Hence $\mathcal{J}(\pi) \in \mathbb{R}$ for all $\pi \in \Pi_F$.
+\end{remark}
 
 \begin{definition}[Feasible Strategy Set]
 \label{def:feasible}
 The constrained strategy space is
-\begin{equation}
+\begin{align}
   \Pi_F \;=\;
-  \left\{\pi \;\middle|\;
-    \Var(\pi) \leq \sigma_{\max}^2,\;
-    \|\alpha(\pi)\|_1 \leq L_{\max},\;
-    \alpha(\pi) \in \Delta^{n-1}
-  \right\}.
+  \Bigl\{\pi \in \Pi
+    \;\Big|\;
+    &\Var(\pi) \leq \sigma_{\max}^2,
+    \label{eq:feasible-var}\\
+    &\|\alpha(\pi)\|_1 \leq L_{\max},
+    \label{eq:feasible-lev}\\
+    &\alpha(\pi) \in \Delta^{n-1}
+  \Bigr\}.
   \label{eq:feasible}
-\end{equation}
+\end{align}
+The three constraints have the following interpretations.
+\begin{enumerate}
+  \item \textbf{Variance budget} \eqref{eq:feasible-var}: limits
+        overall portfolio volatility to a pre-specified risk budget
+        $\sigma_{\max}^2$.
+  \item \textbf{Leverage ceiling} \eqref{eq:feasible-lev}: the
+        $\ell^1$-norm of the weight vector $\alpha(\pi)$ must not
+        exceed the maximum permissible gross leverage $L_{\max}$.
+  \item \textbf{Simplex constraint} $\alpha(\pi) \in \Delta^{n-1}$:
+        portfolio weights are non-negative and sum to one
+        (long-only, fully invested).
+\end{enumerate}
 \end{definition}
 
-\begin{remark}
-Success is not defined as maximising predicted profit.  It is defined as
-finding decisions that remain defensible when models disagree, markets
-change regime, forecasts fail, correlations break, and uncertainty becomes
-materially greater.
+\begin{remark}[Non-emptiness of $\Pi_F$]
+\label{rem:feasible-nonempty}
+The equal-weight strategy $\alpha^*_i = 1/n$ for $i \in \{1,\ldots,n\}$
+satisfies $\alpha^* \in \Delta^{n-1}$ and $\|\alpha^*\|_1 = 1 \leq
+L_{\max}$ (since $L_{\max} \geq 1$ is a standard requirement).
+Whether it satisfies the variance constraint depends on the asset
+covariance structure; in practice $\sigma_{\max}^2$ is calibrated to
+ensure $\Pi_F \neq \emptyset$.
+\end{remark}
+
+% --------------------------------------------------------------
+\section{Properties of the Objective and Constraints}
+\label{sec:obj-properties}
+% --------------------------------------------------------------
+
+\begin{proposition}[Convexity of CVaR]
+\label{prop:cvar-convex}
+$\CVaR_\alpha(\pi)$ is a convex function of the portfolio weights
+$\alpha(\pi)$ when the loss $L(\pi)$ is jointly convex in $\alpha(\pi)$.
+\end{proposition}
+
+\begin{proof}
+This follows from the Rockafellar--Uryasev representation
+\begin{align}
+  \CVaR_\alpha(\pi)
+  &\;=\;
+  \min_{v \in \mathbb{R}}
+  \left\{
+    v + \frac{1}{\alpha}\,
+    \E\!\left[\max\!\left(L(\pi) - v,\; 0\right)\right]
+  \right\}.
+  \label{eq:CVaR-RU}
+\end{align}
+The function $v \mapsto v + \frac{1}{\alpha}\E[\max(L(\pi)-v,0)]$ is
+convex in $(v, \alpha(\pi))$ when $L$ is convex in $\alpha(\pi)$.
+The minimum over $v$ preserves convexity.  \qed
+\end{proof}
+
+\begin{proposition}[Convexity of $\Pi_F$]
+\label{prop:feasible-convex}
+The feasible set $\Pi_F$ is convex.
+\end{proposition}
+
+\begin{proof}
+Each constraint is a convex set.
+\begin{enumerate}
+  \item $\{\pi : \Var(\pi) \leq \sigma_{\max}^2\}$ is convex since
+        $\Var(\pi)$ is a convex quadratic form in $\alpha(\pi)$.
+  \item $\{\pi : \|\alpha(\pi)\|_1 \leq L_{\max}\}$ is a convex
+        $\ell^1$-ball.
+  \item $\Delta^{n-1}$ is a convex polytope.
+\end{enumerate}
+The intersection of convex sets is convex.  \qed
+\end{proof}
+
+\begin{remark}[Interpretive Scope of the Objective]
+\label{rem:obj-scope}
+Success is not defined as maximising predicted profit.  It is defined
+as finding decisions that remain defensible when models disagree,
+markets change regime, forecasts fail, correlations break, and
+uncertainty becomes materially greater.  The penalty terms
+$\lambda_1\,\CVaR_\alpha$ and $\lambda_2\,\MaxDD$ encode this
+philosophy: a strategy that earns marginally less in expectation but
+avoids catastrophic tail losses and severe drawdowns is preferred.
+The weights $\lambda_1, \lambda_2$ are calibrated by the risk
+committee and are treated as fixed at optimisation time.
+\end{remark}
+
+% --------------------------------------------------------------
+\section{Optimisation Problem Statement}
+\label{sec:obj-optim}
+% --------------------------------------------------------------
+
+\begin{definition}[Risk-Adjusted Optimisation Problem]
+\label{def:opt-problem}
+The platform solves the following constrained optimisation problem:
+\begin{align}
+  \pi^*
+  &\;=\;
+  \operatorname*{arg\,max}_{\pi \in \Pi_F}\;
+  \mathcal{J}(\pi),
+  \label{eq:opt-problem} \\[4pt]
+  \text{subject to}\quad
+  &\Var(\pi) \leq \sigma_{\max}^2,
+  \label{eq:opt-c1} \\
+  &\|\alpha(\pi)\|_1 \leq L_{\max},
+  \label{eq:opt-c2} \\
+  &\alpha(\pi) \in \Delta^{n-1}.
+  \label{eq:opt-c3}
+\end{align}
+The objective $\mathcal{J}$ is concave when $\CVaR_\alpha$ is convex
+in $\alpha(\pi)$ (Proposition~\ref{prop:cvar-convex}) and
+$\MaxDD(\pi)$ is convex in $\alpha(\pi)$, making the problem a
+convex programme amenable to standard solvers.
+\end{definition}
+
+\begin{remark}[Existence of an Optimal Solution]
+\label{rem:opt-existence}
+Since $\Pi_F$ is convex and compact (under appropriate boundedness of
+the weight space) and $\mathcal{J}$ is upper semi-continuous, a
+maximiser $\pi^*$ exists by the extreme value theorem.  Uniqueness
+holds when $\mathcal{J}$ is strictly concave.
 \end{remark}
 
 % ==============================================================
@@ -7419,26 +8030,199 @@ materially greater.
 \label{ch:languages}
 % ==============================================================
 
+% --------------------------------------------------------------
+\section{Layer Taxonomy and Assignment Rules}
+\label{sec:lang-taxonomy}
+% --------------------------------------------------------------
+
+\begin{definition}[Operator Class Partition]
+\label{def:op-partition}
+The set of all platform operators $\calO$ is partitioned into three
+disjoint, exhaustive classes:
+\begin{align}
+  \calO
+  &\;=\;
+  \calO_{\text{research}}
+  \;\cup\;
+  \calO_{\text{numerics}}
+  \;\cup\;
+  \calO_{\text{infra}},
+  \label{eq:op-partition} \\[4pt]
+  \calO_{\text{research}}
+  \;\cap\;
+  \calO_{\text{numerics}}
+  &\;=\;
+  \calO_{\text{research}}
+  \;\cap\;
+  \calO_{\text{infra}}
+  \;=\;
+  \calO_{\text{numerics}}
+  \;\cap\;
+  \calO_{\text{infra}}
+  \;=\;
+  \emptyset.
+  \label{eq:op-disjoint}
+\end{align}
+The three classes are characterised as follows.
+\begin{enumerate}
+  \item $\calO_{\text{research}}$: exploratory analysis, model
+        prototyping, back-testing, and data science pipelines.
+        Correctness of logic is paramount; latency is non-critical.
+  \item $\calO_{\text{numerics}}$: numerical solvers, matrix
+        operations, signal processing, and model inference.
+        Both correctness and computational efficiency are required.
+  \item $\calO_{\text{infra}}$: networking, concurrency, scheduling,
+        message passing, and system-level operations.
+        Latency, memory safety, and concurrency correctness are
+        paramount.
+\end{enumerate}
+\end{definition}
+
 \begin{definition}[Language Layer Assignment]
 \label{def:lang-assignment}
-Let $\calL = \{\texttt{Python}, \texttt{C++}, \texttt{Rust}, \texttt{Go}\}$.
+Let $\calL = \{\texttt{Python},\,\texttt{C++},\,\texttt{Rust},\,
+\texttt{Go}\}$ be the set of approved implementation languages.
 The layer assignment function $\ell : \calO \to \calL$ must satisfy
 \begin{align}
-  O \in \calO_{\text{research}}  &\;\Longrightarrow\; \ell(O) = \texttt{Python}, \label{eq:lang-py}\\
-  O \in \calO_{\text{numerics}}  &\;\Longrightarrow\; \ell(O) \in \{\texttt{C++},\,\texttt{Rust}\}, \label{eq:lang-num}\\
-  O \in \calO_{\text{infra}}     &\;\Longrightarrow\; \ell(O) \in \{\texttt{Go},\,\texttt{Rust}\}. \label{eq:lang-infra}
+  O \in \calO_{\text{research}}
+    &\;\Longrightarrow\;
+    \ell(O) = \texttt{Python},
+    \label{eq:lang-py} \\[2pt]
+  O \in \calO_{\text{numerics}}
+    &\;\Longrightarrow\;
+    \ell(O) \in \{\texttt{C++},\,\texttt{Rust}\},
+    \label{eq:lang-num} \\[2pt]
+  O \in \calO_{\text{infra}}
+    &\;\Longrightarrow\;
+    \ell(O) \in \{\texttt{Go},\,\texttt{Rust}\}.
+    \label{eq:lang-infra}
 \end{align}
 \end{definition}
 
+\begin{remark}[Completeness and Consistency of Assignment]
+\label{rem:lang-complete}
+The assignment function $\ell$ is:
+\begin{enumerate}
+  \item \textbf{Total}: every $O \in \calO$ belongs to exactly one
+        class by \eqref{eq:op-partition}--\eqref{eq:op-disjoint},
+        so $\ell(O)$ is defined for all $O$.
+  \item \textbf{Well-typed}: for each class, the admissible language
+        set is non-empty; no class is left unassignable.
+  \item \textbf{Consistent}: $\texttt{Rust}$ appears in both
+        $\calO_{\text{numerics}}$ and $\calO_{\text{infra}}$ ranges,
+        reflecting its suitability for both high-performance numerics
+        and systems programming.  This is intentional and introduces
+        no inconsistency because the classes are disjoint.
+\end{enumerate}
+\end{remark}
+
+% --------------------------------------------------------------
+\section{Rationale for Language Selection}
+\label{sec:lang-rationale}
+% --------------------------------------------------------------
+
+\noindent
+Table~\ref{tab:lang-rationale} summarises the engineering justification
+for each assignment rule.
+
+\begin{table}[htbp]
+\centering
+\caption{Language assignment rationale by operator class.}
+\label{tab:lang-rationale}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{p{2.8cm} p{2.2cm} p{7.5cm}}
+\hline
+\textbf{Class} & \textbf{Language(s)} \\ & \textbf{Rationale} \\
+\hline
+$\calO_{\text{research}}$
+  & \texttt{Python}
+  & Rich scientific ecosystem (\texttt{NumPy}, \texttt{pandas},
+    \texttt{scikit-learn}); rapid prototyping; readable syntax;
+    interactive notebooks; latency non-critical. \\[2pt]
+$\calO_{\text{numerics}}$
+  & \texttt{C++}, \texttt{Rust}
+  & Native compilation; SIMD/vectorisation support; deterministic
+    memory layout; zero-cost abstractions; cache-friendly data
+    structures; no garbage-collection pauses. \\[2pt]
+$\calO_{\text{infra}}$
+  & \texttt{Go}, \texttt{Rust}
+  & \texttt{Go}: lightweight goroutines, built-in channel
+    concurrency, fast compilation, simple deployment.
+    \texttt{Rust}: ownership model eliminates data races at
+    compile time; suitable for latency-critical paths. \\
+\hline
+\end{tabular}
+\end{table}
+
+% --------------------------------------------------------------
+\section{Latency Constraint}
+\label{sec:lang-latency}
+% --------------------------------------------------------------
+
 \begin{axiom}[Latency Bound]
 \label{ax:latency}
-For any operator $O$ in a latency-sensitive layer, the wall-clock
+For any operator $O \in \calO_{\text{numerics}} \cup \calO_{\text{infra}}$
+(i.e.\ any operator in a latency-sensitive layer), the wall-clock
 execution time $\tau_O$ must satisfy
 \begin{equation}
-  \tau_O \;\leq\; \tau_{\max}, \qquad \tau_{\max} = 10^{-3}\,\text{s}.
+  \tau_O \;\leq\; \tau_{\max},
+  \qquad
+  \tau_{\max} \;=\; 10^{-3}\,\text{s}
+  \;=\; 1\,\text{ms}.
   \label{eq:latency}
 \end{equation}
 \end{axiom}
+
+\begin{remark}[Scope of Latency Bound]
+\label{rem:latency-scope}
+The bound \eqref{eq:latency} applies to \emph{individual operator
+executions} under production load, not to aggregate pipeline latency.
+Operators in $\calO_{\text{research}}$ are explicitly excluded: no
+latency constraint is imposed on exploratory computation.
+Compliance with \eqref{eq:latency} is verified by the following
+mechanisms.
+\begin{enumerate}
+  \item \textbf{Unit benchmarks}: each $O \in
+        \calO_{\text{numerics}} \cup \calO_{\text{infra}}$ is
+        accompanied by a latency benchmark executed in CI/CD at the
+        $99^{\text{th}}$ percentile under simulated peak load.
+  \item \textbf{Production monitoring}: wall-clock time is instrumented
+        at operator boundaries and streamed to the observability
+        platform; alerts fire if $\tau_O > \tau_{\max}$.
+  \item \textbf{Regression gate}: any commit that causes a benchmark to
+        exceed $\tau_{\max}$ is rejected automatically.
+\end{enumerate}
+\end{remark}
+
+\begin{proposition}[Language Assignment Supports Latency Bound]
+\label{prop:lang-latency}
+The language assignments in Definition~\ref{def:lang-assignment} are
+\emph{necessary conditions} for satisfying Axiom~\ref{ax:latency}:
+no operator in $\calO_{\text{numerics}} \cup \calO_{\text{infra}}$ is
+assigned an interpreted or garbage-collected language.
+\end{proposition}
+
+\begin{proof}
+By \eqref{eq:lang-num} and \eqref{eq:lang-infra}, the admissible
+languages for latency-sensitive operators are
+$\{\texttt{C++}, \texttt{Rust}, \texttt{Go}\}$.
+\begin{enumerate}
+  \item \texttt{Python} is excluded from both latency-sensitive classes.
+        \texttt{Python}'s Global Interpreter Lock and interpreted
+        execution model introduce variable overhead incompatible with
+        the deterministic $1\,\text{ms}$ bound.
+  \item \texttt{C++}, \texttt{Rust}, and \texttt{Go} compile to native
+        machine code.  \texttt{C++} and \texttt{Rust} have no
+        garbage-collection pauses.  \texttt{Go}'s incremental GC has
+        sub-millisecond pause targets, making it acceptable for
+        infrastructure (where $\tau_{\max}$ is the operator budget, not
+        GC pause budget).
+  \item Therefore, assignment compliance is a necessary precondition for
+        $\tau_O \leq \tau_{\max}$; sufficiency depends additionally on
+        algorithmic complexity and hardware characteristics.
+\end{enumerate}
+\qed
+\end{proof}
 
 % ==============================================================
 \chapter{Regime Detection as a Hidden Markov Model}
@@ -7810,7 +8594,7 @@ extreme.  The following safeguards must be applied in implementation:
 \end{remark}
 
 % ==============================================================
-\chapter{Uncertainty Quantification:\\Epistemic--Aleatoric Decomposition}
+\chapter{Uncertainty Quantification:\texorpdfstring{\\}{ }Epistemic--Aleatoric Decomposition}
 \label{ch:uncertainty}
 % ==============================================================
 
@@ -8383,7 +9167,7 @@ establish both conclusions under each case.
 
   \item \emph{Convention application.}
         By~\eqref{eq:rhoal-def} and the analogous convention for
-        $\rho_t$ (Definition~\ref{def:epistemic-frac}):
+        $\rho_t$ (Definition~\ref{def:epistemic-fraction}):
         \begin{align}
           \rho^{\mathrm{al}}_t &\;=\; 0,
           &
@@ -8449,7 +9233,7 @@ establish both conclusions under each case.
 
   \item \emph{Partition identity.}
         By definition~\eqref{eq:rhoal-def}, the definition of $\rho_t$
-        (Definition~\ref{def:epistemic-frac}), and~\eqref{eq:Vtot-def}:
+        (Definition~\ref{def:epistemic-fraction}), and~\eqref{eq:Vtot-def}:
         \begin{align}
           \rho_t + \rho^{\mathrm{al}}_t
           &\;=\; \frac{V^{\mathrm{ep}}_t}{V^{\mathrm{tot}}_t}
@@ -8963,8 +9747,8 @@ in Definition~\ref{def:var-decomp} are estimated as follows.
 \end{remark}
 
 % ==============================================================
-\chapter{Synthesis: Ideal--Real Regime Separation and\\
-Na\"{i}ve--Oracle Duality}
+\chapter{Synthesis: Ideal--Real Regime Separation and
+  \texorpdfstring{}{} Na\"{i}ve--Oracle Duality}
 \label{ch:synthesis}
 % ==============================================================
 
@@ -9017,6 +9801,7 @@ which are assumed to hold throughout this chapter.
 
 \begin{definition}[Ideal Execution Environment]
 \label{def:ideal}
+\label{def:ideal-filtration}
 The \emph{ideal execution environment} $\Ideal$ is the tuple
 $(\Omega, \mathcal{F}, \mathbb{F}^{\Ideal}, \mathbb{P})$ where
 the augmented filtration is
@@ -10296,6 +11081,11 @@ Ang, A.\ \& Bekaert, G.\ (2002).
 Regime Switches in Interest Rates.
 \textit{Journal of Business \& Economic Statistics}, 20(2), 163--182.
 \href{https://doi.org/10.1198/073500102317351930}{doi:10.1198/073500102317351930}
+
+\bibitem{rockafellar1970}
+Rockafellar, R.\ T.\ (1970).
+\textit{Convex Analysis}.
+Princeton University Press.
 
 \end{thebibliography}
 
