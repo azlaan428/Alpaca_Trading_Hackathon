@@ -2,3 +2,28 @@
 	path = coding_stds/CodingStandardsRef
 	url = https://github.com/psi16181918161phi/CodingStandardsRef.git
 	branch = main
+
+[submodule "tools/alpaca/alpaca-py"]
+	path = tools/alpaca/alpaca-py
+	url = https://github.com/alpacahq/alpaca-py.git
+	branch = master
+
+[submodule "tools/alpaca/alpaca-trade-api-python"]
+	path = tools/alpaca/alpaca-trade-api-python
+	url = https://github.com/alpacahq/alpaca-trade-api-python.git
+	branch = master
+
+[submodule "tools/alpaca/alpaca-trade-api-go"]
+	path = tools/alpaca/alpaca-trade-api-go
+	url = https://github.com/alpacahq/alpaca-trade-api-go.git
+	branch = main
+
+[submodule "tools/alpaca/alpaca-mcp-server"]
+	path = tools/alpaca/alpaca-mcp-server
+	url = https://github.com/alpacahq/alpaca-mcp-server.git
+	branch = main
+
+[submodule "tools/alpaca/cli"]
+	path = tools/alpaca/cli
+	url = https://github.com/alpacahq/cli.git
+	branch = main
