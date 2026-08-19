@@ -25,6 +25,15 @@
     - [5.6 Conditional Value-at-Risk (CVaR)](#56-conditional-value-at-risk-cvar)
     - [5.7 Dynamic Hedge Ratio Derivation](#57-dynamic-hedge-ratio-derivation)
     - [5.8 Temporal Leakage Invariant](#58-temporal-leakage-invariant)
+    - [5.9 Operator Composition Algebra](#59-operator-composition-algebra)
+    - [5.10 Agent Composition as Weighted Ensemble](#510-agent-composition-as-weighted-ensemble)
+    - [5.11 Four-Domain Partition (Earth / Air / Fire / Water)](#511-four-domain-partition-earth--air--fire--water)
+    - [5.12 Dependency Graph Acyclicity Invariant](#512-dependency-graph-acyclicity-invariant)
+    - [5.13 Idempotency and Referential Transparency](#513-idempotency-and-referential-transparency)
+    - [5.14 Risk-Adjusted Objective Function](#514-risk-adjusted-objective-function)
+    - [5.15 Type-Safe Language Layer Assignment](#515-type-safe-language-layer-assignment)
+    - [5.16 Regime Detection as a Hidden Markov Model](#516-regime-detection-as-a-hidden-markov-model)
+    - [5.17 Uncertainty Quantification via Epistemic and Aleatoric Decomposition](#517-uncertainty-quantification-via-epistemic-and-aleatoric-decomposition)
   - [Root-Level Repository File Provisions](#root-level-repository-file-provisions)
     - [META-PROMPT 0.5 — Root-Level Markdown Maintenance](#meta-prompt-05--root-level-markdown-maintenance)
       - [Files to update](#files-to-update)
@@ -58,17 +67,17 @@
 - [META-PROMPT 15 — SCHEMAS AND INTEROPERABILITY](#meta-prompt-15--schemas-and-interoperability)
 - [META-PROMPT 16 — NUMERICAL CORRECTNESS](#meta-prompt-16--numerical-correctness)
 - [META-PROMPT 17 — TEST TAXONOMY](#meta-prompt-17--test-taxonomy)
-    - [Unit correctness](#unit-correctness)
-    - [Property correctness](#property-correctness)
-    - [Numerical correctness](#numerical-correctness)
-    - [Temporal correctness](#temporal-correctness)
-    - [Integration correctness](#integration-correctness)
-    - [Cross-language correctness](#cross-language-correctness)
-    - [Strategy correctness](#strategy-correctness)
-    - [Risk correctness](#risk-correctness)
-    - [Simulation correctness](#simulation-correctness)
-    - [Regression correctness](#regression-correctness)
-    - [Performance](#performance)
+  - [Unit correctness](#unit-correctness)
+  - [Property correctness](#property-correctness)
+  - [Numerical correctness](#numerical-correctness)
+  - [Temporal correctness](#temporal-correctness)
+  - [Integration correctness](#integration-correctness)
+  - [Cross-language correctness](#cross-language-correctness)
+  - [Strategy correctness](#strategy-correctness)
+  - [Risk correctness](#risk-correctness)
+  - [Simulation correctness](#simulation-correctness)
+  - [Regression correctness](#regression-correctness)
+  - [Performance](#performance)
 - [META-PROMPT 18 — SHADOW QA / TRUSTED CI GATE](#meta-prompt-18--shadow-qa--trusted-ci-gate)
 - [META-PROMPT 19 — DASHBOARD ARCHITECTURE](#meta-prompt-19--dashboard-architecture)
 - [META-PROMPT 20 — METRICS MUST ANSWER QUESTIONS](#meta-prompt-20--metrics-must-answer-questions)
@@ -396,8 +405,221 @@ The `TemporalLeakageDetector` CI gate must enforce this invariant on every merge
 
 ---
 
+### 5.9 Operator Composition Algebra
 
+**Definition.** Let $\mathcal{O}$ be the set of all operators. Each operator $O_i \in \mathcal{O}$ is a pure function:
 
+$$
+O_i : \mathcal{S} \times \mathcal{I}_t \rightarrow \mathcal{S}'
+$$
+
+where $\mathcal{S}$ is the shared state space and $\mathcal{I}_t$ is the information set at time $t$.
+
+**Sequential composition.** Given operators $O_1, O_2 \in \mathcal{O}$, sequential composition is defined as:
+
+$$
+(O_1 \circ O_2)(s, \mathcal{I}_t) = O_1\!\left(O_2(s, \mathcal{I}_t),\, \mathcal{I}_t\right)
+$$
+
+**Associativity.** Operator composition is associative:
+
+$$
+(O_1 \circ O_2) \circ O_3 = O_1 \circ (O_2 \circ O_3)
+$$
+
+**Pipeline invariant.** A valid operator pipeline $\Pi = O_n \circ \cdots \circ O_1$ satisfies:
+
+$$
+\Pi(s, \mathcal{I}_t) \in \sigma(\mathcal{I}_t) \quad \forall\, s \in \mathcal{S},\; t \in \mathcal{T}
+$$
+
+---
+
+### 5.10 Agent Composition as Weighted Ensemble
+
+**Definition.** An agent $A$ is a tuple $(O_1, \ldots, O_k, w)$ where $O_i$ are operators and $w \in \Delta^{k-1}$ is a weight vector on the probability simplex:
+
+$$
+\Delta^{k-1} = \left\{\, w \in \mathbb{R}^k \;\middle|\; \sum_{i=1}^{k} w_i = 1,\; w_i \geq 0 \,\right\}
+$$
+
+**Agent output.** The aggregated signal $\hat{y}_t$ is:
+
+$$
+\hat{y}_t = \sum_{i=1}^{k} w_i \cdot O_i(s, \mathcal{I}_t)
+$$
+
+**Ensemble variance bound.** Let $\sigma_i^2$ denote the forecast variance of operator $O_i$. Under pairwise independence:
+
+$$
+\mathrm{Var}(\hat{y}_t) = \sum_{i=1}^{k} w_i^2\, \sigma_i^2 \leq \max_{i}\, \sigma_i^2
+$$
+
+---
+
+### 5.11 Four-Domain Partition (Earth / Air / Fire / Water)
+
+**Formal partition.** The full asset universe $\mathcal{U}$ is partitioned into four non-overlapping domains:
+
+$$
+\mathcal{U} = \mathcal{D}_{E} \cup \mathcal{D}_{A} \cup \mathcal{D}_{F} \cup \mathcal{D}_{W}, \qquad \mathcal{D}_i \cap \mathcal{D}_j = \emptyset \quad (i \neq j)
+$$
+
+where $\mathcal{D}_{E}$ = Equities, $\mathcal{D}_{A}$ = Rates and Macro, $\mathcal{D}_{F}$ = Derivatives and Volatility, $\mathcal{D}_{W}$ = Crypto and Liquidity.
+
+**Cross-domain influence matrix.** The directed influence matrix $\Gamma \in \mathbb{R}^{4 \times 4}$ is defined by:
+
+$$
+\Gamma_{ij} = \frac{\partial\, \hat{y}_t^{(i)}}{\partial\, \hat{y}_t^{(j)}}, \quad i \neq j
+$$
+
+**Regime-conditioned allocation.** Let $r \in \mathcal{R}$ denote the current market regime. The optimal cross-domain allocation vector $\alpha^{*} \in \Delta^{3}$ solves:
+
+$$
+\alpha^{*} = \arg\max_{\alpha \in \Delta^{3}}\; \mathbb{E}\!\left[\, \sum_{i=1}^{4} \alpha_i\, \mu_i^{(r)} - \lambda\, \alpha^{\top} \Sigma^{(r)} \alpha \,\right]
+$$
+
+where $\mu^{(r)} \in \mathbb{R}^{4}$ and $\Sigma^{(r)} \in \mathbb{R}^{4 \times 4}$ are the regime-conditioned return vector and covariance matrix.
+
+---
+
+### 5.12 Dependency Graph Acyclicity Invariant
+
+**Definition.** The operator dependency graph $G = (V, E)$ has vertex set $V = \mathcal{O}$ and a directed edge $(O_i, O_j) \in E$ if $O_j$ consumes output produced by $O_i$.
+
+**Acyclicity requirement.** $G$ must be a directed acyclic graph (DAG):
+
+$$
+\nexists\; \text{cycle}\; O_{i_1} \to O_{i_2} \to \cdots \to O_{i_1} \quad \text{in } G
+$$
+
+**Topological execution order.** A valid execution ordering $\tau : V \to \{1, \ldots, |V|\}$ satisfies:
+
+$$
+(O_i,\, O_j) \in E \implies \tau(O_i) < \tau(O_j)
+$$
+
+The CI gate must reject any operator registration that introduces a cycle into $G$.
+
+---
+
+### 5.13 Idempotency and Referential Transparency
+
+**Referential transparency.** An operator $O$ is referentially transparent if:
+
+$$
+O(s,\, \mathcal{I}_t) = O(s',\, \mathcal{I}_t) \quad \text{whenever} \quad s \equiv s' \pmod{\mathcal{I}_t}
+$$
+
+**Idempotency.** An operator $O$ is idempotent if:
+
+$$
+O\!\left(O(s, \mathcal{I}_t),\, \mathcal{I}_t\right) = O(s,\, \mathcal{I}_t) \quad \forall\, s \in \mathcal{S},\; t \in \mathcal{T}
+$$
+
+Idempotent, referentially transparent operators may be safely memoized, parallelized, and replayed without side effects. This property is required for all operators in the pipeline.
+
+---
+
+### 5.14 Risk-Adjusted Objective Function
+
+**Primary objective.** The platform optimizes the risk-adjusted cumulative return over horizon $T$:
+
+$$
+\mathcal{J}(\pi) = \mathbb{E}\!\left[\, \sum_{t=0}^{T} \gamma^{t}\, r_t \,\right] - \lambda_1 \cdot \mathrm{CVaR}_{\alpha}(\pi) - \lambda_2 \cdot \mathrm{MaxDD}(\pi)
+$$
+
+where $\gamma \in (0,1]$ is the discount factor, $\mathrm{CVaR}_{\alpha}$ is the conditional value-at-risk at confidence level $\alpha$, $\mathrm{MaxDD}$ is the maximum drawdown, and $\lambda_1, \lambda_2 \geq 0$ are penalty weights.
+
+**CVaR definition.** For a loss random variable $L$:
+
+$$
+\mathrm{CVaR}_{\alpha}(\pi) = \mathbb{E}\!\left[\, L \;\middle|\; L \geq \mathrm{VaR}_{\alpha}(\pi) \,\right]
+$$
+
+$$
+\mathrm{VaR}_{\alpha}(\pi) = \inf\bigl\{\, \ell \in \mathbb{R} \mid P(L \leq \ell) \geq \alpha \,\bigr\}
+$$
+
+**Feasible strategy set.** The constrained strategy space $\Pi_{F}$ is:
+
+$$
+\Pi_{F} = \left\{\, \pi \;\middle|\; \mathrm{Var}(\pi) \leq \sigma_{\max}^{2},\; \|\alpha(\pi)\|_{1} \leq L_{\max},\; \alpha(\pi) \in \Delta^{n-1} \,\right\}
+$$
+
+---
+
+### 5.15 Type-Safe Language Layer Assignment
+
+**Definition.** Let $\mathcal{L} = \{\text{Python},\, \text{C++},\, \text{Rust},\, \text{Go}\}$. The layer assignment function $\ell : \mathcal{O} \to \mathcal{L}$ must satisfy:
+
+$$
+O \in \mathcal{O}_{\text{research}} \implies \ell(O) = \text{Python}
+$$
+
+$$
+O \in \mathcal{O}_{\text{numerics}} \implies \ell(O) \in \{\text{C++},\, \text{Rust}\}
+$$
+
+$$
+O \in \mathcal{O}_{\text{infra}} \implies \ell(O) \in \{\text{Go},\, \text{Rust}\}
+$$
+
+**Latency bound.** For any operator $O$ in a latency-sensitive layer, the wall-clock execution time $\tau_{O}$ must satisfy:
+
+$$
+\tau_{O} \leq \tau_{\max}, \qquad \tau_{\max} = 10^{-3}\,\text{s} \quad \text{(1 ms hard bound)}
+$$
+
+---
+
+### 5.16 Regime Detection as a Hidden Markov Model
+
+**State space.** Let $\mathcal{R} = \{r_1, \ldots, r_K\}$ be a finite set of $K$ market regimes. The regime sequence $\{R_t\}_{t \geq 0}$ follows a first-order Markov chain with transition matrix $\Pi \in \mathbb{R}^{K \times K}$:
+
+$$
+P(R_{t+1} = r_j \mid R_t = r_i,\, \mathcal{I}_{t-1},\, \ldots) = \Pi_{ij}, \qquad \sum_{j=1}^{K} \Pi_{ij} = 1 \quad \forall\, i
+$$
+
+**Observation model.** Observed feature vector $x_t \in \mathbb{R}^d$ is drawn from a regime-conditioned emission distribution:
+
+$$
+x_t \mid R_t = r_k \;\sim\; \mathcal{N}(\mu_k,\, \Sigma_k)
+$$
+
+**Posterior regime probability.** The filtered regime belief $\beta_t(k) = P(R_t = r_k \mid x_{1:t})$ is updated via:
+
+$$
+\beta_t(k) = \frac{p(x_t \mid R_t = r_k)\, \sum_{i=1}^{K} \Pi_{ik}\, \beta_{t-1}(i)}{\sum_{j=1}^{K} p(x_t \mid R_t = r_j)\, \sum_{i=1}^{K} \Pi_{ij}\, \beta_{t-1}(i)}
+$$
+
+**MAP regime estimate.** The maximum a posteriori regime at time $t$ is:
+
+$$
+\hat{R}_t = \arg\max_{k \in \{1,\ldots,K\}} \beta_t(k)
+$$
+
+---
+
+### 5.17 Uncertainty Quantification via Epistemic and Aleatoric Decomposition
+
+**Total predictive variance decomposition.** For a forecast target $y_{t+h}$, the total predictive variance decomposes as:
+
+$$
+\mathrm{Var}(y_{t+h} \mid \mathcal{I}_t) = \underbrace{\mathbb{E}_{\theta}\!\left[\mathrm{Var}(y_{t+h} \mid \theta,\, \mathcal{I}_t)\right]}_{\text{aleatoric}} + \underbrace{\mathrm{Var}_{\theta}\!\left[\mathbb{E}(y_{t+h} \mid \theta,\, \mathcal{I}_t)\right]}_{\text{epistemic}}
+$$
+
+**Decision gate.** A trading signal $s_t$ is gated by the normalized epistemic fraction $\rho_t$:
+
+$$
+\rho_t = \frac{\mathrm{Var}_{\theta}\!\left[\mathbb{E}(y_{t+h} \mid \theta,\, \mathcal{I}_t)\right]}{\mathrm{Var}(y_{t+h} \mid \mathcal{I}_t)}
+$$
+
+$$
+\tilde{s}_t = s_t \cdot \mathbf{1}\!\left[\rho_t \leq \rho_{\max}\right]
+$$
+
+where $\rho_{\max} \in (0, 1)$ is a configurable epistemic uncertainty threshold. Signals generated under excessive model disagreement are suppressed.
 
 ---
 
@@ -2123,23 +2345,23 @@ Track all substantive changes across prompt sequences in the table below. Every 
 
 ## References
 
-| ID  | Source                                                                                          | URL / Path                                                                                                | Notes                                                                                                    |
-| --- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| R1  | Alpaca Markets API Docs                                                                         | [https://docs.alpaca.markets](https://docs.alpaca.markets)                                                | Primary broker adapter reference                                                                         |
-| R2  | Alpaca Trade API Python SDK                                                                     | [https://github.com/alpacahq/alpaca-trade-api-python](https://github.com/alpacahq/alpaca-trade-api-python) | SDK used by adapters                                                                                     |
-| R3  | prompt_patterns.md                                                                              | `./prompt_patterns.md`                                                                                    | This file — canonical prompt engineering spec                                                            |
-| R4  | Markowitz, H. (1952). Portfolio Selection. *Journal of Finance*, 7(1), 77–91.                   | https://doi.org/10.1111/j.1540-6261.1952.tb01525.x                                                       | Foundational mean-variance optimisation; basis for §5.5 `PortfolioOptimizationOperator`.                |
-| R5  | Kelly, J. L. (1956). A New Interpretation of Information Rate. *Bell System Technical Journal*, 35(4), 917–926. | https://doi.org/10.1002/j.1538-7305.1956.tb03809.x                                            | Kelly criterion derivation; basis for §5.2 `PositionSizingOperator`.                                    |
-| R6  | Sharpe, W. F. (1966). Mutual Fund Performance. *Journal of Business*, 39(1), 119–138.          | https://doi.org/10.1086/294846                                                                            | Reward-to-variability ratio (Sharpe ratio); basis for §5.3 risk-adjusted performance metrics.           |
-| R7  | Sortino, F. A., & van der Meer, R. (1991). Downside Risk. *Journal of Portfolio Management*, 17(4), 27–31. | https://doi.org/10.3905/jpm.1991.409343                                                          | Sortino ratio and downside deviation; basis for §5.3 `PerformanceAnalysisOperator`.                     |
-| R8  | Rockafellar, R. T., & Uryasev, S. (2000). Optimization of Conditional Value-at-Risk. *Journal of Risk*, 2(3), 21–41. | https://doi.org/10.21314/JOR.2000.038                                                      | CVaR LP formulation; basis for §5.6 `RiskOperator` CVaR constraint.                                     |
-| R9  | Hamilton, J. D. (1989). A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle. *Econometrica*, 57(2), 357–384. | https://doi.org/10.2307/1912559                   | Hidden Markov regime-switching model; basis for §5.4 `MarketRegimeOperator` transition matrix.          |
-| R10 | Ederington, L. H. (1979). The Hedging Performance of the New Futures Markets. *Journal of Finance*, 34(1), 157–170. | https://doi.org/10.1111/j.1540-6261.1979.tb02077.x                                            | Minimum-variance hedge ratio derivation; basis for §5.7 `HedgeOptimizationOperator`.                    |
-| R11 | Pardo, R. (2008). *The Evaluation and Optimization of Trading Strategies* (2nd ed.). Wiley.    | ISBN 978-0-470-12801-5                                                                                    | Walk-forward validation methodology; basis for META-PROMPT 10 simulation-first discipline.              |
-| R12 | Lopez de Prado, M. (2018). *Advances in Financial Machine Learning*. Wiley.                    | ISBN 978-1-119-48208-6                                                                                    | Temporal leakage / purging / embargo methodology; basis for §5.8 and META-PROMPT 11.                    |
-| R13 | Ben-Tal, A., & Nemirovski, A. (1998). Robust Convex Optimization. *Mathematics of Operations Research*, 23(4), 769–805. | https://doi.org/10.1287/moor.23.4.769                                                   | Robust portfolio optimisation ellipsoidal uncertainty; basis for §5.5 robust extension.                 |
-| R14 | Shannon, C. E. (1948). A Mathematical Theory of Communication. *Bell System Technical Journal*, 27(3), 379–423. | https://doi.org/10.1002/j.1538-7305.1948.tb01338.x                                            | Information entropy; basis for regime uncertainty quantification $H_t$ in §5.4.                         |
-| R15 | Young, T. W. (1991). Calmar Ratio: A Smoother Tool. *Futures Magazine*, 20(1).                 | —                                                                                                         | Calmar ratio definition; basis for §5.3 drawdown-adjusted performance metric.                           |
+| ID  | Source                                                                                                                                                 | URL / Path                                                                                                | Notes                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| R1  | Alpaca Markets API Docs                                                                                                                                | [https://docs.alpaca.markets](https://docs.alpaca.markets)                                                 | Primary broker adapter reference                                                                 |
+| R2  | Alpaca Trade API Python SDK                                                                                                                            | [https://github.com/alpacahq/alpaca-trade-api-python](https://github.com/alpacahq/alpaca-trade-api-python) | SDK used by adapters                                                                             |
+| R3  | prompt_patterns.md                                                                                                                                     | `./prompt_patterns.md`                                                                                  | This file — canonical prompt engineering spec                                                   |
+| R4  | Markowitz, H. (1952). Portfolio Selection.*Journal of Finance*, 7(1), 77–91.                                                                        | https://doi.org/10.1111/j.1540-6261.1952.tb01525.x                                                        | Foundational mean-variance optimisation; basis for §5.5`PortfolioOptimizationOperator`.       |
+| R5  | Kelly, J. L. (1956). A New Interpretation of Information Rate.*Bell System Technical Journal*, 35(4), 917–926.                                      | https://doi.org/10.1002/j.1538-7305.1956.tb03809.x                                                        | Kelly criterion derivation; basis for §5.2`PositionSizingOperator`.                           |
+| R6  | Sharpe, W. F. (1966). Mutual Fund Performance.*Journal of Business*, 39(1), 119–138.                                                                | https://doi.org/10.1086/294846                                                                            | Reward-to-variability ratio (Sharpe ratio); basis for §5.3 risk-adjusted performance metrics.   |
+| R7  | Sortino, F. A., & van der Meer, R. (1991). Downside Risk.*Journal of Portfolio Management*, 17(4), 27–31.                                           | https://doi.org/10.3905/jpm.1991.409343                                                                   | Sortino ratio and downside deviation; basis for §5.3`PerformanceAnalysisOperator`.            |
+| R8  | Rockafellar, R. T., & Uryasev, S. (2000). Optimization of Conditional Value-at-Risk.*Journal of Risk*, 2(3), 21–41.                                 | https://doi.org/10.21314/JOR.2000.038                                                                     | CVaR LP formulation; basis for §5.6`RiskOperator` CVaR constraint.                            |
+| R9  | Hamilton, J. D. (1989). A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle.*Econometrica*, 57(2), 357–384. | https://doi.org/10.2307/1912559                                                                           | Hidden Markov regime-switching model; basis for §5.4`MarketRegimeOperator` transition matrix. |
+| R10 | Ederington, L. H. (1979). The Hedging Performance of the New Futures Markets.*Journal of Finance*, 34(1), 157–170.                                  | https://doi.org/10.1111/j.1540-6261.1979.tb02077.x                                                        | Minimum-variance hedge ratio derivation; basis for §5.7`HedgeOptimizationOperator`.           |
+| R11 | Pardo, R. (2008).*The Evaluation and Optimization of Trading Strategies* (2nd ed.). Wiley.                                                           | ISBN 978-0-470-12801-5                                                                                    | Walk-forward validation methodology; basis for META-PROMPT 10 simulation-first discipline.       |
+| R12 | Lopez de Prado, M. (2018).*Advances in Financial Machine Learning*. Wiley.                                                                           | ISBN 978-1-119-48208-6                                                                                    | Temporal leakage / purging / embargo methodology; basis for §5.8 and META-PROMPT 11.            |
+| R13 | Ben-Tal, A., & Nemirovski, A. (1998). Robust Convex Optimization.*Mathematics of Operations Research*, 23(4), 769–805.                              | https://doi.org/10.1287/moor.23.4.769                                                                     | Robust portfolio optimisation ellipsoidal uncertainty; basis for §5.5 robust extension.         |
+| R14 | Shannon, C. E. (1948). A Mathematical Theory of Communication.*Bell System Technical Journal*, 27(3), 379–423.                                      | https://doi.org/10.1002/j.1538-7305.1948.tb01338.x                                                        | Information entropy; basis for regime uncertainty quantification$H_t$ in §5.4.                |
+| R15 | Young, T. W. (1991). Calmar Ratio: A Smoother Tool.*Futures Magazine*, 20(1).                                                                        | —                                                                                                        | Calmar ratio definition; basis for §5.3 drawdown-adjusted performance metric.                   |
 
 ---
 
@@ -2200,8 +2422,7 @@ audit/<ISO-8601-date>_<sequence-slug>.md
 ### Rules
 
 1. **Every entry must be justified.** A change without a justification is invalid and must be flagged `UNJUSTIFIED`.
-2. The audit file is **append-only after creation** — do not overwrite a prior audit file; create a new one per sequence. In fact, create a new audit file. Safer. Save into AUDIT_LOGS/ at parent root level. 
+2. The audit file is **append-only after creation** — do not overwrite a prior audit file; create a new one per sequence. In fact, create a new audit file. Safer. Save into AUDIT_LOGS/ at parent root level.
 3. If a sequence produced **no changes**, still create the file and populate `Investigated` and `Justification Summary` explaining why no changes were warranted.
 4. The audit file **must be committed** alongside any code or documentation changes it describes.
 5. The audit log is itself subject to changelog tracking — add an `ADDED` row to the [Changelog Table](#changelog-table) for every new audit file.
-

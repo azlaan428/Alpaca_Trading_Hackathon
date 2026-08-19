@@ -1,0 +1,38 @@
+RAW TEXT (original, unmodified):
+---
+Need to first get the relevant API, CLI, SDK and others for Alcapa here: https://github.com/alpacahq and the relevant submodules installed here first. 
+Install from, https://wwww.github.com/psi16181918161phi/CodingStandardsRef -- this as standard submodule in this package. THERE ARE MORE SUBMODULES IN THERE. THEY MUST ALSO BE PROPERLY INITIALIZED. Make sure .gitmodules auto-syncs all related submodules. Ask if uncertain. Some submodules are created by me (Hadrian), and others are forked or cloned as submodules directly from the source on GitHub. 
+The idea is this for the trading agent(s) [can be written in python, Go, C++, Rust combination this time, because of the need for speed and performance, and also to learn more about these languages and their performance characteristics in trading scenarios].
+---
+
+ENUMERATED NESTED FORMAT (for AI agent digestion and instruction following):
+
+1. Setup and Installation
+    1.1. Alpaca API, CLI, SDK, and related tooling
+        1.1.1. Source: https://github.com/alpacahq
+        1.1.2. Install all relevant APIs, CLIs, SDKs, and other tools from the Alpaca GitHub organization.
+        1.1.3. Install all relevant submodules associated with the Alpaca tooling.
+        1.1.4. Also add them into VS Code as extensions, and create applicable project-specific named .venv where necassary (do not just call it .venv, which is useless and confusing).
+    1.2. CodingStandardsRef submodule
+        1.2.1. Source: https://wwww.github.com/psi16181918161phi/CodingStandardsRef
+        1.2.2. Install as a standard submodule in this package.
+        1.2.3. Additional submodules exist within CodingStandardsRef.
+            1.2.3.1. ALL additional submodules MUST be properly initialized.
+        1.2.4. .gitmodules configuration
+            1.2.4.1. Ensure .gitmodules auto-syncs all related submodules.
+            1.2.4.2. If uncertain about any submodule configuration, ask before proceeding.
+        1.2.5. Submodule authorship
+            1.2.5.1. Some submodules are created by Hadrian (the user).
+            1.2.5.2. Other submodules are forked or cloned directly from their source on GitHub.
+
+2. Trading Agent(s) Design and Implementation
+    2.1. Language selection
+        2.1.1. The trading agent(s) may be written in a combination of languages.
+            2.1.1.1. Python
+            2.1.1.2. Go
+            2.1.1.3. C++
+            2.1.1.4. Rust
+        2.1.2. Reasons for multi-language approach
+            2.1.2.1. Need for speed and performance in trading scenarios.
+            2.1.2.2. Goal to learn more about each language and its performance characteristics in trading contexts.
+
