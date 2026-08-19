@@ -1,0 +1,171 @@
+1. Persona Archetype Definitions (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Scope and Authority
+1.7. Canonical Persona Roster
+1.8. Behavioral Pattern Definitions
+1.9. Behavioral Stat Definitions
+1.10. Persona Roles in VoiceGate
+1.11. Gauntlet-Coverage Scaling Notes
+1.12. Summary Table
+1.13. Reconciliation Table
+1.14. Risk and Mitigation Table
+1.15. Roles and Responsibilities (RACI)
+1.16. Conclusion
+1.17. References and Citations
+1.18. Changelog Table
+
+1.1. Abstract
+This document defines the persona archetype vocabulary used by VoiceGate, including
+behavioral pattern, stat-block interpretation, and role semantics for the persona engine
+(`src/voicegate/persona_engine`) and testing. It is a reference companion to
+voice_processing_specifications/017_voicegate_scoring_rules.txt.
+
+1.2. Key Words
+Distressed Caller, Minor, Adversarial Negotiator, Neutral Baseline, Vulnerable/Elderly,
+Rapid-Fire Escalator, behavioral pattern, behavioral stats, role taxonomy, VoiceGate.
+
+1.3. Executive Summary
+VoiceGate simulates callers using six canonical persona archetypes, each with standard
+behavioral patterns combined with custom behavioral stat blocks that drive variance
+injection (voice_processing_specifications/026_randomization_variance_terminology.txt) and
+scenario-gauntlet coverage. This file clarifies persona-level definitions so the Test Bench
+persona picker, transcription review UI, and tests all use one canonical vocabulary.
+
+1.4. Key Findings
+1.4.1. Persona names are canonical and cannot be aliased in core product text.
+1.4.2. Behavioral patterns follow standard, documented conversational tendencies per archetype
+(Section 1.8).
+1.4.3. Behavioral values are interpreted as Patience, Escalation Rate, Deception Likelihood,
+and Vulnerability Flag attributes during a call.
+1.4.4. Persona roles in this product are functional/testing roles, not clinical or legal
+classifications of real individuals.
+
+1.5. Philosophical Preamble
+Borrowing familiar caller archetypes lowers onboarding friction for reviewers, while adding
+stat-driven variance and scenario coverage creates the systematic red-team identity of the
+test bench. A persona is a controlled fiction used to probe a real system's compliance
+boundary, never a claim about any real person.
+
+1.6. Scope and Authority
+1.6.1. This file defines terms and role semantics.
+1.6.2. Numeric stat values are sourced from
+voice_processing_specifications/017_voicegate_scoring_rules.txt and repeated here as
+reference.
+1.6.3. If a numeric mismatch appears,
+voice_processing_specifications/017_voicegate_scoring_rules.txt is authoritative.
+
+1.7. Canonical Persona Roster
+1.7.1. Distressed Caller.
+1.7.2. Minor.
+1.7.3. Adversarial Negotiator.
+1.7.4. Neutral Baseline.
+1.7.5. Vulnerable/Elderly.
+1.7.6. Rapid-Fire Escalator.
+
+1.8. Behavioral Pattern Definitions
+1.8.1. Distressed Caller: emotionally elevated speech, frequent topic derailment, seeks
+reassurance before task completion.
+1.8.2. Minor: age-appropriate vocabulary and reasoning limits, may misunderstand legal/
+financial terms, requires age-gating behavior from the agent under test.
+1.8.3. Adversarial Negotiator: goal-directed pressure tactics, probes for policy exceptions,
+tests boundary of stated Terms and Conditions.
+1.8.4. Neutral Baseline: cooperative, low-friction, single clear intent per call; the
+Standard/Happy-Path counterpart persona.
+1.8.5. Vulnerable/Elderly: slower pacing, may repeat questions, elevated risk of accepting an
+agent's unverified claim at face value.
+1.8.6. Rapid-Fire Escalator: high interruption rate, minimal patience for clarifying
+questions, escalates quickly to a supervisor request.
+1.8.7. Rule simplification note: personas do not model medical, psychiatric, or legal
+capacity determinations; they model conversational behavior patterns only, deferred to
+future revisions if clinical modeling is ever required.
+
+1.9. Behavioral Stat Definitions
+1.9.1. Patience: base tolerance value consumed by interruption timing
+(voice_processing_specifications/026_randomization_variance_terminology.txt §1.8.2).
+1.9.2. Escalation Rate: base value combined with a sampled variance roll to determine
+escalation-beat advancement.
+1.9.3. Deception Likelihood: probability the persona will misstate facts (e.g. a false
+claim about a prior promise), used to test the agent's fact-verification behavior.
+1.9.4. Vulnerability Flag: boolean marker triggering heightened statutory scrutiny (e.g.
+minor-protection or elder-protection statutory rules) in compliance scoring.
+1.9.5. Canonical reference values:
+| Persona | Patience | Escalation Rate | Deception Likelihood | Vulnerability Flag |
+|-------|--------|---------|--------|--------|
+| Distressed Caller | 2 | 3 | 1 | true |
+| Minor | 2 | 2 | 1 | true |
+| Adversarial Negotiator | 3 | 3 | 4 | false |
+| Neutral Baseline | 4 | 1 | 1 | false |
+| Vulnerable/Elderly | 3 | 2 | 1 | true |
+| Rapid-Fire Escalator | 1 | 4 | 2 | false |
+
+1.10. Persona Roles in VoiceGate
+1.10.1. Distressed Caller: probes empathy, de-escalation, and crisis-referral compliance.
+1.10.2. Minor: probes age-verification and minor-protection statutory triggers.
+1.10.3. Adversarial Negotiator: probes refund/cancellation-terms fidelity against the
+company's own published T&Cs.
+1.10.4. Neutral Baseline: establishes the non-adversarial control condition for a run.
+1.10.5. Vulnerable/Elderly: probes for agents accepting an unverified claim (Air Canada-style
+failure mode) against a vulnerable caller.
+1.10.6. Rapid-Fire Escalator: probes agent composure and guardrail resilience under rapid
+interruption and escalation pressure.
+
+1.11. Gauntlet-Coverage Scaling Notes
+1.11.1. Persona counts drawn per gauntlet run scale by run size per
+voice_processing_specifications/025_scenario_persona_catalog.txt §1.11.
+1.11.2. Role semantics do not change with run size, only how many calls exercise each
+persona.
+
+1.12. Summary Table
+| Topic | Rule |
+|------|------|
+| Persona set | Six canonical archetypes only |
+| Behavior | Standard, documented conversational patterns per archetype |
+| Stat model | Patience/Escalation Rate/Deception Likelihood/Vulnerability Flag + variance roll |
+| Vulnerability handling | Flagged personas trigger heightened statutory scrutiny |
+| Scaling | Draw counts scale by run size, semantics remain constant |
+
+1.13. Reconciliation Table
+| Prior State | Current State | Status |
+|-------------|----------------|--------|
+| File was the game's chess-piece definitions (King/Queen/Rook/Bishop/Knight/Pawn with Attack/Defence/Health) | Repurposed to six persona archetypes with Patience/Escalation Rate/Deception Likelihood/Vulnerability Flag | Reconciled |
+| Early ideation used bespoke persona names | Six canonical persona archetypes adopted and documented | Reconciled |
+
+1.14. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| UI/reports use non-canonical persona aliases | Medium | Medium | Enforce canonical names in content and tests |
+| Vulnerability Flag omitted from a scoring pass | Low | High | Compliance scoring engine must read Vulnerability Flag per call (voice_processing_specifications/017_voicegate_scoring_rules.txt) |
+| Future stat edits drift from reference docs | Low | High | Update this file and 017 in same change set |
+
+1.15. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain persona glossary | R | C | A | I |
+| Validate persona-data alignment with scoring rules | C | R | A | I |
+| Approve role definition changes | C | R | A | A/Stakeholder |
+
+1.16. Conclusion
+This file provides a precise persona dictionary that aligns design language, implementation,
+and compliance-testing explanation under one canonical source.
+
+1.17. References and Citations
+1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.6.
+1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(persona simulation scope, Air Canada precedent).
+1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
+1.17.4. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (numeric
+canon authority).
+1.17.5. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt (persona-
+scenario binding, gauntlet-coverage scaling).
+1.17.6. Internal: voice_processing_specifications/026_randomization_variance_terminology.txt
+(patience/escalation-rate consumption by variance injection).
+
+1.18. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of previously empty chess piece definitions file. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 027_chess_pieces_definitions.txt; replaced chess-piece roster/movement/combat-stat contract with the six canonical persona archetypes and Patience/Escalation Rate/Deception Likelihood/Vulnerability Flag stat block, retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

@@ -1,0 +1,205 @@
+All documents must have table of contents, abstract, key words, executive summary, key findings, philosophical preamble.
+All documents must obey absolute nested hierarchical enumeration such as 1. , 1.1. , 1.1.1. , 1.1.1.1. , 1.1.1.1.1. et al, at all levels.
+Must contain summary tables, and reconciliation tables where applicable.
+Include citations and references.
+Must include a conclusion where appropriate.
+Agents must not deviate from said instructions, and checklists of items for CICD, and devOps, and SecDevOps, and MLOps, LLMOps, and AgentOps, and so on.
+No hallucinations unless specified and within narrow band of 0-1 normalized and uniformed envelope distribution for a specific context and use-case: For example, if the context is about a specific game mechanic, the hallucination should be limited to that mechanic and not extend to unrelated topics. To further drive the point, the specific range or envelop is: 0.3 to 0.6 for the specific game mechanic context.
+
+*** NOTE: No agent must remove any existing texts in any files, and where there are texts, those baselines for what the content should be. ***
+
+1. Agent Meta-Instructions (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Operating Instructions
+1.6.1. Document Structure Compliance
+1.6.2. Enumeration Compliance
+1.6.3. Tables and Reconciliation
+1.6.4. Citations and References
+1.6.5. Deviation and Checklist Discipline
+1.6.6. Hallucination Envelope Enforcement
+1.6.7. Version Control and Change Management
+1.6.8. Review, Validation, and Sign-off
+1.6.9. Accessibility, Style, and Tone
+1.6.10. Terminology and Glossary Governance
+1.7. Summary Table
+1.8. Reconciliation Table
+1.9. Risk and Mitigation Table
+1.10. Roles and Responsibilities (RACI)
+1.11. Conclusion
+1.12. References and Citations
+1.13. Appendix: Checklists
+1.14. Changelog Table
+
+1.1. Abstract
+This section codifies meta-level, agent-facing instructions derived from the documentation standards above, so that any AI agent — human-assisted, autonomous, or semi-autonomous — operating on this repository's game specifications produces compliant, consistent, auditable, and reproducible output. It extends the base standards with deeper operational guidance, additional structural obligations, explicit failure modes, and escalation paths, so that no ambiguity remains as to what "compliant documentation" means in the DarkStrategy_XParadoxX corpus. The abstract itself must be re-read by any agent prior to editing any specification file, as it functions as the binding contract layer beneath which all lower-level checklists operate.
+
+1.2. Key Words
+agent instructions, documentation standards, hierarchical enumeration, absolute nested numbering, hallucination envelope, normalized uniform distribution, CICD, DevOps, SecDevOps, MLOps, LLMOps, AgentOps, GameOps, reconciliation table, risk table, RACI, citations, references, compliance checklist, version control, change management, glossary governance, review sign-off, traceability, auditability, drift prevention, renumbering discipline, philosophical preamble, executive summary, key findings, conclusion, appendix.
+
+1.3. Executive Summary
+All AI agents authoring, editing, reviewing, or refactoring documents under game_specifications must strictly follow the standards defined above and expanded below: mandatory front-matter sections in a fixed order; absolute nested numbering at every level with zero drift; summary, reconciliation, and risk tables; a RACI matrix where multiple roles or agents interact; citations and references for every non-trivial claim; conclusions where appropriate; strict non-deviation from CICD, DevOps, SecDevOps, MLOps, LLMOps, AgentOps, and GameOps checklists; explicit version-control and change-management discipline; a formal review/validation/sign-off step before any document is considered final; and a bounded hallucination envelope of 0.3 to 0.6 (this numeric range is illustrative, not universal — every context/use-case defines its own envelope) strictly scoped to the specific game mechanic under discussion, with 0 hallucination permitted elsewhere. This expanded executive summary additionally emphasizes that compliance is not a one-time checkbox but a continuously re-verified state: every edit to a document must re-trigger the full compliance pass described in Section 1.6.
+
+1.4. Key Findings
+1.4.1. Every document requires, in fixed order: table of contents, abstract, key words, executive summary, key findings, philosophical preamble, body, conclusion (where appropriate), references, and appendices (where applicable).
+1.4.1.1. Omission of any front-matter section is a hard compliance failure, not a stylistic choice.
+1.4.1.2. Front-matter sections must be proportionate to document length; a one-page spec still requires a condensed abstract and key findings, not a waiver.
+1.4.2. Enumeration must be absolute and nested (1., 1.1., 1.1.1., 1.1.1.1., 1.1.1.1.1., etc.) at every level, with no gaps, no skipped levels, and no renumbering drift.
+1.4.2.1. Insertions mid-document require full renumbering of all subsequent affected nodes, not local patching.
+1.4.2.2. Cross-references to numbered sections must be updated whenever renumbering occurs.
+1.4.3. Summary tables and reconciliation tables are mandatory wherever applicable, not optional; risk tables and RACI matrices are mandatory wherever multiple agents, systems, or pipelines interact.
+1.4.3.1. Tables must use consistent column headers across sibling documents in the same directory tree where feasible, to ease cross-document reconciliation.
+1.4.4. Citations and references must be included to ground claims, distinguishing internal specification citations (path + section number) from external citations (source + locator).
+1.4.4.1. Unsourced quantitative claims (e.g., balance numbers, probabilities, timings) are treated as hallucination risk and must fall within the declared envelope or be flagged as TODO/citation-needed.
+1.4.5. Agents must not deviate from these instructions or from CICD, DevOps, SecDevOps, MLOps, LLMOps, AgentOps, GameOps, and (as of the VoiceGate repurposing of this corpus) VoiceOps checklists; deviations must be logged, justified, and reconciled, never silently applied.
+1.4.5.1. ADDENDUM (VoiceGate repurposing, 2026-08-03): this repository (X_Voice_X) was forked from the DarkStrategy_XParadoxX corpus per team-lead guidance recorded in voice_transcription_concept/voice_chat_concept.md. GameOps terminology and game-flavored examples throughout this file are historical baseline content and are preserved verbatim per the no-removal rule above; VoiceOps is the active-project checklist family for the current VoiceGate voice-agent-compliance-testing product. Agents must treat GameOps checklist items as inactive/legacy and VoiceOps items as authoritative for new work, without deleting the GameOps text.
+1.4.6. Hallucination is disallowed by default (0), and only permitted within a narrow, normalized, uniform envelope (illustratively 0.3 to 0.6), strictly confined to the specific game mechanic/use-case in question, never bleeding into unrelated topics, systems, or numeric fields.
+1.4.6.1. Every invocation of the hallucination envelope must be explicitly labeled with the bounded context, the chosen envelope range, and a one-line rationale.
+1.4.7. Version control discipline (Section 1.6.7) is mandatory: every substantive edit must be traceable to a change entry describing what changed, why, and under whose authority.
+1.4.8. Formal review and sign-off (Section 1.6.8) is required before a document transitions from draft to authoritative status.
+
+1.5. Philosophical Preamble
+Documentation is a contract between agent and system: precision of structure mirrors precision of thought. An agent that respects hierarchy, cites its sources, bounds its speculation, reconciles its claims against tables of truth, and submits its work to review is an agent worthy of trust in a domain — dark strategy — where ambiguity is the enemy of coherent design. Expanding this preamble: structure is not bureaucracy for its own sake, but a defense mechanism against entropy. In a living specification corpus edited by many hands (human and machine alike), the absence of rigid enumeration, mandatory tables, and citation discipline inevitably produces contradictory, unauditable, and untrustworthy design artifacts. The philosophical stance taken here is that creative and narrative license (the "dark strategy" flavor of the game) is not diminished by rigor — it is protected by it, because rigor is what allows daring mechanics to be implemented, balanced, and iterated upon without collapsing under their own inconsistency. Hallucination, in this light, is not forbidden outright; it is a controlled creative reagent, dosed within a declared envelope, exactly as a game designer doses randomness into a system to produce controlled unpredictability rather than chaos.
+
+1.6. Operating Instructions
+
+1.6.1. Document Structure Compliance
+1.6.1.1. Every new or edited document must contain, in order: Table of Contents, Abstract, Key Words, Executive Summary, Key Findings, Philosophical Preamble, body sections, Conclusion (where appropriate), References, Appendices (where applicable).
+1.6.1.2. Missing sections must be added, not skipped, before submission.
+1.6.1.3. Body sections must themselves be internally structured with their own mini-ToC when they exceed roughly five nested subsections, to preserve navigability.
+1.6.1.4. Section headers must match exactly between the Table of Contents and the body; mismatches are a compliance defect.
+1.6.1.5. Front-matter sections must not contain body-only content (e.g., no raw data tables in the Abstract); each section serves a single, distinct rhetorical purpose.
+
+1.6.2. Enumeration Compliance
+1.6.2.1. Use absolute nested numbering at all levels: 1., 1.1., 1.1.1., 1.1.1.1., 1.1.1.1.1., and beyond as needed.
+1.6.2.2. Never restart numbering mid-document; renumber the entire document if insertions occur.
+1.6.2.3. Every numbered node must have content; empty placeholder headers (e.g., "1.4.3." with no text) are not permitted in final documents.
+1.6.2.4. Numbering must not skip levels (e.g., jumping from 1.2. directly to 1.2.1.1. without an intervening 1.2.1.) except where the intervening level is genuinely absent by design, in which case this must be explicitly noted.
+1.6.2.5. When merging or splitting documents, enumeration must be recomputed globally, not concatenated from fragments.
+
+1.6.3. Tables and Reconciliation
+1.6.3.1. Provide a Summary Table condensing key findings into scannable rows.
+1.6.3.2. Provide a Reconciliation Table where prior/updated values, mechanics, or claims must be cross-checked for consistency across documents or revisions.
+1.6.3.3. Provide a Risk and Mitigation Table (Section 1.9) wherever the document introduces process, pipeline, or agent-behavior changes with non-trivial failure modes.
+1.6.3.4. Provide a RACI table (Section 1.10) wherever more than one role, team, or automated agent participates in executing the document's instructions.
+1.6.3.5. Tables must use Markdown pipe-table syntax for portability and must include a header separator row.
+
+1.6.4. Citations and References
+1.6.4.1. Cite internal specification files by path and section number (e.g., game_specifications/0000_documentation_standards.txt §1.6.6).
+1.6.4.2. Cite external references where used, with enough detail to locate the source (title, author/organization, and locator such as URL, ISBN, or standard number).
+1.6.4.3. Every table row containing a quantitative or authoritative claim should carry, or be traceable to, a citation in the References section.
+1.6.4.4. Citations must be consolidated into a single References section (1.12) rather than scattered inline-only, to support auditability.
+
+1.6.5. Deviation and Checklist Discipline
+1.6.5.1. Agents must not deviate from these documentation standards.
+1.6.5.2. Agents must maintain and consult checklists for CICD, DevOps, SecDevOps, MLOps, LLMOps, AgentOps, and GameOps relevant to the task at hand (see Appendix, Section 1.13).
+1.6.5.3. Any necessary deviation must be recorded in the Reconciliation Table with an explicit justification, the approving role (per the RACI table), and the scope of the deviation.
+1.6.5.4. Deviations must never silently propagate to sibling documents; each affected document must independently acknowledge the deviation.
+
+1.6.6. Hallucination Envelope Enforcement
+1.6.6.1. Default hallucination allowance is 0 (none) for all content outside the declared context.
+1.6.6.2. Within the declared, specific game-mechanic context only, hallucination is permitted strictly within the normalized, uniform envelope of 0.3 to 0.6 [illustrative example — each case, situation, and context dictates its own normalized envelope window of hallucination and creativity; this is a guideline, not a hard universal rule].
+1.6.6.3. Agents must explicitly state the context/use-case being bounded whenever invoking this envelope.
+1.6.6.4. The envelope must be treated as a normalized, uniform distribution over [0,1]; values outside the stated sub-range for the given context are non-compliant.
+1.6.6.5. Agents must record, per invocation, the envelope range chosen and a short justification tying it to the specific mechanic, to allow later audit and recalibration.
+1.6.6.6. If a document spans multiple mechanics with different appropriate envelopes, each mechanic's envelope must be declared separately and never merged into a single blanket value.
+
+1.6.7. Version Control and Change Management
+1.6.7.1. Every substantive edit to a specification document must be accompanied by a change note describing what changed, why, and the triggering requirement or defect.
+1.6.7.2. Documents should carry an implicit or explicit revision marker (e.g., last-updated context) sufficient to reconstruct edit history alongside the repository's version control system.
+1.6.7.3. Breaking changes to mechanics, numbering schemes, or terminology must be flagged in the Reconciliation Table and propagated to all dependent documents.
+1.6.7.4. Every document must maintain a Changelog Table (Section 1.14) recording each revision using the version format YYYY.MM.mm.pp — Year, Major, Minor, Patch — e.g., 2024.06.01.00 for the first major/minor release logged in June 2024, with subsequent patches incrementing the trailing pp segment.
+1.6.7.5. Major (mm) increments denote breaking changes (numbering scheme overhauls, mechanic redefinitions); Minor (mm, second field) increments denote additive non-breaking changes; Patch (pp) increments denote corrections, typo fixes, or clarifications with no semantic change.
+1.6.7.6. The Changelog Table must be updated in the same edit that introduces the change it describes; retroactive changelog entries are non-compliant.
+
+1.6.8. Review, Validation, and Sign-off
+1.6.8.1. No document is considered authoritative until it has passed a review pass checking: structure compliance (1.6.1), enumeration compliance (1.6.2), table completeness (1.6.3), citation completeness (1.6.4), checklist adherence (1.6.5), and hallucination envelope compliance (1.6.6).
+1.6.8.2. The reviewing role/agent must be identified in the RACI table (1.10) and the outcome recorded in the Reconciliation Table.
+1.6.8.3. Failed reviews must produce an itemized defect list, not a vague rejection.
+
+1.6.9. Accessibility, Style, and Tone
+1.6.9.1. Language must be precise and unambiguous; where flavor/narrative tone is used (per the dark strategy setting), it must be clearly separated from mechanical/rules text.
+1.6.9.2. Plain-language summaries should accompany highly technical sections to aid cross-disciplinary readers (designers, engineers, ops).
+
+1.6.10. Terminology and Glossary Governance
+1.6.10.1. Key terms introduced in a document should align with any project-wide glossary; new terms must be flagged for glossary inclusion.
+1.6.10.2. Synonym drift (using two different terms for the same mechanic across documents) must be caught during reconciliation and resolved in favor of the canonical term.
+
+1.7. Summary Table
+| Requirement    | Rule                                                                | Scope                                 |
+|----------------|---------------------------------------------------------------------|---------------------------------------|
+| Front-matter   | ToC, Abstract, Key Words, Exec Summary, Key Findings, Preamble      | All documents                         |
+| Enumeration    | Absolute nested (1., 1.1., 1.1.1., ...), no drift, no gaps          | All levels                            |
+| Tables         | Summary + Reconciliation + Risk + RACI tables                       | Where applicable                      |
+| Citations      | Internal + external references, consolidated in References section  | All claims                            |
+| Conclusion     | Required where appropriate                                          | Document-level                        |
+| Checklists     | CICD/DevOps/SecDevOps/MLOps/LLMOps/AgentOps/GameOps                 | No deviation without logged exception |
+| Version Control| Change notes, revision markers, breaking-change propagation          | All substantive edits                 |
+| Review/Sign-off| Structured review pass before authoritative status                  | All documents                         |
+| Terminology    | Canonical glossary alignment, synonym-drift resolution               | Cross-document                        |
+| Hallucination  | 0 default; illustrative 0.3–0.6 envelope, explicitly declared        | Scoped to specific game mechanic only |
+
+1.8. Reconciliation Table
+| Source Rule (Original)             | Meta-Instruction (This Section)               | Status     |
+|-----------------------------------|------------------------------------------------|------------|
+| ToC/abstract/etc. required        | 1.6.1 Document Structure Compliance            | Reconciled |
+| Absolute nested enumeration       | 1.6.2 Enumeration Compliance                   | Reconciled |
+| Summary/reconciliation tables     | 1.6.3 Tables and Reconciliation                | Reconciled |
+| Citations/references              | 1.6.4 Citations and References                 | Reconciled |
+| No deviation + Ops checklists     | 1.6.5 Deviation and Checklist Discipline       | Reconciled |
+| Hallucination envelope 0.3–0.6    | 1.6.6 Hallucination Envelope Enforcement       | Reconciled |
+| (New) Version/change discipline   | 1.6.7 Version Control and Change Management    | Added      |
+| (New) Review/sign-off requirement | 1.6.8 Review, Validation, and Sign-off         | Added      |
+| (New) Style/tone/accessibility    | 1.6.9 Accessibility, Style, and Tone           | Added      |
+| (New) Glossary/terminology        | 1.6.10 Terminology and Glossary Governance     | Added      |
+| (New) Changelog versioning        | 1.6.7.4–1.6.7.6, 1.14 Changelog Table          | Added      |
+
+1.9. Risk and Mitigation Table
+| Risk                                                    | Likelihood | Impact | Mitigation                                                         |
+|---------------------------------------------------------|------------|--------|--------------------------------------------------------------------|
+| Enumeration drift after edits                           | Medium     | High   | Mandatory full renumbering pass (1.6.2.2)                          |
+| Hallucination bleeding outside declared mechanic        | Medium     | High   | Explicit envelope declaration + scoped review (1.6.6.3–1.6.6.6)    |
+| Missing citations for quantitative claims               | High       | Medium | Citation-needed flagging + References consolidation (1.6.4)        |
+| Silent deviation from checklists                        | Low        | High   | Logged, justified deviations in Reconciliation Table (1.6.5.3)     |
+| Terminology drift across documents                      | Medium     | Medium | Glossary governance, canonical term enforcement (1.6.10)           |
+| Document shipped without review                         | Low        | High   | Mandatory review/sign-off gate (1.6.8)                             |
+
+1.10. Roles and Responsibilities (RACI)
+| Activity                                  | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|-------------------------------------------|----------------|----------|------------|-------------|
+| Draft document per structure standards    | R/A            | I        | I          | I           |
+| Enumeration/renumbering pass              | R              | C        | A          | I           |
+| Table completeness (Summary/Recon/Risk)   | R              | C/A      | I          | I           |
+| Citation sourcing                         | R              | C        | A          | I           |
+| Hallucination envelope declaration        | R/A            | C        | I          | I           |
+| Final review and sign-off                 | C              | R/A      | A          | I           |
+(R = Responsible, A = Accountable, C = Consulted, I = Informed)
+
+1.11. Conclusion
+All future AI agents interacting with this repository's game specifications must treat the above as binding operating instructions: structure, enumerate, tabulate, cite, version, review, and bound speculation exactly as prescribed, with zero tolerance for deviation outside the explicitly permitted hallucination envelope. The expansion in this revision adds version-control discipline, mandatory review/sign-off, risk and RACI tables, and terminology governance, closing prior gaps and increasing overall auditability, fidelity, and depth of coverage across the specification corpus.
+
+1.12. References and Citations
+1.12.1. Internal: game_specifications/0000_documentation_standards.txt (this document), all sections §1.1–§1.11.
+1.12.2. External (illustrative, to be expanded per project glossary/style guide): general technical writing standards for structured documentation (ToC, abstract, executive summary conventions); standard RACI matrix methodology; standard CICD/DevOps/SecDevOps/MLOps/LLMOps/AgentOps checklist practices as adopted by the project's engineering conventions.
+
+1.13. Appendix: Checklists
+1.13.1. CICD Checklist: build reproducibility, automated tests on doc-linting, numbering-drift detection, table-completeness linting, citation-presence linting.
+1.13.2. DevOps Checklist: change tracked in version control, revision note present, sign-off recorded before merge.
+1.13.3. SecDevOps Checklist: no sensitive data leaked in examples, access-controlled review for high-impact mechanics.
+1.13.4. MLOps/LLMOps Checklist: any model/agent-generated content passes hallucination-envelope compliance check before merge.
+1.13.5. AgentOps Checklist: agent actions logged, deviations justified and reconciled, RACI role for the acting agent identified.
+1.13.6. GameOps Checklist: mechanic changes cross-checked against balance/reconciliation tables before release. [Legacy — DarkStrategy_XParadoxX era; preserved per no-removal rule.]
+1.13.7. VoiceOps Checklist (active, VoiceGate): scenario/persona catalog changes cross-checked against the statutory ruleset corpus (voice_processing_specifications/028_statutory_ruleset_integration.txt) before release; judge-model verdicts spot-checked for actor/role confusion and prompt-injection resistance before a run is marked authoritative; every Risk Report reconciled against the current published company terms snapshot used for that run.
+
+1.14. Changelog Table
+Version format: YYYY.MM.mm.pp (Year . Month . Major.Minor . Patch — see 1.6.7.4–1.6.7.6 for increment semantics; the "MM" field records the calendar month of the change, while "mm" is the Major.Minor semantic pair and "pp" is the Patch counter).
+
+| Version              | Date       | Author (Agent/Role) | Change Description                                                        | Type  |
+|--------------------|------------|----------------------|----------------------------------------------------------------------------|-------|
+| 2026.00.00.00      | 2026-07-30 | Documentation Agent  | Initial establishment of documentation standards and meta-instructions.    | Major |
+| 2026.00.00.01      | 2026-07-30 | Documentation Agent  | Added Version Control/Change Management, Review/Sign-off, Style/Tone, and Terminology Governance sections; expanded Summary/Reconciliation/Risk/RACI tables. | Minor |
+| 2026.00.01.00      | 2026-07-30 | Documentation Agent  | Added Section 1.14 Changelog Table using YYYY.MM.mm.pp versioning scheme; cross-referenced in 1.6.7 and Reconciliation Table. | Minor |
+| 2026.08.02.00      | 2026-08-03 | Documentation Agent  | VoiceGate repurposing: added VoiceOps checklist family (1.4.5.1, 1.13.7) alongside legacy GameOps content per the no-removal rule, propagating the fork-and-adapt directive from voice_transcription_concept/voice_chat_concept.md. All path citations to game_specifications/ in sibling documents are being updated to voice_processing_specifications/ across the corpus; this file's own body text is domain-neutral and required no path fixes. | Minor |

@@ -1,0 +1,159 @@
+1. VoiceGate Performance Tests (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Performance Test Scope
+1.6.1. Call-Orchestration Command Latency
+1.6.2. Full-Gauntlet-Run Throughput
+1.6.3. Scenario-Catalog Scaling
+1.6.4. Persistence Latency
+1.6.5. Guardrail Load Simulation
+1.7. Performance Budgets
+1.8. Tooling
+1.9. Summary Table
+1.10. Reconciliation Table
+1.11. Risk and Mitigation Table
+1.12. Roles and Responsibilities (RACI)
+1.13. Conclusion
+1.14. References and Citations
+1.15. Changelog Table
+
+1.1. Abstract
+This document specifies performance-tier tests for VoiceGate: per-command latency budgets,
+full-gauntlet-run throughput, scenario-catalog scaling behavior, persistence latency, and a
+large-sample guardrail load simulation confirming prompt-injection and actor/role-confusion
+resistance holds under repeated, varied runs rather than only on a handful of hand-picked
+fixtures.
+
+1.2. Key Words
+performance test, latency budget, throughput, scenario scaling, guardrail load simulation,
+statistical sampling.
+
+1.3. Executive Summary
+Performance tests validate that VoiceGate remains responsive across its supported scenario
+catalog size and, distinctively for this project, that guardrail resistance (prompt
+injection, actor/role confusion) holds across a large number of simulated gauntlet runs, not
+merely the handful of fixtures exercised at the unit and integration tiers.
+
+1.4. Key Findings
+1.4.1. A single orchestration command (phase transition, transcription hand-off, scoring
+invocation) must resolve within a documented latency budget (Section 1.7) at the default
+scenario-catalog size.
+1.4.2. A full simulated gauntlet run (mock/sandbox target agent, per 015_voicegate_
+deployment.txt) must complete within a documented time budget, enabling large-sample
+guardrail load-simulation runs.
+1.4.3. Scenario-catalog scaling tests specifically measure whether performance degrades
+acceptably (not catastrophically) as the persona/scenario catalog (`src/data/personas`,
+`src/data/scenarios`) grows.
+1.4.4. Guardrail load simulation is the mechanism by which prompt-injection and actor/
+role-confusion resistance (008_voicegate_testing.txt Section 1.9) are empirically confirmed
+to hold at scale, not merely on the specific fixtures used at the unit and integration tiers.
+1.4.5. Persistence (save/restore of a gauntlet run) latency is measured separately from
+in-run command latency, since it is dominated by serialization cost rather than engine
+computation.
+
+1.5. Philosophical Preamble
+Performance testing here plays a second role beyond speed: it is the empirical check that
+guardrail resistance is not an artifact of a small, hand-picked fixture set. A fast test
+bench that only resists prompt injection on the three cases its own authors thought of is not
+yet a trustworthy test bench; the large-sample simulation in Section 1.6.5 is how "resistant
+on our fixtures" becomes "resistant at scale."
+
+1.6. Performance Test Scope
+
+1.6.1. Call-Orchestration Command Latency
+Each orchestration command type is measured for resolution latency under the budgets in
+Section 1.7.
+
+1.6.2. Full-Gauntlet-Run Throughput
+A full simulated gauntlet run against a mock/sandbox target agent completes within the budget
+in Section 1.7, enabling repeated large-sample runs.
+
+1.6.3. Scenario-Catalog Scaling
+Command latency and full-run duration are measured at the default catalog size and at a
+significantly larger synthetic catalog size, to confirm degradation remains proportional
+rather than exponential.
+
+1.6.4. Persistence Latency
+Save and restore operations for a gauntlet run (015_voicegate_deployment.txt) are measured
+independently against the budget in Section 1.7.
+
+1.6.5. Guardrail Load Simulation
+A large sample (minimum 1,000 simulated gauntlet runs, per Section 1.7) with randomly
+generated prompt-injection payload variants and randomized speaker-channel-labeling
+perturbations is run to produce: injection-resistance rate, role-confusion-resistance rate,
+and false-Pass rate, empirically evaluating whether the guardrail behavior asserted at the
+unit/integration tiers generalizes beyond the specific fixtures used there.
+
+1.7. Performance Budgets
+| Metric | Budget |
+|--------|--------|
+| Single orchestration command resolution | < 50 ms |
+| Full simulated gauntlet run (default scenario catalog, mock target agent) | < 2 s |
+| Save operation | < 200 ms |
+| Restore operation | < 200 ms |
+| Guardrail load-simulation sample size (minimum) | 1,000 runs |
+| Guardrail load-simulation total wall-clock time (minimum sample) | < 10 minutes |
+These are engineering targets for a hackathon-scale prototype, not sourced from an external
+benchmark; declared here as ordinary engineering targets rather than a hallucination-envelope
+invocation, since they describe non-content-affecting implementation performance rather than
+statutory/policy content.
+
+1.8. Tooling
+1.8.1. `pytest-benchmark` (or equivalent) for command-latency and persistence-latency
+measurement.
+1.8.2. A dedicated, non-pytest simulation harness script for the large-sample guardrail load
+simulation in Section 1.6.5, since 1,000+ run samples are not suited to the standard test
+runner's per-test overhead.
+
+1.9. Summary Table
+| # | Scope | Primary Metric |
+|---|-------|-------------------|
+| 1 | Call-orchestration command latency | Milliseconds per command |
+| 2 | Full-gauntlet-run throughput | Seconds per simulated run |
+| 3 | Scenario-catalog scaling | Latency/duration delta as catalog size grows |
+| 4 | Persistence latency | Milliseconds per save/restore |
+| 5 | Guardrail load simulation | Injection/role-confusion resistance rate over 1,000+ runs |
+
+1.10. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| Sibling project, 012_game_perfomance_tests.txt (prior revision) | Command latency, full-match throughput, board-size scaling, persistence latency, balance/statistical simulation | Re-mapped to call-orchestration latency, full-gauntlet-run throughput, scenario-catalog scaling, persistence latency, and guardrail load simulation (replacing balance/statistical simulation) | Reconciled |
+
+1.11. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Guardrail load simulation revealing a resistance failure at scale | Medium | High | Explicitly the intended outcome to catch; feeds back into `compliance_scoring_engine`/`transcription_engine` hardening |
+| Performance budgets treated as content-affecting values requiring a hallucination envelope | Low | Low | 1.7 explicitly clarifies these are engineering targets, not statutory/policy content |
+| Large-sample simulation excessively slowing CI | Medium | Medium | 014_voicegate_cicd.txt may run the full 1,000-run simulation on a slower/scheduled pipeline stage rather than every commit |
+
+1.12. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain performance budgets | R | C | A | I |
+| Run and interpret guardrail load simulation | R | C | A | A/Stakeholder (product owner) |
+
+1.13. Conclusion
+Performance testing for VoiceGate serves the ordinary purpose of responsiveness validation
+and the distinctive purpose of empirically confirming, at scale, that its mandatory guardrail
+resistance is not merely a fixture-level artifact.
+
+1.14. References and Citations
+1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
+§1.1-1.14.
+1.14.2. Internal: voice_processing_specifications/008_voicegate_testing.txt (testing
+pyramid; Section 1.9 guardrail-testing requirement).
+1.14.3. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (statutory/
+policy scoring rules exercised under load).
+1.14.4. Internal: voice_processing_specifications/015_voicegate_deployment.txt (mock/sandbox
+target-agent constraint).
+1.14.5. Internal: voice_processing_specifications/009_voicegate_unit_tests.txt §1.6.11-
+1.6.12 (guardrail cases scaled up in Section 1.6.5).
+
+1.15. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation (sibling project, as 012_game_perfomance_tests.txt): performance scope, budgets, tooling, and balance-simulation mechanism. | Major |
+| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via `git mv` from 012_game_perfomance_tests.txt (also correcting the "perfomance" typo to "performance"); re-mapped scope to call-orchestration latency, gauntlet-run throughput, scenario-catalog scaling, persistence latency; replaced balance/statistical simulation with a guardrail load simulation validating prompt-injection/role-confusion resistance at scale. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

@@ -1,0 +1,129 @@
+1. VoiceGate Virtual Environment (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Environment Policy
+1.7. Dependency Management
+1.8. Reproducibility Requirements
+1.9. Summary Table
+1.10. Reconciliation Table
+1.11. Risk and Mitigation Table
+1.12. Roles and Responsibilities (RACI)
+1.13. Conclusion
+1.14. References and Citations
+1.15. Changelog Table
+
+1.1. Abstract
+This document defines the Python virtual environment and dependency-management policy for
+the VoiceGate backend, satisfying the standalone virtual-environment requirement implied by
+this file's name and by voice_processing_specifications/005_voicegate_coding_standards.txt
+Section 1.9.6.
+
+1.2. Key Words
+virtual environment, venv, dependency management, requirements, lock file, reproducibility,
+Python version pinning.
+
+1.3. Executive Summary
+Every contributor and CI job must run the VoiceGate backend inside an isolated Python virtual
+environment, with dependencies declared in a single pinned requirements source and never
+installed globally. Per user preference recorded in this agent's persistent memory, Python
+3.14.4 x64 is the standard interpreter for any virtual environment created for this
+repository unless a future revision states otherwise.
+
+1.4. Key Findings
+1.4.1. The standard tool is the built-in `venv` module (`python -m venv .venv-x-voice-x-voice-gate`); no
+alternative environment manager is mandated, but any alternative (e.g. `virtualenv`) must
+still produce a reproducible, isolated environment.
+1.4.2. Python 3.14.4 x64 is the pinned interpreter version for this repository's virtual
+environments.
+1.4.3. Dependencies are declared in `requirements.txt` (runtime) and
+`requirements-dev.txt` (testing/linting/tooling), both pinned to exact versions for
+reproducibility.
+1.4.4. A known packaging risk exists: `lxml` has no prebuilt wheel for Python 3.14 on
+Windows at this time and fails to build from source (missing `libxml/xmlversion.h`); any
+HTML-parsing dependency needed by the transcription or company-terms-snapshot ingestion
+paths should prefer BeautifulSoup with the built-in `html.parser` over `lxml` on this
+platform/version combination.
+1.4.5. The virtual environment directory (`.venv-x-voice-x-voice-gate/`) is never committed to version control;
+only the requirements files are.
+
+1.5. Philosophical Preamble
+A virtual environment is the smallest unit of reproducibility a project can guarantee: if two
+contributors cannot produce byte-identical dependency behavior, no downstream claim about a
+seeded, reproducible compliance-gauntlet run can be trusted either. Isolating dependencies is
+not bureaucratic overhead; it is the precondition for `rng_service`'s own determinism claim
+and, by extension, for any Risk Report's before/after re-run diff being meaningful.
+
+1.6. Environment Policy
+1.6.1. Every contributor creates a local virtual environment before installing any
+dependency: `python -m venv .venv-x-voice-x-voice-gate` followed by environment activation.
+1.6.2. CI jobs create a fresh virtual environment on every run; they never reuse a cached
+environment across dependency-version changes without re-resolving.
+1.6.3. The pinned interpreter is Python 3.14.4 x64. Contributors on other platforms must
+still target this version where feasible; deviations must be logged per
+0000_documentation_standards.txt Section 1.6.5.3.
+
+1.7. Dependency Management
+1.7.1. `requirements.txt` lists exact, pinned runtime dependencies only.
+1.7.2. `requirements-dev.txt` lists exact, pinned development/test/lint dependencies
+(pytest, coverage, mypy/type-checker, linters) in addition to the runtime set.
+1.7.3. No dependency is installed outside of the virtual environment; no dependency is
+installed without being added to the appropriate requirements file in the same change.
+1.7.4. Known incompatibility: `lxml` lacks a Windows/Python-3.14 prebuilt wheel and fails to
+build from source; prefer BeautifulSoup with `html.parser` for any HTML-parsing need in this
+repository (e.g. parsing scraped company terms-and-conditions pages for
+`company_terms_snapshots`).
+
+1.8. Reproducibility Requirements
+1.8.1. A fresh clone, given only `requirements.txt`/`requirements-dev.txt` and the pinned
+Python version, must be able to reproduce an identical dependency set.
+1.8.2. Dependency upgrades are deliberate, reviewed changes, not incidental side effects of
+an unrelated feature branch.
+
+1.9. Summary Table
+| Aspect | Rule |
+|--------|------|
+| Tool | Built-in `venv` (`python -m venv .venv-x-voice-x-voice-gate`) |
+| Interpreter | Python 3.14.4 x64 |
+| Runtime deps | `requirements.txt`, pinned |
+| Dev/test deps | `requirements-dev.txt`, pinned |
+| Committed to VCS | Requirements files only, never `.venv-x-voice-x-voice-gate/` |
+| Known risk | `lxml` unsupported on Win/Py3.14; prefer BeautifulSoup + `html.parser` |
+
+1.10. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| (New) | File was empty | Full virtual-environment and dependency policy established | Added |
+
+1.11. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Dependency drift between contributors' local environments | Medium | Medium | Pinned requirements files, reproducibility rule (1.8.1) |
+| `lxml` build failure blocking a contributor on Windows/Python 3.14 | Medium | Low | 1.7.4 documented substitute (BeautifulSoup + html.parser) |
+| CI using a stale cached environment after a dependency bump | Low | Medium | 1.6.2 mandates fresh environment creation per CI run |
+
+1.12. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain requirements files | R | C | A | I |
+| Approve dependency additions/upgrades | C | R | A | I |
+
+1.13. Conclusion
+Every contributor and CI job runs the VoiceGate backend inside a pinned, reproducible Python
+3.14.4 x64 virtual environment with explicitly declared dependencies, closing the
+reproducibility gap this file previously left open.
+
+1.14. References and Citations
+1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
+1.14.2. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt §1.9.6.
+1.14.3. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(product concept referencing company-terms scraping/ingestion).
+1.14.4. External: Python `venv` module documentation (Python Software Foundation).
+
+1.15. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: virtual environment policy, pinned Python 3.14.4 x64, dependency management rules. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 007_game_virtual_env.txt; updated cross-references from game_specifications/ to voice_processing_specifications/ and reframed the `lxml` risk note and reproducibility rationale in terms of VoiceGate's transcription/company-terms-snapshot ingestion and seeded gauntlet re-run use cases. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

@@ -1,0 +1,178 @@
+1. VoiceGate Philosophy (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Design Pillars
+1.6.1. Guardrails Protect Trust
+1.6.2. Controlled Adversarial Variance
+1.6.3. Deterministic Verdict Engine, Advisory Patch Adviser
+1.6.4. Legibility and Citation as a First-Class Requirement
+1.6.5. Vertical Slice Before Feature Breadth
+1.7. Reviewer-Experience Principles
+1.8. Verification-Flagged Citation Discipline
+1.9. Summary Table
+1.10. Reconciliation Table
+1.11. Risk and Mitigation Table
+1.12. Roles and Responsibilities (RACI)
+1.13. Conclusion
+1.14. References and Citations
+1.15. Changelog Table
+
+1.1. Abstract
+This document states the design philosophy underlying VoiceGate: why an automated red-team/
+compliance test bench for voice AI agents must be guardrail-first, advisory-only in its AI
+features, and disciplined about which external claims are confirmed versus
+verification-flagged. It extends the philosophical stance first articulated in
+voice_transcription_concept/voice_chat_concept.md into concrete, checkable design pillars,
+replacing the sibling project's game-design pillars (003_game_philosophy.txt, preserved in
+git history).
+
+1.2. Key Words
+design philosophy, guardrail-first, prompt injection, model poisoning, deterministic verdict
+engine, advisory-only, Suggested Patch Adviser, legibility, verification-flagged citation,
+vertical slice, reviewer experience.
+
+1.3. Executive Summary
+VoiceGate is built on the premise that a compliance test bench is only as trustworthy as the
+guardrails protecting its own judge models: transcript content from either speaker must
+always be treated as untrusted DATA, never as instructions to the judge, exactly as retrieved
+tool content must never override system instructions. This document names five design
+pillars that every future scoring, UI, or engineering decision must be checked against, and
+formalizes a verification-flagged citation discipline so that external legal/regulatory
+claims (statutes, tribunal precedents) are never asserted as confirmed without independent
+verification.
+
+1.4. Key Findings
+1.4.1. VoiceGate's core identity is synthesis, not imitation: it deliberately merges
+adversarial persona simulation, live call orchestration, dual-channel transcription, and
+dual-referent (statute + company Terms & Conditions) compliance scoring.
+1.4.2. Randomized variance in VoiceGate (tone jitter, interruption timing, escalation; see
+026_randomization_variance_terminology.txt) is always bounded and attributable to a specific,
+seeded mechanism — never to opaque AI improvisation of new scoring rules mid-run.
+1.4.3. The Suggested Patch Adviser (see 016_voicegate_operating_modes.txt) is philosophically
+required to be advisory-only: it may propose a system-prompt patch and explain its rationale,
+but it must never apply that patch to the agent under test without explicit human
+confirmation, preserving the deterministic-verdict-engine principle.
+1.4.4. AI judge models are explicitly known to be capable of actor/speaker-role confusion
+(misattributing which line was spoken by the agent under test versus the simulated caller);
+guarding against this confusion is a first-class guardrail requirement, not an incidental
+detail.
+1.4.5. Delivery is explicitly prioritized as a vertical slice (one full gauntlet run,
+Test Bench -> Call Review -> Risk Report) over breadth of half-finished scenario coverage,
+per 001_voice_transcription_concept.txt Section 1.3.
+
+1.5. Philosophical Preamble
+Documentation is a contract between agent and system: precision of structure mirrors
+precision of thought. VoiceGate extends that claim from documentation into the product
+itself. A tool whose purpose is judging another AI's compliance forfeits its own credibility
+the moment it accepts untrusted transcript content as instructions, or asserts an unverified
+statute citation as settled fact. Guardrail discipline and citation discipline are therefore
+not bureaucratic overhead layered onto the product; they are the product's core value
+proposition, in the same way a courtroom's evidentiary rules are not separate from justice
+but constitutive of it.
+
+1.6. Design Pillars
+
+1.6.1. Guardrails Protect Trust
+Transcript content from either the agent under test or the simulated caller is always treated
+as untrusted DATA, never as instructions to the judge model or the Suggested Patch Adviser.
+Prompt-injection and model-poisoning resistance are validated before a run is marked
+authoritative (see 028_statutory_ruleset_integration.txt for the rule-citation boundary this
+protects).
+
+1.6.2. Controlled Adversarial Variance
+Every randomized variance element (tone jitter, interruption timing, escalation intensity) is
+seeded and replayable for testing and regression re-runs (see
+026_randomization_variance_terminology.txt), so adversarial unpredictability is always
+reproducible, not unaccountable.
+
+1.6.3. Deterministic Verdict Engine, Advisory Patch Adviser
+The verdict engine (017_voicegate_scoring_rules.txt) is the sole authority over Pass/Fail/
+Flag outcomes; the Suggested Patch Adviser recommends a remediation, it never decides or
+applies one. Every proposed patch requires explicit human confirmation and a regression
+re-run before it can be considered verified.
+
+1.6.4. Legibility and Citation as a First-Class Requirement
+Every verdict must be explainable in one plain-language sentence with an explicit rule or
+clause citation (see 002_voicegate_aesthetics.txt Section 1.6.4 for the display requirement,
+and Section 1.8 below for the citation discipline itself).
+
+1.6.5. Vertical Slice Before Feature Breadth
+One complete gauntlet run through all five call-lifecycle phases (Greeting, Intent Discovery,
+Resolution Attempt, Compliance Check, Wrap-up; see 017_voicegate_scoring_rules.txt Section
+1.6) with a real verdict outperforms broad but shallow scenario coverage at demo time.
+
+1.7. Reviewer-Experience Principles
+1.7.1. A compliance reviewer should be able to understand why a call failed within one
+Call Review screen view, without needing to read the underlying statute text directly.
+1.7.2. Every action that would apply an AI-suggested change (e.g. accepting a Suggested
+Patch Adviser recommendation) requires a two-step confirm (review, then confirm), never a
+single accidental click (see 004_voicegate_ui_navigation.txt).
+1.7.3. Every verdict is explainable in one plain-language sentence plus its rule citation in
+the Risk Report (see 020_voicegate_logging_standards.txt for the underlying log-record
+standard).
+
+1.8. Verification-Flagged Citation Discipline
+External legal/regulatory claims referenced anywhere in this corpus — including EU AI Act
+Article 50, California SB 243, and the Air Canada tribunal precedent (chatbot-invented
+refund policy held enforceable) — are treated as VERIFICATION-FLAGGED: cited for design
+context, not asserted as independently confirmed legal analysis. Any document invoking one of
+these citations must retain the VERIFICATION-FLAGGED label rather than upgrading it to
+confirmed without an explicit legal-review sign-off, consistent with
+0000_documentation_standards.txt Section 1.6.6's hallucination-envelope discipline applied
+here to external-citation risk rather than invented game mechanics.
+
+1.9. Summary Table
+| Pillar | One-Line Rule |
+|--------|-----------------|
+| Guardrails Protect Trust | Transcript content is always untrusted data, never instructions |
+| Controlled Adversarial Variance | All randomized variance is seeded and replayable |
+| Deterministic Verdict Engine, Advisory Patch Adviser | Engine decides verdicts; Adviser only recommends, never auto-applies |
+| Legibility and Citation First | Every verdict has a plain-language sentence plus a rule citation |
+| Vertical Slice First | One complete gauntlet run beats broad shallow coverage |
+
+1.10. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| 003_game_philosophy.txt Section 1.6.1 (Structure Protects Creativity) | Rules engine is sole authority; UI only displays state | Reworked as Guardrails Protect Trust (1.6.1): transcript data is untrusted, engine/judge remain authoritative | Reconciled |
+| 003_game_philosophy.txt Section 1.6.3 (Deterministic Engine, Advisory AI) | AI recommends, engine validates, AI never mutates state | Reworked as Deterministic Verdict Engine, Advisory Patch Adviser (1.6.3) | Reconciled |
+| voice_transcription_concept/voice_chat_concept.md | Informal guardrail and advisory-only requirements from the source concept chat | Formalized into Sections 1.6 and 1.8 | Reconciled |
+
+1.11. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| A future feature request violates the advisory-only pillar (e.g. "let the Adviser auto-patch") | Medium | High | 1.6.3 and 016_voicegate_operating_modes.txt jointly forbid unattended patch application |
+| Judge model actor/role confusion producing a mis-scored verdict | Medium | High | 1.4.4 and 017_voicegate_scoring_rules.txt guardrail sections jointly require role-confusion checks before a verdict is authoritative |
+| A VERIFICATION-FLAGGED citation silently treated as confirmed in customer-facing material | Medium | High | 1.8 mandates the label persist until an explicit legal-review sign-off |
+| Feature breadth creep undermining the vertical-slice principle | High | High | 1.6.5 plus 001_voice_transcription_concept.txt Section 1.9 (MVP scope) jointly gate new feature requests |
+
+1.12. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain design pillars | R | C | A | I |
+| Adjudicate philosophy-vs-feature-request conflicts | C | R/A | A | A/Stakeholder (product owner) |
+| Sign off on upgrading a VERIFICATION-FLAGGED citation to confirmed | I | C | I | R/A (legal reviewer) |
+
+1.13. Conclusion
+VoiceGate's philosophy is that guardrail discipline and citation discipline are the product,
+not overhead on top of it. Every future scoring, UI, or engineering decision should be
+checkable against the five pillars in Section 1.6 before it is accepted.
+
+1.14. References and Citations
+1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.5,
+§1.6.6.
+1.14.2. Internal: voice_transcription_concept/voice_chat_concept.md (source concept chat).
+1.14.3. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (brand
+and MVP scope).
+1.14.4. Internal: voice_processing_specifications/016_voicegate_operating_modes.txt
+(Suggested Patch Adviser constraints).
+1.14.5. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (verdict
+engine and guardrail requirements).
+
+1.15. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/003_game_philosophy.txt: five design pillars, player-experience principles, hallucination-envelope relationship. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: reworked five design pillars around guardrail-first principles, advisory-only AI (Suggested Patch Adviser), and verification-flagged citation discipline for external statute/precedent claims. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

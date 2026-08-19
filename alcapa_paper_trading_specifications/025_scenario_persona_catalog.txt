@@ -1,0 +1,190 @@
+1. Scenario/Persona Catalog Specification (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Scope and Authority
+1.7. Catalog Composition
+1.8. Category-to-Class Mapping
+1.9. Intensity-Tier-to-Magnitude Mapping
+1.10. Draw, Retirement, and Reshuffle Lifecycle
+1.11. Gauntlet-Run Composition Constraints
+1.12. Scenario Resolution Contract
+1.13. Summary Table
+1.14. Reconciliation Table
+1.15. Risk and Mitigation Table
+1.16. Roles and Responsibilities (RACI)
+1.17. Conclusion
+1.18. References and Citations
+1.19. Changelog Table
+
+1.1. Abstract
+This document defines the canonical scenario/persona catalog for VoiceGate and serves as the
+implementation-facing companion to
+voice_processing_specifications/017_voicegate_scoring_rules.txt. It formalizes catalog
+composition, category/class mapping, intensity-tier/magnitude mapping, and lifecycle rules
+for scenario draw and retirement, so the scenario engine (`src/voicegate/scenario_engine`)
+and Test Bench UI cannot diverge on which scenarios a gauntlet run may select.
+
+1.2. Key Words
+scenario catalog, persona catalog, category mapping, intensity tier, scenario gauntlet,
+draw pile, seeded randomness, scenario resolution, VoiceGate.
+
+1.3. Executive Summary
+VoiceGate uses one shared scenario/persona catalog structured as category x intensity tier —
+the repurposed analog of a standard 52-card deck's suit-as-class/rank-as-magnitude structure
+(voice_processing_specifications/0000_documentation_standards.txt records this repurposing
+lineage). Categories (Crisis/Emotional, Minor/Age-Sensitive, Adversarial-Refund, Standard/
+Happy-Path) define the behavioral "class" of a scenario, and intensity tiers (Low, Medium,
+High, Extreme) define its magnitude. This document provides the exact operational contract
+for catalog lifecycle, gauntlet-run composition, and deterministic scenario resolution order
+when a scenario's demands interact with persona archetype behavior
+(voice_processing_specifications/027_persona_archetype_definitions.txt) and randomized
+variance injection
+(voice_processing_specifications/026_randomization_variance_terminology.txt).
+
+1.4. Key Findings
+1.4.1. The catalog is a fixed 4x4 structure (four categories x four intensity tiers), with
+one or more concrete scenario entries per cell; it is not adjustable per run in MVP mode.
+1.4.2. Category-to-class mapping is sourced canon and is not adjustable per run in MVP mode.
+1.4.3. Intensity-tier-to-magnitude mapping is fixed to tiered outputs (escalation ceiling,
+expected call duration band) to keep gauntlet coverage legible and testable.
+1.4.4. Scenario draw/retirement behavior must be deterministic at the state-transition level,
+even though scenario order itself is seeded-random (Section 1.10;
+voice_processing_specifications/026_randomization_variance_terminology.txt).
+1.4.5. This file is the authoritative implementation detail for catalog behavior, while
+voice_processing_specifications/017_voicegate_scoring_rules.txt remains the scoring-rules
+canon source.
+
+1.5. Philosophical Preamble
+A red-team gauntlet is only as trustworthy as its coverage claim. The design goal of this
+catalog is controlled, auditable variety: enough breadth across category and intensity that
+a Pass verdict means something, without so much unbounded variation that two gauntlet runs
+become impossible to compare.
+
+1.6. Scope and Authority
+1.6.1. This file governs only scenario/persona catalog structure and lifecycle.
+1.6.2. If this file conflicts with
+voice_processing_specifications/017_voicegate_scoring_rules.txt, that file wins and this
+file must be reconciled in the same change set.
+1.6.3. If this file conflicts with implementation details in code, this file and the code
+must both be reviewed against
+voice_processing_specifications/017_voicegate_scoring_rules.txt before release.
+
+1.7. Catalog Composition
+1.7.1. Categories: Crisis/Emotional, Minor/Age-Sensitive, Adversarial-Refund, Standard/
+Happy-Path.
+1.7.2. Intensity tiers per category: Low, Medium, High, Extreme.
+1.7.3. Each (category, tier) cell holds one or more concrete scenario entries, each with a
+`scenario_id`, short description, and expected call-duration band.
+1.7.4. The active catalog state during a gauntlet run is represented by three collections:
+1.7.4.1. Draw pool (unselected scenarios eligible for this run).
+1.7.4.2. Retired pool (scenarios already run this session, ordered by resolution timestamp).
+1.7.4.3. Assignments (per-call scenario/persona bindings for the current run).
+
+1.8. Category-to-Class Mapping
+| Category | Behavioral Class | Canonical Test Domain |
+|------|----------------|-------------------------|
+| Crisis/Emotional | Distress handling | Empathy, de-escalation, crisis-referral compliance |
+| Minor/Age-Sensitive | Age-gating | Age verification, minor-protection statutory triggers |
+| Adversarial-Refund | Boundary probing | Refund/cancellation terms vs. company T&C fidelity |
+| Standard/Happy-Path | Baseline | Ordinary successful resolution, no adversarial pressure |
+
+1.9. Intensity-Tier-to-Magnitude Mapping
+| Tier | Magnitude Contract |
+|------|--------------------|
+| Low | Single-issue call, minimal pushback, short expected duration |
+| Medium | One escalation point, moderate persona pushback |
+| High | Multiple escalation points, sustained adversarial/emotional pressure |
+| Extreme | Maximum scripted escalation rate and interruption density (Section
+voice_processing_specifications/026_randomization_variance_terminology.txt §1.8), used to
+probe guardrail limits |
+
+1.10. Draw, Retirement, and Reshuffle Lifecycle
+1.10.1. Each gauntlet run begins with one mandatory scenario draw per scheduled call slot.
+1.10.2. A resolved scenario (call completed, verdict issued) moves to the retired pool
+immediately after verdict issuance.
+1.10.3. If the draw pool is exhausted mid-run, the retired pool is reshuffled (using the
+run's seeded RNG per
+voice_processing_specifications/026_randomization_variance_terminology.txt §1.7) and becomes
+the new draw pool; already-issued verdicts for retired entries are not discarded.
+1.10.4. If both draw and retired pools are empty (catalog fully exhausted with no repeat
+budget remaining), no further draw occurs and an audit event is logged under
+voice_processing_specifications/020_voicegate_logging_standards.txt.
+
+1.11. Gauntlet-Run Composition Constraints
+1.11.1. Default gauntlet-run size (MVP default): a run must include at least one scenario
+from each of the four categories before any category may repeat.
+1.11.2. A single call is bound to exactly one scenario and exactly one persona archetype
+(voice_processing_specifications/027_persona_archetype_definitions.txt); a future rules
+update may allow persona-swap mid-call, but this is out of MVP scope.
+1.11.3. Extreme-tier scenarios require an explicit run-configuration opt-in; they are not
+drawn by default in a standard gauntlet run.
+
+1.12. Scenario Resolution Contract
+1.12.1. Resolution order for a drawn scenario is: legality check -> persona binding ->
+intensity-tier derivation -> call execution (transcription) -> compliance scoring -> verdict
+issuance -> logging.
+1.12.2. When a scenario's scripted escalation and a persona's own escalation-rate stat
+(voice_processing_specifications/027_persona_archetype_definitions.txt §1.9) both apply,
+the persona's behavioral stat modulates the scenario's scripted escalation rate rather than
+overriding it, unless the scenario explicitly states "persona-invariant."
+1.12.3. All scenario resolutions must emit an event record with category, tier, scenario id,
+persona id, source call id, and resulting verdict, per
+voice_processing_specifications/020_voicegate_logging_standards.txt §1.9.
+
+1.13. Summary Table
+| Topic | Rule |
+|------|------|
+| Catalog shape | 4 categories x 4 intensity tiers |
+| Mapping | Category=behavioral class, tier=magnitude |
+| Draw cadence | 1 mandatory draw per scheduled call slot |
+| Composition | All 4 categories before any repeat (MVP default) |
+| Reshuffle | Retired pool reshuffled into draw pool when draw pool empty |
+| Resolution order | legality -> persona bind -> tier derive -> execute -> score -> verdict -> log |
+
+1.14. Reconciliation Table
+| Prior State | Current State | Status |
+|-------------|----------------|--------|
+| File was the game's 52-card deck specification (suit=class, rank=magnitude) | Repurposed to scenario/persona catalog (category=class, intensity tier=magnitude), same structural pattern | Reconciled |
+| Early ideation had no fixed catalog shape | Catalog locked to 4x4 category x intensity-tier structure | Reconciled |
+
+1.15. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Scenario/persona state desynchronization between engine and UI | Medium | High | Use 1.12 event contract and integration tests |
+| Ambiguity around Extreme-tier opt-in | Medium | Medium | Explicit run-configuration opt-in required (1.11.3) |
+| Composition constraint producing unbalanced category coverage over many runs | Low | Medium | Enforce draw-then-retire protocol (1.10) and category-coverage rule (1.11.1) |
+
+1.16. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain catalog spec | R | C | A | I |
+| Validate scenario-engine alignment | C | R | A | I |
+| Approve canonical mapping changes | C | R | A | A/Stakeholder |
+
+1.17. Conclusion
+This document converts the scenario/persona catalog from a high-level concept into a strict
+operational contract suitable for implementation, testing, and audit, while preserving the
+"class x magnitude" structural pattern inherited from the sibling project's card-deck design.
+
+1.18. References and Citations
+1.18.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.6.
+1.18.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(scenario gauntlet, Test Bench deliverable).
+1.18.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
+1.18.4. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (scoring-
+rules canon).
+1.18.5. Internal: voice_processing_specifications/026_randomization_variance_terminology.txt
+(seeded RNG and escalation-rate terminology).
+1.18.6. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
+(persona behavioral stats).
+1.18.7. Internal: voice_processing_specifications/020_voicegate_logging_standards.txt
+(event-log contract).
+
+1.19. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of previously empty file with canonical 52-card deck specification. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 025_52_deck_set.txt; replaced 52-card deck contract with scenario/persona catalog (category x intensity tier, same class-x-magnitude structural pattern), retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

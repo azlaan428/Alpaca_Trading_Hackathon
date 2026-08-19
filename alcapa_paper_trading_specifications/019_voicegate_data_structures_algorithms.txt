@@ -1,0 +1,199 @@
+1. VoiceGate Data Structures and Algorithms (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Core Data Structures
+1.6.1. Scenario/Persona Catalog Representation
+1.6.2. Persona Archetype Representation
+1.6.3. Transcript and Event Log Representation
+1.6.4. Statutory Rule Citation Index
+1.6.5. Verdict and Risk Report Representation
+1.7. Core Algorithms
+1.7.1. Scenario/Persona Selection and Variance Injection
+1.7.2. Compliance Scoring
+1.7.3. Rule-Citation Lookup
+1.7.4. Seeded Random-Number Service
+1.8. Complexity Analysis
+1.9. Summary Table
+1.10. Reconciliation Table
+1.11. Risk and Mitigation Table
+1.12. Roles and Responsibilities (RACI)
+1.13. Conclusion
+1.14. References and Citations
+1.15. Changelog Table
+
+1.1. Abstract
+This document specifies the core data structures and algorithms underlying the VoiceGate
+orchestration and scoring engines, providing the concrete representations and time/space
+complexity analysis required by 005_voicegate_coding_standards.txt Section 1.8 for every
+module listed in 006_voicegate_scaffolding.txt.
+
+1.2. Key Words
+data structure, algorithm, complexity analysis, scenario/persona catalog, event log,
+rule-citation index, seeded RNG, compliance scoring.
+
+1.3. Executive Summary
+VoiceGate represents its scenario/persona catalog as a category-and-intensity-tier-keyed
+lookup structure, personas and scenarios as immutable value objects selected and varied only
+through engine commands, the transcript as an append-only ordered event log, and statutory
+rule citations as an index keyed by rule ID. Core algorithms (scenario/persona selection,
+compliance scoring, rule-citation lookup) operate in time complexity proportional to catalog
+size or transcript length, never worse than low-order polynomial for the catalog sizes
+described in 025_scenario_persona_catalog.txt.
+
+1.4. Key Findings
+1.4.1. The scenario/persona catalog is represented as a dictionary keyed by
+`(category, intensity_tier)`, not a flat list, to keep catalog lookups O(1) per combination.
+1.4.2. All randomness (persona/scenario selection, tone/timing/escalation variance) flows
+through a single seeded RNG service so that reproducible gauntlet runs are satisfiable from
+one shared implementation rather than ad hoc calls to the language's default random module
+scattered across engines.
+1.4.3. Scenario/persona selection for a single run is bounded by the catalog's own size,
+which is O(1) for a direct category/intensity lookup and O(C) for a filtered/weighted draw
+across C eligible catalog entries.
+1.4.4. Compliance scoring for a single transcript against the statutory ruleset is O(R * L),
+where R is the number of applicable statutory rules and L is transcript length (number of
+utterances), since each rule is checked against the relevant transcript spans.
+1.4.5. Rule-citation lookup by rule ID is O(1) via a dictionary index, per
+028_statutory_ruleset_integration.txt.
+
+1.5. Philosophical Preamble
+Complexity analysis is not academic decoration here; it is the concrete evidence that a
+compliance-scoring pass over a transcript completes within the run-time budget a live Test
+Bench session requires, and it is required documentation content under
+005_voicegate_coding_standards.txt Section 1.8. A Pass/Fail/Flag verdict citing a specific
+rule is only as trustworthy as the lookup and scoring algorithms producing it are inspectable
+and bounded.
+
+1.6. Core Data Structures
+
+1.6.1. Scenario/Persona Catalog Representation
+A dictionary keyed by `(category: str, intensity_tier: str)` mapping to a list of Scenario
+value objects (per 025_scenario_persona_catalog.txt: Crisis/Emotional, Minor/Age-Sensitive,
+Adversarial-Refund, Standard/Happy-Path categories x Low/Medium/High/Extreme intensity
+tiers). Space complexity: O(C), where C is the total catalog entry count.
+
+1.6.2. Persona Archetype Representation
+An immutable value object per persona instance: archetype name, behavioral stat-block
+(patience, escalation rate, deception likelihood, vulnerability flag; per
+027_persona_archetype_definitions.txt), and the current scenario assignment. Mutation
+(escalation-state changes during a run) occurs only by replacing the object through an
+engine command, never by direct field assignment, consistent with the "transcript is data,
+never instructions" guardrail principle.
+
+1.6.3. Transcript and Event Log Representation
+An append-only ordered list of structured log entries (per 001_voice_transcription_concept.txt
+and 020_logging standards), each entry immutable once appended and tagged with a speaker-role
+field (agent vs. simulated caller) to guard against actor/role confusion during scoring.
+Space complexity: O(L), where L is transcript length in utterances.
+
+1.6.4. Statutory Rule Citation Index
+A dictionary keyed by `rule_id: str` mapping to a RuleCitation value object (jurisdiction,
+short description, citation locator); per 028_statutory_ruleset_integration.txt, this index
+never stores full statute text, only citation metadata. Space complexity: O(R), where R is
+the number of indexed rules.
+
+1.6.5. Verdict and Risk Report Representation
+A Verdict value object (Pass/Fail/Flag enum, list of cited `rule_id`s, free-text rationale)
+produced per call; a Risk Report aggregates Verdict objects across a gauntlet run into a list
+with an associated before/after re-run diff, per 017_voicegate_scoring_rules.txt.
+
+1.7. Core Algorithms
+
+1.7.1. Scenario/Persona Selection and Variance Injection
+Draw a seeded random selection (Section 1.7.4) from the catalog for a given category/
+intensity filter, then apply variance injection (tone jitter, interruption timing,
+escalation-rate perturbation) per 026_randomization_variance_terminology.txt. Time
+complexity: O(1) for a direct lookup, O(C) for a filtered/weighted draw across C eligible
+entries.
+
+1.7.2. Compliance Scoring
+For each applicable statutory rule and company-terms clause, scan the relevant transcript
+spans for rule-violation patterns, per 017_voicegate_scoring_rules.txt. Time complexity:
+O(R * L), where R is the applicable-rule count and L is transcript length.
+
+1.7.3. Rule-Citation Lookup
+Given a `rule_id` produced by compliance scoring, retrieve the full RuleCitation object from
+the index (Section 1.6.4) for inclusion in the Verdict. Time complexity: O(1).
+
+1.7.4. Seeded Random-Number Service
+A single service (`rng_service`) wrapping a seedable pseudo-random generator, exposing
+operations such as `select_scenario()` and `inject_variance()`; the seed is persisted as part
+of run-history data (via `src/services/persistence.py`) so that replaying a gauntlet run from
+a stored seed reproduces subsequent selections and variance identically. Time complexity:
+O(1) per draw.
+
+1.8. Complexity Analysis
+| Operation | Time Complexity | Space Complexity |
+|-----------|-------------------|----------------------|
+| Catalog initialization | O(C) | O(C) |
+| Scenario/persona direct lookup | O(1) | O(1) additional |
+| Scenario/persona filtered/weighted draw | O(C) | O(1) additional |
+| Compliance scoring (single transcript) | O(R * L) | O(L) |
+| Rule-citation lookup | O(1) | O(1) |
+| Event log append | O(1) | O(1) additional |
+| Seeded RNG draw | O(1) | O(1) |
+
+1.9. Summary Table
+| Structure/Algorithm | Representation/Approach |
+|------------------------|-----------------------------|
+| Scenario/persona catalog | Category-and-intensity-keyed dictionary of Scenario objects |
+| Persona | Immutable value object, replaced on mutation |
+| Transcript/event log | Append-only ordered list, speaker-role tagged |
+| Statutory rule index | Rule-ID-keyed dictionary of RuleCitation objects (metadata only) |
+| Verdict/Risk Report | Pass/Fail/Flag value object aggregated into a run-level list |
+| Scenario/persona selection | Seeded catalog lookup/draw + variance injection |
+| Compliance scoring | O(R*L) rule-vs-transcript-span scan |
+| Rule-citation lookup | O(1) dictionary lookup |
+| Randomness | Single shared seeded RNG service |
+
+1.10. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| (New) | File was empty | Core VoiceGate data structures and algorithms defined with full complexity analysis, satisfying 005_voicegate_coding_standards.txt §1.8's documentation requirement | Added |
+
+1.11. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Ad hoc randomness calls bypassing the seeded RNG service, breaking gauntlet reproducibility | Medium | High | 1.4.2/1.7.4 mandate a single shared service; enforced via code review (005_voicegate_coding_standards.txt §1.10) |
+| Statutory rule index accidentally storing full statute text instead of citation metadata | Low | High | 1.6.4 explicitly restricts index content; enforced per 028_statutory_ruleset_integration.txt |
+| Transcript/event log losing speaker-role tagging, enabling actor/role confusion during scoring | Medium | High | 1.6.3 mandates a speaker-role field on every log entry |
+
+1.12. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain data structure/algorithm specification | R | C | A | I |
+| Enforce single shared RNG service usage | C | R | A | I |
+
+1.13. Conclusion
+VoiceGate's core data structures and algorithms are specified with explicit complexity
+analysis, grounding the reproducibility requirements of the seeded RNG service and the
+run-time behavior of compliance scoring in concrete, low-order-polynomial implementation
+choices.
+
+1.14. References and Citations
+1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
+1.14.2. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt §1.8
+(documentation of complexity analysis requirement).
+1.14.3. Internal: voice_processing_specifications/006_voicegate_scaffolding.txt (module
+boundaries and import direction).
+1.14.4. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (scoring
+mechanics represented).
+1.14.5. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt (catalog
+structure origin).
+1.14.6. Internal: voice_processing_specifications/026_randomization_variance_terminology.txt
+(variance injection terminology).
+1.14.7. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
+(persona stat-block fields).
+1.14.8. Internal: voice_processing_specifications/028_statutory_ruleset_integration.txt
+(rule-citation index constraints).
+1.14.9. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(product concept and guardrail rationale).
+
+1.15. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: core data structures, core algorithms, and full complexity analysis. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 019_game_data_structures_algorithms.txt; replaced board/piece/deck/territory representations and movement/combat/territory algorithms with VoiceGate's scenario/persona catalog, transcript/event log, statutory rule-citation index, and compliance-scoring/rule-lookup algorithms, preserving the seeded-RNG determinism pattern. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

@@ -1,0 +1,173 @@
+1. VoiceGate Operating Modes (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Scripted Gauntlet Mode (MVP)
+1.7. Adversarial Fuzzing Mode
+1.8. Regression Re-Run Mode
+1.9. Suggested Patch Adviser (Cross-Mode Feature)
+1.9.1. Adviser Input Contract
+1.9.2. Adviser Output Contract
+1.9.3. Adviser Constraints
+1.10. Deferred Modes
+1.11. Summary Table
+1.12. Reconciliation Table
+1.13. Risk and Mitigation Table
+1.14. Roles and Responsibilities (RACI)
+1.15. Conclusion
+1.16. References and Citations
+1.17. Changelog Table
+
+1.1. Abstract
+This document defines the supported operating modes for VoiceGate: scripted gauntlet,
+adversarial fuzzing, and regression re-run, plus the cross-mode Suggested Patch Adviser
+feature, replacing the sibling project's game-mode document (016_game_modes.txt, preserved
+in git history). Modes explicitly out of scope are deferred to
+018_voicegate_future_wishlist.txt, per 001_voice_transcription_concept.txt Section 1.9.
+
+1.2. Key Words
+operating modes, scripted gauntlet, adversarial fuzzing, regression re-run, Suggested Patch
+Adviser, advisory-only, deterministic heuristic fallback, deferred modes.
+
+1.3. Executive Summary
+VoiceGate ships three operating modes at MVP: scripted gauntlet (runs a fixed,
+pre-authored scenario/persona set from 025_scenario_persona_catalog.txt against the agent
+under test), adversarial fuzzing (layers randomized variance from
+026_randomization_variance_terminology.txt over the same scenario set to probe edge cases),
+and regression re-run (re-executes a previously failed call set to verify whether an accepted
+Suggested Patch Adviser recommendation actually fixed the failure). The Suggested Patch
+Adviser is a cross-mode, advisory-only feature: it proposes one system-prompt patch and an
+explanation on a Fail verdict, and never applies that patch without explicit human
+confirmation.
+
+1.4. Key Findings
+1.4.1. Scripted gauntlet mode is the only mode required to be functional for the hackathon
+demo, matching the ASSUMED LabLab AI Factory / Natively AI hackathon window 2026-08-03 to
+2026-08-10 inherited from the source concept chat (not independently confirmed for
+VoiceGate).
+1.4.2. The Suggested Patch Adviser must never directly apply a patch to the agent under
+test's configuration; every proposed patch requires explicit human confirmation before a
+regression re-run may be triggered, per 003_voicegate_philosophy.txt Section 1.6.3.
+1.4.3. If no external AI/judge service is configured or reachable, the Adviser falls back to
+a deterministic heuristic recommender (e.g. surface the specific rule citation that failed
+and a template patch addressing that rule class) so the feature remains demonstrable without
+a live network dependency.
+1.4.4. Live production monitoring and fully autonomous, continuously-running fuzzing against
+a production agent are both explicitly deferred (see Section 1.10 and
+018_voicegate_future_wishlist.txt).
+1.4.5. Regression re-run mode is the only mode permitted to re-execute a call set flagged by
+a prior Fail verdict; it never silently mutates the original run's recorded verdict, it
+produces a new, linked run entry (see 010_voicegate_run_statistics.txt Section 1.6).
+
+1.5. Philosophical Preamble
+A "mode" is a promise about what kind of agency has been delegated to automation. VoiceGate's
+philosophy (003_voicegate_philosophy.txt Section 1.6.3) draws a hard line: automation may
+propose a remediation, but a human reviewer and the deterministic verdict engine remain the
+sole authorities over whether a fix is accepted and verified. This principle is what allows
+an AI-assisted patch-suggestion feature to exist in a hackathon-scale prototype without
+threatening the product's core promise of auditable, evidence-based compliance findings.
+
+1.6. Scripted Gauntlet Mode (MVP)
+1.6.1. A fixed, pre-authored set of persona/scenario combinations
+(025_scenario_persona_catalog.txt) is run sequentially against the agent under test; every
+call is transcribed and scored per 017_voicegate_scoring_rules.txt.
+1.6.2. No account, login, or network connection to a third-party service is required beyond
+the agent-under-test's own API and the transcription/judge pipeline.
+1.6.3. Run state and results persist locally per 015_voicegate_deployment.txt, allowing a
+run's Call Review and Risk Report to be revisited after completion.
+
+1.7. Adversarial Fuzzing Mode
+1.7.1. Layers randomized variance (tone jitter, interruption timing, escalation intensity;
+see 026_randomization_variance_terminology.txt) over the scripted gauntlet's scenario set,
+seeded and replayable so any discovered failure can be reproduced exactly.
+1.7.2. Fuzzing intensity is bounded by the scenario's declared intensity tier
+(Low/Medium/High/Extreme, per 025_scenario_persona_catalog.txt); it never introduces variance
+outside the declared tier's range without an explicit, separately reviewed configuration
+change.
+
+1.8. Regression Re-Run Mode
+1.8.1. Triggered only from an accepted Suggested Patch Adviser recommendation
+(004_voicegate_ui_navigation.txt Section 1.10.3), re-executing the exact failed call set
+(same seed, same persona/scenario) against the patched agent configuration.
+1.8.2. Produces a new, linked run entry with a before/after diff against the original
+failing run, displayed in the Risk Report (004_voicegate_ui_navigation.txt Section 1.8.3);
+the original Fail verdict is never overwritten.
+
+1.9. Suggested Patch Adviser (Cross-Mode Feature)
+
+1.9.1. Adviser Input Contract
+The specific Fail/Flag finding (transcript lines, violated rule citation) and the agent
+under test's current system prompt, if available.
+
+1.9.2. Adviser Output Contract
+| Field | Description |
+|-------|--------------|
+| Suggested patch | One proposed system-prompt amendment addressing the cited rule |
+| Explanation | A concise, plain-language rationale referencing the rule citation |
+| Confidence | Low, Moderate, or High |
+
+1.9.3. Adviser Constraints
+1.9.3.1. The Adviser never applies a patch to the agent under test; it only returns a
+suggestion for human review.
+1.9.3.2. Every accepted suggestion must pass through regression re-run mode (Section 1.8)
+before it can be marked verified in the Risk Report.
+1.9.3.3. The Adviser must not invent new rule citations not present in
+028_statutory_ruleset_integration.txt or the applicable company Terms & Conditions snapshot.
+
+1.10. Deferred Modes
+The following are explicitly out of MVP scope and tracked in
+018_voicegate_future_wishlist.txt: live production monitoring (continuous testing against a
+live production agent), always-on autonomous fuzzing without human-reviewed run boundaries,
+and any mode requiring multi-tenant user accounts.
+
+1.11. Summary Table
+| Mode | Status | Human Confirmation Required | Network Required |
+|------|--------|-------------------------------|---------------------|
+| Scripted gauntlet | MVP, required | No (read-only run) | Agent-under-test API only |
+| Adversarial fuzzing | MVP, optional | No (read-only run) | Agent-under-test API only |
+| Regression re-run | MVP, triggered by patch acceptance | Yes (patch acceptance) | Agent-under-test API only |
+| Suggested Patch Adviser | Cross-mode, optional feature | Yes (before any re-run) | No (heuristic fallback) |
+| Live production monitoring | Deferred | N/A | Yes (planned) |
+
+1.12. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| 016_game_modes.txt Section 1.6 (Local Pass-and-Play Mode) | Required MVP mode, no network/account needed | Reworked as Scripted Gauntlet Mode (1.6) | Reconciled |
+| 016_game_modes.txt Section 1.7 (AI Adviser "Consult the Oracle") | Advisory-only recommendation, never mutates state, heuristic fallback | Reworked as the Suggested Patch Adviser (1.9), never applies a patch, heuristic fallback retained | Reconciled |
+| 016_game_modes.txt Section 1.8 (Deferred Modes) | Autonomous AI opponent, online multiplayer deferred | Reworked as live production monitoring and always-on autonomous fuzzing deferred (1.10) | Reconciled |
+
+1.13. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Suggested Patch Adviser scope-creeping into auto-applying patches | Medium | High | 1.9.3.1 constraints are binding; any auto-apply request is routed to 018_voicegate_future_wishlist.txt instead |
+| External judge/AI service unavailable during a live demo | Medium | Medium | 1.4.3 deterministic heuristic fallback guarantees demonstrability |
+| Adversarial fuzzing exceeding a scenario's declared intensity tier | Low | Medium | 1.7.2 bounds fuzzing to the declared tier |
+
+1.14. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain mode list and constraints | R | C | A | I |
+| Implement/validate Adviser fallback heuristic | R | C | A | I |
+
+1.15. Conclusion
+VoiceGate ships three required/optional MVP modes and one cross-mode advisory-only AI
+feature, with live production monitoring and always-on autonomous fuzzing explicitly deferred
+and tracked for future consideration.
+
+1.16. References and Citations
+1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
+§1.1-1.14.
+1.16.2. Internal: voice_transcription_concept/voice_chat_concept.md (source concept chat).
+1.16.3. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (verdict
+mechanics the Adviser must respect).
+1.16.4. Internal: voice_processing_specifications/018_voicegate_future_wishlist.txt
+(deferred modes).
+1.16.5. Internal (superseded, preserved in git history): 016_game_modes.txt.
+
+1.17. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/016_game_modes.txt: local pass-and-play as required MVP mode, AI Adviser contract and constraints, deferred modes list. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: reworked into scripted gauntlet, adversarial fuzzing, and regression re-run modes, with the AI Adviser reworked into the advisory-only Suggested Patch Adviser. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

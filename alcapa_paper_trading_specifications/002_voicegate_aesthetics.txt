@@ -1,0 +1,195 @@
+1. VoiceGate Aesthetics (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Visual Identity
+1.6.1. Palette Variant A (Dark, Inherited Default)
+1.6.2. Palette Variant B (Light/Inverted, Inherited Default)
+1.6.3. Shared Accent and Border Rule
+1.6.4. Contrast, Legibility, and Word-Wrap Requirements
+1.7. Typography
+1.8. Screen Visual Language (Test Bench, Call Review, Risk Report)
+1.9. Motion and Animation Restraint
+1.10. Logo Concept
+1.11. Reconciliation with Prior Ideation
+1.12. Summary Table
+1.13. Reconciliation Table
+1.14. Risk and Mitigation Table
+1.15. Roles and Responsibilities (RACI)
+1.16. Conclusion
+1.17. References and Citations
+1.18. Changelog Table
+
+1.1. Abstract
+This document defines the visual identity of VoiceGate's three screens (Test Bench, Call
+Review, Risk Report): palette, typography, contrast/legibility requirements, and the shared
+visual language for verdict badges, findings, and calibration charts. The two-variant
+palette below is inherited unchanged from the sibling DarkStrategy_XParadoxX project (prior
+002_game_aesthetics.txt, preserved in git history) as a starting default only; it is
+explicitly NOT a confirmed VoiceGate brand decision and remains open to revision.
+
+1.2. Key Words
+palette, dark theme, light theme, contrast, legibility, word wrap, accessibility, typography,
+verdict badge, Test Bench, Call Review, Risk Report, inherited default, unconfirmed brand.
+
+1.3. Executive Summary
+VoiceGate reuses, as a placeholder default, the two selectable color-palette variants
+inherited from the sibling game project: Variant A (Dark, near-black background with
+warm-pink text) and Variant B (Light/Inverted, pink background with near-black text), sharing
+one accent/border color. All three VoiceGate screens (Test Bench, Call Review, Risk Report)
+must render legibly in both variants and must never communicate a Pass/Fail/Flag verdict by
+color alone. This palette carries no brand authority for VoiceGate; it is reused purely to
+avoid blocking UI work while a dedicated VoiceGate brand identity remains unconfirmed (see
+001_voice_transcription_concept.txt Section 1.9, open items).
+
+1.4. Key Findings
+1.4.1. The palette values (#000000/#FFACE9 background-text pair, #B76E79 shared accent) are
+carried forward unchanged from the sibling project's aesthetics document as an inherited
+default only, per explicit user directive 2026-08-03; they are not a VoiceGate brand
+decision and must be labeled as such wherever displayed to stakeholders.
+1.4.2. Variant A (Dark) is background #000000 / text #FFACE9; Variant B (Light) inverts this
+to background #FFACE9 / text #000000. Both variants use #B76E79 for accents, borders, and
+dividers.
+1.4.3. Legibility, readability, and word-wrapping are non-negotiable requirements, unchanged
+in principle from the inherited baseline, applied now to transcript text, rule citations, and
+verdict rationale rather than card/tile text.
+1.4.4. Verdict state (Pass/Fail/Flag) must never be communicated by color alone; a badge
+shape/label/icon must duplicate every color-coded signal, given the compliance-critical
+nature of this product.
+1.4.5. Any future VoiceGate-specific brand refresh supersedes this document's palette
+sections without requiring changes to Sections 1.7-1.9 (typography, screen visual language,
+motion), which are treated as VoiceGate-native content, not inherited.
+
+1.5. Philosophical Preamble
+A palette is a contract of legibility between the tool and the compliance reviewer using it;
+in a product whose entire purpose is flagging risk, an illegible or ambiguous verdict display
+would itself be a compliance failure. VoiceGate borrows the sibling project's dark, high-
+contrast aesthetic as a convenient, already-vetted starting point, but treats it explicitly
+as scaffolding, not identity: every reused hex value in this document carries an inherited-
+default label so no future contributor mistakes convenience for confirmation.
+
+1.6. Visual Identity
+
+1.6.1. Palette Variant A (Dark, Inherited Default)
+| Role | Hex |
+|------|-----|
+| Background | #000000 |
+| Primary text | #FFACE9 |
+| Accent / border | #B76E79 |
+
+1.6.2. Palette Variant B (Light/Inverted, Inherited Default)
+| Role | Hex |
+|------|-----|
+| Background | #FFACE9 |
+| Primary text | #000000 |
+| Accent / border | #B76E79 |
+
+1.6.3. Shared Accent and Border Rule
+1.6.3.1. #B76E79 is used identically in both variants for panel borders, selection outlines,
+dividers, and the provisional wordmark.
+1.6.3.2. The active variant is a per-session, user-selectable Settings toggle (see
+004_voicegate_ui_navigation.txt); it is not tied to any run or verdict state.
+1.6.3.3. Verdict colors (Pass/Fail/Flag) are not defined by this document; a future addendum
+must declare them explicitly, following the same inherited-default-vs-confirmed labeling
+discipline established here.
+
+1.6.4. Contrast, Legibility, and Word-Wrap Requirements
+1.6.4.1. #000000-on-#FFACE9 and #FFACE9-on-#000000 both satisfy strong contrast for body
+text; transcript timestamps and small metric badges must use a minimum 14px-equivalent size.
+1.6.4.2. All text containers (transcript lines, finding annotations, rule-citation tooltips,
+Suggested Patch Adviser explanations) must wrap at word boundaries and must never clip or
+silently truncate.
+1.6.4.3. Verdict and finding state must never be communicated by color alone; borders, icons,
+and labels must duplicate every color-coded signal, per accessibility guidance in
+0000_documentation_standards.txt.
+
+1.7. Typography
+1.7.1. One geometric display face for headings; one highly readable sans-serif for interface
+text, including transcript display.
+1.7.2. Monospaced text is reserved for raw transcript timestamps and rule-ID citations, to
+aid scanability and audit review.
+1.7.3. Numeric displays (pass/fail/flag counts, calibration scores) use a tabular-figure
+treatment so values do not visually reflow.
+
+1.8. Screen Visual Language (Test Bench, Call Review, Risk Report)
+1.8.1. Test Bench: persona/scenario selectors and the live transcript panel share the base
+palette; an active-run indicator uses the shared accent color plus a distinct icon, never
+color alone.
+1.8.2. Call Review: the dual-channel transcript is rendered as two visually distinct speaker
+lanes (agent under test vs. simulated caller); inline findings are shown as verdict badges
+(Pass/Fail/Flag label + icon + border treatment) anchored to the exact transcript line they
+apply to.
+1.8.3. Risk Report: failed calls are listed against the specific rule text they violate; a
+before/after re-run diff view and a judge-calibration chart share the base palette and
+typography, with the chart using pattern/texture in addition to color to remain legible for
+color-vision-deficient reviewers.
+1.8.4. Every verdict badge (Pass/Fail/Flag) uses a distinct shape and icon in addition to
+color, per 1.6.4.3.
+
+1.9. Motion and Animation Restraint
+1.9.1. Animation is restrained: transcript auto-scroll, subtle badge-appear transitions, and
+a live-run pulse indicator are permitted; continuous background motion, screen shake, and
+full-surface gradients are avoided, carried forward unchanged from the inherited baseline's
+stated aesthetic exclusions.
+
+1.10. Logo Concept
+1.10.1. A provisional wordmark "VoiceGate" is used without an accompanying mark; the sibling
+project's fractured-geometry logo concept is explicitly NOT carried forward, since it is
+thematically tied to the game brand. A dedicated VoiceGate mark remains an open item pending
+brand confirmation (see 1.4.1).
+
+1.11. Reconciliation with Prior Ideation
+| Topic | Original (002_game_aesthetics.txt) | Current Canon (this document) | Justification |
+|-------|--------------------------------------|-------------------------------|----------------|
+| Palette structure | Two selectable variants; tile/piece/card visual language | Same two variants reused as inherited default; visual language retargeted to Test Bench/Call Review/Risk Report screens | Explicit user directive 2026-08-03: repurpose content, mark palette as default-only |
+| Logo | Fractured-geometry board/die/card mark | Not carried forward; wordmark-only, pending brand confirmation | Sibling logo concept is game-specific and not transferable |
+| Danger/success/verdict colors | Not yet redefined in sibling document | Verdict colors (Pass/Fail/Flag) also not yet redefined here | Consistent open item across both documents |
+
+1.12. Summary Table
+| Element | Variant A (Dark) | Variant B (Light) | Status |
+|---------|-------------------|---------------------|--------|
+| Background | #000000 | #FFACE9 | Inherited default |
+| Text | #FFACE9 | #000000 | Inherited default |
+| Accent/Border | #B76E79 | #B76E79 | Inherited default |
+| Verdict colors | Not yet defined | Not yet defined | Open item |
+
+1.13. Reconciliation Table
+See Section 1.11 above; cross-referenced here in full satisfaction of the mandatory document
+skeleton.
+
+1.14. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Inherited palette mistaken for a confirmed VoiceGate brand decision | Medium | Medium | Explicit "inherited default, open to revision" labeling in 1.4.1 and throughout |
+| Verdict communicated by color alone, misread by color-vision-deficient reviewer | Medium | High | Mandatory badge shape/icon duplication (1.6.4.3, 1.8.4) |
+| Judge-calibration chart illegible for color-vision-deficient reviewers | Low | Medium | Pattern/texture requirement in 1.8.3 |
+
+1.15. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain inherited-default palette values | R | C | A | I |
+| Approve future VoiceGate-specific brand refresh | C | R | A | A/Stakeholder (product owner) |
+| Accessibility/contrast sign-off | C | R/A | A | I |
+
+1.16. Conclusion
+VoiceGate's current visual identity is an explicitly-labeled inherited default, retargeted
+from tile/piece/card visual language to Test Bench/Call Review/Risk Report screen language,
+with unchanged legibility guarantees and a still-open brand/logo decision.
+
+1.17. References and Citations
+1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
+1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (brand
+identity, open items, Section 1.9).
+1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source concept chat).
+1.17.4. Internal: voice_processing_specifications/004_voicegate_ui_navigation.txt (palette
+toggle location).
+1.17.5. Internal (superseded, preserved in git history): 002_game_aesthetics.txt (source of
+the inherited-default palette values).
+
+1.18. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/002_game_aesthetics.txt: two-variant palette, typography, tile/piece/card visual language. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: retargeted visual language to Test Bench/Call Review/Risk Report screens, relabeled inherited palette as default-only/not-confirmed-brand, deferred logo/verdict-color decisions as open items. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

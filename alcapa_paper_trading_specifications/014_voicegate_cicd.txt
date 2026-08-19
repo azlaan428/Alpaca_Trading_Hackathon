@@ -1,0 +1,158 @@
+1. VoiceGate CI/CD (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Pipeline Stages
+1.6.1. Lint and Style
+1.6.2. Type Checking
+1.6.3. Unit Test and Coverage Gate
+1.6.4. Integration Test Gate
+1.6.5. Guardrail Test Suite Gate
+1.6.6. End-to-End Test Gate
+1.6.7. Scheduled Performance/Guardrail-Load Simulation
+1.7. Branching and Release Strategy
+1.8. Summary Table
+1.9. Reconciliation Table
+1.10. Risk and Mitigation Table
+1.11. Roles and Responsibilities (RACI)
+1.12. Conclusion
+1.13. References and Citations
+1.14. Changelog Table
+
+1.1. Abstract
+This document specifies the continuous integration and continuous deployment pipeline for
+VoiceGate, implementing the testing baseline established in 008_voicegate_testing.txt as a
+concrete, staged pipeline with explicit quality gates, including a dedicated, mandatory
+guardrail-test-suite gate that must pass before any merge.
+
+1.2. Key Words
+CI/CD, pipeline, quality gate, coverage gate, guardrail gate, lint, type check, branching
+strategy, scheduled job.
+
+1.3. Executive Summary
+Every change to VoiceGate passes through an ordered pipeline: lint/style, type checking, unit
+tests with a 100% coverage gate, integration tests, a dedicated guardrail-test-suite gate
+(prompt-injection resistance, actor/role-confusion resistance, seeded-randomization
+reproducibility), and end-to-end tests, with the large-sample guardrail-load simulation
+(012_voicegate_performance_tests.txt Section 1.6.5) run on a scheduled/slower cadence rather
+than on every commit.
+
+1.4. Key Findings
+1.4.1. The unit-test coverage gate enforces the 100% coverage/100% pass-rate baseline from
+008_voicegate_testing.txt Section 1.8 as a hard pipeline failure condition, not merely a
+report.
+1.4.2. The guardrail-test-suite gate (Section 1.6.5) is a dedicated, mandatory pipeline
+stage, distinct from the ordinary unit/integration coverage gates, and blocks merge on its
+own if any guardrail case (008_voicegate_testing.txt Section 1.9) fails.
+1.4.3. End-to-end tests (013_voicegate_end2end_testing.txt) run in the pipeline but are
+permitted a longer timeout budget than unit/integration tests, consistent with their heavier
+UI automation tooling.
+1.4.4. The large-sample guardrail-load simulation (012_voicegate_performance_tests.txt
+Section 1.6.5) is explicitly scheduled rather than run per-commit, since its minimum
+10-minute wall-clock budget would otherwise slow every change; the per-commit guardrail gate
+(1.6.5) still runs the fixture-level guardrail cases on every commit.
+1.4.5. Every pipeline stage failure blocks merge; no stage is advisory-only except the
+scheduled guardrail-load simulation, which is reviewed rather than auto-blocking, per Section
+1.6.7.
+
+1.5. Philosophical Preamble
+A pipeline is where this corpus's other promises (100% coverage, mandatory guardrail
+resistance, transcript-as-data) stop being aspirations and start being mechanically enforced
+facts about every single change. This document exists so that no quality standard declared
+elsewhere in this corpus is left to depend on a human remembering to check it manually.
+
+1.6. Pipeline Stages
+
+1.6.1. Lint and Style
+Project style rules checked via an automated linter; failure blocks merge.
+
+1.6.2. Type Checking
+Static type checking against the `src/voicegate/` and `src/data/` type hints; failure blocks
+merge.
+
+1.6.3. Unit Test and Coverage Gate
+All unit tests (009_voicegate_unit_tests.txt) must pass with 100% coverage, per
+008_voicegate_testing.txt Section 1.8; failure blocks merge.
+
+1.6.4. Integration Test Gate
+All integration tests (011_voicegate_integration_tests.txt) must pass; failure blocks merge.
+
+1.6.5. Guardrail Test Suite Gate
+All guardrail-specific cases across the unit and integration tiers (prompt-injection
+resistance, actor/speaker-role-confusion resistance, deterministic seeded-randomization
+reproducibility, per 008_voicegate_testing.txt Section 1.9) are run as a dedicated,
+independently reported suite; any failure in this suite blocks merge regardless of the
+outcome of Sections 1.6.3-1.6.4.
+
+1.6.6. End-to-End Test Gate
+All end-to-end tests (013_voicegate_end2end_testing.txt) must pass, including the guardrail
+scenario playthrough (013_voicegate_end2end_testing.txt Section 1.6.6), with a longer timeout
+budget than earlier stages to accommodate UI automation; failure blocks merge.
+
+1.6.7. Scheduled Performance/Guardrail-Load Simulation
+The large-sample guardrail-load simulation (012_voicegate_performance_tests.txt Section
+1.6.5) runs on a scheduled cadence (e.g. nightly or on release-branch merges) rather than
+per-commit; a regression here is reviewed by the product owner rather than automatically
+blocking every merge, since it reflects a statistical-resistance signal at scale rather than
+a fixture-level correctness defect (which is already caught per-commit by Section 1.6.5).
+
+1.7. Branching and Release Strategy
+1.7.1. Feature branches for new work, bug-fix branches for defects, release branches for
+hackathon-submission cut points.
+1.7.2. Merges to the `main` branch require all pipeline stages in Sections 1.6.1-1.6.6 to
+pass and at least one code review approval.
+1.7.3. Commit messages are clear and concise, describing what changed and why.
+
+1.8. Summary Table
+| Stage | Gate Type | Blocks Merge |
+|-------|-----------|----------------|
+| Lint/style | Per-commit | Yes |
+| Type check | Per-commit | Yes |
+| Unit tests + 100% coverage | Per-commit | Yes |
+| Integration tests | Per-commit | Yes |
+| Guardrail test suite | Per-commit | Yes |
+| End-to-end tests | Per-commit (extended timeout) | Yes |
+| Guardrail-load simulation | Scheduled | No (reviewed, not auto-blocking) |
+
+1.9. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| Sibling project, 014_game_cicd.txt (prior revision) | Seven-stage pipeline including an import-direction/architecture gate | Six per-commit-relevant stages retained in spirit, with the import-direction gate replaced by a dedicated, mandatory Guardrail Test Suite Gate (1.6.5), and the scheduled balance simulation re-mapped to the scheduled guardrail-load simulation (1.6.7) | Reconciled |
+
+1.10. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Pipeline duration growing unacceptably as test tiers accumulate | Medium | Medium | Guardrail-load simulation moved to a scheduled stage (1.6.7) specifically to bound per-commit duration |
+| Guardrail-test-suite gate treated as part of the ordinary coverage gate and de-prioritized | Medium | High | 1.6.5 is reported and blocks independently of Sections 1.6.3-1.6.4 |
+| A failing scheduled guardrail-load simulation being ignored since it does not block merge | Medium | Medium | 1.6.7 assigns explicit product-owner review responsibility rather than leaving it unowned |
+
+1.11. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain pipeline configuration | R | C | A | I |
+| Review scheduled guardrail-load-simulation regressions | C | R | A | A/Stakeholder (product owner) |
+
+1.12. Conclusion
+A six-stage per-commit pipeline mechanically enforces every quality standard declared
+elsewhere in this corpus, with a dedicated mandatory guardrail-test-suite gate and the one
+deliberately non-blocking exception of the scheduled guardrail-load simulation, whose
+regressions require product judgment rather than automatic rejection.
+
+1.13. References and Citations
+1.13.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
+§1.1-1.14.
+1.13.2. Internal: voice_processing_specifications/008_voicegate_testing.txt (coverage/
+pass-rate baseline; Section 1.9 mandatory guardrail testing).
+1.13.3. Internal: voice_processing_specifications/012_voicegate_performance_tests.txt
+§1.6.5 (guardrail-load simulation).
+1.13.4. Internal: voice_processing_specifications/013_voicegate_end2end_testing.txt §1.6.6
+(guardrail scenario playthrough).
+1.13.5. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.5.
+
+1.14. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation (sibling project, as 014_game_cicd.txt): seven-stage CI/CD pipeline, branching strategy, and gate/blocking semantics. | Major |
+| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via `git mv` from 014_game_cicd.txt; replaced the import-direction/architecture gate with a dedicated, mandatory Guardrail Test Suite Gate (1.6.5) covering prompt-injection resistance, actor/role-confusion resistance, and seeded-randomization reproducibility; re-mapped the scheduled balance simulation to a scheduled guardrail-load simulation (1.6.7). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

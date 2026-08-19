@@ -1,0 +1,206 @@
+1. In-House Scenario and Transcript Dataset Creation (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Scope and Authority
+1.7. Open Question: Does a Training Dataset Already Exist?
+1.8. Fallback Bootstrap Workflow (Assumed, Pending Confirmation)
+1.9. Toolchain for Synthetic Transcript Generation
+1.10. Version Control and Dataset Lineage
+1.11. Quality Gates and Acceptance Criteria
+1.12. Team Collaboration and Escalation Path
+1.13. Summary Table
+1.14. Reconciliation Table
+1.15. Risk and Mitigation Table
+1.16. Roles and Responsibilities (RACI)
+1.17. Conclusion
+1.18. References and Citations
+1.19. Changelog Table
+
+1.1. Abstract
+This document defines the in-house workflow, toolchain, and governance for building
+VoiceGate's scenario/transcript training dataset — the data used to develop and validate
+violation-detection and compliance-scoring behavior. It extends
+voice_processing_specifications/029_voice_persona_asset_creation.txt by operationalizing
+dataset creation itself, and it explicitly records an unresolved open question rather than
+inventing an answer to it.
+
+1.2. Key Words
+training dataset, synthetic transcript, bootstrap workflow, reverse engineering, dataset
+lineage, violation detection, open question, team-lead confirmation, VoiceGate.
+
+1.3. Executive Summary
+It is not yet known whether the team already has an existing transcript/violation-detection
+training dataset, or whether one must be built from scratch. This document treats that as an
+explicit open risk (Section 1.7), assumes the from-scratch case as its working fallback
+(Section 1.8), and describes a reverse-engineering/bootstrap workflow for generating synthetic
+scenario transcripts using the persona archetypes
+(voice_processing_specifications/027_persona_archetype_definitions.txt) and scenario catalog
+(voice_processing_specifications/025_scenario_persona_catalog.txt) already defined elsewhere
+in this corpus.
+
+1.4. Key Findings
+1.4.1. The existence of a pre-existing training dataset is unconfirmed; this document does
+not assert one exists or does not exist (Section 1.7).
+1.4.2. Absent confirmation, the team must assume no dataset exists and follow the bootstrap
+workflow in Section 1.8 to synthesize an initial one.
+1.4.3. Synthetic transcripts must be generated using the already-canonical persona archetypes
+and scenario catalog, not ad hoc personas invented outside those two files.
+1.4.4. Every synthesized dataset batch must carry lineage metadata (Section 1.10) so it can
+be distinguished from any real-world or externally sourced data if one is later confirmed to
+exist.
+1.4.5. This open question must be escalated to the team lead per Section 1.12 before the
+dataset is treated as authoritative for training or evaluation.
+
+1.5. Philosophical Preamble
+An unconfirmed assumption stated plainly is safer than a confident guess. Where the sibling
+project's in-house asset creation governance could assume a known creative pipeline, this
+document instead has to govern a genuinely open question: whether the raw material for
+compliance-model training already exists. The discipline here is to build a usable fallback
+without pretending the open question is closed.
+
+1.6. Scope and Authority
+1.6.1. This document governs the dataset-creation phase only; asset/voice acceptance and
+integration are governed by
+voice_processing_specifications/029_voice_persona_asset_creation.txt.
+1.6.2. Toolchain/environment setup is governed by
+voice_processing_specifications/007_voicegate_virtual_env.txt and
+voice_processing_specifications/006_voicegate_scaffolding.txt.
+1.6.3. This document does not resolve the open question in Section 1.7; only the team lead
+or stakeholder can close it, per the RACI in Section 1.16.
+
+1.7. Open Question: Does a Training Dataset Already Exist?
+1.7.1. Status: OPEN, UNRESOLVED. Not yet confirmed with the team lead as of 2026-08-03.
+1.7.2. The question: does an existing transcript/violation-detection training dataset already
+exist for this team (from a prior project, licensed source, or partner), or must the team
+build one from scratch by generating synthetic scenario transcripts?
+1.7.3. This document takes no position on the answer. It records the question, assigns an
+owner for resolving it (Section 1.16), and defines a fallback workflow (Section 1.8) so work
+is not blocked while the question is open.
+1.7.4. If an existing dataset is later confirmed, this document's Section 1.8 fallback
+workflow becomes supplementary (for coverage gaps) rather than primary.
+
+1.8. Fallback Bootstrap Workflow (Assumed, Pending Confirmation)
+1.8.1. Step 1 - Scenario/persona sampling: draw (category, intensity tier) combinations from
+voice_processing_specifications/025_scenario_persona_catalog.txt and bind each to a persona
+archetype from voice_processing_specifications/027_persona_archetype_definitions.txt, per the
+catalog's resolution contract.
+1.8.2. Step 2 - Synthetic call generation: generate a scripted or LLM-assisted synthetic
+transcript for each sampled combination, applying variance injection
+(voice_processing_specifications/026_randomization_variance_terminology.txt) to vary tone,
+interruption timing, and escalation within the sampled persona's bounds.
+1.8.3. Step 3 - Weak-label annotation: label each synthetic transcript with its intended
+verdict outcome (Pass/Fail/Flag) and rule citation
+(voice_processing_specifications/028_statutory_ruleset_integration.txt), since the scenario
+was authored to probe a specific compliance boundary.
+1.8.4. Step 4 - Human spot-check: a reviewer samples a subset of synthesized transcripts to
+confirm the weak label matches what a human reviewer would independently conclude.
+1.8.5. Step 5 - Reverse-engineering pass: where behavior of a real target agent is later
+observed (e.g. during early Test Bench runs), transcripts and verdicts from those real runs
+are folded back into the dataset, reducing reliance on purely synthetic data over time.
+1.8.6. This workflow produces a bootstrap dataset sufficient for initial development; it is
+explicitly not a substitute for the confirmation in Section 1.7.
+
+1.9. Toolchain for Synthetic Transcript Generation
+1.9.1. Scenario/persona binding: `src/voicegate/scenario_engine` and
+`src/voicegate/persona_engine`.
+1.9.2. Transcript synthesis: LLM-assisted generation constrained to the persona's behavioral
+stats and the scenario's scripted escalation beats (no free-form persona invention).
+1.9.3. Storage: synthetic transcripts are JSON per
+voice_processing_specifications/021_voicegate_data_standards.txt §1.8.1, stored under
+`src/data/scenarios` alongside their originating scenario definition.
+1.9.4. Every synthesis run must be reproducible from its recorded seed
+(voice_processing_specifications/026_randomization_variance_terminology.txt §1.7.1).
+
+1.10. Version Control and Dataset Lineage
+1.10.1. Each dataset batch is stored on a feature branch named
+`feature/dataset_<batch_descriptor>` and includes a lineage log
+(`<batch_descriptor>_LINEAGE.md`) recording: generation date, scenario/persona sampling
+parameters, seed, generation tool/model identity, and human-spot-check outcome.
+1.10.2. Commit message format: `[DATASET] <batch_descriptor> vMajor.Minor: <change
+description>`.
+1.10.3. Merge to main requires the quality gate in Section 1.11 to be recorded in the commit
+message.
+
+1.11. Quality Gates and Acceptance Criteria
+1.11.1. Coverage check: batch includes at least one scenario per category
+(voice_processing_specifications/025_scenario_persona_catalog.txt §1.11.1).
+1.11.2. Label-quality check: human spot-check (Section 1.8.4) agreement rate meets the
+project's minimum threshold (threshold value TBD, pending team-lead confirmation).
+1.11.3. Provenance check: lineage log complete, seed recorded, generation tool identified.
+1.11.4. Non-reproduction check: no statutory or company-terms text reproduced verbatim in
+generated transcripts beyond what
+voice_processing_specifications/028_statutory_ruleset_integration.txt §1.9 permits.
+
+1.12. Team Collaboration and Escalation Path
+1.12.1. The open question in Section 1.7 must be raised with the team lead (TAQI's team, per
+voice_processing_specifications/001_voice_transcription_concept.txt) before the dataset is
+relied upon for any production-facing compliance-scoring decision.
+1.12.2. If the team lead confirms an existing dataset, this document must be revised in the
+same change set to reconcile Section 1.7 and reprioritize Section 1.8 as supplementary.
+1.12.3. If the team lead confirms no dataset exists, Section 1.8 becomes the primary,
+confirmed workflow and this document's status updates accordingly in the Changelog.
+
+1.13. Summary Table
+| Topic | Rule |
+|------|------|
+| Open question | Existing dataset vs. build-from-scratch: UNRESOLVED, escalate to team lead |
+| Fallback assumption | Build from scratch via bootstrap workflow (Section 1.8) |
+| Sampling source | Scenario catalog (025) x persona archetypes (027) only |
+| Labeling | Weak label from scenario design, human spot-checked |
+| Reproducibility | Every synthesis run reproducible from its recorded seed |
+
+1.14. Reconciliation Table
+| Prior State | Current State | Status |
+|-------------|----------------|--------|
+| File was the game's in-house visual/audio asset creation and governance document | Repurposed to in-house scenario/transcript dataset creation, preserving the phased-workflow/lineage-log/quality-gate structure | Reconciled |
+| Dataset-existence question was implicit in prior ideation | Recorded explicitly as an open, unresolved question (Section 1.7) rather than answered | Reconciled |
+
+1.15. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Team proceeds as if a dataset exists without confirming | Medium | High | Section 1.7 keeps the question explicitly open and escalated (1.12.1) |
+| Synthetic-only data fails to generalize to real target-agent behavior | Medium | Medium | Reverse-engineering pass (1.8.5) folds real observed runs back into the dataset |
+| Weak labels accepted without human review | Low | High | Human spot-check gate (1.8.4, 1.11.2) required before batch acceptance |
+| Verbatim statutory/T&C text leaking into synthetic transcripts | Low | Critical | Non-reproduction check (1.11.4) tied to 028's binding boundary |
+
+1.16. Roles and Responsibilities (RACI)
+| Activity | Creator | Reviewer | Team Lead | Stakeholder |
+|----------|---------|----------|-----------|-------------|
+| Resolve open dataset-existence question (1.7) | I | C | R/A | I |
+| Synthetic batch generation (1.8-1.9) | R/A | C | I | I |
+| Lineage log maintenance (1.10) | R/A | C | I | I |
+| Quality gate execution (1.11) | C | R/A | I | I |
+| Escalation decision on dataset status (1.12) | C | C | R/A | I |
+(R = Responsible, A = Accountable, C = Consulted, I = Informed)
+
+1.17. Conclusion
+Rather than inventing an answer to whether a training dataset already exists, this document
+records the question as open, assigns it an owner, and provides a concrete, reproducible
+fallback workflow for building one from the scenario catalog and persona archetypes already
+canonical in this corpus, so development is not blocked while confirmation is pending.
+
+1.18. References and Citations
+1.18.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.0-1.14.
+1.18.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (open
+dataset question origin, team ownership).
+1.18.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation, open
+dataset question).
+1.18.4. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt (sampling
+source).
+1.18.5. Internal: voice_processing_specifications/026_randomization_variance_terminology.txt
+(seeded reproducibility).
+1.18.6. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
+(sampling source).
+1.18.7. Internal: voice_processing_specifications/028_statutory_ruleset_integration.txt
+(non-reproduction boundary applied to synthetic transcripts).
+1.18.8. Internal: voice_processing_specifications/029_voice_persona_asset_creation.txt
+(extended by this document).
+
+1.19. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of in-house asset creation and governance document, extending 029 with detailed workflow, toolchain standards, lineage tracking, and collaboration protocols. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 030_game_inhouse_asset_creation.txt; replaced in-house visual/audio asset workflow with in-house scenario/transcript dataset creation, explicitly recording the training-dataset-existence question as OPEN/UNRESOLVED (Section 1.7) with a reverse-engineering bootstrap fallback workflow (Section 1.8) pending team-lead confirmation, retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

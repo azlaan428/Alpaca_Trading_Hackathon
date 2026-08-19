@@ -1,0 +1,129 @@
+1. VoiceGate Modules and Imports (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Package/Module Layout Reference
+1.7. Import Direction Rules
+1.8. Import Style Conventions
+1.9. Circular Import Prevention
+1.10. Summary Table
+1.11. Reconciliation Table
+1.12. Risk and Mitigation Table
+1.13. Roles and Responsibilities (RACI)
+1.14. Conclusion
+1.15. References and Citations
+1.16. Changelog Table
+
+1.1. Abstract
+This document specifies module-import conventions for VoiceGate, elaborating the one-way
+import direction and package layout established in 006_voicegate_scaffolding.txt into
+concrete, enforceable import-style rules.
+
+1.2. Key Words
+module, import, package layout, one-way dependency, circular import, absolute import.
+
+1.3. Executive Summary
+VoiceGate organizes code into `src/data`, `src/voicegate`, `src/services`, and `src/api`
+packages (006_voicegate_scaffolding.txt Section 1.6), with imports permitted to flow in
+exactly one direction: `data -> voicegate -> services/api`, never reversed. Absolute imports
+are used throughout; wildcard imports are prohibited.
+
+1.4. Key Findings
+1.4.1. `src/data` modules (personas.py, scenarios.py, statutory_rules.py,
+company_terms_snapshots.py) must not import from `src/voicegate`, `src/services`, or
+`src/api`, since they define static content, not behavior.
+1.4.2. `src/voicegate` modules may import from `src/data` but never from `src/services` or
+`src/api`, keeping the orchestration/scoring engines independent of external services and
+the command surface.
+1.4.3. `src/services` and `src/api` modules may import from both `src/data` and
+`src/voicegate`.
+1.4.4. All imports are absolute (e.g. `from src.voicegate.verdict_engine import
+render_verdict`), never relative (`from ..voicegate import verdict_engine`), for clarity and
+to avoid ambiguity as the package grows.
+1.4.5. Wildcard imports (`from module import *`) are prohibited throughout the codebase, per
+005_voicegate_coding_standards.txt Section 1.9's Clean Code discipline.
+
+1.5. Philosophical Preamble
+An import statement is a dependency declaration, and an undisciplined dependency graph is
+how a small, auditable orchestration/scoring engine quietly becomes an unauditable tangle.
+The one-way rule in this document exists to keep the transcript-is-data guardrail principle
+true at the level of the actual source files, not just as an aspiration: if `src/data`
+(personas, scenarios, statutory rules) could import from `src/voicegate`, the direction of
+trust between static catalog content and live orchestration logic would become ambiguous.
+
+1.6. Package/Module Layout Reference
+This document does not restate the full module list; it defers entirely to
+006_voicegate_scaffolding.txt Section 1.6 as the single source of truth for package/module
+names and responsibilities.
+
+1.7. Import Direction Rules
+| From Package | May Import From | Must Not Import From |
+|-----------------|--------------------|---------------------------|
+| `src/data` | (nothing else in this project) | `src/voicegate`, `src/services`, `src/api` |
+| `src/voicegate` | `src/data` | `src/services`, `src/api` |
+| `src/services` | `src/data`, `src/voicegate` | (none) |
+| `src/api` | `src/data`, `src/voicegate`, `src/services` | (none) |
+| `tests/` | Mirrors the package under test; may import any production package | (none) |
+This table is the concrete rule enforced by the CI import-direction/architecture gate.
+
+1.8. Import Style Conventions
+1.8.1. Absolute imports only (Section 1.4.4).
+1.8.2. One import per line; standard library imports, then third-party imports, then local
+project imports, each group separated by a blank line and alphabetized within the group.
+1.8.3. No wildcard imports (Section 1.4.5).
+1.8.4. Import only what is used; unused imports are treated as a lint failure.
+
+1.9. Circular Import Prevention
+1.9.1. The one-way direction in Section 1.7 makes circular imports structurally impossible
+between packages, provided the rule is followed; the CI gate exists specifically to catch
+any accidental violation before it can reintroduce a cycle.
+1.9.2. Within a single package (e.g. two modules inside `src/voicegate`), avoid mutual
+imports by extracting shared types into a dedicated module (e.g. a shared `types.py` or the
+existing `event_log.py`) that both depend on instead of depending on each other.
+
+1.10. Summary Table
+| Rule | Statement |
+|------|-----------|
+| Direction | data -> voicegate -> services/api, never reversed |
+| Import form | Absolute only, no relative, no wildcard |
+| Ordering | stdlib, then third-party, then local, alphabetized within group |
+| Enforcement | CI import-direction/architecture gate |
+
+1.11. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| 006_voicegate_scaffolding.txt Section 1.6 | High-level one-way import direction rule | Elaborated here into a full permission table (1.7) and concrete style conventions (1.8) | Reconciled |
+
+1.12. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| A developer accidentally introducing a reverse import (e.g. `data` importing `voicegate`) | Medium | High | CI gate mechanically blocks the merge |
+| Circular imports within a single package as it grows | Low | Medium | 1.9.2 mandates extracting shared types rather than allowing mutual imports |
+
+1.13. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain import-direction rules | R | C | A | I |
+| Enforce via CI gate | C | R | A | I |
+
+1.14. Conclusion
+A strict one-way import direction, absolute-only import style, and a mechanical CI gate keep
+VoiceGate's package dependency graph auditable as the codebase grows beyond its hackathon
+MVP scope.
+
+1.15. References and Citations
+1.15.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
+1.15.2. Internal: voice_processing_specifications/006_voicegate_scaffolding.txt §1.6 (package
+layout and one-way import direction origin).
+1.15.3. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt §1.9
+(Clean Code, wildcard-import prohibition).
+1.15.4. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(guardrail rationale for the data/orchestration trust boundary).
+
+1.16. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: import direction table, style conventions, circular-import prevention. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 023_game_modules_imports.txt; replaced `src/game` with `src/voicegate` throughout the import-direction table and rules, and reframed the philosophical preamble around the transcript-is-data guardrail principle. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

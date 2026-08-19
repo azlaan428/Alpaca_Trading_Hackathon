@@ -1,0 +1,172 @@
+1. VoiceGate Variable, Function, Class, Decorator, and Exception Naming Conventions (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Variable Naming
+1.7. Function and Method Naming
+1.8. Class Naming
+1.9. Decorator Naming
+1.10. Custom Exception Naming
+1.11. Constant Naming
+1.12. Test Naming (Cross-Reference)
+1.13. Summary Table
+1.14. Reconciliation Table
+1.15. Risk and Mitigation Table
+1.16. Roles and Responsibilities (RACI)
+1.17. Conclusion
+1.18. References and Citations
+1.19. Changelog Table
+
+1.1. Abstract
+This document is the authoritative naming-convention specification for VoiceGate, covering
+variables, functions/methods, classes, decorators, custom exceptions, and constants, as
+explicitly required to be included by the user, extending the PEP 8 baseline already
+established in 005_voicegate_coding_standards.txt Section 1.9.
+
+1.2. Key Words
+naming convention, snake_case, PascalCase, UPPER_SNAKE_CASE, decorator, custom exception,
+PEP 8, identifier clarity.
+
+1.3. Executive Summary
+VoiceGate follows standard PEP 8 Python naming conventions throughout, with project-specific
+clarifications: exceptions are suffixed `Error`, decorators are named as verbs or verb
+phrases describing their effect, constants are declared in `UPPER_SNAKE_CASE` in dedicated
+constants modules (never as inline magic values, per 005_voicegate_coding_standards.txt
+Section 1.9), and every identifier name must describe what it represents or does without
+requiring the reader to consult external context.
+
+1.4. Key Findings
+1.4.1. Variables and function/method names use `snake_case`, per PEP 8, and must be
+descriptive nouns (variables) or verb phrases (functions/methods), never single-letter names
+outside of tight, obviously-scoped loops.
+1.4.2. Classes use `PascalCase`; value-object classes representing VoiceGate concepts are
+named after the concept itself (e.g. `Persona`, `Scenario`, `Verdict`, `RuleCitation`), not
+prefixed/suffixed with implementation detail words like "Manager" or "Data" unless that word
+adds real meaning.
+1.4.3. Custom exceptions are `PascalCase`, suffixed with `Error` (e.g.
+`GuardrailViolationError`, `InvalidPersonaConfigurationError`), and each maps to exactly one
+rule-violation or guardrail-violation category, never a generic catch-all exception.
+1.4.4. Decorators are named as a verb or verb phrase describing the behavior they add (e.g.
+`@validate_command`, `@log_event`), in `snake_case`, consistent with function-naming rules
+since a decorator is itself a function.
+1.4.5. Constants are `UPPER_SNAKE_CASE` and live in dedicated constants modules rather than
+inline in engine logic, per 005_voicegate_coding_standards.txt Section 1.9's "no magic
+numbers, no hardcoded strings" rule.
+
+1.5. Philosophical Preamble
+A name is the first and cheapest piece of documentation a reader ever encounters. This
+document exists because the user explicitly required it to be included, and because
+consistent naming is what makes the rest of this corpus's documentation-heavy discipline
+(WHAT/WHY/HOW docstrings, per 005_voicegate_coding_standards.txt Section 1.8) actually
+readable in practice rather than merely present — which matters especially for a compliance
+tool where a reviewer must trust, at a glance, that `VerdictEngine` really does produce
+verdicts and nothing else.
+
+1.6. Variable Naming
+1.6.1. `snake_case`, descriptive nouns: `transcript`, `caller_persona`, `compliance_score`,
+not `t`, `cp`, `cs`.
+1.6.2. Boolean variables are named as a predicate: `is_compliant`, `has_flag`,
+`requires_human_review`.
+1.6.3. Loop counters may use short names (`i`, `idx`, `row`) only within a tightly scoped,
+obviously bounded loop; anything crossing a function boundary must use a descriptive name.
+
+1.7. Function and Method Naming
+1.7.1. `snake_case`, verb or verb-phrase: `score_call()`, `select_scenario()`,
+`draw_persona()`, `render_verdict()`.
+1.7.2. Functions returning a boolean are named as a predicate: `is_call_compliant()`,
+`has_reached_verdict()`.
+1.7.3. Private/internal helper functions not part of a module's public surface are prefixed
+with a single leading underscore: `_apply_variance()`.
+
+1.8. Class Naming
+1.8.1. `PascalCase`, named after the concept represented: `Persona`, `Scenario`, `Verdict`,
+`Transcript`, `CallOrchestrator`, `ComplianceScoringEngine`, consistent with the module names
+in 006_voicegate_scaffolding.txt Section 1.6.
+1.8.2. Service/engine classes are suffixed with their role where that adds clarity (`Engine`,
+`Service`, `Adviser`): `VerdictEngine`, `RngService`, `PatchAdviser`.
+
+1.9. Decorator Naming
+1.9.1. `snake_case`, verb phrase describing the added behavior: `@validate_command`,
+`@log_event`, `@require_active_run`.
+1.9.2. A decorator must not be named after its implementation mechanism (e.g. `@wrapper`,
+`@decorator1`); it must be named after the behavior it adds to the decorated function.
+
+1.10. Custom Exception Naming
+1.10.1. `PascalCase`, suffixed `Error`: `GuardrailViolationError`,
+`InvalidPersonaConfigurationError`, `InvalidScenarioTargetError`,
+`RuleCitationNotFoundError`, `PostVerdictActionError`.
+1.10.2. Each custom exception maps to exactly one rule-violation or guardrail-violation
+category (e.g. `GuardrailViolationError` maps to a detected prompt-injection or
+actor/speaker-role-confusion attempt in the transcription/scoring engines); a new
+rule-violation category requires a new, specifically named exception rather than reuse of a
+generic one.
+1.10.3. Exceptions never use bare `Exception` or `ValueError`/`TypeError` directly in
+compliance-rule-violation or guardrail-violation contexts; only in genuinely generic,
+non-domain-specific error contexts (e.g. malformed configuration file), per
+005_voicegate_coding_standards.txt Section 1.9.
+
+1.11. Constant Naming
+1.11.1. `UPPER_SNAKE_CASE`: `DEFAULT_INTENSITY_TIER`, `MINIMUM_TRANSCRIPT_LENGTH`,
+`COMPLIANCE_SCORE_FAIL_THRESHOLD`, `STANDARD_CATALOG_CATEGORY_COUNT`.
+1.11.2. Constants live in dedicated modules (e.g. `src/data/constants.py` or co-located with
+the module they configure), never inline as magic numbers or hardcoded strings, per
+005_voicegate_coding_standards.txt Section 1.9.
+
+1.12. Test Naming (Cross-Reference)
+Test module and function naming conventions are not restated here to avoid duplication; this
+document is the source of truth for production-code naming, a future testing-standards
+document for test-code naming.
+
+1.13. Summary Table
+| Identifier Kind | Case Style | Example |
+|--------------------|--------------|-----------|
+| Variable | snake_case | `caller_persona` |
+| Boolean variable/function | snake_case predicate | `is_compliant` |
+| Function/method | snake_case verb phrase | `score_call()` |
+| Private helper | leading underscore snake_case | `_apply_variance()` |
+| Class | PascalCase | `VerdictEngine` |
+| Decorator | snake_case verb phrase | `@validate_command` |
+| Custom exception | PascalCase + `Error` suffix | `GuardrailViolationError` |
+| Constant | UPPER_SNAKE_CASE | `COMPLIANCE_SCORE_FAIL_THRESHOLD` |
+
+1.14. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| User explicit instruction (2026-07-30 session, carried forward to the 2026-08-03 VoiceGate repurposing) | "don't forget, i also added in this 024 file! it must be included as well!" | This document rewritten in full for VoiceGate, covering variables, functions, classes, decorators, and exceptions as titled | Fulfilled |
+| 005_voicegate_coding_standards.txt Section 1.9 | General PEP 8 requirement | Elaborated here into concrete, per-identifier-kind rules | Reconciled |
+
+1.15. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Generic exceptions (`ValueError`) used for compliance/guardrail violations, obscuring intent | Medium | Medium | 1.10.3 explicitly restricts bare built-in exceptions to non-domain-specific contexts |
+| Decorator names describing mechanism instead of behavior, reducing readability | Low | Low | 1.9.2 explicitly prohibits mechanism-based decorator names |
+| Naming drift between this document and actual module names in 006_voicegate_scaffolding.txt | Low | Medium | 1.8.1 explicitly cross-references the module list as the naming source for engine classes |
+
+1.16. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain naming conventions | R | C | A | I |
+| Enforce via code review/lint | C | R | A | I |
+
+1.17. Conclusion
+VoiceGate's naming conventions extend PEP 8 with project-specific, rule-traceable conventions
+for exceptions and decorators, fulfilling the user's explicit requirement that this file be
+included in the corpus.
+
+1.18. References and Citations
+1.18.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
+1.18.2. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt §1.9
+(PEP 8 baseline, no magic numbers/hardcoded strings).
+1.18.3. Internal: voice_processing_specifications/006_voicegate_scaffolding.txt (module/class
+name alignment).
+1.18.4. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(guardrail-violation category rationale).
+1.18.5. External: PEP 8 - Style Guide for Python Code.
+
+1.19. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation, per explicit user instruction not to omit this file: naming conventions for variables, functions, classes, decorators, and custom exceptions. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 024_game_variable_func_class_decorator_exceptions_naming_conventions.txt; replaced all game-specific examples (`Piece`, `IllegalMoveError`, `resolve_combat()`) with VoiceGate examples (`VerdictEngine`, `GuardrailViolationError`, `score_call()`) across every section. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

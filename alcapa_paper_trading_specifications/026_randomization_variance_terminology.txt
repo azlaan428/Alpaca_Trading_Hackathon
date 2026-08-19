@@ -1,0 +1,160 @@
+1. Randomization and Variance Injection Terminology (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Scope and Authority
+1.7. Randomization Notation Standard
+1.8. Variance Injection Contract
+1.9. Outcome Terminology
+1.10. Probability Baseline
+1.11. Logging and Audit Terminology
+1.12. Summary Table
+1.13. Reconciliation Table
+1.14. Risk and Mitigation Table
+1.15. Roles and Responsibilities (RACI)
+1.16. Conclusion
+1.17. References and Citations
+1.18. Changelog Table
+
+1.1. Abstract
+This document defines randomization and variance-injection terminology for all seeded-random
+persona behavior in VoiceGate. It standardizes notation, injection interpretation, and
+logging vocabulary so that design, implementation, and testing teams use one shared language
+for probabilistic caller behavior, based on the same "deterministic seeded randomness"
+role such mechanisms played in the sibling project's dice system
+(voice_processing_specifications/0000_documentation_standards.txt records this repurposing
+lineage).
+
+1.2. Key Words
+tone jitter, interruption timing, escalation rate, seeded RNG, rng_service, contested
+variance, deterministic ordering, audit log, probability baseline, VoiceGate.
+
+1.3. Executive Summary
+VoiceGate uses seeded pseudo-random variance injection — tone jitter, interruption timing,
+and escalation rate — to make each simulated caller in a gauntlet run behave with bounded,
+reproducible unpredictability rather than fixed scripted delivery. This file defines the
+canonical terms and equations that map a persona's base behavioral stats
+(voice_processing_specifications/027_persona_archetype_definitions.txt §1.9) plus a sampled
+variance roll to an actual in-call behavior, based on the scenario intensity-tier contract
+in voice_processing_specifications/025_scenario_persona_catalog.txt §1.9. It also defines
+required logging fields so each run can be replayed and verified.
+
+1.4. Key Findings
+1.4.1. The system uses `rng_service` (`src/voicegate/rng_service`) as the single seeded RNG
+source in MVP scope; no unseeded/non-reproducible randomness is used in scored runs.
+1.4.2. In-call behavior is determined by combining a persona's base stat with a sampled
+variance roll, not by raw sampled values alone.
+1.4.3. Variance semantics must be logged as structured events to preserve auditability and
+enable exact run replay from a recorded seed.
+1.4.4. Terminology drift (e.g., "jitter" vs "wobble") is a reconciliation risk and is banned.
+
+1.5. Philosophical Preamble
+Chance is allowed in a compliance test bench only when it can be explained after the fact. A
+sampled variance value is not a black box event; it is a state transition with evidence, and
+that evidence is what lets a Risk Report's Fail verdict be reproduced and defended.
+
+1.6. Scope and Authority
+1.6.1. This file governs terms and meaning, not persona-stat tuning.
+1.6.2. Persona-stat changes that alter equations belong in
+voice_processing_specifications/027_persona_archetype_definitions.txt first, then here.
+
+1.7. Randomization Notation Standard
+1.7.1. `seed` means the integer value used to initialize `rng_service` for one gauntlet run;
+the same `seed` reproduces the same sequence of variance rolls.
+1.7.2. `roll` refers to one sampled variance value in the normalized range [0.0, 1.0].
+1.7.3. "Value" refers to a persona base stat plus its applicable variance roll contribution.
+1.7.4. "Resample" means discarding a prior sampled value and drawing one new sample from the
+same seeded stream, where explicitly allowed by a scenario's escalation script.
+
+1.8. Variance Injection Contract
+1.8.1. tone_jitter_value = persona.tone_baseline + (roll - 0.5) * persona.tone_variance_band.
+1.8.2. interruption_timing_value = persona.patience_stat - roll * scenario.pressure_factor.
+1.8.3. escalation_rate_value = persona.escalation_rate_stat + roll *
+scenario.intensity_multiplier (voice_processing_specifications/025_scenario_persona_catalog.txt
+§1.9 intensity-tier magnitude).
+1.8.4. If escalation_rate_value crosses the scenario's scripted escalation-point threshold,
+the persona advances to its next scripted escalation beat.
+1.8.5. A call reaching its final scripted escalation beat without agent resolution triggers a
+scenario-defined terminal state (e.g. "caller disconnects," "caller demands supervisor").
+
+1.9. Outcome Terminology
+1.9.1. High Volatility: sampled roll drives value more than 0.75 of the variance band from
+baseline (analytics label only).
+1.9.2. Standard Variance: sampled roll drives value within 0.25-0.75 of the variance band.
+1.9.3. Baseline Hold: sampled roll drives value within 0.25 of baseline.
+1.9.4. Labels in 1.9 are reporting vocabulary and do not alter escalation rules.
+
+1.10. Probability Baseline
+1.10.1. For `rng_service`, P(roll in any sub-interval of equal width within [0.0, 1.0]) is
+uniform by construction (uniform distribution requirement).
+1.10.2. With a persona's default variance band and no scenario modifiers, the probability of
+a Baseline Hold outcome (Section 1.9.3) is 0.5.
+1.10.3. Extreme-tier scenarios (voice_processing_specifications/025_scenario_persona_catalog.txt
+§1.9) widen the effective variance band, shifting probability mass toward High Volatility.
+
+1.11. Logging and Audit Terminology
+1.11.1. Required fields per variance-injection event:
+1.11.1.1. event_id.
+1.11.1.2. call_id.
+1.11.1.3. persona_id and scenario_id.
+1.11.1.4. seed and roll_index (position of this roll within the seeded stream).
+1.11.1.5. base_stat_name and base_stat_value.
+1.11.1.6. sampled_roll.
+1.11.1.7. resulting_value.
+1.11.1.8. outcome_label from Section 1.9.
+1.11.2. Field names should align with
+voice_processing_specifications/021_voicegate_data_standards.txt naming guidance.
+
+1.12. Summary Table
+| Topic | Rule |
+|------|------|
+| RNG source | Seeded `rng_service` only (MVP) |
+| Injected variables | Tone jitter, interruption timing, escalation rate |
+| Combination rule | Persona base stat + sampled roll, tier-scaled |
+| Audit requirement | Log seed, roll index, base stat, roll, resulting value |
+| Reporting labels | Analytics-only labels do not change escalation rules |
+
+1.13. Reconciliation Table
+| Prior State | Current State | Status |
+|-------------|----------------|--------|
+| File was the game's dice-roll (d6) meaning/terminology specification | Repurposed to randomization/variance-injection terminology (tone jitter, interruption timing, escalation rate), same "deterministic seeded randomness" role | Reconciled |
+| Variance details were scattered across scenario/persona ideation | Consolidated terminology reference file created | Reconciled |
+
+1.14. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Inconsistent term usage across modules/tests | Medium | Medium | Enforce glossary in this file and lint checks in tests |
+| Missing variance fields in logs preventing exact replay | Medium | High | Require 1.11 field contract in integration tests |
+| Misinterpretation of analytics labels as escalation rules | Low | Medium | Explicitly mark 1.9 labels as non-mechanical |
+
+1.15. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain variance terminology | R | C | A | I |
+| Validate logging schema alignment | C | R | A | I |
+| Approve semantic rule changes | C | R | A | A/Stakeholder |
+
+1.16. Conclusion
+This file provides a single vocabulary and equation contract for all seeded-variance-driven
+persona behavior, reducing ambiguity across implementation, QA, and Risk Report analytics,
+and preserving reproducibility of any run given its recorded seed.
+
+1.17. References and Citations
+1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.6.
+1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(scenario gauntlet, guardrail/reproducibility requirements).
+1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
+1.17.4. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt
+(intensity-tier magnitude contract).
+1.17.5. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
+(persona behavioral base stats).
+1.17.6. Internal: voice_processing_specifications/020_voicegate_logging_standards.txt.
+1.17.7. Internal: voice_processing_specifications/021_voicegate_data_standards.txt.
+
+1.18. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of previously empty dice terminology and meaning specification. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 026_dice_roll_meanings_terminologies.txt; replaced d6 combat-roll contract with tone-jitter/interruption-timing/escalation-rate variance-injection contract using `rng_service`, retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

@@ -1,0 +1,157 @@
+1. VoiceGate Deployment (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Build Configurations
+1.7. Persistence and Run Storage
+1.7.1. Run Data Contents
+1.7.2. Save Triggers
+1.7.3. New Run / Continue Review / Reset
+1.8. Hackathon Submission Target (Natively AI) [ASSUMED]
+1.9. Summary Table
+1.10. Reconciliation Table
+1.11. Risk and Mitigation Table
+1.12. Roles and Responsibilities (RACI)
+1.13. Conclusion
+1.14. References and Citations
+1.15. Changelog Table
+
+1.1. Abstract
+This document specifies deployment build configurations and gauntlet-run persistence
+behavior for VoiceGate, including the distinction between development and production
+builds referenced by 009_voicegate_unit_tests.txt, and this file's own role as the
+deployment target definition for the assumed LabLab AI Factory / Natively AI hackathon
+submission window.
+
+1.2. Key Words
+deployment, build configuration, persistence, sandbox/staging, debug panel, mock target
+agent, Natively AI, hackathon submission.
+
+1.3. Executive Summary
+VoiceGate ships as a Python backend (this repository) paired with a web-rendered UI exposing
+the Test Bench, Call Review, and Risk Report screens. Two build configurations exist:
+development (debug panel enabled, verbose logging) and production (debug panel disabled, per
+009_voicegate_unit_tests.txt Section 1.7.1). In every build configuration, calls launched by
+the Test Bench target only sandbox/staging or mock target agents; no live production call
+interception is in scope for the MVP. Gauntlet-run state persists continuously and supports
+New Run, Continue Review, and Reset flows.
+
+1.4. Key Findings
+1.4.1. Exactly two build configurations are defined: development and production; the debug
+panel (009_voicegate_unit_tests.txt Section 1.7) is present only in development builds and is
+disabled entirely in the production build.
+1.4.2. Production builds never enable any development-only debug panel, and calls are
+restricted to sandbox/staging targets only in every build configuration — there is no
+live-production-call-interception capability anywhere in MVP scope, per
+001_voice_transcription_concept.txt Section 1.9.2.
+1.4.3. Persistence uses a local run-record store (format governed by the project's data
+standards) rather than a networked production-call feed, consistent with the sandbox-only
+MVP scope.
+1.4.4. Autosave triggers at the end of every completed gauntlet phase, not merely at run
+completion, to minimize data loss.
+1.4.5. Reset Run and Reset Session are distinct, explicit, user-confirmed actions that never
+fire implicitly.
+1.4.6. The LabLab AI Factory / Natively AI hackathon window (2026-08-03 to 2026-08-10) is
+recorded here as an ASSUMED timeline carried over from the sibling project's own confirmed
+submission context, not independently confirmed for VoiceGate; Day 8 (2026-08-10) is treated
+as the assumed submission day requiring a production build, per Section 1.8.
+
+1.5. Philosophical Preamble
+Deployment is the point where every prior design promise either survives contact with a real
+running build or does not. For a compliance test bench specifically, this document also
+carries a safety obligation: a test bench that could accidentally place a live call against a
+real production voice agent would itself become the very unauthorized, untested action it
+exists to catch elsewhere. Two build configurations and one sandbox-only call-target rule make
+that boundary explicit rather than incidental.
+
+1.6. Build Configurations
+| Configuration | Debug Panel | Call Targets | Logging Verbosity | Intended Use |
+|-----------------|--------------|----------------|----------------------|-----------------|
+| Development | Enabled (009_voicegate_unit_tests.txt §1.7) | Sandbox/staging or mock agent only | Verbose (DEBUG level) | Local development, automated testing |
+| Production | Disabled | Sandbox/staging or mock agent only (never live production) | Standard (INFO level and above) | Hackathon demo/submission build |
+
+1.7. Persistence and Run Storage
+
+1.7.1. Run Data Contents
+Persona/scenario selection, dual-channel transcript, per-phase timestamps, compliance score
+and rule citations, verdict (Pass/Fail/Flag), any suggested-patch proposal and its
+re-run outcome, `rng_service` seed, and the company-terms snapshot version used for scoring.
+
+1.7.2. Save Triggers
+Autosave fires at the end of every completed gauntlet phase (Greeting, Intent Discovery,
+Resolution Attempt, Compliance Check, Wrap-up) and immediately before application shutdown,
+if shutdown is detected gracefully.
+
+1.7.3. New Run / Continue Review / Reset
+1.7.3.1. New Run: initializes a fresh gauntlet run against the selected sandbox/staging or
+mock target agent, per the persona/scenario chosen in the Test Bench.
+1.7.3.2. Continue Review: resumes review of the most recently completed run in Call Review or
+Risk Report, offered only when a completed run record exists.
+1.7.3.3. Reset Run: an explicit, user-confirmed action that discards the current in-progress
+run's state but retains prior completed-run records and per-session statistics.
+
+1.8. Hackathon Submission Target (Natively AI) [ASSUMED]
+1.8.1. This repository is ASSUMED to target the LabLab AI Factory / Natively AI hackathon
+window of 2026-08-03 to 2026-08-10, mirroring the sibling project's confirmed submission
+context; this has not been independently reconfirmed for VoiceGate and must not be treated as
+locked without explicit confirmation.
+1.8.2. Day 8 of the assumed window (2026-08-10) is the assumed submission day; the production
+build configuration (Section 1.6) — debug panel disabled, sandbox/staging call targets only —
+is the configuration intended for judging.
+1.8.3. No external paid services or accounts are required to run or judge the submission,
+consistent with the sandbox-only MVP scope.
+
+1.9. Summary Table
+| Aspect | Behavior |
+|--------|-----------|
+| Build configurations | Development (debug panel, verbose logs), Production (neither) |
+| Call targets (all builds) | Sandbox/staging or mock target agent only; no live production interception |
+| Persistence medium | Local run-record store |
+| Autosave trigger | End of every completed gauntlet phase, plus graceful shutdown |
+| New Run/Continue Review/Reset | Three distinct, explicitly confirmed flows |
+| Submission target | ASSUMED: Natively AI, LabLab AI Factory hackathon, window 2026-08-03 to 2026-08-10, Day 8 submission |
+
+1.10. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| Sibling project, 015_game_deployment.txt (prior revision) | Two build configurations; local save-file persistence; New/Continue/Reset flows; confirmed Natively AI hackathon target | Re-mapped to VoiceGate: same two-build-configuration shape, sandbox/staging-only call-target rule added, persistence re-scoped to gauntlet-run records, hackathon target explicitly downgraded from confirmed to ASSUMED per user directive | Reconciled |
+
+1.11. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Debug panel accidentally shipping in the production/submission build | Low | High | 1.6 and 009_voicegate_unit_tests.txt §1.7.1 both gate it to development builds only |
+| A production build accidentally targeting a live production voice agent | Low | Critical | 1.4.2/1.6 make sandbox/staging-only call targets a build-configuration-independent, always-on constraint |
+| Assumed hackathon timeline being treated as confirmed and driving premature commitments | Medium | Medium | 1.8.1 explicitly labels the window ASSUMED, not confirmed, per the user's own canon facts |
+| Data loss from an ungraceful shutdown between phase-end autosaves | Low | Medium | 1.7.2 autosaves at every completed phase, minimizing the loss window to at most one in-progress phase |
+
+1.12. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain build/persistence configuration | R | C | A | I |
+| Confirm hackathon submission build and timeline | C | R | A | A/Stakeholder (product owner) |
+
+1.13. Conclusion
+VoiceGate's deployment contract defines exactly two build configurations, one sandbox/
+staging-only call-target rule that holds regardless of build configuration, and one
+gauntlet-run persistence model, while explicitly marking the hackathon submission timeline as
+an assumed, not confirmed, carry-over from the sibling project.
+
+1.14. References and Citations
+1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
+§1.1-1.14.
+1.14.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.9.2
+(no-live-production, sandbox-only MVP scope).
+1.14.3. Internal: voice_processing_specifications/009_voicegate_unit_tests.txt §1.7 (debug
+panel build gating).
+1.14.4. Internal: voice_processing_specifications/008_voicegate_testing.txt (testing
+baseline referencing this file's build-configuration constraints).
+1.14.5. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (company
+terms snapshot versioning referenced in run data).
+
+1.15. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation (sibling project, as 015_game_deployment.txt): build configurations, persistence/autosave contract, New/Continue/Reset flows, hackathon submission target confirmation. | Major |
+| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via `git mv` from 015_game_deployment.txt; added the always-on sandbox/staging-only call-target constraint (production builds never intercept live production calls); re-scoped persistence to gauntlet-run records (New Run/Continue Review/Reset); downgraded the hackathon submission target from confirmed to explicitly ASSUMED. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

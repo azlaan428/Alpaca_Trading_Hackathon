@@ -1,0 +1,185 @@
+1. VoiceGate Coding Standards (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Original Baseline Directive (Preserved Verbatim)
+1.7. Structural Discipline (SOLID / ACID / JPL Power of Ten / Clean Code)
+1.8. Entry Point and Documentation Discipline
+1.9. Python-Specific Rules
+1.10. Version Control and CI/CD Discipline
+1.11. Summary Table
+1.12. Reconciliation Table
+1.13. Risk and Mitigation Table
+1.14. Roles and Responsibilities (RACI)
+1.15. Conclusion
+1.16. References and Citations
+1.17. Changelog Table
+
+1.1. Abstract
+This document defines the Python coding standards for the VoiceGate backend (this
+py.typed repository, forked from the DarkStrategy_XParadoxX game codebase and repurposed
+2026-08-03). It expands the original, pre-existing baseline directive (preserved verbatim in
+Section 1.6, per voice_processing_specifications/0000_documentation_standards.txt's binding
+instruction that no agent may remove existing text) into the full structure required by that
+same standards document.
+
+1.2. Key Words
+SOLID, ACID, JPL Power of Ten, Clean Code, modularization, type hints, PEP 8, logging,
+constants, configuration, version control, CI/CD, entry point, docstrings, complexity
+analysis.
+
+1.3. Executive Summary
+All Python code in this repository must satisfy SOLID, ACID, and NASA/JPL Power-of-Ten-style
+discipline, be modularized so no single file or function does too much, use type hints and
+logging (never print), avoid global variables/magic numbers/hardcoded strings/paths, document
+every function with WHAT/WHY/HOW/args/throws/returns/time-and-space-complexity, keep the
+entry point (`if __name__ == "__main__": main()`) as the only top-level executable code, and
+be developed under version control with meaningful commits, branching strategy, code review,
+and CI/CD automation.
+
+1.4. Key Findings
+1.4.1. The original baseline directive (Section 1.6) is the authoritative seed for this
+document and has been preserved verbatim, then decomposed into the numbered subsections
+below for compliance with the absolute nested enumeration rule.
+1.4.2. Every Python module must expose a `main()` function and gate execution behind
+`if __name__ == "__main__":`, with no other top-level executable statements.
+1.4.3. Documentation for every function/method/class must include WHAT it does, WHY it
+exists, HOW it works, its arguments, exceptions raised, return value, and a time/space
+complexity note.
+1.4.4. Type hints are mandatory on all function signatures; logging (the standard `logging`
+module) replaces all `print()` usage.
+1.4.5. This document is upstream of 006_voicegate_scaffolding.txt, 007_voicegate_virtual_env.txt,
+019_voicegate_data_structures_algorithms.txt, 023_voicegate_modules_imports.txt, and
+024_voicegate_naming_conventions.txt, all of which must remain consistent with the principles
+stated here.
+
+1.5. Philosophical Preamble
+Code is documentation that executes, and documentation is code that persuades; both fail
+under the same conditions — hidden state, unexplained magic values, and untraceable
+decisions. VoiceGate's compliance-scoring and verdict engines must be as auditable as their
+own specification corpus, because a red-team compliance test bench whose backend cannot be
+trusted to compute a verdict deterministically and traceably has failed its own reason for
+existing: a Pass/Fail/Flag verdict with a rule citation is only meaningful if the code path
+producing it is itself inspectable and free of hidden state.
+
+1.6. Original Baseline Directive (Preserved Verbatim)
+"SOLID, ACID, JPL 10 FP, Clean Code, modularized codes, no single file doing too much. Def
+main only a few lines of code. Documentation with WHAT, WHY, HOW, args, throws, returns, Time
+and Space complexity analysis. For python specifically: if __name__ == "__main__": main()
+should be the only code outside of functions and classes. No global variables, no magic
+numbers, no hardcoded strings, no hardcoded paths. Use constants and configuration files. Use
+type hints for function arguments and return types. Use logging instead of print statements.
+Write unit tests for all functions and classes. Use virtual environments for dependencies.
+Follow PEP 8 style guide for Python code. The entry point must be only a few lines of raw
+code. Every python file must have it. Likewise, other programming languages all follow this
+example where appropriate. Use version control (git) with meaningful commit messages. Use
+branching strategies for features, bug fixes, and releases. Write clear and concise commit
+messages. Use code reviews to maintain code quality. Use continuous integration and continuous
+deployment (CI/CD) pipelines for automated testing and deployment."
+
+1.7. Structural Discipline (SOLID / ACID / JPL Power of Ten / Clean Code)
+1.7.1. SOLID (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation,
+Dependency Inversion) governs class and module design; e.g. `VerdictEngine` decides
+Pass/Fail/Flag and nothing else, `ComplianceScoringEngine` decides rule-vs-transcript scoring
+and nothing else — combining the two would violate Single Responsibility.
+1.7.2. ACID (Atomicity, Consistency, Isolation, Durability) governs any persistence operation
+(run history, re-run records; see `src/services` persistence client).
+1.7.3. NASA/JPL Power-of-Ten-style discipline governs defensive coding: bounded loops, no
+uncontrolled recursion, simple control flow, and checked return values — especially important
+where transcript text (untrusted DATA) drives control flow in the transcription/scoring
+engines.
+1.7.4. Modularization: no single file or function performs more than one clearly named
+responsibility; see 023_voicegate_modules_imports.txt for module boundary definitions.
+
+1.8. Entry Point and Documentation Discipline
+1.8.1. Every Python file that is directly executable exposes a `main()` function and guards
+it with `if __name__ == "__main__": main()`; this is the only code outside of functions and
+classes.
+1.8.2. Every function, method, and class docstring records: WHAT the unit does, WHY it
+exists, HOW it accomplishes its purpose, its `Args`, any exceptions it `Raises`, its
+`Returns`, and a `Complexity:` line stating time and space complexity in Big-O notation. For
+example, `score_call(transcript: Transcript, rules: list[StatutoryRule]) -> ComplianceScore`
+documents that transcript content is treated strictly as data, never as instructions, per the
+guardrail policy in Section 1.5.
+
+1.9. Python-Specific Rules
+1.9.1. No global variables; shared state is passed explicitly or encapsulated in a class
+(e.g. a `RunContext` object passed through `call_orchestrator`, never a module-level mutable
+singleton).
+1.9.2. No magic numbers or hardcoded strings/paths; use named constants or configuration
+files (see `src/data` for accepted persona/scenario/statutory-rule data formats).
+1.9.3. Type hints are mandatory on all function/method signatures, per
+024_voicegate_naming_conventions.txt.
+1.9.4. Use the standard `logging` module exclusively; `print()` is disallowed outside of
+throwaway local debugging never committed to version control.
+1.9.5. PEP 8 style is mandatory across the codebase.
+1.9.6. Dependencies are managed inside a virtual environment, per
+007_voicegate_virtual_env.txt.
+
+1.10. Version Control and CI/CD Discipline
+1.10.1. Git is the version-control system; commit messages are clear, concise, and follow
+Conventional Commits style where practical.
+1.10.2. A branching strategy separates feature branches, bug-fix branches, and release
+branches.
+1.10.3. Every change is code-reviewed before merge.
+1.10.4. CI/CD pipelines automate testing and deployment on every merge, including a
+prompt-injection/guardrail regression suite specific to the transcription and scoring
+engines.
+
+1.11. Summary Table
+| Rule Category | Requirement |
+|-----------------|-------------|
+| Structural | SOLID, ACID, JPL Power of Ten, Clean Code, modularization |
+| Entry point | `main()` + `if __name__ == "__main__":` only |
+| Documentation | WHAT/WHY/HOW/Args/Raises/Returns/Complexity on every unit |
+| State | No globals, no magic numbers, no hardcoded strings/paths |
+| Typing | Type hints mandatory |
+| Logging | `logging` module only, never `print()` |
+| Testing | Unit tests for all functions/classes |
+| Environment | Virtual environment for all dependencies (see 007_voicegate_virtual_env.txt) |
+| Style | PEP 8 |
+| VCS/CI/CD | Git, branching strategy, code review, automated CI/CD |
+
+1.12. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| Pre-existing baseline (this file, prior revision) | Single unstructured paragraph of rules | Preserved verbatim in Section 1.6; decomposed into Sections 1.7-1.10 | Reconciled |
+
+1.13. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| A contributor bypasses type hints or logging discipline | Medium | Medium | CI lint/type-check gate blocking merge on violation |
+| Hardcoded magic numbers reintroduced under time pressure (hackathon context) | High | Medium | Code review checklist item explicitly citing 1.9.2 |
+| Entry-point discipline drifting as the codebase grows | Low | Medium | 1.8.1 rule re-checked in code review and CI |
+| Transcript content accidentally treated as instructions rather than data in a new code path | Medium | High | Guardrail-specific code review item citing Section 1.5; regression suite per 1.10.4 |
+
+1.14. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain coding standards | R | C | A | I |
+| Enforce standards in code review | C | R/A | A | I |
+| CI lint/type-check gate maintenance | R | C | A | I |
+
+1.15. Conclusion
+The original baseline directive is fully preserved and now structurally decomposed into
+actionable, citable rule sections. Every Python file in this repository must satisfy Sections
+1.7 through 1.10 before merge.
+
+1.16. References and Citations
+1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14
+(structural contract; "no agent must remove any existing texts" instruction honored in
+Section 1.6).
+1.16.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(product concept and guardrail rationale).
+1.16.3. External: PEP 8 - Style Guide for Python Code (Python Software Foundation).
+1.16.4. External: NASA/JPL Institutional Coding Standard for the C Programming Language
+("Power of Ten" rules), adapted here for Python.
+1.16.5. External: SOLID principles (Robert C. Martin).
+
+1.17. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Restructured pre-existing baseline directive into full 0000-compliant document; original text preserved verbatim in Section 1.6. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 005_game_coding_standards.txt; replaced game-specific engine/example references (rules engine, chess pieces, dice combat) with VoiceGate examples (`VerdictEngine`, `ComplianceScoringEngine`, `score_call()`) and updated cross-references to sibling VoiceGate spec files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |

@@ -1,0 +1,167 @@
+1. Statutory Ruleset Integration Specification (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Scope and Authority
+1.7. Imported Statutory/Contractual Concepts
+1.8. Rule Citation Schema
+1.9. Explicit Non-Imports (Non-Reproduction Boundary)
+1.10. Integration Points in the Scoring Loop
+1.11. Company-Terms Snapshot Boundaries
+1.12. Summary Table
+1.13. Reconciliation Table
+1.14. Risk and Mitigation Table
+1.15. Roles and Responsibilities (RACI)
+1.16. Conclusion
+1.17. References and Citations
+1.18. Changelog Table
+
+1.1. Abstract
+This document defines how statutory and company-Terms-and-Conditions rules are integrated
+into VoiceGate's compliance scoring without importing or reproducing full legal text. It
+isolates what is cited, what is paraphrased, and what is explicitly excluded, repurposing the
+sibling project's bounded-economy-integration pattern (import concept, adapt to system,
+exclude the rest) for statutory-rule integration
+(voice_processing_specifications/0000_documentation_standards.txt records this repurposing
+lineage).
+
+1.2. Key Words
+statutory ruleset, rule citation, EU AI Act Article 50, California SB 243, company Terms and
+Conditions, non-import boundary, verification-flagged, compliance scoring, VoiceGate.
+
+1.3. Executive Summary
+VoiceGate integrates statutory and contractual rules at the citation level: rule ID, section/
+article number, and a short paraphrase, stored in `src/data/statutory_rules` and
+`src/data/company_terms_snapshots`. It never reproduces full statute or T&C text verbatim in
+code, logs, or documentation. Integration is constrained to a bounded citation layer that the
+compliance scoring engine (`src/voicegate/compliance_scoring_engine`) and verdict engine
+(`src/voicegate/verdict_engine`) consume to produce a Pass/Fail/Flag verdict with a rule
+citation, never a restated legal opinion.
+
+1.4. Key Findings
+1.4.1. Rule citation (ID + section + paraphrase) is the primary imported concept; full
+statutory text is never imported.
+1.4.2. Company-terms integration mirrors rule citation in structure: a snapshot reference
+plus paraphrase, not a verbatim reproduction of scraped terms beyond what is needed for a
+specific verdict's rationale.
+1.4.3. No statute is treated as confirmed law without a verification flag until independently
+checked against its official source; this file inherits and does not relax that flag from
+voice_processing_specifications/001_voice_transcription_concept.txt §1.9.
+1.4.4. Integration is intentionally citation-only to keep VoiceGate legally defensible and to
+avoid unauthorized reproduction of copyrighted or officially-published legal text.
+
+1.5. Philosophical Preamble
+Integration means citation, not reproduction. The goal is a verdict a human reviewer can
+verify against the original rule text themselves, not a system that becomes an unlicensed,
+potentially-inaccurate republisher of statutory or contractual language.
+
+1.6. Scope and Authority
+1.6.1. This file documents conceptual and citation-schema integration boundaries.
+1.6.2. Authoritative statutory/scoring mechanic detail remains in
+voice_processing_specifications/017_voicegate_scoring_rules.txt.
+1.6.3. If a conflict exists,
+voice_processing_specifications/017_voicegate_scoring_rules.txt is authoritative for scoring
+mechanics; this file remains authoritative for the citation/non-reproduction boundary itself.
+
+1.7. Imported Statutory/Contractual Concepts
+1.7.1. Rule identity as a stable, referenceable key (`rule_id`).
+1.7.2. Section/article/clause locator within the source rule.
+1.7.3. A one-to-two-sentence paraphrase capturing the compliance-relevant obligation.
+1.7.4. A verification-status flag distinguishing confirmed from citation-needed rules.
+
+1.8. Rule Citation Schema
+1.8.1. `rule_id` is a stable short code, e.g. `EU-AI-ACT-ART50`, `CA-SB243`.
+1.8.2. `section_or_clause` locates the specific provision, e.g. "Article 50(1)" or "T&C
+§4.2 Refund Window".
+1.8.3. `paraphrase` is a short, non-verbatim summary of the obligation (e.g. "AI systems
+must disclose to users that they are interacting with an AI system").
+1.8.4. `verification_status` is one of `verification-flagged` (not yet independently
+confirmed against the official source) or `confirmed` (independently checked).
+1.8.5. Every verdict record
+(voice_processing_specifications/021_voicegate_data_standards.txt §1.8.2) carrying a Fail or
+Flag outcome must reference exactly one `rule_id` plus `section_or_clause`.
+
+1.9. Explicit Non-Imports (Non-Reproduction Boundary)
+1.9.1. Full statutory text (e.g. the complete text of EU AI Act Article 50 or California SB
+243) is never reproduced verbatim in code, logs, documentation, or the Risk Report.
+1.9.2. Full company Terms and Conditions text is never reproduced beyond the minimal clause
+excerpt needed to justify a specific verdict's rationale, and even then only paraphrased
+where feasible.
+1.9.3. No legal advice or legal conclusion is asserted; every verdict is an automated,
+citation-backed compliance signal for human review, not a legal determination.
+1.9.4. EU AI Act Article 50 and California SB 243 remain `verification-flagged` (citation-
+needed) per voice_processing_specifications/001_voice_transcription_concept.txt §1.9 until a
+team member independently confirms the current statutory text against an official source.
+
+1.10. Integration Points in the Scoring Loop
+1.10.1. Compliance-scoring phase: the transcript is checked against the applicable rule
+citations for the call's persona/scenario (e.g. minor-protection rules for a Minor persona
+call, per voice_processing_specifications/027_persona_archetype_definitions.txt §1.10).
+1.10.2. Verdict phase: a Pass/Fail/Flag outcome is emitted with its `rule_id` and
+`section_or_clause`, per Section 1.8.5.
+1.10.3. Patch-adviser phase: a Fail verdict may produce a suggested system-prompt patch
+(`src/voicegate/patch_adviser`) referencing the same rule citation, never inventing a new
+uncited obligation.
+
+1.11. Company-Terms Snapshot Boundaries
+1.11.1. Company-terms snapshots (`src/data/company_terms_snapshots`) are scraped, dated,
+and versioned; a verdict must record which snapshot date it was scored against.
+1.11.2. If the deploying company's brand/company name is not yet confirmed (per
+voice_processing_specifications/001_voice_transcription_concept.txt §1.6.1), the
+corresponding snapshot metadata field is marked TBD rather than populated with a guess.
+
+1.12. Summary Table
+| Topic | Integration Decision |
+|------|-----------------------|
+| Statutory rule identity | Imported as citation (rule_id + section + paraphrase) |
+| Full statute text | Explicitly excluded, never reproduced verbatim |
+| Company T&C identity | Imported as snapshot + citation, minimally excerpted |
+| Legal conclusions | Explicitly excluded; verdicts are compliance signals, not legal advice |
+| Verification status | EU AI Act Art. 50 and CA SB 243 remain verification-flagged |
+
+1.13. Reconciliation Table
+| Prior State | Current State | Status |
+|-------------|----------------|--------|
+| File was the game's Monopoly-territory-economy integration specification | Repurposed to statutory ruleset integration (rule citation, non-reproduction boundary), same bounded-import pattern | Reconciled |
+| Statutory integration was implicit in the concept document | Unified formal citation-schema and non-import document created | Reconciled |
+
+1.14. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Accidental verbatim reproduction of statutory or T&C text | Medium | Critical | 1.9.1-1.9.2 binding non-reproduction rule; code/doc review must check for it |
+| Verdict issued without a citation | Low | High | 1.8.5 makes `rule_id` + `section_or_clause` mandatory on Fail/Flag |
+| Verification-flagged statutes treated as confirmed by mistake | Medium | High | 1.9.4 keeps the flag explicit and non-relaxable without independent confirmation |
+
+1.15. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain citation schema and non-import boundary | R | C | A | I |
+| Verify statutory citations against official sources | C | R (legal/stakeholder) | A | I |
+| Approve scope expansion of imported statutory concepts | C | R | A | A/Stakeholder |
+
+1.16. Conclusion
+Statutory and contractual integration in VoiceGate is a bounded citation layer, not a
+wholesale legal-text import, and this distinction is now explicit and enforceable across the
+compliance scoring and verdict engines.
+
+1.17. References and Citations
+1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.6.
+1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.9
+(verification-flagged regulatory citation log).
+1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
+1.17.4. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (scoring
+mechanic authority).
+1.17.5. Internal: voice_processing_specifications/021_voicegate_data_standards.txt §1.8.2
+(verdict record schema).
+1.17.6. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
+(vulnerability-flag-triggered scrutiny).
+1.17.7. External (verification-flagged, not independently confirmed): EU AI Act Article 50;
+California SB 243.
+
+1.18. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of previously empty Monopoly integration specification. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 028_game_monopoly_integration.txt; replaced territory-economy integration contract with statutory/company-terms rule-citation schema and explicit non-reproduction boundary, retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

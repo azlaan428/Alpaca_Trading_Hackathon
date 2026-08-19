@@ -1,0 +1,185 @@
+1. VoiceGate UI Navigation (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Screen Inventory
+1.7. Navigation Structure
+1.8. Screen Layouts
+1.8.1. Test Bench Layout
+1.8.2. Call Review Layout
+1.8.3. Risk Report Layout
+1.9. Interaction and Confirmation Model
+1.10. Per-Item Action Menus
+1.10.1. Test Bench Persona/Scenario Menu
+1.10.2. Call Review Finding Menu
+1.10.3. Risk Report Call-Row Menu
+1.11. Settings Screen
+1.12. Summary Table
+1.13. Reconciliation Table
+1.14. Risk and Mitigation Table
+1.15. Roles and Responsibilities (RACI)
+1.16. Conclusion
+1.17. References and Citations
+1.18. Changelog Table
+
+1.1. Abstract
+This document specifies the screen structure, navigation model, and interaction/confirmation
+model for VoiceGate's four screens (Test Bench, Call Review, Risk Report, Settings),
+replacing the sibling project's five-screen game-menu structure
+(004_game_menu_context_menus.txt, preserved in git history) with a compliance-tool navigation
+model and a mandatory two-step confirm pattern for destructive actions.
+
+1.2. Key Words
+Test Bench, Call Review, Risk Report, Settings, navigation, two-step confirm, destructive
+action, live transcript, verdict badge, per-item action menu.
+
+1.3. Executive Summary
+VoiceGate exposes four screens (Test Bench, Call Review, Risk Report, Settings) governed by
+a single interaction rule inherited from the sibling project's confirmation model: a first
+selection previews an action, a second confirms it. No destructive action (deleting a run,
+applying a Suggested Patch Adviser recommendation, resetting run history) may be triggered by
+a single input. Navigation flows linearly from launching a run in the Test Bench, through
+reviewing individual calls in Call Review, to aggregate risk analysis in the Risk Report.
+
+1.4. Key Findings
+1.4.1. The Test Bench is the entry point: persona/scenario selection, gauntlet launch, and
+the live dual-channel transcript view for the call currently in progress.
+1.4.2. Call Review always shows, for a completed or in-progress call: the dual-channel
+transcript, inline findings anchored to specific lines, and the overall verdict badge
+(Pass/Fail/Flag) for that call.
+1.4.3. The Risk Report aggregates failed/flagged calls against the specific rule text they
+violate, plus a before/after re-run diff (Suggested Patch Adviser verification) and a
+judge-calibration chart.
+1.4.4. Every action that changes persistent state irrevocably (deleting a run, applying a
+suggested patch, resetting run history) requires the two-step select-then-confirm pattern,
+unchanged in principle from 004_game_menu_context_menus.txt Section 1.9.
+1.4.5. The Settings screen is the only place the palette-variant toggle (see
+002_voicegate_aesthetics.txt Section 1.6.3.2) and destructive administrative actions are
+exposed.
+
+1.5. Philosophical Preamble
+A navigation model is the reviewer's first and most frequent conversation with the verdict
+engine; if that conversation is ambiguous, the underlying rigor of the scoring rules is
+wasted. Every screen and action menu in VoiceGate exists to make the reviewable evidence
+visible before an action is taken, consistent with the guardrails-protect-trust and
+legibility-first design pillars (003_voicegate_philosophy.txt Sections 1.6.1 and 1.6.4).
+
+1.6. Screen Inventory
+| Screen | Purpose |
+|--------|---------|
+| Test Bench | Choose persona/scenario, launch a gauntlet run, view the live transcript |
+| Call Review | Transcript with inline findings and the call's verdict badge |
+| Risk Report | Failed calls vs. rule text, before/after re-run diff, judge-calibration chart |
+| Settings | Palette toggle, dataset/config references, destructive actions (behind two-step confirm) |
+
+1.7. Navigation Structure
+1.7.1. Test Bench -> (launch run) -> live transcript view -> (call completes) -> Call Review
+for that call.
+1.7.2. Call Review -> (aggregate view) -> Risk Report, filtered to the current run or a
+selected historical run.
+1.7.3. Risk Report -> (accept a Suggested Patch Adviser recommendation, two-step confirm) ->
+regression re-run (016_voicegate_operating_modes.txt) -> new Call Review/Risk Report entries
+for the re-run.
+1.7.4. Settings is reachable from any screen via a persistent navigation element and never
+interrupts an in-progress run.
+
+1.8. Screen Layouts
+
+1.8.1. Test Bench Layout
+Persona/scenario catalog (025_scenario_persona_catalog.txt) selectors occupy one panel;
+the live dual-channel transcript occupies the primary panel; a run-status indicator (idle,
+running, completed) is always visible.
+
+1.8.2. Call Review Layout
+Dual-channel transcript (agent under test vs. simulated caller, per
+002_voicegate_aesthetics.txt Section 1.8.2) occupies the primary panel; inline findings and
+the overall verdict badge occupy an adjacent panel, anchored to specific transcript lines.
+
+1.8.3. Risk Report Layout
+A filterable list of failed/flagged calls occupies the primary panel; selecting a call shows
+its violated rule text, the before/after re-run diff (if a patch was applied and verified),
+and the judge-calibration chart is shown in a dedicated summary panel.
+
+1.9. Interaction and Confirmation Model
+1.9.1. First selection of a persona/scenario, finding, or call row previews it; details are
+shown without committing to any state change.
+1.9.2. A second, explicit confirmation is required to: launch a gauntlet run, accept a
+Suggested Patch Adviser recommendation, delete a run, or reset run history.
+1.9.3. Deselecting (selecting the same item again, or an unrelated empty area) cancels the
+pending action without side effects.
+1.9.4. No destructive or state-changing action may be performed from a single, un-previewed
+input, per 003_voicegate_philosophy.txt Section 1.7.2.
+
+1.10. Per-Item Action Menus
+
+1.10.1. Test Bench Persona/Scenario Menu
+Shown on selecting a persona/scenario combination: Preview Scenario, Launch Gauntlet Run,
+Cancel.
+
+1.10.2. Call Review Finding Menu
+Shown on selecting an inline finding: View Rule Citation, Flag for Human Review, Cancel.
+
+1.10.3. Risk Report Call-Row Menu
+Shown on selecting a failed/flagged call row: View Suggested Patch, Accept Suggested Patch
+(two-step confirm, triggers a regression re-run), Export Finding, Cancel.
+
+1.11. Settings Screen
+1.11.1. Palette variant toggle: Dark (Variant A) / Light (Variant B), per
+002_voicegate_aesthetics.txt Section 1.6.
+1.11.2. Reset Run History (two-step confirm dialog, since this is destructive).
+1.11.3. Dataset/config reference panel, pointing to
+030_inhouse_scenario_dataset_creation.txt for the current state of the transcript/
+violation-detection training dataset open question.
+
+1.12. Summary Table
+| Screen/Menu | Key Controls |
+|--------------|----------------|
+| Test Bench | Persona/scenario selectors, live transcript, Launch Gauntlet Run |
+| Call Review | Transcript, inline findings, verdict badge |
+| Risk Report | Failed-call list, rule text, before/after diff, calibration chart |
+| Settings | Palette toggle, Reset Run History, dataset/config reference |
+
+1.13. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| 004_game_menu_context_menus.txt Section 1.9 | Two-step select-then-confirm interaction model | Retained as the binding interaction model for all VoiceGate destructive actions (1.9) | Reconciled |
+| 004_game_menu_context_menus.txt Section 1.10 | Three context menus (Piece, Territory, Card) | Reworked into three per-item action menus (Test Bench, Call Review, Risk Report) matching VoiceGate's own selectable entities | Reconciled |
+| 004_game_menu_context_menus.txt Section 1.6 | Five-screen inventory (Main Menu, How to Play, Game, Settings, Results) | Reworked into four-screen inventory (Test Bench, Call Review, Risk Report, Settings) matching the VoiceGate pitch | Reconciled |
+
+1.14. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Accidental application of a Suggested Patch Adviser recommendation | Medium | High | Mandatory two-step confirm (1.9.2, 1.10.3), never auto-applied per 003_voicegate_philosophy.txt Section 1.6.3 |
+| Accidental Reset Run History destroying audit trail | Low | High | Two-step confirm dialog required (1.11.2) |
+| Reviewer losing context switching between Call Review and Risk Report | Low | Medium | Explicit navigation structure (1.7) keeps run/call context carried across screens |
+
+1.15. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain screen inventory and layouts | R | C | A | I |
+| Maintain per-item action menu wiring to the verdict engine | R | C/A | A | I |
+
+1.16. Conclusion
+The VoiceGate navigation and action-menu system gives a compliance reviewer an unambiguous,
+two-step-confirmed path from launching a run to reviewing individual calls to acting on
+aggregate risk findings, without exposing any destructive action without preview.
+
+1.17. References and Citations
+1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
+§1.1-1.14.
+1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+(three-screen pitch, Section 1.3).
+1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source concept chat).
+1.17.4. Internal: voice_processing_specifications/002_voicegate_aesthetics.txt (visual
+language referenced by verdict badge/state indicators).
+1.17.5. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt
+(legal-action/verdict source of truth referenced by all screens).
+1.17.6. Internal (superseded, preserved in git history): 004_game_menu_context_menus.txt.
+
+1.18. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/004_game_menu_context_menus.txt: screen inventory, menu structure, interaction model, and three context menus. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: reworked into four-screen navigation (Test Bench, Call Review, Risk Report, Settings) with per-item action menus and a mandatory two-step confirm pattern for destructive actions (patch acceptance, run history reset). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

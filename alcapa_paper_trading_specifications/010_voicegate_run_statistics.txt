@@ -1,0 +1,147 @@
+1. VoiceGate Run Statistics (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Per-Run Statistics
+1.7. Per-Campaign Statistics
+1.8. Derived/Formula-Based Statistics
+1.9. Statistic Data Contract
+1.10. Summary Table
+1.11. Reconciliation Table
+1.12. Risk and Mitigation Table
+1.13. Roles and Responsibilities (RACI)
+1.14. Conclusion
+1.15. References and Citations
+1.16. Changelog Table
+
+1.1. Abstract
+This document defines the run- and verdict-level statistics tracked by VoiceGate, their
+formulas, and their storage contract, replacing the sibling project's player-statistics model
+(010_game_player_statistics.txt, preserved in git history) with pass/fail/flag-rate and
+judge-calibration metrics grounded in the verdict engine (017_voicegate_scoring_rules.txt)
+and the logging standard (020_voicegate_logging_standards.txt).
+
+1.2. Key Words
+run statistics, verdict statistics, pass rate, fail rate, flag rate, judge calibration,
+persona, scenario, telemetry, derived metrics.
+
+1.3. Executive Summary
+VoiceGate tracks a compact set of per-run and per-campaign statistics: verdict counts
+(Pass/Fail/Flag) broken out per persona archetype, scenario category, and intensity tier;
+rule citations triggered per statute or company Terms & Conditions clause; Suggested Patch
+Adviser proposal and regression-re-run outcomes; and judge-calibration metrics measuring
+agreement/drift in the AI judge model's verdicts over time. All statistics are derived from
+the structured event log and the deterministic verdict engine; no statistic is computed from
+an untracked or non-reproducible source.
+
+1.4. Key Findings
+1.4.1. All statistics are derived, at the end of a run, from the same structured event log
+used for the Call Review transcript/finding display (004_voicegate_ui_navigation.txt Section
+1.8.2), guaranteeing consistency between what the reviewer saw and what is recorded.
+1.4.2. Per-run statistics reset at the start of each new gauntlet run; per-campaign
+statistics accumulate across all runs recorded in the local statistics store.
+1.4.3. Pass/Fail/Flag rates are tracked per persona archetype and per scenario category x
+intensity tier (025_scenario_persona_catalog.txt, 027_persona_archetype_definitions.txt),
+enabling comparison of which persona/scenario combinations most frequently expose
+compliance risk.
+1.4.4. Judge-calibration metrics exist specifically to guard against the actor/role-confusion
+risk named in 003_voicegate_philosophy.txt Section 1.6.1 and 017_voicegate_scoring_rules.txt;
+a drifting calibration score is itself a flaggable condition.
+1.4.5. Statistics are read-only presentation derived from verdict-engine state; no
+statistics-display code path may write back into run state, preserving the
+deterministic-verdict-engine principle (003_voicegate_philosophy.txt Section 1.6.3).
+
+1.5. Philosophical Preamble
+A statistic is a claim about history, and a claim about history is only trustworthy if it
+traces back to an auditable record. VoiceGate's statistics exist to let a compliance team see
+the shape of a testing campaign after it runs, not to introduce a second, parallel source of
+truth alongside the verdict engine's own state.
+
+1.6. Per-Run Statistics
+| Statistic | Description |
+|-----------|--------------|
+| Calls executed | Count of simulated calls completed in the run |
+| Verdict counts | Pass / Fail / Flag counts for the run |
+| Verdicts by persona archetype | Pass/Fail/Flag counts broken out per archetype (027_persona_archetype_definitions.txt) |
+| Verdicts by scenario/intensity | Pass/Fail/Flag counts broken out per category x intensity tier (025_scenario_persona_catalog.txt) |
+| Rule citations triggered | Count per statute/T&C rule ID (028_statutory_ruleset_integration.txt) |
+| Suggested Patch Adviser proposals | Count of Fail verdicts that produced a patch suggestion |
+| Regression re-run outcomes | Count of accepted patches verified Pass on re-run vs. still Fail |
+
+1.7. Per-Campaign Statistics
+| Statistic | Description |
+|-----------|--------------|
+| Runs completed | Total gauntlet runs completed in the local statistics store |
+| Overall pass rate | Fraction of all tracked calls verdicted Pass |
+| Most frequently violated rule IDs | Ranked list of statute/T&C citations most often triggering Fail/Flag |
+| Judge-calibration trend | Calibration score tracked across runs over time |
+
+1.8. Derived/Formula-Based Statistics
+1.8.1. Pass rate (overall or per persona/scenario) = calls verdicted Pass / calls executed,
+for the selected scope.
+1.8.2. Fail rate and Flag rate are computed identically, substituting Fail or Flag for Pass.
+1.8.3. Patch verification rate = regression re-runs verdicted Pass / Suggested Patch Adviser
+proposals accepted.
+1.8.4. Judge-calibration score = agreement rate between the AI judge's verdict and a
+held-out human-reviewed sample for the same calls; a declining trend is itself a monitored
+signal, not merely a display metric.
+1.8.5. All derived statistics are computed at display time from stored per-run/per-campaign
+raw counters; none are persisted as an independently mutable value.
+
+1.9. Statistic Data Contract
+1.9.1. Statistics are serialized using the accepted data formats in
+021_voicegate_data_standards.txt (JSON preferred for the local statistics store).
+1.9.2. Statistics persist alongside run history and are cleared only by an explicit Reset Run
+History action (004_voicegate_ui_navigation.txt Section 1.11.2), never silently.
+
+1.10. Summary Table
+| Scope | Example Statistics |
+|-------|----------------------|
+| Per-run | Calls executed, verdict counts, verdicts by persona/scenario, rule citations, patch/re-run outcomes |
+| Per-campaign | Runs completed, overall pass rate, most-violated rule IDs, judge-calibration trend |
+| Derived | Pass/Fail/Flag rate, patch verification rate, judge-calibration score |
+
+1.11. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|------------------|-----------------|--------|
+| 010_game_player_statistics.txt Section 1.6 (Per-Match Statistics) | Territories, combat, credits, Dominion Points, cards, upgrades, match outcome | Reworked as Per-Run Statistics (1.6): calls executed, verdict counts by persona/scenario, rule citations, patch/re-run outcomes | Reconciled |
+| 010_game_player_statistics.txt Section 1.8 (Derived Statistics) | Win rate, combat win rate, average Dominion Points per turn | Reworked as Pass/Fail/Flag rate, patch verification rate, judge-calibration score (1.8) | Reconciled |
+
+1.12. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Statistics drifting out of sync with the actual event log | Medium | Medium | Statistics are computed from the event log, never tracked independently (1.6, 1.9.2) |
+| Judge-calibration drift going unnoticed without dedicated tracking | Medium | High | 1.4.4 and 1.8.4 mandate the calibration score be tracked and flaggable |
+| Statistics store corruption on unexpected shutdown | Low | Medium | Persistence rules in 015_voicegate_deployment.txt govern store durability |
+
+1.13. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Maintain statistics model | R | C | A | I |
+| Use judge-calibration statistics for model/prompt review | C | R | A | A/Stakeholder (product owner) |
+
+1.14. Conclusion
+VoiceGate's statistics model gives compliance teams and engineers an auditable, event-log-
+derived view of gauntlet run history, with explicit judge-calibration tracking to guard
+against actor/role-confusion drift.
+
+1.15. References and Citations
+1.15.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
+§1.1-1.14.
+1.15.2. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (verdict
+mechanics).
+1.15.3. Internal: voice_processing_specifications/020_voicegate_logging_standards.txt (event
+log source of truth).
+1.15.4. Internal: voice_processing_specifications/021_voicegate_data_standards.txt
+(serialization format).
+1.15.5. Internal: voice_processing_specifications/015_voicegate_deployment.txt
+(persistence).
+1.15.6. Internal (superseded, preserved in git history): 010_game_player_statistics.txt.
+
+1.16. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/010_game_player_statistics.txt: per-match, per-session, and derived player statistics model. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: replaced match/player statistics with per-run and per-campaign verdict statistics (pass/fail/flag rates per persona/scenario) and judge-calibration metrics. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |

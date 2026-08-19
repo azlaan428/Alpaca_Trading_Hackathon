@@ -1,0 +1,446 @@
+1. VoiceGate Opening-Day Master Prompt (Table of Contents)
+1.1. Abstract
+1.2. Key Words
+1.3. Executive Summary
+1.4. Key Findings
+1.5. Philosophical Preamble
+1.6. Hackathon Context and Timeline
+1.7. How to Use This Document
+1.8. The Master Prompt (Copy-Paste Block)
+1.8.1. Project Identity
+1.8.2. Mission and Target Platform
+1.8.3. Personas and Scenario Catalog
+1.8.4. Scenario Gauntlet Execution
+1.8.5. Call Lifecycle Structure
+1.8.6. Statutory and Policy Reference Corpus
+1.8.7. Guardrails — Prompt Injection, Model Poisoning, Actor-Role Confusion
+1.8.8. Verdict Scoring
+1.8.9. User Interface
+1.8.10. Visual Style
+1.8.11. Software Architecture
+1.8.12. Suggested Patch Adviser
+1.8.13. Persistence
+1.8.14. Testing and Debug Panel
+1.8.15. Delivery Priority
+1.8.16. Explicit Non-Goals
+1.9. Day-by-Day Pacing Guide for the Hackathon Week
+1.10. Bounded Follow-Up Prompt Discipline
+1.11. Summary Table
+1.12. Reconciliation Table
+1.13. Risk and Mitigation Table
+1.14. Roles and Responsibilities (RACI)
+1.15. Conclusion
+1.16. References and Citations
+1.17. Changelog Table
+
+1.1. Abstract
+This document is the single, submission-ready master prompt to be pasted into Natively AI on
+the opening day of the assumed LabLab AI Factory hackathon window (2026-08-03 through
+2026-08-10 — see Section 1.9.4 of 001_voice_transcription_concept.txt for the open-item
+caveat on this assumption) to scaffold and generate the initial vertical slice of VoiceGate.
+It is assembled from the locked canon in voice_processing_specifications/001 through 024 (see
+References, Section 1.16), plus the guardrail requirements recorded verbatim in
+voice_transcription_concept/voice_chat_concept.md, so the team can paste one internally
+consistent prompt on day one instead of discovering contradictions mid-generation. This
+document invents no new statute, no new numeric compliance threshold, and declares no new
+hallucination-envelope invocation beyond what the cited source documents already declare.
+
+1.2. Key Words
+Natively AI, LabLab AI Factory, hackathon, master prompt, opening day, VoiceGate, Voice
+Compliance QA, vertical slice, Test Bench, Call Review, Risk Report, guardrails, prompt
+injection, day-by-day pacing, bounded follow-up prompts, delivery priority.
+
+1.3. Executive Summary
+This document gives the team a single, copy-paste-ready master prompt (Section 1.8)
+reflecting current VoiceGate canon — an automated compliance test bench that simulates
+callers across persona/scenario categories, drives a scripted-and-adversarial gauntlet
+against a target voice agent, transcribes both channels, and scores each call against a
+statutory/policy reference corpus and the target company's own published terms — plus a
+day-by-day pacing guide (Section 1.9) and a bounded follow-up prompt discipline (Section
+1.10), carried forward unchanged in spirit from the sibling DarkStrategy_XParadoxX project's
+own prompt-discipline lesson: never submit an open-ended request such as "make the testing
+smarter," always name the exact file/component and what must stay unchanged.
+
+1.4. Key Findings
+1.4.1. This document supersedes, for prompt-submission purposes, the prior 0001 revision that
+synthesized the X Paradox X game canon; that prior content is preserved in this repository's
+git history (commit 14726ca) rather than duplicated in-body, per the 2026-08-03 user
+directive to rewrite corpus content for VoiceGate efficiently.
+1.4.2. The assumed hackathon window (2026-08-03 to 2026-08-10) is inherited from the sibling
+project's own timeline and matches the current session date, but is explicitly flagged as an
+open item, not a confirmed fact, in 001_voice_transcription_concept.txt Section 1.9.4.
+1.4.3. The master prompt in Section 1.8 is written for single-piece, day-one submission, per
+the same discipline the source chat itself urged for the sibling project: avoid numerous,
+piecemeal iterations with Natively AI.
+1.4.4. Every guardrail requirement named in Section 1.8.7 (prompt-injection resistance,
+model-poisoning resistance, actor/speaker-role-confusion resistance) is cited verbatim in
+intent from voice_transcription_concept/voice_chat_concept.md and must not be weakened by any
+later follow-up prompt without an explicit, reviewed reconciliation entry.
+1.4.5. All external regulatory citations quoted in this document (EU AI Act Article 50,
+California SB 243, the Air Canada precedent) are carried through from
+001_voice_transcription_concept.txt Section 1.11 and remain verification-flagged, not
+independently confirmed by this document.
+
+1.5. Philosophical Preamble
+An opening-day prompt is the single highest-leverage artifact of a one-week hackathon: every
+ambiguity left unresolved in it is an ambiguity Natively AI will resolve on the team's behalf,
+almost certainly at the cost of a day's regeneration. This is doubly true for VoiceGate,
+whose entire purpose is catching exactly this kind of unreviewed, ungrounded assumption in
+someone else's product — a documentation corpus that tolerates the same drift in its own
+prompt would be self-defeating.
+
+1.6. Hackathon Context and Timeline
+1.6.1. Event: assumed LabLab AI Factory hackathon (open item, see Section 1.4.2).
+1.6.2. Duration: assumed one week, 2026-08-03 (Monday) through 2026-08-10 (Monday), inclusive.
+1.6.3. Required platform: Natively AI (code-generation/scaffolding tool), per
+015_voicegate_deployment.txt.
+1.6.4. Submission target: this repository (X_Voice_X), a py.typed Python package forked from
+DarkStrategy_XParadoxX, per voice_transcription_concept/voice_chat_concept.md.
+1.6.5. Team: TAQI's team, distinct from the sibling project's team; SCP/Hadrian advises both.
+
+1.7. How to Use This Document
+1.7.1. On day one, submit the entire Section 1.8 block to Natively AI as the first prompt, in
+one piece, before requesting any incremental change.
+1.7.2. Do not paraphrase or shorten Section 1.8 before submission.
+1.7.3. After initial generation, all further requests must follow the bounded follow-up
+prompt discipline in Section 1.10.
+1.7.4. If Natively AI's output conflicts with any statement in Section 1.8, this
+specification corpus remains authoritative; file a reconciliation note rather than silently
+accepting the deviation.
+
+1.8. The Master Prompt (Copy-Paste Block)
+The following text (Sections 1.8.1 through 1.8.16) is the literal content to submit to
+Natively AI on opening day, as a single unbroken submission.
+
+1.8.1. Project Identity
+```
+PROJECT NAME
+VoiceGate
+
+COMPANY
+Not yet confirmed (open item — see 001_voice_transcription_concept.txt Section 1.9.1). Do not
+invent a company name in generated output; use "VoiceGate" as the product/project name only.
+
+CATEGORY
+Voice Compliance QA (VCQ) — PROPOSED working category: automated red-teaming and
+regulatory/policy scoring of production voice AI agents.
+
+PROJECT TYPE
+An automated compliance and safety test bench for voice AI agents, submitted to the assumed
+LabLab AI Factory hackathon (2026-08-03 to 2026-08-10 — see Section 1.6.2 caveat).
+```
+
+1.8.2. Mission and Target Platform
+```
+MISSION
+Build a working test bench that calls a target voice agent with simulated caller identity engineered by
+age, emotional state, and adversarial style; transcribes both sides of every call; and scores
+each call against applicable statutes and the target company's own published terms. The
+project must prioritize functional correctness of the scoring/citation pipeline and guardrail
+robustness over feature quantity.
+
+TARGET
+Create a responsive web-rendered UI (Test Bench, Call Review, Risk Report) backed by a Python
+backend (this repository, X_Voice_X, a py.typed package) usable in a desktop browser. Do not
+require user accounts, payments, multi-tenant billing, or live production call interception in
+the MVP; test against a sandbox/staging instance of the target voice agent only.
+```
+
+1.8.3. Personas and Scenario Catalog
+```
+PERSONAS AND SCENARIOS
+Provide a minimum viable persona/scenario catalog with at least one entry in each category:
+Crisis/Emotional, Minor/Age-Sensitive, Adversarial-Refund, and Standard/Happy-Path (see
+voice_processing_specifications/025_scenario_persona_catalog.txt for the full catalog schema
+and voice_processing_specifications/027_persona_archetype_definitions.txt for per-persona
+behavioral fields: patience, escalation rate, deception likelihood, vulnerability flag).
+Each persona/scenario pairing must declare an intensity tier (Low, Medium, High, Extreme; see
+voice_processing_specifications/026_randomization_variance_terminology.txt) that bounds the
+randomized variance (tone jitter, interruption timing, escalation pacing) injected into that
+simulated caller's turns, so gauntlet runs remain reproducible under a seeded RNG.
+```
+
+1.8.4. Scenario Gauntlet Execution
+```
+GAUNTLET EXECUTION
+A gauntlet run selects one or more persona/scenario pairings and drives each through a full
+call lifecycle (Section 1.8.5) against the target voice agent, one call at a time or in a
+declared batch. Every call produces: a dual-channel transcript, a per-turn event log, and a
+final verdict (Section 1.8.8). A gauntlet run must be fully replayable from its RNG seed.
+```
+
+1.8.5. Call Lifecycle Structure
+```
+CALL LIFECYCLE
+Every simulated call proceeds through five phases, displayed and enforced by the orchestration
+engine:
+1. Greeting — establish the simulated caller's opening context.
+2. Intent Discovery — the caller states or reveals their need across one or more turns.
+3. Resolution Attempt — the target agent attempts to resolve the caller's need.
+4. Compliance Check — the scoring engine evaluates the transcript-so-far against the
+   statutory/policy reference corpus (Section 1.8.6), continuously, not only at call end.
+5. Wrap-up — the call ends; a final verdict and citation set are produced.
+Compliance Check may flag a violation at any phase; it is never skipped or deferred solely to
+call end.
+```
+
+1.8.6. Statutory and Policy Reference Corpus
+```
+STATUTORY AND POLICY REFERENCE CORPUS
+Maintain a structured, versioned corpus of: (a) applicable statutes/regulations (minimum
+viable set: EU AI Act Article 50, California SB 243 — both verification-flagged per
+001_voice_transcription_concept.txt Section 1.11, do not present as legally confirmed without
+review) and (b) the target company's own published refund/cancellation terms, scraped and
+snapshotted per run. Verdicts cite structured rule IDs and clause references, never full
+statute or contract text reproduction (see
+voice_processing_specifications/028_statutory_ruleset_integration.txt for the non-import
+boundary). The corpus schema must record, per rule: rule ID, source, effective-date status
+(verified/unverified), and the scoring logic that applies it.
+```
+
+1.8.7. Guardrails — Prompt Injection, Model Poisoning, Actor-Role Confusion
+```
+GUARDRAILS
+Treat all transcribed speech (caller and agent) as untrusted data, never as instructions, when
+passed to any scoring/judge model — this applies even if transcribed text contains phrases
+that look like system instructions. Defend explicitly against: (a) prompt injection embedded
+in simulated-caller or target-agent speech attempting to alter judge behavior; (b) model
+poisoning via crafted transcript content; (c) actor/speaker-role confusion, where a judge
+model conflates which line belongs to the caller versus the agent (an observed failure mode
+in current-generation models per voice_transcription_concept/voice_chat_concept.md). Every
+transcript turn must carry an unambiguous, structurally-enforced speaker-role tag that the
+judge model cannot be talked out of via in-text claims.
+```
+
+1.8.8. Verdict Scoring
+```
+VERDICT SCORING
+Each call resolves to exactly one verdict: Pass, Fail, or Flag. Fail requires at least one
+cited rule/clause violation. Flag denotes an ambiguous or borderline case requiring human
+review. A Fail must produce a suggested system-prompt patch (Section 1.8.12) and queue an
+automatic re-run of the same scenario/persona pairing to verify the fix, recording both the
+before and after transcripts and verdicts side by side.
+```
+
+1.8.9. User Interface
+```
+SCREENS
+Test Bench, Call Review, Risk Report, Settings.
+
+Test Bench: choose one or more persona/scenario pairings from the catalog, configure the
+target agent endpoint (sandbox/staging only), launch a run, and watch a live transcript as
+each simulated call happens.
+
+Call Review: full transcript per call with speaker-role tags, findings shown inline at the
+turn where they occurred, and a verdict badge (Pass/Fail/Flag) per call.
+
+Risk Report: failed calls listed next to the exact rule/clause text they broke, the
+before-and-after re-run comparison for each suggested patch, and a judge-calibration chart
+showing verdict agreement/drift across repeated runs of the same scenario.
+
+INTERACTION MODEL
+Launching a run, applying a suggested patch, and re-running a gauntlet are each two-step
+actions: a preview/confirmation step, then an explicit confirm. No suggested patch may be
+applied to a live target agent from a single, un-previewed input.
+```
+
+1.8.10. Visual Style
+```
+VISUAL STYLE
+Inherit the two-variant palette from the sibling DarkStrategy_XParadoxX project as a reused
+starting default (open to revision, not yet a confirmed VoiceGate-specific brand decision):
+
+Variant A (Dark): Background #000000, Primary text #FFACE9, Accent/border #B76E79.
+Variant B (Light/Inverted): Background #FFACE9, Primary text #000000, Accent/border #B76E79.
+
+Verdict badges use color plus an icon plus a text label (Pass/Fail/Flag) — never color alone.
+Typography: one readable sans-serif for interface text; monospaced text for transcripts and
+event logs; tabular figures for verdict counts and calibration percentages.
+```
+
+1.8.11. Software Architecture
+```
+SOFTWARE ARCHITECTURE
+Separate orchestration/scoring logic from presentation. The scoring engine is the sole
+authority over verdicts; the UI displays results, it does not compute them.
+
+Structure the Python backend as:
+src/voicegate/    call_orchestrator, persona_engine, scenario_engine, transcription_engine,
+                  compliance_scoring_engine, verdict_engine, patch_adviser, event_log,
+                  rng_service
+src/data/         personas, scenarios, statutory_rules, company_terms_snapshots
+src/services/     patch_adviser (advisory-only), persistence (run history, re-runs)
+src/api/          commands (the command schema for the frontend to invoke)
+tests/            one mirrored test package per production package above
+
+Cross-package imports flow one direction only: data -> voicegate -> services/api; reverse
+imports are disallowed. All transcript content passed into src/voicegate/compliance_scoring_
+engine must be wrapped as untrusted data per Section 1.8.7, never concatenated into a judge
+prompt as raw, unescaped instruction-adjacent text.
+
+Implement seeded random numbers so a gauntlet run can be replayed during testing; show the
+active seed in the debug panel.
+```
+
+1.8.12. Suggested Patch Adviser
+```
+SUGGESTED PATCH ADVISER
+On a Fail verdict, the adviser reads the failing transcript, the cited rule/clause, and the
+target agent's current system prompt (if available), and returns: one suggested system-prompt
+patch, a plain-language explanation of what it fixes, and a confidence rating (Low, Moderate,
+High). The adviser must never apply the patch automatically; every suggested patch requires
+explicit human confirmation before re-running the gauntlet against a patched configuration.
+The adviser must not introduce new rules, statutes, or scoring logic not already present in
+the statutory/policy reference corpus (Section 1.8.6).
+```
+
+1.8.13. Persistence
+```
+PERSISTENCE
+Save every gauntlet run at the end of each call's Wrap-up phase, and immediately before a
+graceful application shutdown. Save data includes: persona/scenario pairing, full dual-channel
+transcript, per-turn events, verdict and cited rules, any suggested patch and its before/after
+re-run result, and the RNG seed.
+
+Provide New Run, Continue Run (shown only when a valid autosave exists), and Reset Run
+(two-step confirm) flows. No backend database or network service beyond the target agent's
+own sandbox endpoint is required for this MVP.
+```
+
+1.8.14. Testing and Debug Panel
+```
+TESTING
+Generate automated tests for: persona/scenario catalog loading, call-lifecycle phase
+enforcement, dual-channel transcription role tagging, compliance scoring against each rule in
+the minimum viable statutory/policy corpus, verdict assignment (Pass/Fail/Flag), suggested
+patch generation, before/after re-run comparison, resistance to prompt-injection payloads
+embedded in simulated transcripts, resistance to actor/speaker-role-confusion payloads,
+deterministic seeded randomization, and prevention of an unattended/unsupervised patch
+application.
+
+Include a debug panel, available only in development builds, that can: change the random
+seed, force a specific verdict for a given rule to test Risk Report rendering, inject a
+sample prompt-injection payload into a transcript to test guardrail resistance, and reset a
+run.
+```
+
+1.8.15. Delivery Priority
+```
+DELIVERY PRIORITY
+Priority 1: one working end-to-end gauntlet run (Test Bench -> live call -> transcript ->
+verdict) against a mock/sandbox target agent.
+Priority 2: full minimum viable persona/scenario catalog (Section 1.8.3) and statutory/policy
+corpus (Section 1.8.6) with complete rule-citation scoring.
+Priority 3: Call Review and Risk Report screens, including the before/after re-run comparison
+and judge-calibration chart.
+Priority 4: guardrail hardening (prompt-injection and actor-role-confusion test suite,
+Section 1.8.7) and Suggested Patch Adviser (Section 1.8.12).
+Priority 5: visual polish (both palette variants, verdict badge iconography, restrained
+motion).
+
+Do not add unspecified features. Do not reinterpret the scoring rules above. Before making a
+major architectural change, preserve all existing working guardrail behavior.
+```
+
+1.8.16. Explicit Non-Goals
+```
+NON-GOALS (do not build these for this hackathon)
+No user accounts, authentication, billing, or multi-tenant isolation. No live production call
+interception (sandbox/staging targets only). No full legal-advice generation — verdicts cite
+rule IDs and clause text, never render legal opinions. No automatic, unsupervised deployment
+of a suggested system-prompt patch to a customer's live agent. No open-ended, AI-generated
+scoring rules during a live run — any AI feature (Suggested Patch Adviser) remains
+advisory-only, permanently, not just for this hackathon. No presentation of the
+verification-flagged regulatory citations (Section 1.8.6) as legally confirmed without
+review.
+```
+
+1.9. Day-by-Day Pacing Guide for the Hackathon Week
+| Day | Date | Focus | End-of-Day Target |
+|-----|------|-------|----------------------|
+| 1 | 2026-08-03 (Mon) | Submit Section 1.8 master prompt; scaffold repository | Generated project skeleton matches 006_voicegate_scaffolding.txt layout; Test Bench renders |
+| 2 | 2026-08-04 (Tue) | Priority 1 | One full gauntlet run playable end-to-end against a mock target agent |
+| 3 | 2026-08-05 (Wed) | Priority 1 continued | Dual-channel transcription and a first working verdict (Pass/Fail/Flag) |
+| 4 | 2026-08-06 (Thu) | Priority 2 | Minimum viable persona/scenario catalog and statutory/policy corpus fully wired to scoring |
+| 5 | 2026-08-07 (Fri) | Priority 3 | Call Review and Risk Report screens complete, including before/after re-run comparison |
+| 6 | 2026-08-08 (Sat) | Priority 4 | Guardrail test suite passing (prompt injection, actor-role confusion); Suggested Patch Adviser working, advisory-only |
+| 7 | 2026-08-09 (Sun) | Priority 5 + hardening | Visual polish complete; full automated test pass; debug panel gated to development builds only |
+| 8 | 2026-08-10 (Mon) | Submission | Production build (debug panel disabled per 015_voicegate_deployment.txt); final review of verification-flagged citations; submit |
+
+1.10. Bounded Follow-Up Prompt Discipline
+1.10.1. Every follow-up prompt to Natively AI after day one must name the exact file(s),
+component(s), or screen(s) to modify, and must explicitly state what must remain unchanged.
+1.10.2. Use the pattern: "Modify only the Risk Report calibration chart. Keep all scoring
+logic, verdict rules, guardrails, and navigation unchanged. Add: [specific, itemized change]."
+1.10.3. Never submit an open-ended request (e.g. "make the testing smarter"); this invites
+broad, uncontrolled regeneration, per the same lesson the sibling project's own ideation
+session recorded.
+1.10.4. Any follow-up prompt that would change a statutory citation, verdict rule, or
+guardrail behavior declared in Section 1.8 must be routed back through this specification
+corpus for an explicit, reviewed update before being sent to Natively AI, never patched ad hoc
+in a follow-up prompt.
+
+1.11. Summary Table
+| Attribute | Value |
+|-----------|-------|
+| Hackathon | Assumed LabLab AI Factory (open item) |
+| Window | 2026-08-03 to 2026-08-10 (assumed) |
+| Platform | Natively AI |
+| Submission target | This repository (X_Voice_X) |
+| Prompt submission mode | Whole, single-piece, on day one |
+| Product / Category | VoiceGate / Voice Compliance QA (VCQ, proposed) |
+| Follow-up prompt mode | Bounded, itemized, file/component-scoped only |
+
+1.12. Reconciliation Table
+| Topic | Sibling Project's Prompt (0001, prior revision) | This Document's Master Prompt (§1.8) | Justification |
+|-------|---------------------------------------------------|------------------------------------------|----------------|
+| Product identity | X Paradox X / X Dark X / Dark Strategy (DS) | VoiceGate / company TBD / Voice Compliance QA (VCQ, proposed) | 001_voice_transcription_concept.txt §1.6-1.9 |
+| Core loop | Board/turn/combat/economy | Call lifecycle / gauntlet execution / verdict scoring | 001_voice_transcription_concept.txt §1.8 repurposing map |
+| Guardrail emphasis | Game balance/fairness | Prompt-injection, model-poisoning, actor-role-confusion resistance | voice_transcription_concept/voice_chat_concept.md |
+| Visual palette | Confirmed as the game's own brand | Reused as inherited default only, not a confirmed VoiceGate decision | Section 1.8.10 |
+| Hackathon timeline | Confirmed for the sibling project | Assumed by inheritance, explicitly flagged open | Section 1.4.2 |
+
+1.13. Risk and Mitigation Table
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| Team submits the superseded game-era prompt instead of this document | Low | High | This document explicitly supersedes the prior 0001 revision (Section 1.4.1) |
+| Assumed hackathon window (Section 1.6.2) is wrong | Medium | Medium | Flagged as an open item in 001_voice_transcription_concept.txt Section 1.9.4; confirm before Day 1 |
+| Guardrails (Section 1.8.7) are weakened by an unreviewed follow-up prompt | Medium | High | Section 1.10.4 routes any guardrail-affecting change back through this corpus first |
+| Verification-flagged statutes presented as confirmed in generated UI copy | Medium | High | Section 1.8.16 non-goal explicitly forbids presenting them as legally confirmed without review |
+| Debug panel accidentally left enabled in the submitted build | Low | High | Section 1.9 Day 8 requires the production build (debug panel disabled) before submission |
+
+1.14. Roles and Responsibilities (RACI)
+| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------|-----------------|----------|------------|-------------|
+| Assemble and maintain the master prompt (1.8) | R | C | A | A/Stakeholder (TAQI's team) |
+| Submit the master prompt to Natively AI on day one | I | I | A/Stakeholder | R |
+| Author and send bounded follow-up prompts (1.10) | C | C | A/Stakeholder | R |
+| Track day-by-day pacing (1.9) against actual progress | C | C | A/Stakeholder | R |
+| Confirm the assumed hackathon window before Day 1 (Section 1.6.2) | I | C | A/Stakeholder | R |
+
+1.15. Conclusion
+This document closes the loop between the voice_processing_specifications/ corpus and the
+first concrete action the team takes with Natively AI: a single, internally reconciled prompt
+covering personas, gauntlet execution, statutory scoring, and guardrails, paired with a
+pacing guide and a follow-up prompt discipline so later-week iteration never regresses to
+broad, uncontrolled requests.
+
+1.16. References and Citations
+1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
+1.16.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
+§1.6-1.11 (product identity, MVP scope, open items, regulatory citations).
+1.16.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation
+conversation and team-lead guidance).
+1.16.4. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt,
+026_randomization_variance_terminology.txt, 027_persona_archetype_definitions.txt,
+028_statutory_ruleset_integration.txt (scenario/persona/statute detail, once written).
+1.16.5. Internal: voice_processing_specifications/015_voicegate_deployment.txt (build
+configurations, Natively AI submission target, once written).
+1.16.6. Internal: this repository's git history, commit 14726ca ("first commit"), preserving
+the superseded X Paradox X master prompt content.
+
+1.17. Changelog Table
+| Version | Date | Author (Agent/Role) | Change Description | Type |
+|---------|------|----------------------|---------------------|------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: opening-day Natively AI master prompt synthesized from the full reconciled game_specifications corpus, plus a seven-day hackathon pacing guide and bounded follow-up prompt discipline. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to the VoiceGate master prompt per user directive: full content rewrite covering personas, scenario gauntlet, call lifecycle, statutory/policy corpus, guardrails, verdict scoring, and Suggested Patch Adviser. Prior content preserved in git history, not duplicated in-body. | Major |

@@ -1,0 +1,136 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# C source files
+*.[Cc] text eol=lf
+*.[Hh] text eol=lf
+*.[Cc][Pp][Pp] text eol=lf
+*.[Cc][Cc] text eol=lf
+*.[Cc][Xx][Xx] text eol=lf
+*.[Hh][Pp][Pp] text eol=lf
+
+# Markdown files
+*.[Mm][Dd] text eol=lf
+
+# Text files
+*.[Tt][Xx][Tt] text eol=lf
+*.[Ll][Oo][Gg] text eol=lf
+
+# Shell scripts
+*.[Ss][Hh] text eol=lf
+*.[Bb][Aa][Ss][Hh] text eol=lf
+
+# Python files
+*.[Pp][Yy] text eol=lf
+
+# Python generated/artifact files
+*.[Pp][Yy][Cc] binary
+*.[Pp][Yy][Oo] binary
+*.[Pp][Yy][Dd] binary
+*.[Ee][Gg][Gg] binary
+*.[Ww][Hh][Ll] binary
+.[Pp][Yy][Tt][Hh][Oo][Nn]-[Vv][Ee][Rr][Ss][Ii][Oo][Nn] text eol=lf
+
+# JavaScript/TypeScript
+*.[Jj][Ss] text eol=lf
+*.[Tt][Ss] text eol=lf
+*.[Jj][Ss][Xx] text eol=lf
+*.[Tt][Ss][Xx] text eol=lf
+*.[Jj][Ss][Oo][Nn] text eol=lf
+
+# YAML/TOML
+*.[Yy][Mm][Ll] text eol=lf
+*.[Yy][Aa][Mm][Ll] text eol=lf
+*.[Tt][Oo][Mm][Ll] text eol=lf
+
+# Config files
+*.[Cc][Oo][Nn][Ff] text eol=lf
+*.[Cc][Oo][Nn][Ff][Ii][Gg] text eol=lf
+*.[Cc][Ff][Gg] text eol=lf
+.[Gg][Ii][Tt][Aa][Tt][Tt][Rr][Ii][Bb][Uu][Tt][Ee][Ss] text eol=lf
+.[Gg][Ii][Tt][Ii][Gg][Nn][Oo][Rr][Ee] text eol=lf
+.[Ee][Dd][Ii][Tt][Oo][Rr][Cc][Oo][Nn][Ff][Ii][Gg] text eol=lf
+
+# Binary files
+*.[Bb][Ii][Nn] binary
+*.[Ee][Xx][Ee] binary
+*.[Dd][Ll][Ll] binary
+*.[Oo] binary
+*.[Aa] binary
+*.[Ss][Oo] binary
+
+# Images
+*.[Pp][Nn][Gg] binary
+*.[Jj][Pp][Gg] binary
+*.[Jj][Pp][Ee][Gg] binary
+*.[Gg][Ii][Ff] binary
+*.[Ii][Cc][Oo] binary
+*.[Ss][Vv][Gg] text eol=lf
+*.[Bb][Mm][Pp] binary
+*.[Tt][Ii][Ff] binary
+*.[Tt][Ii][Ff][Ff] binary
+*.[Ww][Ee][Bb][Pp] binary
+*.[Aa][Vv][Ii][Ff] binary
+*.[Hh][Ee][Ii][Cc] binary
+*.[Hh][Ee][Ii][Ff] binary
+*.[Rr][Aa][Ww] binary
+*.[Cc][Rr][22] binary
+*.[Nn][Ee][Ff] binary
+*.[Aa][Rr][Ww] binary
+*.[Dd][Nn][Gg] binary
+*.[Pp][Ss][Dd] binary
+*.[Aa][Ii] binary
+*.[Ee][Pp][Ss] binary
+
+# Video
+*.[Mm][Pp][44] binary
+*.[Mm][Kk][Vv] binary
+*.[Aa][Vv][Ii] binary
+*.[Mm][Oo][Vv] binary
+*.[Ww][Mm][Vv] binary
+*.[Ff][Ll][Vv] binary
+*.[Ww][Ee][Bb][Mm] binary
+*.[Mm][Pp][Ee][Gg] binary
+*.[Mm][Pp][Gg] binary
+*.[33][Gg][Pp] binary
+*.[33][Gg][Pp][Pp] binary
+*.[Oo][Gg][Vv] binary
+*.[Tt][Ss] binary
+*.[Mm][22][Tt][Ss] binary
+*.[Mm][Tt][Ss] binary
+*.[Vv][Oo][Bb] binary
+*.[Rr][Mm] binary
+*.[Rr][Mm][Vv][Bb] binary
+*.[Aa][Ss][Ff] binary
+
+# Audio
+*.[Mm][Pp][33] binary
+*.[Ww][Aa][Vv] binary
+*.[Ff][Ll][Aa][Cc] binary
+*.[Aa][Aa][Cc] binary
+*.[Oo][Gg][Gg] binary
+*.[Oo][Pp][Uu][Ss] binary
+*.[Mm][44][Aa] binary
+*.[Ww][Mm][Aa] binary
+*.[Aa][Ii][Ff] binary
+*.[Aa][Ii][Ff][Ff] binary
+*.[Mm][Ii][Dd] binary
+*.[Mm][Ii][Dd][Ii] binary
+*.[Aa][Pp][Ee] binary
+*.[Mm][Pp][Cc] binary
+
+# Fonts
+*.[Tt][Tt][Ff] binary
+*.[Oo][Tt][Ff] binary
+*.[Ww][Oo][Ff][Ff] binary
+*.[Ww][Oo][Ff][Ff][22] binary
+*.[Ee][Oo][Tt] binary
+
+# Archives
+*.[Zz][Ii][Pp] binary
+*.[Tt][Aa][Rr] binary
+*.[Gg][Zz] binary
+*.[7][Zz] binary
+
+
+
