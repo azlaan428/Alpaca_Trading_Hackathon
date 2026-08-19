@@ -1,5 +1,5 @@
 Need to first get the relevant API, CLI, SDK and others for Alcapa here: https://github.com/alpacahq and the relevant submodules installed here first. 
-Install from, https://wwww.github.com/psi16181918161phi/CodingStandardsRef -- this as standard submodule in this package. 
+Install from, https://wwww.github.com/psi16181918161phi/CodingStandardsRef -- this as standard submodule in this package. THERE ARE MORE SUBMODULES IN THERE. THEY MUST ALSO BE PROPERLY INITIALIZED. Make sure .gitmodules auto-syncs all related submodules. Ask if uncertain. Some submodules are created by me (Hadrian), and others are forked or cloned as submodules directly from the source on GitHub. 
 The idea is this for the trading agent(s) [can be written in python, Go, C++, Rust combination this time, because of the need for speed and performance, and also to learn more about these languages and their performance characteristics in trading scenarios].
 
 Yes. The important conceptual change is that **the agent is no longer a Markdown persona consumed by an IDE**. The agent becomes an ordinary, testable software abstraction—an `Object`, `Operator`, `Strategy`, `Service`, or composition thereof—while Markdown/YAML/TOML/JSON files describe requirements, configuration, schemas, policies, and documentation rather than pretending to be executable agents.
