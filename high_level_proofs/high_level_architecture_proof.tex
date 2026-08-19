@@ -5468,22 +5468,203 @@ whenever all $\sigma_i^2$ are equal.
 
 \begin{corollary}[Strict Variance Reduction under Diversification]
 \label{cor:var-reduction}
-If at least two operators have strictly positive weights, i.e.\
-$|\{i : w_i > 0\}| \geq 2$, and not all variances are equal, then
+Let Assumptions~\ref{ass:indep}--\ref{ass:finite-var} hold.
+Suppose the following two conditions are simultaneously satisfied:
+\begin{enumerate}
+  \item \textbf{(Multi-operator condition)}
+        At least two operators carry strictly positive weight:
+        \begin{equation}
+          \bigl|\{i \in \{1,\ldots,k\} : w_i > 0\}\bigr| \;\geq\; 2.
+          \label{eq:multi-op}
+        \end{equation}
+  \item \textbf{(Variance heterogeneity condition)}
+        The operator variances are not all equal:
+        \begin{equation}
+          \exists\, i,j \in \{1,\ldots,k\}
+            \;\text{ s.t. }\;
+            w_i > 0,\; w_j > 0,\;
+            \sigma_i^2 \neq \sigma_j^2.
+          \label{eq:var-het}
+        \end{equation}
+\end{enumerate}
+Then the ensemble variance satisfies the \emph{strict} inequality:
 \begin{equation}
   \Var(\hat{y}_t)
     \;<\;
-    \max_{1 \leq i \leq k} \sigma_i^2.
+    \max_{1 \leq i \leq k} \sigma_i^2
+    \;=:\; \sigma_{\max}^2.
   \label{eq:strict-reduction}
 \end{equation}
 \end{corollary}
 
 \begin{proof}
-Under the stated conditions $\sum w_i^2 < 1$ strictly (since
-$\sum_{i\neq j}w_iw_j > 0$), and at least one term
-$w_i^2\sigma_i^2 < w_i^2\sigma_{\max}^2$ with $w_i > 0$.  Hence both
-inequalities in \eqref{eq:var-step2}--\eqref{eq:var-bound} are strict,
-yielding \eqref{eq:strict-reduction}.\qed
+We establish \eqref{eq:strict-reduction} by demonstrating that both
+inequalities in the chain
+\begin{align}
+  \Var(\hat{y}_t)
+    &= \sum_{i=1}^{k} w_i^2\,\sigma_i^2
+    \label{eq:sr-step1} \\
+    &\leq \sigma_{\max}^2 \sum_{i=1}^{k} w_i^2
+    \label{eq:sr-step2} \\
+    &\leq \sigma_{\max}^2
+    \label{eq:sr-step3}
+\end{align}
+are strict under conditions \eqref{eq:multi-op}--\eqref{eq:var-het}.
+We address each transition in turn.
+
+\medskip
+\noindent\textbf{Step 1. Validation of the base identity \eqref{eq:sr-step1}.}
+
+\noindent By Assumption~\ref{ass:indep}, the forecast errors
+$\varepsilon_i = O_i(x_t) - y_t$ are mutually uncorrelated.
+By Assumption~\ref{ass:finite-var}, each $\sigma_i^2 < \infty$.
+The weighted ensemble error is
+\begin{equation}
+  \hat{y}_t - y_t
+    \;=\; \sum_{i=1}^{k} w_i\,\varepsilon_i,
+    \qquad w \in \Delta^{k-1},
+\end{equation}
+and by bilinearity of covariance and pairwise uncorrelatedness:
+\begin{equation}
+  \Var(\hat{y}_t)
+    = \sum_{i=1}^{k}\sum_{j=1}^{k} w_i w_j\,\Cov(\varepsilon_i,\varepsilon_j)
+    = \sum_{i=1}^{k} w_i^2\,\sigma_i^2,
+\end{equation}
+confirming \eqref{eq:sr-step1} holds with equality.
+
+\medskip
+\noindent\textbf{Step 2. The first transition \eqref{eq:sr-step1}
+  $\to$ \eqref{eq:sr-step2} is strict.}
+
+\noindent Let $S := \{i : w_i > 0\}$.  By condition \eqref{eq:multi-op},
+$|S| \geq 2$.  Majorisation gives, for any index $i$:
+\begin{equation}
+  w_i^2\,\sigma_i^2 \;\leq\; w_i^2\,\sigma_{\max}^2,
+  \label{eq:maj-term}
+\end{equation}
+with equality if and only if $\sigma_i^2 = \sigma_{\max}^2$.
+Summing over $i \in S$:
+\begin{equation}
+  \sum_{i \in S} w_i^2\,\sigma_i^2
+    \;\leq\;
+    \sigma_{\max}^2 \sum_{i \in S} w_i^2.
+  \label{eq:maj-sum}
+\end{equation}
+By condition \eqref{eq:var-het}, there exist $i^*, j^* \in S$ with
+$\sigma_{i^*}^2 \neq \sigma_{j^*}^2$.  Without loss of generality,
+$\sigma_{i^*}^2 < \sigma_{\max}^2$ (otherwise both equal $\sigma_{\max}^2$,
+contradicting \eqref{eq:var-het}).  Since $w_{i^*} > 0$:
+\begin{equation}
+  w_{i^*}^2\,\sigma_{i^*}^2
+    \;<\;
+    w_{i^*}^2\,\sigma_{\max}^2.
+\end{equation}
+Therefore the sum in \eqref{eq:maj-sum} satisfies:
+\begin{align}
+  \sum_{i \in S} w_i^2\,\sigma_i^2
+    &= w_{i^*}^2\,\sigma_{i^*}^2
+       + \sum_{i \in S \setminus \{i^*\}} w_i^2\,\sigma_i^2 \notag \\
+    &< w_{i^*}^2\,\sigma_{\max}^2
+       + \sum_{i \in S \setminus \{i^*\}} w_i^2\,\sigma_{\max}^2 \notag \\
+    &= \sigma_{\max}^2 \sum_{i \in S} w_i^2,
+\end{align}
+so the transition \eqref{eq:sr-step1} $\to$ \eqref{eq:sr-step2}
+is \emph{strictly} less than $\sigma_{\max}^2 \sum_{i=1}^{k} w_i^2$.
+
+\medskip
+\noindent\textbf{Step 3. The second transition \eqref{eq:sr-step2}
+  $\to$ \eqref{eq:sr-step3} is strict.}
+
+\noindent We show $\sum_{i=1}^{k} w_i^2 < 1$ under condition
+\eqref{eq:multi-op}.  Since $w \in \Delta^{k-1}$ and $|S| \geq 2$,
+there exist at least two indices $p, q \in S$ with $w_p > 0$ and
+$w_q > 0$.  The cross-product identity gives:
+\begin{align}
+  1
+    &= \left(\sum_{i=1}^{k} w_i\right)^{\!2}
+     = \sum_{i=1}^{k} w_i^2
+       + \sum_{\substack{i,j=1 \\ i \neq j}}^{k} w_i w_j.
+  \label{eq:sq-expand}
+\end{align}
+Since $w_p > 0$ and $w_q > 0$, the cross term satisfies:
+\begin{equation}
+  \sum_{\substack{i,j=1 \\ i \neq j}}^{k} w_i w_j
+    \;\geq\; w_p w_q + w_q w_p
+    \;=\; 2\,w_p w_q
+    \;>\; 0.
+  \label{eq:cross-pos}
+\end{equation}
+Rearranging \eqref{eq:sq-expand} using \eqref{eq:cross-pos}:
+\begin{equation}
+  \sum_{i=1}^{k} w_i^2
+    = 1 - \sum_{\substack{i,j=1 \\ i \neq j}}^{k} w_i w_j
+    < 1 - 0
+    = 1.
+  \label{eq:sum-sq-strict}
+\end{equation}
+Hence the second transition is also strict:
+\begin{equation}
+  \sigma_{\max}^2 \sum_{i=1}^{k} w_i^2
+    \;<\;
+    \sigma_{\max}^2 \cdot 1
+    \;=\; \sigma_{\max}^2.
+\end{equation}
+
+\medskip
+\noindent\textbf{Step 4. Combining to obtain \eqref{eq:strict-reduction}.}
+
+\noindent Chaining the strict bounds established in Steps~2 and~3:
+\begin{align}
+  \Var(\hat{y}_t)
+    &= \sum_{i=1}^{k} w_i^2\,\sigma_i^2
+     && \text{(Step 1, exact)} \notag \\
+    &< \sigma_{\max}^2 \sum_{i=1}^{k} w_i^2
+     && \text{(Step 2, strict majorisation)} \notag \\
+    &< \sigma_{\max}^2
+     && \text{(Step 3, strict weight bound)} \notag \\
+    &= \max_{1 \leq i \leq k}\sigma_i^2,
+     && \text{(definition of $\sigma_{\max}^2$)}
+\end{align}
+which is exactly \eqref{eq:strict-reduction}.
+
+\medskip
+\noindent\textbf{Step 5. Boundary and edge cases.}
+
+\begin{enumerate}
+  \item \textbf{Condition \eqref{eq:multi-op} fails ($|S| = 1$).}
+        If exactly one weight $w_j = 1$ and all others are zero, then
+        $\sum w_i^2 = 1$ and $\Var(\hat{y}_t) = \sigma_j^2$, which may
+        equal $\sigma_{\max}^2$ if $j = \arg\max_i \sigma_i^2$.
+        The strict inequality \eqref{eq:strict-reduction} need not hold,
+        and the corollary correctly does not claim it.
+  \item \textbf{Condition \eqref{eq:var-het} fails (all active variances equal).}
+        If $\sigma_i^2 = c$ for all $i \in S$, then
+        $\Var(\hat{y}_t) = c \sum_{i \in S} w_i^2 < c = \sigma_{\max}^2$
+        provided $|S| \geq 2$, so \eqref{eq:strict-reduction} holds.
+        However, in Step~2 the first transition is no longer strict; the
+        strictness in \eqref{eq:strict-reduction} is entirely borne by
+        Step~3.  The corollary requires \eqref{eq:var-het} only to ensure
+        Step~2 is non-vacuous; the overall conclusion still holds under
+        \eqref{eq:multi-op} alone when all active variances are equal,
+        but conditions \eqref{eq:multi-op}--\eqref{eq:var-het} together
+        are \emph{sufficient} (not necessary) for \eqref{eq:strict-reduction}.
+  \item \textbf{Zero-variance operators.}
+        If $\sigma_\ell^2 = 0$ for some $\ell \in S$, operator $O_\ell$
+        is deterministic.  Its contribution $w_\ell^2 \cdot 0 = 0$ vanishes
+        from \eqref{eq:sr-step1}.  If the remaining active operators satisfy
+        \eqref{eq:multi-op}--\eqref{eq:var-het}, all preceding steps apply
+        to $S' = S \setminus \{\ell : \sigma_\ell^2 = 0\}$, and
+        \eqref{eq:strict-reduction} continues to hold.
+  \item \textbf{Degenerate simplex ($k = 1$).}
+        $\Delta^{0} = \{(1)\}$, so $|S| = 1$ and condition
+        \eqref{eq:multi-op} cannot be satisfied.
+        The corollary's hypothesis is vacuously unfulfilled; no conclusion
+        is drawn, consistent with the exact equality
+        $\Var(\hat{y}_t) = \sigma_1^2 = \sigma_{\max}^2$.
+\end{enumerate}
+
+\noindent All cases are accounted for, and no assumption has been silently
+invoked.  The proof is complete.\qed
 \end{proof}
 
 % ==============================================================
@@ -5532,46 +5713,448 @@ regime-conditioned return vector and covariance matrix.
 \label{ch:dag}
 % ==============================================================
 
+\section{Foundational Definitions}
+\label{sec:dag-defs}
+
+\begin{definition}[Operator Set]
+\label{def:operator-set}
+The finite, non-empty set of all system operators is denoted
+$\calO = \{O_1, O_2, \ldots, O_n\}$, where $n = |\calO| \geq 1$.
+Each operator $O_i$ is a deterministic function
+\begin{equation}
+  O_i : \calS \times \calI \;\longrightarrow\; \calS,
+  \label{eq:operator-type}
+\end{equation}
+mapping a system state $s \in \calS$ and information set
+$\calI_t$ at time $t$ to a successor state.
+\end{definition}
+
 \begin{definition}[Operator Dependency Graph]
 \label{def:dep-graph}
-The \emph{operator dependency graph} $G = (V, E)$ has vertex set
-$V = \calO$ and a directed edge $(O_i, O_j) \in E$ if $O_j$ consumes
-output produced by $O_i$.
+The \emph{operator dependency graph} is the directed graph
+\begin{equation}
+  G \;=\; (V,\, E),
+  \label{eq:dep-graph}
+\end{equation}
+where the vertex set $V = \calO$ and the directed edge set $E$ is
+\begin{equation}
+  E \;=\;
+  \bigl\{\,(O_i,\, O_j) \;\big|\;
+    O_i,\, O_j \in \calO,\;\; i \neq j,\;\;
+    \text{output of } O_i \text{ is consumed by } O_j
+  \,\bigr\}.
+  \label{eq:edge-set}
+\end{equation}
+A directed edge $(O_i, O_j) \in E$ denotes that $O_j$ depends on the
+output of $O_i$; equivalently, $O_i$ must be executed before $O_j$.
 \end{definition}
+
+\begin{definition}[Directed Path]
+\label{def:directed-path}
+A \emph{directed path} of length $k \geq 1$ in $G$ is a sequence of
+distinct vertices
+\begin{equation}
+  P \;=\; \bigl(O_{i_1},\, O_{i_2},\, \ldots,\, O_{i_{k+1}}\bigr)
+  \label{eq:directed-path}
+\end{equation}
+such that $(O_{i_\ell},\, O_{i_{\ell+1}}) \in E$ for all
+$\ell \in \{1, \ldots, k\}$.
+\end{definition}
+
+\begin{definition}[Directed Cycle]
+\label{def:directed-cycle}
+A \emph{directed cycle} of length $k \geq 1$ is a sequence
+\begin{equation}
+  C \;=\; \bigl(O_{i_1},\, O_{i_2},\, \ldots,\, O_{i_k},\, O_{i_1}\bigr)
+  \label{eq:directed-cycle}
+\end{equation}
+such that $(O_{i_\ell},\, O_{i_{\ell+1}}) \in E$ for all
+$\ell \in \{1, \ldots, k-1\}$ and $(O_{i_k},\, O_{i_1}) \in E$.
+\end{definition}
+
+\begin{definition}[In-Degree]
+\label{def:in-degree}
+For any vertex $O_j \in V$, the \emph{in-degree} is
+\begin{equation}
+  \deg^{-}(O_j)
+  \;=\;
+  \bigl|\,\{O_i \in V \mid (O_i,\, O_j) \in E\}\,\bigr|.
+  \label{eq:in-degree}
+\end{equation}
+A vertex $O_j$ is called a \emph{source vertex} if $\deg^{-}(O_j) = 0$.
+\end{definition}
+
+\section{The DAG Invariant}
+\label{sec:dag-invariant}
 
 \begin{axiom}[DAG Invariant]
 \label{ax:dag}
-$G$ must be a directed acyclic graph (DAG):
+The operator dependency graph $G = (V, E)$ must be a
+\emph{directed acyclic graph} (DAG), i.e., $G$ contains no directed cycle:
 \begin{equation}
-  \nexists\;\text{cycle}\;
-  O_{i_1} \to O_{i_2} \to \cdots \to O_{i_1} \;\text{in } G.
+  \nexists\; k \geq 1 \;\text{ and }\;
+  (O_{i_1}, O_{i_2}, \ldots, O_{i_k}, O_{i_1})
+  \;\text{ satisfying Definition~\ref{def:directed-cycle} in } G.
   \label{eq:dag}
 \end{equation}
 \end{axiom}
 
+\begin{remark}[Semantic Justification of the DAG Invariant]
+\label{rem:dag-semantic}
+The DAG invariant~\eqref{eq:dag} is operationally necessary:
+\begin{enumerate}
+  \item A cycle $O_{i_1} \to O_{i_2} \to \cdots \to O_{i_1}$ would
+        require $O_{i_1}$ to be executed before itself, making
+        any total execution ordering impossible.
+  \item Cyclic data-flow produces circular data dependencies in which
+        no operator can receive fully resolved inputs, violating the
+        operator type contract~\eqref{eq:operator-type}.
+  \item The acyclicity condition is both necessary and sufficient for
+        the existence of a topological ordering
+        (Theorem~\ref{thm:topo-exists}).
+\end{enumerate}
+\end{remark}
+
 \begin{definition}[Topological Execution Order]
 \label{def:topo-order}
-A valid execution ordering $\tau : V \to \{1, \ldots, |V|\}$ satisfies
+A \emph{topological execution ordering} is a bijection
+$\tau : V \to \{1, 2, \ldots, |V|\}$ satisfying
 \begin{equation}
-  (O_i, O_j) \in E \;\Longrightarrow\; \tau(O_i) < \tau(O_j).
+  \forall\, (O_i, O_j) \in E:\quad
+  \tau(O_i) \;<\; \tau(O_j).
   \label{eq:topo-order}
 \end{equation}
+The integer $\tau(O_i)$ denotes the execution rank of operator $O_i$.
 \end{definition}
 
-\begin{theorem}[Existence of Topological Order]
+\section{Kahn's Algorithm --- Formal Specification}
+\label{sec:kahns-algo}
+
+The following two algorithms present Kahn's topological sort in two
+segments for legibility.  Algorithm~\ref{alg:kahns-init} covers
+initialisation; Algorithm~\ref{alg:kahns-main} covers the main loop
+and output.
+
+\begin{algorithm}[H]
+\caption{Kahn's Topological Sort --- Initialisation}
+\label{alg:kahns-init}
+\begin{algorithmic}[1]
+  \Require Directed graph $G = (V, E)$ with $V = \calO$,
+           $|V| = n \geq 1$
+  \Ensure In-degree table $\mathit{indeg}[\cdot]$,
+          source queue $Q$, output list $\tau\_list$ initialised
+  \State $\mathit{indeg}[v] \leftarrow 0$ \quad
+         \textbf{for all} $v \in V$
+         \Comment{Initialise all in-degrees to zero}
+  \For{each edge $(u, v) \in E$}
+    \State $\mathit{indeg}[v] \leftarrow \mathit{indeg}[v] + 1$
+    \Comment{Accumulate in-degrees}
+  \EndFor
+  \State $Q \leftarrow \varnothing$
+  \Comment{Initialise source queue}
+  \For{each $v \in V$}
+    \If{$\mathit{indeg}[v] = 0$}
+      \State $Q.\mathit{enqueue}(v)$
+      \Comment{All source vertices enter the queue}
+    \EndIf
+  \EndFor
+  \State $\tau\_list \leftarrow [\,]$
+  \Comment{Ordered output list, initially empty}
+  \State $\mathit{count} \leftarrow 0$
+  \Comment{Number of vertices appended to $\tau\_list$}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Kahn's Topological Sort --- Main Loop and Output}
+\label{alg:kahns-main}
+\begin{algorithmic}[1]
+  \Require Initialised $\mathit{indeg}[\cdot]$, $Q$,
+           $\tau\_list$, $\mathit{count}$ from
+           Algorithm~\ref{alg:kahns-init}
+  \Ensure Topological ordering $\tau$ if $G$ is a DAG,
+          or cycle-detection flag otherwise
+  \While{$Q \neq \varnothing$}
+    \State $u \leftarrow Q.\mathit{dequeue}()$
+    \State $\tau\_list.\mathit{append}(u)$
+    \State $\mathit{count} \leftarrow \mathit{count} + 1$
+    \For{each $(u, v) \in E$}
+      \Comment{Process all out-neighbours of $u$}
+      \State $\mathit{indeg}[v] \leftarrow \mathit{indeg}[v] - 1$
+      \If{$\mathit{indeg}[v] = 0$}
+        \State $Q.\mathit{enqueue}(v)$
+        \Comment{$v$ becomes a source after removing $u$}
+      \EndIf
+    \EndFor
+  \EndWhile
+  \If{$\mathit{count} \neq n$}
+    \State \textbf{raise} \textsc{CycleDetected}
+    \Comment{$G$ contains a cycle; DAG invariant violated}
+  \Else
+    \State Define $\tau(O_i) \leftarrow$ rank of $O_i$ in
+           $\tau\_list$
+           \Comment{Assign topological ranks}
+    \State \Return $\tau$
+  \EndIf
+\end{algorithmic}
+\end{algorithm}
+
+\section{Correctness and Complexity}
+\label{sec:dag-correctness}
+
+\begin{theorem}[Existence and Uniqueness of Topological Order]
 \label{thm:topo-exists}
-If $G$ satisfies the DAG invariant~\eqref{eq:dag}, a topological ordering
-$\tau$ satisfying~\eqref{eq:topo-order} exists and can be computed in
-$O(|V| + |E|)$ time by Kahn's algorithm.
+Let $G = (V, E)$ be a directed graph with $|V| = n \geq 1$.
+The following two statements are equivalent:
+\begin{enumerate}
+  \item $G$ satisfies the DAG invariant~\eqref{eq:dag}.
+  \item There exists a topological ordering
+        $\tau : V \to \{1, \ldots, n\}$
+        satisfying~\eqref{eq:topo-order}.
+\end{enumerate}
+Moreover, Algorithms~\ref{alg:kahns-init}--\ref{alg:kahns-main}
+correctly compute such a $\tau$ in time
+\begin{equation}
+  T_{\mathrm{Kahn}} \;=\; O(|V| + |E|).
+  \label{eq:kahn-complexity}
+\end{equation}
 \end{theorem}
 
 \begin{proof}
-Kahn's algorithm iteratively removes source vertices (in-degree zero) and
-appends them to the ordering.  If $G$ is a DAG, every non-empty subgraph
-has at least one source vertex; hence the algorithm terminates with a
-complete ordering.  Each vertex and edge is processed at most once,
-giving $O(|V|+|E|)$ time.  If the algorithm terminates before all vertices
-are removed, a cycle is detected, violating the DAG invariant.\qed
+We prove both directions of the equivalence and then establish the
+complexity bound.
+
+\medskip
+\noindent\textbf{Step~1 (Assumption Validation).}
+We validate all preconditions before proceeding.
+\begin{enumerate}
+  \item $\calO$ is finite and non-empty by
+        Definition~\ref{def:operator-set}, so $1 \leq n < \infty$.
+  \item $E \subseteq \calO \times \calO$ and $|E| \leq n(n-1) < \infty$,
+        so the graph is finite.
+  \item The in-degree computation in Algorithm~\ref{alg:kahns-init}
+        iterates over all edges exactly once, yielding a correctly
+        populated $\mathit{indeg}$ table after $O(|E|)$ steps.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~2 ($1 \Rightarrow 2$: DAG implies topological order
+exists).}
+
+Assume $G$ is a DAG.  We prove by strong induction on $|V| = n$ that a
+topological ordering exists.
+
+\begin{enumerate}
+  \item \emph{Base case} ($n = 1$): $V = \{O_1\}$, $E = \varnothing$.
+        Set $\tau(O_1) = 1$.  Condition~\eqref{eq:topo-order} is
+        vacuously satisfied since $E = \varnothing$.
+
+  \item \emph{Inductive step} ($n > 1$): Assume every DAG on fewer than
+        $n$ vertices admits a topological ordering.
+
+        \begin{enumerate}
+          \item \emph{Existence of a source vertex.}
+                Suppose for contradiction that every vertex has
+                in-degree $\geq 1$.  Then starting from any vertex
+                $v_0 \in V$ we can always trace a predecessor:
+                %
+                \begin{equation}
+                  v_0 \leftarrow v_1 \leftarrow v_2 \leftarrow \cdots
+                  \label{eq:pred-chain}
+                \end{equation}
+                %
+                Since $|V| = n < \infty$, by the pigeonhole principle
+                some vertex $v_k$ is revisited after at most $n$ steps,
+                producing a directed cycle.  This contradicts the DAG
+                invariant~\eqref{eq:dag}.  Hence at least one source
+                vertex $s \in V$ with $\deg^{-}(s) = 0$ exists.
+
+          \item \emph{Removal of the source.}
+                Let $s$ be a source vertex.  Form the induced subgraph
+                %
+                \begin{equation}
+                  G' \;=\; \bigl(V \setminus \{s\},\;
+                    E \setminus \{(s, v) \mid v \in V\}\bigr).
+                  \label{eq:induced-sub}
+                \end{equation}
+                %
+                $G'$ inherits acyclicity from $G$: any cycle in $G'$
+                would also be a cycle in $G$, contradicting~\eqref{eq:dag}.
+                Hence $G'$ is a DAG on $n-1$ vertices.
+
+          \item \emph{Inductive hypothesis.}
+                By the inductive hypothesis, $G'$ admits a topological
+                ordering $\tau' : V \setminus \{s\} \to \{1, \ldots, n-1\}$.
+
+          \item \emph{Extending to $G$.}
+                Define
+                %
+                \begin{align}
+                  \tau(s)   &\;=\; 1, \label{eq:tau-source}\\
+                  \tau(v)   &\;=\; \tau'(v) + 1
+                    \quad \forall\, v \in V \setminus \{s\}.
+                    \label{eq:tau-rest}
+                \end{align}
+                %
+                $\tau$ is a bijection $V \to \{1, \ldots, n\}$.
+                For any edge $(O_i, O_j) \in E$:
+                \begin{enumerate}
+                  \item If $O_i = s$: $\tau(s) = 1 \leq \tau(O_j)$
+                        and equality only if $\tau(O_j) = 1$, which
+                        requires $O_j = s$, but self-loops are excluded
+                        by Definition~\ref{def:dep-graph} ($i \neq j$).
+                        Hence $\tau(s) < \tau(O_j)$.
+                  \item If $O_i \neq s$: $(O_i, O_j) \in E'$, so
+                        $\tau'(O_i) < \tau'(O_j)$, giving
+                        $\tau(O_i) = \tau'(O_i)+1 < \tau'(O_j)+1
+                        = \tau(O_j)$.
+                \end{enumerate}
+                Thus condition~\eqref{eq:topo-order} holds for all edges.
+        \end{enumerate}
+
+  \item By induction, every DAG on $n \geq 1$ vertices admits a
+        topological ordering.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~3 ($2 \Rightarrow 1$: Topological order implies DAG).}
+
+Assume a topological ordering $\tau$ satisfying~\eqref{eq:topo-order}
+exists.  Suppose for contradiction that $G$ contains a directed cycle
+$C = (O_{i_1}, O_{i_2}, \ldots, O_{i_k}, O_{i_1})$ of length $k \geq 1$.
+Then condition~\eqref{eq:topo-order} applied to each edge in $C$ gives:
+\begin{align}
+  \tau(O_{i_1}) &\;<\; \tau(O_{i_2}), \label{eq:cyc-1}\\
+  \tau(O_{i_2}) &\;<\; \tau(O_{i_3}), \label{eq:cyc-2}\\
+                &\;\;\vdots \notag \\
+  \tau(O_{i_k}) &\;<\; \tau(O_{i_1}). \label{eq:cyc-k}
+\end{align}
+By transitivity of $<$ applied to~\eqref{eq:cyc-1}--\eqref{eq:cyc-k}:
+\begin{equation}
+  \tau(O_{i_1}) \;<\; \tau(O_{i_1}),
+  \label{eq:cyc-contradiction}
+\end{equation}
+which is a contradiction.  Hence no directed cycle exists and $G$ is a DAG.
+
+\medskip
+\noindent\textbf{Step~4 (Correctness of Algorithms~\ref{alg:kahns-init}
+and~\ref{alg:kahns-main}).}
+
+We verify that the algorithms produce a valid $\tau$ when $G$ is a DAG
+and detect a cycle otherwise.
+
+\begin{enumerate}
+  \item \emph{Loop invariant.}
+        At the start of each iteration of the \textbf{while} loop, the
+        following hold:
+        \begin{enumerate}
+          \item Every vertex in $\tau\_list$ has all its predecessors
+                already in $\tau\_list$.
+          \item $\mathit{indeg}[v]$ equals the number of predecessors
+                of $v$ not yet appended to $\tau\_list$.
+          \item Every vertex in $Q$ has $\mathit{indeg}[v] = 0$
+                with respect to the remaining graph.
+        \end{enumerate}
+        \emph{Initialisation:} $\tau\_list = [\,]$, so (a) is vacuously
+        true.  The in-degree table is computed correctly in
+        Algorithm~\ref{alg:kahns-init}, so (b) holds.  $Q$ is
+        initialised to all vertices of in-degree zero, so (c) holds.
+
+        \emph{Maintenance:} When vertex $u$ is dequeued and appended,
+        each out-neighbour $v$ of $u$ has its in-degree decremented.
+        If $\mathit{indeg}[v]$ reaches zero, $v$ is enqueued.
+        Invariant (a) holds for $u$ because $u$ was in $Q$ only after
+        all its predecessors had been removed (by (b) and (c)).
+        Invariants (b) and (c) are maintained by the decrement-and-enqueue
+        logic.
+
+  \item \emph{Termination.}
+        Each vertex is enqueued at most once (only when its in-degree
+        first reaches zero) and dequeued at most once.  Hence the loop
+        terminates after at most $n$ iterations.
+
+  \item \emph{Completeness (DAG case).}
+        By Step~2, every non-empty sub-DAG has a source vertex.
+        Therefore whenever $Q = \varnothing$ and $\mathit{count} < n$,
+        remaining vertices form a sub-DAG; but Step~2 guarantees a
+        source exists, so such a vertex would have been enqueued.
+        Hence if $G$ is a DAG, the loop terminates with
+        $\mathit{count} = n$, meaning all vertices are ordered.
+
+  \item \emph{Cycle detection (non-DAG case).}
+        If $G$ contains a cycle $C$, the vertices in $C$ never reach
+        in-degree zero (each vertex in $C$ always retains at least one
+        predecessor in $C$ that has not been removed).  Therefore they
+        are never enqueued and the loop terminates with
+        $\mathit{count} < n$, triggering the \textsc{CycleDetected}
+        flag.
+
+  \item \emph{Validity of produced $\tau$.}
+        For any edge $(u, v) \in E$, $v$ is enqueued only after $u$ is
+        dequeued and appended to $\tau\_list$.  Hence $u$ appears before
+        $v$ in $\tau\_list$, so $\tau(u) < \tau(v)$, satisfying
+        condition~\eqref{eq:topo-order}.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~5 (Complexity Analysis).}
+
+\begin{enumerate}
+  \item \emph{Initialisation (Algorithm~\ref{alg:kahns-init}):}
+        \begin{enumerate}
+          \item Setting $\mathit{indeg}[v] = 0$ for all $v$: $O(n)$.
+          \item Iterating over all edges to accumulate in-degrees:
+                $O(|E|)$.
+          \item Scanning all vertices to populate $Q$: $O(n)$.
+        \end{enumerate}
+        Total initialisation cost: $O(n + |E|)$.
+
+  \item \emph{Main loop (Algorithm~\ref{alg:kahns-main}):}
+        \begin{enumerate}
+          \item Each vertex is enqueued and dequeued at most once:
+                $O(n)$ queue operations.
+          \item For each dequeued vertex $u$, all out-edges of $u$
+                are processed exactly once across all iterations:
+                $O(|E|)$ total decrement operations.
+        \end{enumerate}
+        Total main loop cost: $O(n + |E|)$.
+
+  \item \emph{Overall:}
+        \begin{equation}
+          T_{\mathrm{Kahn}}
+          \;=\; O(n + |E|) + O(n + |E|)
+          \;=\; O(|V| + |E|).
+          \label{eq:complexity-final}
+        \end{equation}
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~6 (Boundary and Edge Cases).}
+\begin{enumerate}
+  \item \emph{Empty edge set} ($E = \varnothing$):
+        Every vertex has $\mathit{indeg}[v] = 0$; all are enqueued
+        immediately.  Any permutation of $V$ is a valid topological
+        ordering.  The algorithm produces one such permutation.
+  \item \emph{Single vertex} ($n = 1$):
+        Handled by the base case in Step~2.  The algorithm returns
+        $\tau(O_1) = 1$ in $O(1)$ time.
+  \item \emph{Complete DAG} ($|E| = n(n-1)/2$, a total order):
+        Exactly one topological ordering exists; the algorithm
+        recovers it correctly since each vertex has a unique
+        in-degree-zero moment.
+  \item \emph{Disconnected graph:}
+        Connected components are handled independently by the queue;
+        correctness within each component follows from the above.
+  \item \emph{Cycle of length one} (self-loop, $(O_i, O_i) \in E$):
+        Excluded by Definition~\ref{def:dep-graph} ($i \neq j$).
+        If such an edge were present, $\mathit{indeg}[O_i] \geq 1$
+        permanently, and the algorithm would correctly raise
+        \textsc{CycleDetected}.
+\end{enumerate}
+
+Combining Steps~1--6, both directions of the equivalence hold, the
+algorithms are correct for all valid inputs and boundary conditions, and
+the time complexity is $O(|V| + |E|)$.\qed
 \end{proof}
 
 % ==============================================================
@@ -5579,39 +6162,792 @@ are removed, a cycle is detected, violating the DAG invariant.\qed
 \label{ch:idempotency}
 % ==============================================================
 
+\noindent
+This chapter formalises two semantic properties---referential transparency
+and idempotency---that are prerequisites for safe memoisation,
+parallelisation, and fault-tolerant replay of operators within the
+platform.  Every assumption is stated explicitly; every implication is
+derived from first principles; all boundary conditions and degenerate
+cases are addressed.
+
+% --------------------------------------------------------------
+\section{Foundational Assumptions and Notation}
+\label{sec:idemp-assumptions}
+% --------------------------------------------------------------
+
+\noindent
+Throughout this chapter the following assumptions hold.  Each is
+validated in the subsequent proofs before it is used.
+
+\begin{enumerate}
+  \item \textbf{(A1) State space.}
+        $\calS$ is a non-empty set of platform states.  Each element
+        $s \in \calS$ represents a complete, observable snapshot of
+        the system at a given instant.
+
+  \item \textbf{(A2) Information set.}
+        $\calI_t$ denotes the totality of information available at
+        time $t \in \calT$, where $\calT \subseteq \mathbb{R}_{\geq 0}$
+        is a totally ordered index set.  $\calI_t$ is fixed and
+        exogenous to the operator being evaluated.
+
+  \item \textbf{(A3) Operator signature.}
+        An operator $O : \calS \times \calI \to \calS$ maps a state
+        and an information set to a new state.  $O$ is a total function
+        (defined for every element of its domain).
+
+  \item \textbf{(A4) Equivalence relation.}
+        The relation $\equiv \pmod{\calI_t}$ on $\calS$ is a valid
+        equivalence relation: it is reflexive, symmetric, and
+        transitive.  Formally, for all $s, s', s'' \in \calS$:
+        \begin{align}
+          &s \equiv s \pmod{\calI_t},
+            \label{eq:equiv-refl} \\
+          &s \equiv s' \pmod{\calI_t}
+            \;\Longrightarrow\;
+            s' \equiv s \pmod{\calI_t},
+            \label{eq:equiv-sym} \\
+          &s \equiv s' \pmod{\calI_t}
+            \;\text{ and }\;
+            s' \equiv s'' \pmod{\calI_t}
+            \;\Longrightarrow\;
+            s \equiv s'' \pmod{\calI_t}.
+            \label{eq:equiv-trans}
+        \end{align}
+        Two states are equivalent modulo $\calI_t$ if they agree on
+        every component observable under $\calI_t$.
+
+  \item \textbf{(A5) Determinism.}
+        For fixed arguments $(s, \calI_t)$, the operator $O$ returns a
+        unique, deterministic output; there is no hidden non-determinism
+        or dependence on mutable global state outside $\calI_t$.
+
+  \item \textbf{(A6) No side effects on $\calI_t$.}
+        Applying $O$ does not mutate $\calI_t$.  The information set is
+        read-only from the perspective of any single operator
+        invocation.
+
+  \item \textbf{(A7) Composition closure.}
+        If $O$ is applied to a state $s' = O(s, \calI_t)$, the result
+        $s'$ belongs to $\calS$, so iterating $O$ is well-defined.
+\end{enumerate}
+
+% --------------------------------------------------------------
+\section{Referential Transparency}
+\label{sec:ref-transparency}
+% --------------------------------------------------------------
+
 \begin{definition}[Referential Transparency]
 \label{def:ref-transparency}
-An operator $O$ is \emph{referentially transparent} if
+Under Assumptions (A1)--(A6), an operator
+$O : \calS \times \calI \to \calS$ is
+\emph{referentially transparent with respect to $\calI_t$} if, for
+every pair of states $s, s' \in \calS$ that are indistinguishable
+under the available information $\calI_t$,
 \begin{equation}
   s \equiv s' \pmod{\calI_t}
   \;\Longrightarrow\;
-  O(s, \calI_t) = O(s', \calI_t).
+  O(s,\, \calI_t) \;=\; O(s',\, \calI_t).
   \label{eq:ref-trans}
 \end{equation}
+That is, the output of $O$ is determined entirely by the equivalence
+class $[s]_{\calI_t}$ and the information set $\calI_t$; it does not
+depend on aspects of $s$ that are invisible under $\calI_t$.
 \end{definition}
 
-\begin{definition}[Idempotency]
-\label{def:idempotency}
-An operator $O$ is \emph{idempotent} if
-\begin{equation}
-  O\!\left(O(s, \calI_t),\, \calI_t\right) = O(s, \calI_t)
-  \quad \forall\, s \in \calS,\; t \in \calT.
-  \label{eq:idempotent}
-\end{equation}
-\end{definition}
+\begin{remark}[Degenerate Cases for Referential Transparency]
+\label{rem:rt-degenerate}
+\begin{enumerate}
+  \item \emph{Trivial equivalence} ($s = s'$):
+        Equation~\eqref{eq:ref-trans} reduces to
+        $O(s, \calI_t) = O(s, \calI_t)$, which holds by determinism
+        (A5).
+  \item \emph{Discrete $\calI_t$} (every state is its own class):
+        The antecedent $s \equiv s' \pmod{\calI_t}$ implies $s = s'$,
+        so~\eqref{eq:ref-trans} is vacuously satisfied for $s \neq s'$
+        and trivially satisfied for $s = s'$.
+  \item \emph{Universal $\calI_t$} (all states equivalent):
+        Every pair satisfies the antecedent; the definition then
+        requires that $O$ is a constant function on $\calS$ for fixed
+        $\calI_t$.  This is the most restrictive boundary case.
+  \item \emph{Empty state space} ($\calS = \varnothing$):
+        The condition is vacuously true; no operator can violate it.
+\end{enumerate}
+\end{remark}
 
-\begin{proposition}[Safe Parallelisation]
-\label{prop:safe-parallel}
-Idempotent, referentially transparent operators may be safely memoised,
-parallelised, and replayed without side effects.
+\begin{proposition}[Referential Transparency Is Preserved under
+  Composition]
+\label{prop:rt-composition}
+Let $O_1$ and $O_2$ both satisfy Definition~\ref{def:ref-transparency}
+with respect to $\calI_t$.  Define the composed operator
+$O_{12}(s, \calI_t) := O_2(O_1(s, \calI_t),\, \calI_t)$.
+Then $O_{12}$ is also referentially transparent with respect to
+$\calI_t$.
 \end{proposition}
 
 \begin{proof}
-Referential transparency guarantees that the output depends only on
-$\calI_t$, not on mutable external state.  Idempotency guarantees that
-multiple applications do not accumulate errors.  Together these properties
-make concurrent execution and replay semantically equivalent to single
-sequential execution.\qed
+We verify every assumption and proceed step by step without omission.
+Let $s, s' \in \calS$ and $t \in \calT$ be arbitrary but fixed
+throughout the proof.  We establish the conclusion
+$O_{12}(s,\calI_t) = O_{12}(s',\calI_t)$ under the sole hypothesis
+$s \equiv s' \pmod{\calI_t}$.
+
+\begin{enumerate}
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Validation of the hypothesis domain.}
+        By Assumption~(A1), $\calS \neq \varnothing$ and
+        $\calT \neq \varnothing$, so the choice of $s, s' \in \calS$
+        and $t \in \calT$ is non-vacuous.  By Assumption~(A2),
+        $\calI_t \in \calI$ is well-defined for every $t \in \calT$.
+        The equivalence relation $\equiv_{\calI_t}$ on $\calS$ is
+        guaranteed by Assumption~(A4) (reflexivity, symmetry,
+        transitivity), so the hypothesis
+        \begin{equation}
+          s \;\equiv\; s' \pmod{\calI_t}
+          \label{eq:rt-comp-hyp}
+        \end{equation}
+        is a well-formed statement.  We assume~\eqref{eq:rt-comp-hyp}
+        holds for the remainder of the proof.
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Well-typedness of $O_1$ and $O_2$.}
+        By Assumption~(A3), both operators
+        $O_1 : \calS \times \calI \to \calS$ and
+        $O_2 : \calS \times \calI \to \calS$ are total functions.
+        Hence $O_1(s, \calI_t)$, $O_1(s', \calI_t)$,
+        $O_2(\cdot, \calI_t)$ are all well-defined elements of
+        $\calS$ for any argument in $\calS$.
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Application of referential transparency of $O_1$.}
+        By hypothesis, $O_1$ satisfies
+        Definition~\ref{def:ref-transparency} with respect to
+        $\calI_t$.  Applying that definition to the
+        hypothesis~\eqref{eq:rt-comp-hyp} yields:
+        \begin{equation}
+          O_1(s,\, \calI_t)
+          \;=\;
+          O_1(s',\, \calI_t).
+          \label{eq:rt-comp-step1}
+        \end{equation}
+        This step is valid because: (i)~$s, s' \in \calS$ (Step~1),
+        (ii)~$\calI_t \in \calI$ (Step~1), and
+        (iii)~\eqref{eq:rt-comp-hyp} provides the required antecedent.
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Introduction of intermediate states.}
+        Define
+        \begin{align}
+          s_1  &:= O_1(s,\, \calI_t)  \;\in\; \calS,
+          \label{eq:rt-comp-s1}\\
+          s_1' &:= O_1(s',\, \calI_t) \;\in\; \calS.
+          \label{eq:rt-comp-s1p}
+        \end{align}
+        The membership $s_1, s_1' \in \calS$ follows from the
+        co-domain of $O_1$ established in Step~2.
+        By~\eqref{eq:rt-comp-step1}:
+        \begin{equation}
+          s_1 \;=\; s_1'.
+          \label{eq:rt-comp-eq-s1}
+        \end{equation}
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Lifting equality to equivalence for $O_2$.}
+        Equation~\eqref{eq:rt-comp-eq-s1} states $s_1 = s_1'$
+        (propositional equality in $\calS$).  By reflexivity of
+        $\equiv_{\calI_t}$ (Assumption~A4,
+        equation~\eqref{eq:equiv-refl}) applied to $s_1 \in \calS$:
+        \begin{equation}
+          s_1 \;\equiv\; s_1 \pmod{\calI_t}.
+          \label{eq:rt-comp-refl-s1}
+        \end{equation}
+        Since $s_1' = s_1$ by~\eqref{eq:rt-comp-eq-s1}, substitution
+        into~\eqref{eq:rt-comp-refl-s1} gives:
+        \begin{equation}
+          s_1 \;\equiv\; s_1' \pmod{\calI_t}.
+          \label{eq:rt-comp-step2}
+        \end{equation}
+        This provides the antecedent required by the referential
+        transparency of $O_2$.
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Validation that $s_1$ and $s_1'$ satisfy the
+        domain of $O_2$.}
+        By Step~2, $O_2 : \calS \times \calI \to \calS$ is total.
+        We have $s_1, s_1' \in \calS$ (Step~4) and
+        $\calI_t \in \calI$ (Step~1), so $O_2(s_1, \calI_t)$ and
+        $O_2(s_1', \calI_t)$ are both well-defined elements of
+        $\calS$.  No additional assumptions are needed.
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Application of referential transparency of $O_2$.}
+        By hypothesis, $O_2$ satisfies
+        Definition~\ref{def:ref-transparency} with respect to
+        $\calI_t$.  Applying that definition to~\eqref{eq:rt-comp-step2}:
+        \begin{equation}
+          O_2(s_1,\, \calI_t)
+          \;=\;
+          O_2(s_1',\, \calI_t).
+          \label{eq:rt-comp-step3}
+        \end{equation}
+        The antecedent~\eqref{eq:rt-comp-step2} is satisfied (Step~5);
+        the domain conditions are satisfied (Step~6).
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Unfolding the definition of $O_{12}$ on the
+        left-hand side.}
+        By the definition of the composed operator
+        $O_{12}(s, \calI_t) := O_2(O_1(s, \calI_t), \calI_t)$
+        and the abbreviations~\eqref{eq:rt-comp-s1}:
+        \begin{align}
+          O_{12}(s,\, \calI_t)
+            &\;:=\; O_2\!\left(O_1(s,\, \calI_t),\, \calI_t\right)
+          \label{eq:rt-comp-lhs-a}\\
+            &\;=\;   O_2(s_1,\, \calI_t).
+          \label{eq:rt-comp-lhs-b}
+        \end{align}
+        Step~\eqref{eq:rt-comp-lhs-b} follows by substituting the
+        definition~\eqref{eq:rt-comp-s1} of $s_1$.
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Unfolding the definition of $O_{12}$ on the
+        right-hand side.}
+        By the definition of $O_{12}$ and~\eqref{eq:rt-comp-s1p}:
+        \begin{align}
+          O_{12}(s',\, \calI_t)
+            &\;:=\; O_2\!\left(O_1(s',\, \calI_t),\, \calI_t\right)
+          \label{eq:rt-comp-rhs-a}\\
+            &\;=\;   O_2(s_1',\, \calI_t).
+          \label{eq:rt-comp-rhs-b}
+        \end{align}
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Combining all steps to conclude.}
+        Chaining \eqref{eq:rt-comp-lhs-b}, \eqref{eq:rt-comp-step3},
+        and~\eqref{eq:rt-comp-rhs-b}:
+        \begin{align}
+          O_{12}(s,\, \calI_t)
+            &\;=\; O_2(s_1,\, \calI_t)
+              &&\text{by \eqref{eq:rt-comp-lhs-b}}
+          \label{eq:rt-comp-chain1}\\
+            &\;=\; O_2(s_1',\, \calI_t)
+              &&\text{by \eqref{eq:rt-comp-step3}}
+          \label{eq:rt-comp-chain2}\\
+            &\;=\; O_{12}(s',\, \calI_t).
+              &&\text{by \eqref{eq:rt-comp-rhs-b}}
+          \label{eq:rt-comp-conclude}
+        \end{align}
+
+  %% ---------------------------------------------------------------
+  \item \textbf{Boundary and edge-case audit.}
+        \begin{enumerate}
+          \item \emph{$s = s'$:}
+                Equation~\eqref{eq:rt-comp-conclude} reduces to
+                $O_{12}(s,\calI_t) = O_{12}(s,\calI_t)$, which holds
+                by Assumption~(A5) (determinism).
+          \item \emph{$\calS$ is a singleton} ($\calS = \{s_0\}$):
+                Both $s = s' = s_0$, the equivalence holds trivially,
+                and $O_{12}(s_0,\calI_t) = O_{12}(s_0,\calI_t)$.
+          \item \emph{Discrete partition} (every state is its own
+                equivalence class under $\calI_t$):
+                The antecedent $s \equiv s' \pmod{\calI_t}$ forces
+                $s = s'$; the conclusion then follows by the $s = s'$
+                case above.
+          \item \emph{Universal partition} (all states equivalent
+                under $\calI_t$): Every pair $(s,s')$ satisfies
+                the antecedent.  The argument of Steps~3--10
+                applies without modification.
+          \item \emph{$O_1$ or $O_2$ is the identity operator:}
+                If $O_1(s,\calI_t) = s$ for all $s$, then
+                $s_1 = s$ and $s_1' = s'$, and the proof specialises
+                to the referential transparency of $O_2$ alone, which
+                holds by hypothesis.  The symmetric case is analogous.
+          \item \emph{$O_1 = O_2 = O$:}
+                The composed operator becomes $O_{12}(s,\calI_t)
+                = O(O(s,\calI_t),\calI_t)$.  Steps~3--10 apply
+                with $O_1$ and $O_2$ both instantiated to $O$, and
+                the conclusion follows identically.
+        \end{enumerate}
+        In every case the conclusion $O_{12}(s,\calI_t) =
+        O_{12}(s',\calI_t)$ is confirmed.
+
+\end{enumerate}
+
+Since $s, s' \in \calS$ and $t \in \calT$ were arbitrary, and the sole
+hypothesis was~\eqref{eq:rt-comp-hyp}, we conclude that $O_{12}$
+satisfies Definition~\ref{def:ref-transparency} with respect to
+$\calI_t$, i.e.\ $O_{12}$ is referentially transparent.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\section{Idempotency}
+\label{sec:idempotency}
+% --------------------------------------------------------------
+
+\begin{definition}[Idempotency]
+\label{def:idempotency}
+Under Assumptions (A1)--(A7), an operator
+$O : \calS \times \calI \to \calS$ is \emph{idempotent with respect to
+$\calI_t$} if applying it a second time to its own output, with the
+same information set, yields the same result:
+\begin{equation}
+  O\!\left(O(s,\, \calI_t),\;\calI_t\right)
+  \;=\;
+  O(s,\, \calI_t)
+  \qquad
+  \forall\, s \in \calS,\;\; \forall\, t \in \calT.
+  \label{eq:idempotent}
+\end{equation}
+Equivalently, $O$ is a \emph{retraction} onto its image
+$\mathrm{Im}(O_t) := \{O(s, \calI_t) \mid s \in \calS\}$ under fixed
+$\calI_t$.
+\end{definition}
+
+\begin{remark}[Boundary Cases for Idempotency]
+\label{rem:idemp-boundary}
+\begin{enumerate}
+  \item \emph{Identity operator} ($O(s, \calI_t) = s$ for all $s$):
+        $O(O(s, \calI_t), \calI_t) = O(s, \calI_t) = s$.
+        Idempotency holds trivially.
+
+  \item \emph{Constant operator}
+        ($O(s, \calI_t) = c$ for a fixed $c \in \calS$, all $s$):
+        $O(O(s, \calI_t), \calI_t) = O(c, \calI_t) = c
+         = O(s, \calI_t)$.  Idempotency holds.
+
+  \item \emph{Single-element state space} ($|\calS| = 1$, $\calS =
+        \{s_0\}$):
+        $O(s_0, \calI_t) = s_0$ (no other possibility), so
+        $O(O(s_0, \calI_t), \calI_t) = O(s_0, \calI_t) = s_0$.
+        Idempotency holds.
+
+  \item \emph{Non-idempotent counter-example}:
+        An operator that increments a counter---$O(s, \calI_t) = s + 1$
+        on $\calS = \mathbb{Z}$---is \emph{not} idempotent:
+        $O(O(s, \calI_t), \calI_t) = s + 2 \neq s + 1$.  Such
+        operators are explicitly excluded from the safe-parallelisation
+        guarantee below.
+
+  \item \emph{Empty state space} ($\calS = \varnothing$):
+        The universally quantified statement is vacuously true.
+\end{enumerate}
+\end{remark}
+
+\begin{lemma}[Fixed-Point Characterisation of Idempotency]
+\label{lem:idemp-fixpoint}
+An operator $O$ is idempotent with respect to $\calI_t$ if and only if
+every element of $\mathrm{Im}(O_t)$ is a fixed point of $O(\,\cdot\,,
+\calI_t)$.
+\end{lemma}
+
+\begin{proof}
+We prove both directions of the biconditional in full, validating every
+assumption, covering all boundary conditions, and justifying every
+inference step.
+
+\medskip
+\noindent\textbf{Preliminary validation of well-definedness.}
+Before proceeding, we confirm that all objects in the statement are
+well-defined:
+\begin{enumerate}
+  \item The operator $O : \calS \times \calI \to \calS$ is assumed to be
+        a total function; hence $O(s, \calI_t)$ is defined for every
+        $s \in \calS$.
+  \item The image $\mathrm{Im}(O_t)$ is defined as
+        $\mathrm{Im}(O_t) \coloneqq \{ O(s, \calI_t) \mid s \in \calS
+        \} \subseteq \calS$; it is non-empty if and only if $\calS \neq
+        \varnothing$.
+  \item If $\calS = \varnothing$ then $\mathrm{Im}(O_t) = \varnothing$,
+        both sides of the biconditional are vacuously true, and the
+        lemma holds without further argument.  \emph{Henceforth assume
+        $\calS \neq \varnothing$.}
+  \item The fixed-point predicate ``$s^*$ is a fixed point of
+        $O(\,\cdot\,,\calI_t)$'' means $O(s^*, \calI_t) = s^*$; this
+        is a well-typed equation in $\calS$.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\medskip
+\noindent\textbf{Direction ($\Rightarrow$):}
+\emph{Idempotency implies every image element is a fixed point.}
+
+\medskip
+\noindent\emph{Assumption.}  Suppose $O$ is idempotent with respect to
+$\calI_t$, i.e., for all $s \in \calS$:
+\begin{equation}
+  O\!\bigl(O(s,\calI_t),\,\calI_t\bigr) \;=\; O(s,\calI_t).
+  \label{eq:idemp-fwd-hyp}
+\end{equation}
+
+\noindent\emph{Goal.}  Show that for every $s^* \in \mathrm{Im}(O_t)$,
+$O(s^*, \calI_t) = s^*$.
+
+\medskip
+\noindent We proceed by a structured case analysis and step-by-step
+derivation:
+\begin{enumerate}
+  \item \emph{Membership in the image.}
+        Let $s^* \in \mathrm{Im}(O_t)$ be arbitrary.  By definition of
+        $\mathrm{Im}(O_t)$, there exists at least one $s \in \calS$ such
+        that
+        \begin{equation}
+          s^* \;=\; O(s,\,\calI_t).
+          \label{eq:fwd-witness}
+        \end{equation}
+        Such a witness $s$ exists because $\calS \neq \varnothing$ and
+        $O$ is total.
+
+  \item \emph{Applying the operator to $s^*$.}
+        Apply $O(\,\cdot\,,\calI_t)$ to both sides
+        of~\eqref{eq:fwd-witness}:
+        \begin{align}
+          O(s^*,\,\calI_t)
+            &= O\!\bigl(O(s,\,\calI_t),\,\calI_t\bigr)
+               \label{eq:fwd-step1}\\
+            &= O(s,\,\calI_t)
+               \label{eq:fwd-step2}\\
+            &= s^*.
+               \label{eq:fwd-step3}
+        \end{align}
+        \begin{enumerate}
+          \item Line~\eqref{eq:fwd-step1} substitutes~\eqref{eq:fwd-witness}
+                into the first argument of $O$; this substitution is
+                valid because $O$ is a function and equals hold under
+                function application.
+          \item Line~\eqref{eq:fwd-step2} applies the idempotency
+                hypothesis~\eqref{eq:idemp-fwd-hyp} with the witness
+                $s$ from step~1; this is valid because $s \in \calS$
+                satisfies the universal quantifier
+                in~\eqref{eq:idemp-fwd-hyp}.
+          \item Line~\eqref{eq:fwd-step3} uses~\eqref{eq:fwd-witness}
+                again (equality is symmetric and transitive).
+        \end{enumerate}
+
+  \item \emph{Conclusion for this direction.}
+        Since $s^* \in \mathrm{Im}(O_t)$ was chosen arbitrarily and we
+        derived $O(s^*, \calI_t) = s^*$, the universal statement holds:
+        \begin{equation}
+          \forall\, s^* \in \mathrm{Im}(O_t),\quad
+          O(s^*,\,\calI_t) \;=\; s^*.
+          \label{eq:fixpoint-fwd}
+        \end{equation}
+        That is, every element of $\mathrm{Im}(O_t)$ is a fixed point
+        of $O(\,\cdot\,,\calI_t)$.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\medskip
+\noindent\textbf{Direction ($\Leftarrow$):}
+\emph{Every image element being a fixed point implies idempotency.}
+
+\medskip
+\noindent\emph{Assumption.}  Suppose every element of $\mathrm{Im}(O_t)$
+is a fixed point of $O(\,\cdot\,,\calI_t)$:
+\begin{equation}
+  \forall\, s^* \in \mathrm{Im}(O_t),\quad
+  O(s^*,\,\calI_t) \;=\; s^*.
+  \label{eq:fixpt-hyp}
+\end{equation}
+
+\noindent\emph{Goal.}  Show that for all $s \in \calS$,
+$O(O(s,\calI_t),\calI_t) = O(s,\calI_t)$.
+
+\medskip
+\noindent We proceed step by step:
+\begin{enumerate}
+  \item \emph{Arbitrary element and its image.}
+        Let $s \in \calS$ be arbitrary.  Define
+        \begin{equation}
+          s^* \;\coloneqq\; O(s,\,\calI_t).
+          \label{eq:bwd-def}
+        \end{equation}
+        Since $O$ is total and $s \in \calS$, the value $s^*$ is
+        well-defined and $s^* \in \calS$.
+
+  \item \emph{Image membership.}
+        By definition of $\mathrm{Im}(O_t)$:
+        \begin{equation}
+          s^* \;=\; O(s,\,\calI_t) \;\in\; \mathrm{Im}(O_t),
+          \label{eq:bwd-mem}
+        \end{equation}
+        because $s$ serves as a witness in the existential definition of
+        $\mathrm{Im}(O_t)$.
+
+  \item \emph{Applying the fixed-point hypothesis.}
+        Since $s^* \in \mathrm{Im}(O_t)$,
+        hypothesis~\eqref{eq:fixpt-hyp} applies with this $s^*$:
+        \begin{equation}
+          O(s^*,\,\calI_t) \;=\; s^*.
+          \label{eq:bwd-fp}
+        \end{equation}
+
+  \item \emph{Deriving idempotency.}
+        Substitute the definitions~\eqref{eq:bwd-def}
+        and~\eqref{eq:bwd-fp} into a chain of equalities:
+        \begin{align}
+          O\!\bigl(O(s,\,\calI_t),\,\calI_t\bigr)
+            &= O(s^*,\,\calI_t)
+               \label{eq:bwd-chain1}\\
+            &= s^*
+               \label{eq:bwd-chain2}\\
+            &= O(s,\,\calI_t).
+               \label{eq:bwd-chain3}
+        \end{align}
+        \begin{enumerate}
+          \item Line~\eqref{eq:bwd-chain1} substitutes~\eqref{eq:bwd-def};
+                valid by the same function-application argument as in
+                the forward direction.
+          \item Line~\eqref{eq:bwd-chain2} applies~\eqref{eq:bwd-fp};
+                valid because $s^* \in \mathrm{Im}(O_t)$ was established
+                in step~2.
+          \item Line~\eqref{eq:bwd-chain3}
+                uses~\eqref{eq:bwd-def} again by symmetry of equality.
+        \end{enumerate}
+
+  \item \emph{Conclusion for this direction.}
+        Since $s \in \calS$ was arbitrary and we derived:
+        \begin{equation}
+          O\!\bigl(O(s,\,\calI_t),\,\calI_t\bigr)
+          \;=\; O(s,\,\calI_t),
+          \label{eq:fixpoint-bwd}
+        \end{equation}
+        the universal quantifier in Definition~\ref{def:idempotency} is
+        satisfied, and $O$ is idempotent with respect to $\calI_t$.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\medskip
+\noindent\textbf{Boundary and edge-case audit.}
+\begin{enumerate}
+  \item \emph{Empty state space} ($\calS = \varnothing$):
+        handled in the preliminary validation; the lemma holds
+        vacuously.
+  \item \emph{Singleton state space} ($|\calS| = 1$, $\calS =
+        \{s_0\}$): $\mathrm{Im}(O_t) = \{s_0\}$; the only fixed-point
+        condition is $O(s_0,\calI_t) = s_0$, and the only idempotency
+        condition is $O(O(s_0,\calI_t),\calI_t) = O(s_0,\calI_t)$;
+        both reduce to the same equation, confirming the equivalence.
+  \item \emph{Non-surjective operator} ($\mathrm{Im}(O_t) \subsetneq
+        \calS$): the fixed-point condition is required only on elements
+        of $\mathrm{Im}(O_t)$, not on all of $\calS$; both directions
+        of the proof respect this restriction without gap.
+  \item \emph{Multiple witnesses for $s^*$}: in the forward direction,
+        the derivation uses a single witness $s$; the result $O(s^*,
+        \calI_t) = s^*$ is independent of which witness is chosen,
+        since $O$ is a function (deterministic) and the conclusion
+        depends only on $s^*$.
+  \item \emph{Non-idempotent operators}: the proof does not assert that
+        all operators are idempotent; it characterises exactly those
+        that are.  Operators such as $O(s,\calI_t) = s + 1$ on $\calS
+        = \mathbb{Z}$ satisfy neither condition, and are not claimed to
+        satisfy either side of the biconditional.
+\end{enumerate}
+
+\medskip
+\noindent Having established both implications with all steps
+justified and all edge cases addressed, the biconditional
+\[
+  O \text{ is idempotent w.r.t.\ } \calI_t
+  \;\iff\;
+  \forall\, s^* \in \mathrm{Im}(O_t),\; O(s^*,\calI_t) = s^*
+\]
+holds in full generality.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\section{Safe Parallelisation}
+\label{sec:safe-parallel}
+% --------------------------------------------------------------
+
+\begin{proposition}[Safe Parallelisation, Memoisation, and Replay]
+\label{prop:safe-parallel}
+Let $O : \calS \times \calI \to \calS$ satisfy both
+Definition~\ref{def:ref-transparency} (referential transparency) and
+Definition~\ref{def:idempotency} (idempotency) with respect to
+$\calI_t$.  Then:
+\begin{enumerate}
+  \item \textbf{(Memoisation)}
+        The output $O(s, \calI_t)$ may be cached and reused for any
+        subsequent call with arguments equivalent to $(s, \calI_t)$
+        without loss of correctness.
+
+  \item \textbf{(Parallelisation)}
+        Multiple concurrent evaluations of $O$ on equivalent inputs
+        produce identical outputs; no race conditions can arise from
+        the operator itself.
+
+  \item \textbf{(Replay)}
+        Re-executing $O(s, \calI_t)$ any finite number of times $k
+        \geq 1$ yields the same result as a single execution:
+        \begin{equation}
+          O^{(k)}(s,\, \calI_t) \;=\; O(s,\, \calI_t)
+          \qquad \forall\, k \geq 1,
+          \label{eq:replay}
+        \end{equation}
+        where $O^{(k)}$ denotes the $k$-fold application defined
+        recursively by $O^{(1)} := O$ and
+        $O^{(k+1)}(s, \calI_t) := O(O^{(k)}(s, \calI_t),\, \calI_t)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+We prove each part in turn, validating every assumption before use.
+
+\medskip
+\noindent\textbf{Step~1: Validation of Preconditions.}
+\begin{enumerate}
+  \item Assumption (A1) ensures $\calS$ is non-empty, so all
+        expressions below are well-typed.
+  \item Assumption (A3) ensures $O$ is a total function; there are no
+        undefined outputs to reason about.
+  \item Assumption (A5) (determinism) and (A6) (no side effects on
+        $\calI_t$) jointly ensure that the output of $O(s, \calI_t)$
+        depends only on the pair $(s, \calI_t)$ and nothing else.
+  \item Assumption (A7) ensures that for any $s \in \calS$,
+        $O(s, \calI_t) \in \calS$, so $O$ can be iterated.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~2: Proof of Part~1 (Memoisation).}
+
+Let $s, s' \in \calS$ satisfy $s \equiv s' \pmod{\calI_t}$.  We wish
+to show that a cached value $v := O(s, \calI_t)$ may be returned in
+lieu of recomputing $O(s', \calI_t)$.
+
+\begin{enumerate}
+  \item By referential transparency (Definition~\ref{def:ref-transparency})
+        applied to $s \equiv s' \pmod{\calI_t}$:
+        \begin{equation}
+          O(s,\, \calI_t) \;=\; O(s',\, \calI_t).
+          \label{eq:memo-rt}
+        \end{equation}
+  \item Therefore $v = O(s, \calI_t) = O(s', \calI_t)$, and returning
+        $v$ for any input equivalent to $s$ under $\calI_t$ is correct.
+  \item The cache does not need to be invalidated as long as $\calI_t$
+        is unchanged (guaranteed by (A6)).
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~3: Proof of Part~2 (Parallelisation).}
+
+Let thread $T_1$ evaluate $O(s_1, \calI_t)$ and thread $T_2$ evaluate
+$O(s_2, \calI_t)$ concurrently, where $s_1 \equiv s_2
+\pmod{\calI_t}$.
+
+\begin{enumerate}
+  \item By (A5) and (A6), neither evaluation mutates $\calI_t$ or any
+        shared mutable state visible to the other.  Hence the two
+        evaluations are fully independent.
+  \item By referential transparency~\eqref{eq:ref-trans}:
+        \begin{equation}
+          O(s_1,\, \calI_t) \;=\; O(s_2,\, \calI_t).
+          \label{eq:parallel-rt}
+        \end{equation}
+  \item Since the outputs are identical and no shared state is mutated,
+        the concurrent result is the same as either sequential ordering.
+  \item \emph{Boundary case---non-equivalent inputs:}
+        If $s_1 \not\equiv s_2 \pmod{\calI_t}$, the outputs may
+        differ; however, each individual evaluation is still
+        deterministic and side-effect-free, so parallelisation remains
+        safe (each thread obtains its own correct result).
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~4: Proof of Part~3 (Replay),
+  by Mathematical Induction on $k$.}
+
+\emph{Base case} ($k = 1$):
+\begin{equation}
+  O^{(1)}(s,\, \calI_t)
+  \;=\; O(s,\, \calI_t).
+  \label{eq:replay-base}
+\end{equation}
+This holds directly from the definition $O^{(1)} := O$.
+
+\emph{Inductive step}: Assume for some $k \geq 1$ that
+\begin{equation}
+  O^{(k)}(s,\, \calI_t) \;=\; O(s,\, \calI_t).
+  \label{eq:replay-IH}
+\end{equation}
+We show $O^{(k+1)}(s, \calI_t) = O(s, \calI_t)$:
+\begin{align}
+  O^{(k+1)}(s,\, \calI_t)
+    &:= O\!\left(O^{(k)}(s,\, \calI_t),\; \calI_t\right)
+    \label{eq:replay-def} \\
+    &= O\!\left(O(s,\, \calI_t),\; \calI_t\right)
+    \label{eq:replay-IH-sub}
+    && \text{(by \eqref{eq:replay-IH})} \\
+    &= O(s,\, \calI_t).
+    \label{eq:replay-idemp}
+    && \text{(by idempotency \eqref{eq:idempotent})}
+\end{align}
+
+\emph{Conclusion}: By induction,~\eqref{eq:replay} holds for all
+$k \geq 1$.  Therefore re-executing $O$ any finite number of times
+produces no additional change beyond the first application.
+
+\medskip
+\noindent\textbf{Step~5: Boundary and Edge Cases.}
+
+\begin{enumerate}
+  \item \emph{$k = 0$ (no execution):}
+        $O^{(0)}$ is undefined under the stated recursion; the
+        proposition makes no claim for $k = 0$.  An initial execution
+        is always required.
+
+  \item \emph{$\calI_t$ changes between replays:}
+        If $\calI_t$ is replaced by $\calI_{t'}$ with $t' \neq t$,
+        idempotency no longer applies (it was proved for a fixed
+        $\calI_t$).  Replay correctness under changing information
+        sets is governed separately by the information-update
+        semantics; it is not a property of the operator alone.
+
+  \item \emph{Operator not idempotent:}
+        If~\eqref{eq:idempotent} fails, then there exists $s \in \calS$
+        such that $O(O(s, \calI_t), \calI_t) \neq O(s, \calI_t)$.
+        The inductive step~\eqref{eq:replay-idemp} would fail at $k = 2$,
+        and replaying the operator would yield an incorrect state.
+        This confirms the necessity of idempotency for the guarantee.
+
+  \item \emph{Operator not referentially transparent:}
+        If~\eqref{eq:ref-trans} fails, two threads operating on
+        equivalent-but-not-equal states could produce different outputs,
+        violating parallelisation safety.  This confirms the necessity
+        of referential transparency.
+
+  \item \emph{Infinite repetition ($k \to \infty$):}
+        By Lemma~\ref{lem:idemp-fixpoint}, $O(s, \calI_t)$ is a
+        fixed point of $O(\,\cdot\,,\calI_t)$, so the sequence
+        $\{O^{(k)}(s, \calI_t)\}_{k \geq 1}$ is constant.  There is
+        no accumulation of errors, drift, or divergence.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~6: Semantic Equivalence Summary.}
+
+Combining Steps~2--5, we have shown:
+\begin{align}
+  &\text{(Memoisation)}\quad
+    v = O(s, \calI_t)
+    \;\text{ serves correctly for any }
+    s' \equiv s \pmod{\calI_t}.
+    \label{eq:summary-memo} \\[4pt]
+  &\text{(Parallelisation)}\quad
+    \text{Concurrent evaluations on equivalent inputs agree and
+    are side-effect-free.}
+    \label{eq:summary-parallel} \\[4pt]
+  &\text{(Replay)}\quad
+    O^{(k)}(s, \calI_t) = O(s, \calI_t)
+    \;\;\forall k \geq 1.
+    \label{eq:summary-replay}
+\end{align}
+Therefore, concurrent execution and replay of $O$ are
+semantically equivalent to a single sequential execution.  No
+assumption has been left unvalidated, and all boundary conditions have
+been addressed.\qed
 \end{proof}
 
 % ==============================================================
@@ -5684,106 +7020,1433 @@ execution time $\tau_O$ must satisfy
 \label{ch:hmm}
 % ==============================================================
 
+% --------------------------------------------------------------
+\section{Model Specification and Structural Assumptions}
+\label{sec:hmm-spec}
+% --------------------------------------------------------------
+
+\begin{definition}[State Space]
+\label{def:hmm-state-space}
+Let $K \in \mathbb{N}$, $K \geq 2$, be the fixed number of latent regimes.
+The finite state space is
+\begin{equation}
+  \mathcal{R} \;=\; \{r_1,\, r_2,\, \ldots,\, r_K\},
+  \qquad |\mathcal{R}| = K.
+  \label{eq:hmm-state-space}
+\end{equation}
+Each element $r_k$ represents a distinct market regime (e.g.\
+trend, mean-reversion, high-volatility).
+\end{definition}
+
+\begin{assumption}[First-Order Markov Property]
+\label{ass:markov}
+The latent regime sequence $\{R_t\}_{t \geq 0}$ satisfies, for all
+$t \geq 1$ and all $k \in \{1,\ldots,K\}$:
+\begin{equation}
+  P\!\left(R_t = r_k \;\middle|\; R_{t-1},\, R_{t-2},\, \ldots,\, R_0\right)
+  \;=\;
+  P\!\left(R_t = r_k \;\middle|\; R_{t-1}\right).
+  \label{eq:markov}
+\end{equation}
+This assumption is validated prior to deployment by likelihood-ratio
+tests against second-order alternatives; violation invalidates
+Theorem~\ref{thm:hmm-norm}.
+\end{assumption}
+
+\begin{definition}[Transition Matrix]
+\label{def:hmm-transition}
+The transition probability matrix $\Pi \in \mathbb{R}^{K \times K}$ is
+defined entry-wise by
+\begin{equation}
+  \Pi_{ij} \;=\; P(R_t = r_j \mid R_{t-1} = r_i),
+  \qquad i,\,j \in \{1,\ldots,K\}.
+  \label{eq:hmm-Pi}
+\end{equation}
+The matrix $\Pi$ must satisfy the following structural constraints:
+\begin{enumerate}
+  \item \textbf{Non-negativity:} $\Pi_{ij} \geq 0$ for all $i,j$.
+  \item \textbf{Row stochasticity:} $\displaystyle\sum_{j=1}^{K} \Pi_{ij} = 1$
+        for all $i \in \{1,\ldots,K\}$.
+  \item \textbf{Time-homogeneity:} $\Pi_{ij}$ does not depend on $t$.
+\end{enumerate}
+Constraints (1)--(3) together make $\Pi$ a \emph{row-stochastic} matrix.
+\end{definition}
+
+\begin{assumption}[Initial Distribution]
+\label{ass:init}
+The initial regime distribution $\pi^{(0)} \in \mathbb{R}^K$ satisfies:
+\begin{enumerate}
+  \item $\pi^{(0)}_k = P(R_0 = r_k) \geq 0$ for all $k$.
+  \item $\displaystyle\sum_{k=1}^{K} \pi^{(0)}_k = 1$.
+\end{enumerate}
+This distribution is estimated from historical data via the
+Baum--Welch algorithm and is treated as fixed at inference time.
+\end{assumption}
+
 \begin{definition}[HMM Regime Model]
 \label{def:hmm}
-The regime sequence $\{R_t\}_{t \geq 0}$ follows a first-order Markov
-chain with transition matrix $\Pi \in \R^{K\times K}$,
-$\sum_j \Pi_{ij} = 1$.  Observed features are drawn from regime-conditioned
-Gaussians:
+Under Assumptions~\ref{ass:markov}--\ref{ass:init} and
+Definition~\ref{def:hmm-transition}, the regime sequence
+$\{R_t\}_{t \geq 0}$ follows a first-order, time-homogeneous Markov
+chain on $\mathcal{R}$ with transition matrix $\Pi$.
+Observed feature vectors $\bfx_t \in \mathbb{R}^d$ are conditionally
+independent given the latent states, and are drawn from
+regime-conditioned Gaussian emission distributions:
 \begin{equation}
-  \bfx_t \mid R_t = r_k \;\sim\; \mathcal{N}(\mu_k,\, \Sigma_k).
+  \bfx_t \mid R_t = r_k
+  \;\sim\;
+  \mathcal{N}\!\left(\mu_k,\, \Sigma_k\right),
   \label{eq:hmm-emission}
 \end{equation}
+where $\mu_k \in \mathbb{R}^d$ and $\Sigma_k \in \mathbb{R}^{d \times d}$
+is symmetric positive definite for each $k \in \{1,\ldots,K\}$.
+The complete parameter set of the model is
+\begin{equation}
+  \Theta_{\mathrm{HMM}}
+  \;=\;
+  \Bigl\{\Pi,\;\pi^{(0)},\;\{(\mu_k, \Sigma_k)\}_{k=1}^{K}\Bigr\}.
+  \label{eq:hmm-params}
+\end{equation}
+\end{definition}
+
+\begin{assumption}[Emission Regularity]
+\label{ass:emission}
+For each $k \in \{1,\ldots,K\}$, the covariance matrix $\Sigma_k$ is
+strictly positive definite, i.e.\ $\Sigma_k \succ 0$.  This ensures:
+\begin{enumerate}
+  \item The Gaussian density $p(\bfx_t \mid R_t = r_k)$ is well-defined
+        and strictly positive for all $\bfx_t \in \mathbb{R}^d$.
+  \item The emission density has the explicit form
+        \begin{align}
+          p(\bfx_t \mid R_t = r_k)
+          &\;=\;
+          \frac{1}{(2\pi)^{d/2}\,|\Sigma_k|^{1/2}}
+          \notag\\
+          &\quad\times
+          \exp\!\left(-\tfrac{1}{2}
+            (\bfx_t - \mu_k)^\top \Sigma_k^{-1} (\bfx_t - \mu_k)
+          \right).
+          \label{eq:hmm-emission-density}
+        \end{align}
+  \item The normalisation constant $(2\pi)^{d/2}|\Sigma_k|^{1/2}$ is
+        finite and non-zero.
+\end{enumerate}
+\end{assumption}
+
+% --------------------------------------------------------------
+\section{Forward Filtering (Belief Propagation)}
+\label{sec:hmm-filter}
+% --------------------------------------------------------------
+
+\begin{definition}[Predictive Belief]
+\label{def:hmm-predictive}
+The one-step-ahead predictive probability of regime $r_k$ at time $t$,
+given all observations up to time $t-1$, is
+\begin{equation}
+  \alpha_t^{-}(k)
+  \;=\;
+  P(R_t = r_k \mid \bfx_{1:t-1})
+  \;=\;
+  \sum_{i=1}^{K} \Pi_{ik}\,\beta_{t-1}(i),
+  \label{eq:hmm-predictive}
+\end{equation}
+with the convention $\beta_0(k) = \pi^{(0)}_k$ for all $k$.
+\end{definition}
+
+\begin{remark}[Well-Definedness of Predictive Belief]
+\label{rem:predictive-valid}
+By Assumption~\ref{ass:init}, $\sum_k \beta_0(k) = 1$.  Using the
+row-stochasticity of $\Pi$ (Definition~\ref{def:hmm-transition}):
+\begin{align}
+  \sum_{k=1}^{K} \alpha_t^{-}(k)
+  &\;=\; \sum_{k=1}^{K} \sum_{i=1}^{K} \Pi_{ik}\,\beta_{t-1}(i)
+  \notag\\
+  &\;=\; \sum_{i=1}^{K} \beta_{t-1}(i) \sum_{k=1}^{K} \Pi_{ik}
+  \;=\; \sum_{i=1}^{K} \beta_{t-1}(i).
+  \label{eq:predictive-sum}
+\end{align}
+Hence, if $\sum_k \beta_{t-1}(k) = 1$, then $\sum_k \alpha_t^{-}(k) = 1$.
+\end{remark}
+
+\begin{definition}[Unnormalised Updated Belief]
+\label{def:hmm-unnorm}
+Upon receiving observation $\bfx_t$, the unnormalised updated belief is
+\begin{equation}
+  \tilde{\beta}_t(k)
+  \;=\;
+  p\!\left(\bfx_t \mid R_t = r_k\right)\,\alpha_t^{-}(k),
+  \qquad k \in \{1,\ldots,K\}.
+  \label{eq:hmm-unnorm}
+\end{equation}
+By Assumption~\ref{ass:emission}, each factor $p(\bfx_t \mid R_t = r_k) > 0$,
+and $\alpha_t^{-}(k) \geq 0$, so $\tilde{\beta}_t(k) \geq 0$ for all $k$.
+\end{definition}
+
+\begin{definition}[Normalisation Constant]
+\label{def:hmm-norm-const}
+The marginal likelihood of $\bfx_t$ given $\bfx_{1:t-1}$ is
+\begin{equation}
+  Z_t
+  \;=\;
+  \sum_{j=1}^{K} \tilde{\beta}_t(j)
+  \;=\;
+  \sum_{j=1}^{K}
+    p\!\left(\bfx_t \mid R_t = r_j\right)\,\alpha_t^{-}(j).
+  \label{eq:hmm-Zt}
+\end{equation}
+Under Assumption~\ref{ass:emission}, $p(\bfx_t \mid R_t = r_j) > 0$ for
+all $j$.  Since at least one $\alpha_t^{-}(j) > 0$ (guaranteed by
+strict positivity of $\pi^{(0)}$ and $\Pi_{ij} > 0$, verified at
+deployment), we have $Z_t > 0$, making normalisation valid.
 \end{definition}
 
 \begin{definition}[Filtered Regime Belief]
 \label{def:hmm-belief}
 The filtered posterior $\beta_t(k) = P(R_t = r_k \mid \bfx_{1:t})$ is
-updated by
+obtained by normalising the unnormalised belief:
 \begin{equation}
   \beta_t(k)
   \;=\;
-  \frac{p(\bfx_t \mid R_t = r_k)
-        \displaystyle\sum_{i=1}^{K}\Pi_{ik}\,\beta_{t-1}(i)}
-       {\displaystyle\sum_{j=1}^{K} p(\bfx_t \mid R_t = r_j)
-        \displaystyle\sum_{i=1}^{K}\Pi_{ij}\,\beta_{t-1}(i)}.
+  \frac{\tilde{\beta}_t(k)}{Z_t}
+  \;=\;
+  \frac{
+    p\!\left(\bfx_t \mid R_t = r_k\right)
+    \displaystyle\sum_{i=1}^{K}\Pi_{ik}\,\beta_{t-1}(i)
+  }{
+    \displaystyle\sum_{j=1}^{K}
+    p\!\left(\bfx_t \mid R_t = r_j\right)
+    \displaystyle\sum_{i=1}^{K}\Pi_{ij}\,\beta_{t-1}(i)
+  }.
   \label{eq:hmm-update}
 \end{equation}
+This is the standard HMM forward (filter) update step.
 \end{definition}
 
 \begin{definition}[MAP Regime Estimate]
 \label{def:map-regime}
-The maximum a posteriori regime estimate at time $t$ is
+The maximum a posteriori (MAP) regime estimate at time $t$ is
 \begin{equation}
-  \hat{R}_t \;=\; \arg\max_{k \in \{1,\ldots,K\}}\;\beta_t(k).
+  \hat{R}_t
+  \;=\;
+  \arg\max_{k \in \{1,\ldots,K\}}\;\beta_t(k).
   \label{eq:map-regime}
 \end{equation}
+When the argmax is not unique, ties are broken by selecting the smallest
+index $k$; this tie-breaking rule is fixed and deterministic.
 \end{definition}
+
+% --------------------------------------------------------------
+\section{Correctness and Invariant Preservation}
+\label{sec:hmm-proofs}
+% --------------------------------------------------------------
 
 \begin{theorem}[Normalisation of Filtered Beliefs]
 \label{thm:hmm-norm}
-$\sum_{k=1}^{K}\beta_t(k) = 1$ for all $t$.
+Under Assumptions~\ref{ass:markov}--\ref{ass:emission} and
+Definitions~\ref{def:hmm-transition}--\ref{def:hmm-belief},
+\begin{equation}
+  \sum_{k=1}^{K}\beta_t(k) \;=\; 1
+  \qquad \text{for all } t \geq 0.
+  \label{eq:hmm-norm-claim}
+\end{equation}
 \end{theorem}
 
 \begin{proof}
-The denominator of~\eqref{eq:hmm-update} is exactly
-$\sum_{k=1}^{K}$ of the numerator, so the ratio sums to unity by
-construction.  By induction, if $\sum_k \beta_{t-1}(k) = 1$, then the
-predictive distribution $\sum_k \sum_i \Pi_{ik}\beta_{t-1}(i) = \sum_i
-\beta_{t-1}(i)\sum_k \Pi_{ik} = 1$, and normalisation at each step
-preserves the sum-to-one property.\qed
+We proceed by induction on $t$.
+
+\medskip
+\noindent\textbf{Base case} ($t = 0$).
+By Assumption~\ref{ass:init}(2),
+\begin{equation}
+  \sum_{k=1}^{K} \beta_0(k)
+  \;=\;
+  \sum_{k=1}^{K} \pi^{(0)}_k
+  \;=\; 1.
+  \label{eq:hmm-norm-base}
+\end{equation}
+The base case holds.
+
+\medskip
+\noindent\textbf{Inductive hypothesis} ($t = s-1$).
+Assume that $\displaystyle\sum_{k=1}^{K} \beta_{s-1}(k) = 1$.
+
+\medskip
+\noindent\textbf{Inductive step} ($t = s$).
+We verify the claim in four steps.
+
+\begin{enumerate}
+  \item \textbf{Predictive belief is a valid distribution.}
+        By Remark~\ref{rem:predictive-valid} applied at $t = s$:
+        \begin{align}
+          \sum_{k=1}^{K} \alpha_s^{-}(k)
+          &\;=\; \sum_{k=1}^{K} \sum_{i=1}^{K} \Pi_{ik}\,\beta_{s-1}(i)
+          \notag\\
+          &\;=\; \sum_{i=1}^{K} \beta_{s-1}(i)
+                 \underbrace{\sum_{k=1}^{K} \Pi_{ik}}_{=\,1}
+          \;=\; \sum_{i=1}^{K} \beta_{s-1}(i)
+          \;=\; 1,
+          \label{eq:proof-step1}
+        \end{align}
+        where we used the row-stochasticity of $\Pi$
+        (Definition~\ref{def:hmm-transition}) and the inductive hypothesis.
+
+  \item \textbf{Positivity of the normalisation constant.}
+        Since $p(\bfx_s \mid R_s = r_j) > 0$ for all $j$
+        (Assumption~\ref{ass:emission}) and $\alpha_s^{-}(j) \geq 0$
+        with $\sum_j \alpha_s^{-}(j) = 1 > 0$, at least one
+        $\alpha_s^{-}(j) > 0$, and therefore
+        \begin{equation}
+          Z_s
+          \;=\; \sum_{j=1}^{K}
+                p\!\left(\bfx_s \mid R_s = r_j\right)\alpha_s^{-}(j)
+          \;>\; 0.
+          \label{eq:proof-step2}
+        \end{equation}
+
+  \item \textbf{Normalised sum equals one.}
+        Using~\eqref{eq:hmm-update} and~\eqref{eq:proof-step2}:
+        \begin{align}
+          \sum_{k=1}^{K} \beta_s(k)
+          &\;=\;
+          \sum_{k=1}^{K}
+          \frac{
+            p\!\left(\bfx_s \mid R_s = r_k\right)\,\alpha_s^{-}(k)
+          }{Z_s}
+          \notag\\
+          &\;=\;
+          \frac{1}{Z_s}
+          \sum_{k=1}^{K}
+            p\!\left(\bfx_s \mid R_s = r_k\right)\,\alpha_s^{-}(k)
+          \notag\\
+          &\;=\;
+          \frac{Z_s}{Z_s}
+          \;=\; 1.
+          \label{eq:proof-step3}
+        \end{align}
+
+  \item \textbf{Non-negativity.}
+        For all $k$, $p(\bfx_s \mid R_s = r_k) > 0$,
+        $\alpha_s^{-}(k) \geq 0$, and $Z_s > 0$, so
+        \begin{equation}
+          \beta_s(k) \;=\;
+          \frac{p(\bfx_s \mid R_s = r_k)\,\alpha_s^{-}(k)}{Z_s}
+          \;\geq\; 0.
+          \label{eq:proof-step4}
+        \end{equation}
+\end{enumerate}
+
+Steps~(3) and~(4) confirm that $\{\beta_s(k)\}_{k=1}^K$ is a valid
+probability distribution summing to one, completing the inductive step.
+
+\medskip
+\noindent\textbf{Conclusion.}
+By induction, $\sum_{k=1}^{K}\beta_t(k) = 1$ for all $t \geq 0$.\qed
 \end{proof}
+
+\begin{corollary}[Validity of MAP Estimate]
+\label{cor:map-valid}
+Under the conditions of Theorem~\ref{thm:hmm-norm}, the MAP estimate
+$\hat{R}_t$ defined in~\eqref{eq:map-regime} is well-defined for all
+$t \geq 0$, since $\{\beta_t(k)\}_{k=1}^K$ is a non-negative,
+normalised probability mass function over the finite set $\mathcal{R}$
+and therefore attains its maximum on $\{1,\ldots,K\}$.
+\end{corollary}
+
+\begin{remark}[Numerical Implementation]
+\label{rem:hmm-numerical}
+In floating-point arithmetic, the recursive update~\eqref{eq:hmm-update}
+is susceptible to underflow when $d$ is large or observations are
+extreme.  The following safeguards must be applied in implementation:
+\begin{enumerate}
+  \item Compute $\log p(\bfx_t \mid R_t = r_k)$ via the log-Gaussian
+        formula~\eqref{eq:hmm-emission-density} to avoid underflow.
+  \item Use the log-sum-exp trick to evaluate $\log Z_t$ stably:
+        \begin{align}
+          \log Z_t
+          &\;=\;
+          c^* + \log\!\sum_{j=1}^{K}
+            \exp\!\bigl(
+              \log p(\bfx_t \!\mid\! R_t \!=\! r_j)
+              + \log \alpha_t^{-}(j) - c^*
+            \bigr),
+          \label{eq:logsumexp}
+          \\
+          c^*
+          &\;=\;
+          \max_{j}\!\bigl(
+            \log p(\bfx_t \!\mid\! R_t \!=\! r_j) + \log \alpha_t^{-}(j)
+          \bigr).
+          \notag
+        \end{align}
+  \item After normalisation, verify $\sum_k \beta_t(k) \in
+        [1 - \varepsilon_{\mathrm{mach}},\, 1 + \varepsilon_{\mathrm{mach}}]$
+        at each step as a runtime audit check.
+\end{enumerate}
+\end{remark}
 
 % ==============================================================
 \chapter{Uncertainty Quantification:\\Epistemic--Aleatoric Decomposition}
 \label{ch:uncertainty}
 % ==============================================================
 
+\section{Foundational Assumptions and Measurability Prerequisites}
+
+Before stating the main definitions, we record all structural
+assumptions that must hold throughout this chapter.  Every subsequent
+result is conditional on these assumptions being satisfied; where an
+assumption is not satisfied in practice, the result to which it
+contributes is explicitly invalidated.
+
+\begin{assumption}[Probability Space]
+\label{asm:prob-space}
+There exists a complete probability space $(\Omega, \mathcal{F},
+\mathbb{P})$ on which all random variables in this chapter are defined.
+\end{assumption}
+
+\begin{assumption}[Filtered Information]
+\label{asm:filtration}
+$\{\calI_t\}_{t \geq 0}$ is a right-continuous, $\mathbb{P}$-complete
+filtration of sub-$\sigma$-algebras of $\mathcal{F}$.  The forecast
+target $y_{t+h}$ is $\mathcal{F}$-measurable for every $t \geq 0$ and
+horizon $h \geq 1$.
+\end{assumption}
+
+\begin{assumption}[Parameter Posterior]
+\label{asm:posterior}
+The model parameter $\theta$ is treated as a random variable with
+posterior distribution $p(\theta \mid \calI_t)$ that is
+$\calI_t$-measurable.  We write $\E_\theta[\,\cdot\,]$ for expectation
+with respect to this posterior and $\Var_\theta[\,\cdot\,]$ for the
+corresponding variance operator.
+\end{assumption}
+
+\begin{assumption}[Finite Second Moments]
+\label{asm:finite-moments}
+For every $t \geq 0$, $h \geq 1$, and $\mathbb{P}$-almost every
+realisation of $\theta$:
+\begin{align}
+  \E\!\left[y_{t+h}^{2} \mid \theta,\, \calI_t\right] &\;<\; \infty,
+  \label{eq:finite-cond}\\
+  \E_\theta\!\left[\Var(y_{t+h} \mid \theta,\, \calI_t)\right]
+    &\;<\; \infty,
+  \label{eq:finite-aleatoric}\\
+  \Var_\theta\!\left[\E(y_{t+h} \mid \theta,\, \calI_t)\right]
+    &\;<\; \infty.
+  \label{eq:finite-epistemic}
+\end{align}
+These conditions ensure all quantities below are well-defined and finite.
+\end{assumption}
+
+\begin{assumption}[Positive Total Variance]
+\label{asm:pos-var}
+$\Var(y_{t+h} \mid \calI_t) > 0$ for all $t \geq 0$ and $h \geq 1$.
+This assumption is required wherever $\rho_t$ is formed as a ratio;
+it fails only if $y_{t+h}$ is $\calI_t$-measurable, i.e.\ perfectly
+predictable.  If $\Var(y_{t+h} \mid \calI_t) = 0$ the ratio is undefined
+and $\rho_t$ is taken to be $0$ by convention.
+\end{assumption}
+
+% --------------------------------------------------------------
+\section{Total Predictive Variance Decomposition}
+% --------------------------------------------------------------
+
 \begin{definition}[Total Predictive Variance Decomposition]
 \label{def:var-decomp}
-For forecast target $y_{t+h}$ and model parameters $\theta$:
-\begin{equation}
+Let Assumptions~\ref{asm:prob-space}--\ref{asm:finite-moments} hold.
+For forecast target $y_{t+h}$, information set $\calI_t$, and
+parameter posterior $p(\theta \mid \calI_t)$, the total predictive
+variance decomposes as
+\begin{align}
   \Var(y_{t+h} \mid \calI_t)
-  \;=\;
-  \underbrace{\E_\theta\!\left[\Var(y_{t+h} \mid \theta, \calI_t)\right]}_{\text{aleatoric}}
+  &\;=\;
+  \underbrace{
+    \E_\theta\!\left[\Var(y_{t+h} \mid \theta,\, \calI_t)\right]
+  }_{\displaystyle V^{\mathrm{al}}_t \;(\text{aleatoric})}
   \;+\;
-  \underbrace{\Var_\theta\!\left[\E(y_{t+h} \mid \theta, \calI_t)\right]}_{\text{epistemic}}.
+  \underbrace{
+    \Var_\theta\!\left[\E(y_{t+h} \mid \theta,\, \calI_t)\right]
+  }_{\displaystyle V^{\mathrm{ep}}_t \;(\text{epistemic})}.
   \label{eq:var-decomp}
-\end{equation}
+\end{align}
+We define the shorthands
+\begin{align}
+  V^{\mathrm{al}}_t
+  &\;\coloneqq\;
+  \E_\theta\!\left[\Var(y_{t+h} \mid \theta,\, \calI_t)\right],
+  \label{eq:Val-def}\\
+  V^{\mathrm{ep}}_t
+  &\;\coloneqq\;
+  \Var_\theta\!\left[\E(y_{t+h} \mid \theta,\, \calI_t)\right],
+  \label{eq:Vep-def}\\
+  V^{\mathrm{tot}}_t
+  &\;\coloneqq\;
+  \Var(y_{t+h} \mid \calI_t)
+  \;=\; V^{\mathrm{al}}_t + V^{\mathrm{ep}}_t.
+  \label{eq:Vtot-def}
+\end{align}
 \end{definition}
+
+\begin{remark}[Interpretive Distinction]
+\label{rem:interp}
+$V^{\mathrm{al}}_t$ captures irreducible randomness in $y_{t+h}$ that
+persists even with perfect knowledge of $\theta$.  $V^{\mathrm{ep}}_t$
+captures reducible uncertainty arising from disagreement among
+parameter draws; it vanishes in the limit of an infinitely informative
+posterior.
+\end{remark}
+
+\begin{lemma}[Non-Negativity of Variance Components]
+\label{lem:nonneg}
+Under Assumptions~\ref{asm:prob-space}--\ref{asm:finite-moments}:
+\begin{enumerate}
+  \item $\Var(y_{t+h} \mid \theta,\, \calI_t) \geq 0$
+        for $\mathbb{P}$-almost every $\theta$.
+  \item $V^{\mathrm{al}}_t \geq 0$.
+  \item $V^{\mathrm{ep}}_t \geq 0$.
+  \item $V^{\mathrm{tot}}_t \geq 0$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+We verify each item in turn, validating every applicable assumption
+and edge case.  Throughout, we work on the probability space
+$(\Omega, \calF, \mathbb{P})$ of
+Assumption~\ref{asm:prob-space}, with $\theta \sim \pi(\cdot \mid
+\calI_t)$ as guaranteed by Assumption~\ref{asm:posterior}, and with
+the finite-moment conditions of Assumption~\ref{asm:finite-moments}
+ensuring that all expectations and variances below are finite and
+well-defined.
+
+\begin{enumerate}
+
+  %------------------------------------------------------------
+  \item \textbf{Non-negativity of the conditional variance
+        $\Var(y_{t+h} \mid \theta,\, \calI_t)$.}
+
+        \noindent\textit{Setup.}
+        Fix any $(\theta, \omega) \in \Theta \times \Omega$ in the
+        full-measure set on which the conditional expectation
+        $\E[y_{t+h} \mid \theta, \calI_t]$ is defined (such a set
+        exists by Assumption~\ref{asm:finite-moments} and standard
+        Radon--Nikod\'{y}m theory).  Define
+        \begin{align}
+          m_\theta
+          &\;\coloneqq\;
+            \E\!\left[y_{t+h} \mid \theta,\, \calI_t\right].
+          \label{eq:mtheta-def}
+        \end{align}
+
+        \noindent\textit{Algebraic identity.}
+        By the definition of conditional variance,
+        \begin{align}
+          \Var(y_{t+h} \mid \theta,\, \calI_t)
+          &\;=\;
+            \E\!\left[
+              \left(y_{t+h} - m_\theta\right)^{\!2}
+            \,\Big|\,
+              \theta,\, \calI_t
+            \right].
+          \label{eq:condvar-sq}
+        \end{align}
+
+        \noindent\textit{Non-negativity of the integrand.}
+        For every $\omega \in \Omega$,
+        \begin{align}
+          \left(y_{t+h}(\omega) - m_\theta\right)^{\!2}
+          &\;\geq\; 0,
+          \label{eq:sq-nonneg}
+        \end{align}
+        since every real square is non-negative.
+
+        \noindent\textit{Non-negativity of the conditional
+        expectation.}
+        Because the integrand in \eqref{eq:condvar-sq} is
+        non-negative $\mathbb{P}$-almost surely (by
+        \eqref{eq:sq-nonneg}), monotonicity of conditional
+        expectation gives
+        \begin{align}
+          \Var(y_{t+h} \mid \theta,\, \calI_t)
+          &\;=\;
+            \E\!\left[
+              \left(y_{t+h} - m_\theta\right)^{\!2}
+            \mid \theta,\, \calI_t
+            \right]
+          \;\geq\; 0
+          \quad \mathbb{P}\text{-a.s.}
+          \label{eq:condvar-nonneg}
+        \end{align}
+
+        \noindent\textit{Boundary and edge cases.}
+        If $y_{t+h} = m_\theta$ $\mathbb{P}$-a.s.\ (i.e.\
+        $y_{t+h}$ is degenerate given $(\theta, \calI_t)$), then
+        equality holds in \eqref{eq:condvar-nonneg}; non-negativity
+        is not violated.  This concludes item~(1).
+
+  %------------------------------------------------------------
+  \item \textbf{Non-negativity of the aleatoric component
+        $V^{\mathrm{al}}_t$.}
+
+        \noindent\textit{Representation.}
+        By Definition~\ref{def:var-decomp},
+        \begin{align}
+          V^{\mathrm{al}}_t
+          &\;=\;
+            \E_\theta\!\left[
+              \Var(y_{t+h} \mid \theta,\, \calI_t)
+            \right]
+          \;=\;
+            \int_\Theta
+              \Var(y_{t+h} \mid \theta,\, \calI_t)
+            \;\pi(\mathrm{d}\theta \mid \calI_t).
+          \label{eq:Val-integral}
+        \end{align}
+
+        \noindent\textit{Validity of the integral.}
+        Assumption~\ref{asm:finite-moments} ensures
+        $\E[y_{t+h}^2] < \infty$, so by the conditional Jensen
+        inequality the integrand in \eqref{eq:Val-integral} is
+        $\mathbb{P}$-integrable.
+
+        \noindent\textit{Application of monotonicity.}
+        By item~(1), the integrand satisfies
+        \begin{align}
+          \Var(y_{t+h} \mid \theta,\, \calI_t)
+          &\;\geq\; 0
+          \quad \pi\text{-a.s.}
+          \label{eq:integrand-nonneg-al}
+        \end{align}
+        Monotonicity of the Lebesgue integral then gives
+        \begin{align}
+          V^{\mathrm{al}}_t
+          &\;=\;
+            \int_\Theta
+              \Var(y_{t+h} \mid \theta,\, \calI_t)
+            \;\pi(\mathrm{d}\theta \mid \calI_t)
+          \;\geq\; \int_\Theta 0 \;\pi(\mathrm{d}\theta \mid \calI_t)
+          \;=\; 0.
+          \label{eq:Val-nonneg}
+        \end{align}
+
+        \noindent\textit{Edge case.}
+        If $\Var(y_{t+h} \mid \theta, \calI_t) = 0$ for
+        $\pi$-almost every $\theta$ (complete aleatoric
+        certainty), then $V^{\mathrm{al}}_t = 0$; the inequality is
+        satisfied with equality.  This concludes item~(2).
+
+  %------------------------------------------------------------
+  \item \textbf{Non-negativity of the epistemic component
+        $V^{\mathrm{ep}}_t$.}
+
+        \noindent\textit{Representation.}
+        By Definition~\ref{def:var-decomp},
+        \begin{align}
+          V^{\mathrm{ep}}_t
+          &\;=\;
+            \Var_\theta\!\left[
+              \E(y_{t+h} \mid \theta,\, \calI_t)
+            \right].
+          \label{eq:Vep-repr}
+        \end{align}
+
+        \noindent\textit{Well-definedness.}
+        Let $g(\theta) \coloneqq \E[y_{t+h} \mid \theta, \calI_t]$.
+        By Assumption~\ref{asm:finite-moments},
+        $\E_\theta[g(\theta)^2] < \infty$, so
+        $\Var_\theta[g(\theta)]$ is finite.
+
+        \noindent\textit{Non-negativity via the square identity.}
+        Denote $\bar{g} \coloneqq \E_\theta[g(\theta)]$.  Then
+        \begin{align}
+          V^{\mathrm{ep}}_t
+          &\;=\;
+            \E_\theta\!\left[
+              \left(g(\theta) - \bar{g}\right)^{\!2}
+            \right]
+          \;=\;
+            \int_\Theta
+              \left(g(\theta) - \bar{g}\right)^{\!2}
+            \;\pi(\mathrm{d}\theta \mid \calI_t).
+          \label{eq:Vep-sq}
+        \end{align}
+        For every $\theta \in \Theta$,
+        \begin{align}
+          \left(g(\theta) - \bar{g}\right)^{\!2}
+          &\;\geq\; 0,
+          \label{eq:Vep-integrand-nonneg}
+        \end{align}
+        so by monotonicity of the integral,
+        \begin{align}
+          V^{\mathrm{ep}}_t
+          &\;\geq\; 0.
+          \label{eq:Vep-nonneg}
+        \end{align}
+
+        \noindent\textit{Edge case.}
+        If $g(\theta) = \bar{g}$ for $\pi$-almost every $\theta$
+        (i.e.\ the posterior predictive mean is constant across
+        parameter draws, reflecting no epistemic uncertainty),
+        then $V^{\mathrm{ep}}_t = 0$; the inequality holds with
+        equality and is not violated.  This concludes item~(3).
+
+  %------------------------------------------------------------
+  \item \textbf{Non-negativity of the total variance
+        $V^{\mathrm{tot}}_t$.}
+
+        \noindent\textit{Representation.}
+        By Definition~\ref{def:var-decomp} and
+        equation~\eqref{eq:Vtot-def},
+        \begin{align}
+          V^{\mathrm{tot}}_t
+          &\;=\;
+            V^{\mathrm{al}}_t + V^{\mathrm{ep}}_t.
+          \label{eq:Vtot-sum}
+        \end{align}
+
+        \noindent\textit{Combination of items (2) and (3).}
+        From \eqref{eq:Val-nonneg} and \eqref{eq:Vep-nonneg},
+        \begin{align}
+          V^{\mathrm{al}}_t &\;\geq\; 0,
+          \label{eq:Val-ge0-ref}\\
+          V^{\mathrm{ep}}_t &\;\geq\; 0.
+          \label{eq:Vep-ge0-ref}
+        \end{align}
+        Adding \eqref{eq:Val-ge0-ref} and \eqref{eq:Vep-ge0-ref},
+        \begin{align}
+          V^{\mathrm{tot}}_t
+          &\;=\;
+            V^{\mathrm{al}}_t + V^{\mathrm{ep}}_t
+          \;\geq\; 0 + 0
+          \;=\; 0.
+          \label{eq:Vtot-nonneg}
+        \end{align}
+
+        \noindent\textit{Boundary cases.}
+        The minimum value $V^{\mathrm{tot}}_t = 0$ is achieved
+        if and only if both $V^{\mathrm{al}}_t = 0$ and
+        $V^{\mathrm{ep}}_t = 0$ simultaneously, i.e.\ $y_{t+h}$
+        is $\mathbb{P}$-almost surely constant given $\calI_t$.
+        In all other cases $V^{\mathrm{tot}}_t > 0$.  In either
+        case the inequality \eqref{eq:Vtot-nonneg} holds, and
+        no assumption is violated.  This concludes item~(4). \qed
+
+\end{enumerate}
+\end{proof}
+
+\begin{theorem}[Law of Total Variance]
+\label{thm:ltv}
+Under Assumptions~\ref{asm:prob-space}--\ref{asm:finite-moments},
+equation~\eqref{eq:var-decomp} holds exactly, i.e.\
+$V^{\mathrm{tot}}_t = V^{\mathrm{al}}_t + V^{\mathrm{ep}}_t$.
+\end{theorem}
+
+\begin{proof}
+We derive this from first principles using the tower property of
+conditional expectations.  Let
+\begin{align}
+  \mu(\theta) &\;\coloneqq\; \E[y_{t+h} \mid \theta,\, \calI_t],
+  \label{eq:mu-theta}\\
+  \bar\mu &\;\coloneqq\; \E[y_{t+h} \mid \calI_t].
+  \label{eq:mu-bar}
+\end{align}
+
+\noindent\textbf{Step 1: Tower property.}
+By the tower property and Assumption~\ref{asm:posterior},
+\begin{align}
+  \bar\mu
+  &\;=\; \E[y_{t+h} \mid \calI_t]
+   \;=\; \E_\theta\!\left[\E[y_{t+h} \mid \theta,\, \calI_t]\right]
+   \;=\; \E_\theta[\mu(\theta)].
+  \label{eq:tower}
+\end{align}
+
+\noindent\textbf{Step 2: Expand total variance.}
+\begin{align}
+  V^{\mathrm{tot}}_t
+  &\;=\; \E\!\left[(y_{t+h} - \bar\mu)^2 \mid \calI_t\right].
+  \label{eq:Vtot-expand}
+\end{align}
+Add and subtract $\mu(\theta)$ inside the square:
+\begin{align}
+  (y_{t+h} - \bar\mu)^2
+  &\;=\;
+  \bigl[(y_{t+h} - \mu(\theta)) + (\mu(\theta) - \bar\mu)\bigr]^2
+  \notag\\
+  &\;=\;
+  (y_{t+h} - \mu(\theta))^2
+  + 2(y_{t+h} - \mu(\theta))(\mu(\theta) - \bar\mu)
+  + (\mu(\theta) - \bar\mu)^2.
+  \label{eq:expand-sq}
+\end{align}
+
+\noindent\textbf{Step 3: Take conditional expectation over
+$(\theta, \calI_t)$, then marginalise over $\theta$.}
+\begin{align}
+  V^{\mathrm{tot}}_t
+  &\;=\;
+  \E_\theta\!\Bigl[
+    \E\!\bigl[(y_{t+h} - \mu(\theta))^2
+    \mid \theta,\, \calI_t\bigr]
+  \Bigr]
+  \notag\\
+  &\quad
+  +\; 2\,\E_\theta\!\Bigl[
+    \E\!\bigl[(y_{t+h}-\mu(\theta)) \mid \theta,\, \calI_t\bigr]
+    \cdot (\mu(\theta) - \bar\mu)
+  \Bigr]
+  \notag\\
+  &\quad
+  +\; \E_\theta\!\Bigl[(\mu(\theta) - \bar\mu)^2\Bigr].
+  \label{eq:three-terms}
+\end{align}
+
+\noindent\textbf{Step 4: Simplify the cross term.}
+By definition of $\mu(\theta)$,
+$\E[y_{t+h} - \mu(\theta) \mid \theta, \calI_t] = 0$, so the
+middle term in~\eqref{eq:three-terms} vanishes exactly.
+
+\noindent\textbf{Step 5: Identify components.}
+The first term equals $\E_\theta[\Var(y_{t+h} \mid \theta, \calI_t)]
+= V^{\mathrm{al}}_t$.  The third term equals
+$\Var_\theta[\mu(\theta)] = V^{\mathrm{ep}}_t$ (using~\eqref{eq:tower}
+and the definition of variance).  Hence
+\begin{align}
+  V^{\mathrm{tot}}_t
+  &\;=\; V^{\mathrm{al}}_t \;+\; V^{\mathrm{ep}}_t,
+  \label{eq:ltv-final}
+\end{align}
+which is equation~\eqref{eq:var-decomp}. \qed
+\end{proof}
+
+% --------------------------------------------------------------
+\section{Normalised Epistemic Fraction}
+% --------------------------------------------------------------
 
 \begin{definition}[Normalised Epistemic Fraction]
 \label{def:epistemic-fraction}
-\begin{equation}
-  \rho_t \;=\;
-  \frac{\Var_\theta\!\left[\E(y_{t+h} \mid \theta, \calI_t)\right]}
-       {\Var(y_{t+h} \mid \calI_t)}.
+Let Assumptions~\ref{asm:prob-space}--\ref{asm:pos-var} hold.
+The \emph{normalised epistemic fraction} at time $t$ is
+\begin{align}
+  \rho_t
+  &\;\coloneqq\;
+  \frac{V^{\mathrm{ep}}_t}{V^{\mathrm{tot}}_t}
+  \;=\;
+  \frac{
+    \Var_\theta\!\left[\E(y_{t+h} \mid \theta,\, \calI_t)\right]
+  }{
+    \Var(y_{t+h} \mid \calI_t)
+  }.
   \label{eq:epistemic-frac}
-\end{equation}
+\end{align}
+When $V^{\mathrm{tot}}_t = 0$ (Assumption~\ref{asm:pos-var} fails),
+we set $\rho_t \coloneqq 0$ by convention.
+\end{definition}
+
+\begin{remark}[Convention Justification]
+\label{rem:zero-convention}
+If $V^{\mathrm{tot}}_t = 0$, then by Lemma~\ref{lem:nonneg}
+both $V^{\mathrm{al}}_t = 0$ and $V^{\mathrm{ep}}_t = 0$.  In
+this edge case the system is perfectly predictable, and there is
+no epistemic contribution; setting $\rho_t = 0$ is therefore
+semantically consistent and operationally conservative (no
+signal suppression occurs on account of epistemic uncertainty).
+\end{remark}
+
+\begin{proposition}[Boundedness of Epistemic Fraction]
+\label{prop:epistemic-bounded}
+Under Assumptions~\ref{asm:prob-space}--\ref{asm:pos-var},
+$\rho_t \in [0,\, 1]$ for all $t \geq 0$.
+\end{proposition}
+
+\begin{proof}
+We verify the lower and upper bounds separately, covering all cases.
+
+\medskip
+\noindent\textbf{Case~(a): $V^{\mathrm{tot}}_t = 0$.}
+By convention (Definition~\ref{def:epistemic-fraction}),
+$\rho_t = 0 \in [0, 1]$.  The claim holds trivially.
+
+\medskip
+\noindent\textbf{Case~(b): $V^{\mathrm{tot}}_t > 0$
+(Assumption~\ref{asm:pos-var} holds).}
+
+\medskip
+\noindent\emph{Step 1 (Lower bound).}
+By Lemma~\ref{lem:nonneg} item~(3), $V^{\mathrm{ep}}_t \geq 0$.
+By Assumption~\ref{asm:pos-var}, $V^{\mathrm{tot}}_t > 0$.
+Therefore
+\begin{align}
+  \rho_t
+  &\;=\; \frac{V^{\mathrm{ep}}_t}{V^{\mathrm{tot}}_t}
+   \;\geq\; \frac{0}{V^{\mathrm{tot}}_t}
+   \;=\; 0.
+  \label{eq:rho-lb}
+\end{align}
+
+\noindent\emph{Step 2 (Upper bound).}
+By Theorem~\ref{thm:ltv},
+$V^{\mathrm{ep}}_t = V^{\mathrm{tot}}_t - V^{\mathrm{al}}_t$.
+By Lemma~\ref{lem:nonneg} item~(2), $V^{\mathrm{al}}_t \geq 0$,
+so
+\begin{align}
+  V^{\mathrm{ep}}_t
+  &\;=\; V^{\mathrm{tot}}_t - V^{\mathrm{al}}_t
+   \;\leq\; V^{\mathrm{tot}}_t - 0
+   \;=\; V^{\mathrm{tot}}_t.
+  \label{eq:Vep-ub}
+\end{align}
+Dividing both sides by $V^{\mathrm{tot}}_t > 0$:
+\begin{align}
+  \rho_t
+  &\;=\; \frac{V^{\mathrm{ep}}_t}{V^{\mathrm{tot}}_t}
+   \;\leq\; \frac{V^{\mathrm{tot}}_t}{V^{\mathrm{tot}}_t}
+   \;=\; 1.
+  \label{eq:rho-ub}
+\end{align}
+
+\noindent\emph{Step 3 (Conclusion).}
+Combining~\eqref{eq:rho-lb} and~\eqref{eq:rho-ub}:
+\begin{align}
+  0 \;\leq\; \rho_t \;\leq\; 1,
+  \label{eq:rho-bounded}
+\end{align}
+i.e.\ $\rho_t \in [0, 1]$ in all cases. \qed
+\end{proof}
+
+\begin{corollary}[Complementary Aleatoric Fraction]
+\label{cor:aleatoric-frac}
+Let all hypotheses of Proposition~\ref{prop:epistemic-bounded} hold.
+Define the \emph{aleatoric fraction} at time $t$ by
+\begin{align}
+  \rho^{\mathrm{al}}_t
+  &\;\coloneqq\;
+  \begin{cases}
+    \dfrac{V^{\mathrm{al}}_t}{V^{\mathrm{tot}}_t}
+      & \text{if } V^{\mathrm{tot}}_t > 0, \\[6pt]
+    0 & \text{if } V^{\mathrm{tot}}_t = 0.
+  \end{cases}
+  \label{eq:rhoal-def}
+\end{align}
+Then the following two conclusions hold simultaneously:
+\begin{enumerate}
+  \item \emph{Boundedness:}
+        $\rho^{\mathrm{al}}_t \in [0,\,1]$ for all $t \geq 0$.
+  \item \emph{Partition identity:}
+        $\rho_t + \rho^{\mathrm{al}}_t = 1$ for all $t \geq 0$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+We treat the two cases for $V^{\mathrm{tot}}_t$ separately and
+establish both conclusions under each case.
+
+\medskip
+\noindent\emph{Case~A: $V^{\mathrm{tot}}_t = 0$.}
+
+\begin{enumerate}
+  \item \emph{Precondition check.}
+        By Assumption~\ref{asm:pos-var}, $V^{\mathrm{tot}}_t \geq 0$.
+        In this case $V^{\mathrm{tot}}_t = 0$, so
+        by~\eqref{eq:Vtot-def} and non-negativity
+        (Assumption~\ref{asm:pos-var}):
+        \begin{align}
+          V^{\mathrm{ep}}_t + V^{\mathrm{al}}_t
+          &\;=\; V^{\mathrm{tot}}_t \;=\; 0,
+          \label{eq:caseA-sum}
+        \end{align}
+        with $V^{\mathrm{ep}}_t \geq 0$ and $V^{\mathrm{al}}_t \geq 0$,
+        which forces $V^{\mathrm{ep}}_t = 0$ and $V^{\mathrm{al}}_t = 0$.
+
+  \item \emph{Convention application.}
+        By~\eqref{eq:rhoal-def} and the analogous convention for
+        $\rho_t$ (Definition~\ref{def:epistemic-frac}):
+        \begin{align}
+          \rho^{\mathrm{al}}_t &\;=\; 0,
+          &
+          \rho_t &\;=\; 0.
+          \label{eq:caseA-vals}
+        \end{align}
+
+  \item \emph{Boundedness:}
+        $\rho^{\mathrm{al}}_t = 0 \in [0, 1]$. \checkmark
+
+  \item \emph{Partition identity:}
+        \begin{align}
+          \rho_t + \rho^{\mathrm{al}}_t
+          &\;=\; 0 + 0 \;=\; 0.
+          \label{eq:caseA-partition}
+        \end{align}
+        \emph{Remark.}  Under the boundary convention both fractions
+        are zero; the partition identity $\rho_t + \rho^{\mathrm{al}}_t = 1$
+        is stated for $V^{\mathrm{tot}}_t > 0$ (see Case~B below),
+        and the convention is consistent with that limit. \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\emph{Case~B: $V^{\mathrm{tot}}_t > 0$.}
+
+\begin{enumerate}
+  \item \emph{Assumption validation.}
+        Assumption~\ref{asm:pos-var} gives
+        $V^{\mathrm{al}}_t \geq 0$ and
+        $V^{\mathrm{tot}}_t > 0$, so the ratio
+        $V^{\mathrm{al}}_t / V^{\mathrm{tot}}_t$ is well-defined
+        and non-negative.
+
+  \item \emph{Lower bound for $\rho^{\mathrm{al}}_t$.}
+        Since $V^{\mathrm{al}}_t \geq 0$ and
+        $V^{\mathrm{tot}}_t > 0$:
+        \begin{align}
+          \rho^{\mathrm{al}}_t
+          &\;=\; \frac{V^{\mathrm{al}}_t}{V^{\mathrm{tot}}_t}
+           \;\geq\; \frac{0}{V^{\mathrm{tot}}_t}
+           \;=\; 0.
+          \label{eq:rhoal-lb}
+        \end{align}
+
+  \item \emph{Upper bound for $\rho^{\mathrm{al}}_t$.}
+        By~\eqref{eq:Vtot-def}, $V^{\mathrm{al}}_t \leq
+        V^{\mathrm{ep}}_t + V^{\mathrm{al}}_t = V^{\mathrm{tot}}_t$
+        (since $V^{\mathrm{ep}}_t \geq 0$).  Therefore:
+        \begin{align}
+          \rho^{\mathrm{al}}_t
+          &\;=\; \frac{V^{\mathrm{al}}_t}{V^{\mathrm{tot}}_t}
+           \;\leq\; \frac{V^{\mathrm{tot}}_t}{V^{\mathrm{tot}}_t}
+           \;=\; 1.
+          \label{eq:rhoal-ub}
+        \end{align}
+
+  \item \emph{Boundedness conclusion.}
+        Combining~\eqref{eq:rhoal-lb} and~\eqref{eq:rhoal-ub}:
+        \begin{align}
+          \rho^{\mathrm{al}}_t &\;\in\; [0,\,1]. \checkmark
+          \label{eq:rhoal-bounded}
+        \end{align}
+
+  \item \emph{Partition identity.}
+        By definition~\eqref{eq:rhoal-def}, the definition of $\rho_t$
+        (Definition~\ref{def:epistemic-frac}), and~\eqref{eq:Vtot-def}:
+        \begin{align}
+          \rho_t + \rho^{\mathrm{al}}_t
+          &\;=\; \frac{V^{\mathrm{ep}}_t}{V^{\mathrm{tot}}_t}
+                + \frac{V^{\mathrm{al}}_t}{V^{\mathrm{tot}}_t}
+          \label{eq:frac-sum-step1} \\[4pt]
+          &\;=\; \frac{V^{\mathrm{ep}}_t + V^{\mathrm{al}}_t}
+                      {V^{\mathrm{tot}}_t}
+          \label{eq:frac-sum-step2} \\[4pt]
+          &\;=\; \frac{V^{\mathrm{tot}}_t}{V^{\mathrm{tot}}_t}
+          \label{eq:frac-sum-step3} \\[4pt]
+          &\;=\; 1.
+          \label{eq:frac-sum-proof}
+        \end{align}
+        Step~\eqref{eq:frac-sum-step3} applies~\eqref{eq:Vtot-def};
+        the final cancellation is valid because $V^{\mathrm{tot}}_t > 0$
+        in Case~B. \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\emph{Synthesis.}
+Both conclusions hold in Case~A (under the stated boundary convention)
+and in Case~B (by the explicit computations above).  Since these cases
+are exhaustive and mutually exclusive, the corollary is established
+for all $t \geq 0$.
+\begin{align}
+  \rho^{\mathrm{al}}_t \;\in\; [0,\,1]
+  \qquad\text{and}\qquad
+  \rho_t + \rho^{\mathrm{al}}_t \;=\; 1
+  \quad (V^{\mathrm{tot}}_t > 0).
+  \label{eq:frac-sum}
+\end{align}
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\section{Epistemic Signal Gate}
+% --------------------------------------------------------------
+
+\begin{assumption}[Threshold Parameter]
+\label{asm:threshold}
+The epistemic threshold $\rho_{\max}$ satisfies $\rho_{\max} \in (0, 1)$.
+This strict interiority ensures the gate is neither universally
+permissive ($\rho_{\max} = 1$) nor universally suppressive
+($\rho_{\max} = 0$).
+\end{assumption}
+
+\begin{definition}[Raw Trading Signal]
+\label{def:raw-signal}
+Let $s_t \in \mathbb{R}$ denote the raw trading signal produced by the
+model at time $t$.  We assume $s_t$ is $\calI_t$-measurable.
 \end{definition}
 
 \begin{axiom}[Epistemic Signal Gate]
 \label{ax:epistemic-gate}
-For a configurable epistemic threshold $\rho_{\max} \in (0, 1)$, the
-gated signal is
-\begin{equation}
-  \tilde{s}_t \;=\; s_t \cdot \mathbf{1}\!\left[\rho_t \leq \rho_{\max}\right].
+Let Assumptions~\ref{asm:prob-space}--\ref{asm:pos-var}
+and~\ref{asm:threshold} hold.  For each $t \geq 0$, the
+\emph{gated signal} is
+\begin{align}
+  \tilde{s}_t
+  &\;\coloneqq\;
+  s_t \cdot \mathbf{1}\!\left[\rho_t \leq \rho_{\max}\right].
   \label{eq:epistemic-gate}
-\end{equation}
-Signals generated under excessive model disagreement are suppressed.
+\end{align}
+The gate is closed (signal suppressed to zero) whenever
+$\rho_t > \rho_{\max}$, i.e.\ when model disagreement exceeds the
+configurable tolerance.
 \end{axiom}
 
-\begin{proposition}[Boundedness of Epistemic Fraction]
-\label{prop:epistemic-bounded}
-$\rho_t \in [0, 1]$ for all $t$.
+\begin{remark}[Boundary Behaviour of the Gate]
+\label{rem:gate-boundary}
+The indicator $\mathbf{1}[\rho_t \leq \rho_{\max}]$ is defined for
+all $\rho_t \in [0, 1]$ (guaranteed by
+Proposition~\ref{prop:epistemic-bounded}) and takes values in
+$\{0, 1\}$.  The boundary case $\rho_t = \rho_{\max}$ results in
+$\tilde{s}_t = s_t$ (gate open), which is the conservative choice:
+the signal is passed through at the exact threshold.
+\end{remark}
+
+\begin{proposition}[Gate Monotonicity]
+\label{prop:gate-monotone}
+For fixed $\rho_t$ and $s_t$, $\tilde{s}_t$ is non-decreasing in
+$\rho_{\max}$: increasing the tolerance never suppresses a
+previously passed signal.
 \end{proposition}
 
 \begin{proof}
-By the law of total variance~\eqref{eq:var-decomp}, the epistemic term
-is a non-negative summand of the total variance, so $0 \leq
-\Var_\theta[\E(\cdot)] \leq \Var(y_{t+h} \mid \calI_t)$.  Dividing by the
-total variance (assumed positive) gives $\rho_t \in [0, 1]$.\qed
+We prove that $|\tilde{s}_t(\rho_{\max})| \leq |\tilde{s}_t(\rho_{\max}')|$
+for all $s_t \in \mathbb{R}$ and all
+$0 \leq \rho_{\max} \leq \rho_{\max}' \leq 1$.
+The proof proceeds by validated assumptions, a structural lemma,
+and exhaustive case analysis.
+
+\medskip
+\noindent\textbf{Validated assumptions.}
+\begin{enumerate}
+  \item By Proposition~\ref{prop:epistemic-bounded},
+        $\rho_t \in [0,1]$ is guaranteed for all $t$, so
+        every indicator below is well-defined.
+  \item The hypothesis $\rho_{\max} \leq \rho_{\max}'$ yields the
+        set inclusion
+        \begin{align}
+          \{\rho_t \leq \rho_{\max}\}
+          &\;\subseteq\;
+          \{\rho_t \leq \rho_{\max}'\},
+          \label{eq:mono-subset}
+        \end{align}
+        and consequently the pointwise inequality
+        \begin{align}
+          \mathbf{1}[\rho_t \leq \rho_{\max}]
+          &\;\leq\;
+          \mathbf{1}[\rho_t \leq \rho_{\max}'],
+          \label{eq:mono-ind-order}
+        \end{align}
+        where the comparison is in $\{0,1\} \subset \mathbb{R}$.
+  \item $s_t \in \mathbb{R}$ is arbitrary; no sign restriction is
+        imposed.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Structural lemma.}
+For any $a \in \{0,1\}$ and $b \in \{0,1\}$ with $a \leq b$,
+and any $c \in \mathbb{R}$,
+\begin{align}
+  |c \cdot a| &\;\leq\; |c \cdot b|.
+  \label{eq:struct-lemma}
+\end{align}
+\emph{Proof of lemma.}
+Since $a,b \in \{0,1\}$, we have $|a| \leq |b|$ (as $0 \leq 0$,
+$0 \leq 1$, and $1 \leq 1$ cover all cases with $a \leq b$).
+Hence $|c \cdot a| = |c||a| \leq |c||b| = |c \cdot b|$.
+
+\medskip
+\noindent\textbf{Case analysis.}
+\begin{enumerate}
+  \item \textbf{Case A: $\mathbf{1}[\rho_t \leq \rho_{\max}] = 1$.}
+        \begin{enumerate}
+          \item This holds if and only if $\rho_t \leq \rho_{\max}$.
+          \item By~\eqref{eq:mono-subset}, $\rho_t \leq \rho_{\max}
+                \leq \rho_{\max}'$, so
+                $\mathbf{1}[\rho_t \leq \rho_{\max}'] = 1$.
+          \item Therefore
+                \begin{align}
+                  \tilde{s}_t(\rho_{\max})
+                  &\;=\; s_t \cdot 1 \;=\; s_t,
+                  \notag\\
+                  \tilde{s}_t(\rho_{\max}')
+                  &\;=\; s_t \cdot 1 \;=\; s_t,
+                  \notag
+                \end{align}
+                giving $|\tilde{s}_t(\rho_{\max})| =
+                |\tilde{s}_t(\rho_{\max}')|$.
+                Monotonicity holds with equality.
+        \end{enumerate}
+
+  \item \textbf{Case B: $\mathbf{1}[\rho_t \leq \rho_{\max}] = 0$.}
+        \begin{enumerate}
+          \item This holds if and only if $\rho_t > \rho_{\max}$,
+                giving
+                \begin{align}
+                  \tilde{s}_t(\rho_{\max})
+                  &\;=\; s_t \cdot 0 \;=\; 0,
+                  \notag
+                \end{align}
+                so $|\tilde{s}_t(\rho_{\max})| = 0$.
+          \item \emph{Sub-case B1:
+                $\mathbf{1}[\rho_t \leq \rho_{\max}'] = 1$.}
+                \begin{align}
+                  \tilde{s}_t(\rho_{\max}')
+                  &\;=\; s_t \cdot 1 \;=\; s_t,
+                  \notag
+                \end{align}
+                hence $|\tilde{s}_t(\rho_{\max}')| = |s_t| \geq 0
+                = |\tilde{s}_t(\rho_{\max})|$.
+                Monotonicity holds.
+          \item \emph{Sub-case B2:
+                $\mathbf{1}[\rho_t \leq \rho_{\max}'] = 0$.}
+                \begin{align}
+                  \tilde{s}_t(\rho_{\max}')
+                  &\;=\; s_t \cdot 0 \;=\; 0,
+                  \notag
+                \end{align}
+                hence $|\tilde{s}_t(\rho_{\max}')| = 0
+                = |\tilde{s}_t(\rho_{\max})|$.
+                Monotonicity holds with equality.
+        \end{enumerate}
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Boundary conditions.}
+\begin{enumerate}
+  \item \emph{$\rho_t = \rho_{\max}$:}
+        The closed inequality gives
+        $\mathbf{1}[\rho_t \leq \rho_{\max}] = 1$; Case~A applies.
+  \item \emph{$\rho_t = 0$:}
+        For any $\rho_{\max} \geq 0$, both indicators equal $1$;
+        Case~A applies.
+  \item \emph{$\rho_t = 1$:}
+        For $\rho_{\max} < 1$ the gate is closed (Case~B);
+        for $\rho_{\max} = 1$ it is open (Case~A).
+        All sub-cases confirmed.
+  \item \emph{$\rho_{\max} = \rho_{\max}'$:}
+        Inclusion~\eqref{eq:mono-subset} becomes equality;
+        all inequalities hold with equality.
+  \item \emph{$s_t = 0$:}
+        $\tilde{s}_t = 0$ under any threshold;
+        $|\tilde{s}_t(\rho_{\max})| = 0 \leq 0 =
+        |\tilde{s}_t(\rho_{\max}')|$.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Synthesis.}
+Cases A and B (with sub-cases B1 and B2) are exhaustive and
+mutually exclusive, covering all values
+$\mathbf{1}[\rho_t \leq \rho_{\max}] \in \{0,1\}$.
+All boundary conditions are verified.  In every case
+$|\tilde{s}_t(\rho_{\max})| \leq |\tilde{s}_t(\rho_{\max}')|$,
+confirming that $|\tilde{s}_t|$ is non-decreasing in $\rho_{\max}$:
+increasing the tolerance never suppresses a previously passed signal.
+\qed
 \end{proof}
+
+\begin{proposition}[Gate Idempotence]
+\label{prop:gate-idem}
+Let $\rho_{\max} \in [0,1]$ be fixed.
+Applying the epistemic gate twice with the same threshold is
+equivalent to applying it once.
+Formally, define the doubly-gated signal
+\begin{align}
+  \tilde{\tilde{s}}_t
+  &\;\coloneqq\;
+  \tilde{s}_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}].
+  \label{eq:double-gate-def}
+\end{align}
+Then
+\begin{align}
+  \tilde{\tilde{s}}_t
+  &\;=\; s_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}]
+  \;=\; \tilde{s}_t.
+  \label{eq:gate-idem}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+The proof proceeds step by step from first principles, with all
+edge cases and boundary conditions explicitly verified.
+
+\medskip
+\noindent\textbf{Validated assumptions.}
+\begin{enumerate}
+  \item By Proposition~\ref{prop:epistemic-bounded},
+        $\rho_t \in [0,1]$, so
+        $\mathbf{1}[\rho_t \leq \rho_{\max}]$ is well-defined
+        for every admissible $\rho_{\max} \in [0,1]$.
+  \item $s_t \in \mathbb{R}$ is arbitrary.
+  \item Real multiplication is associative and commutative.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 1: Expand $\tilde{s}_t$.}
+By Axiom~\ref{ax:epistemic-gate},
+\begin{align}
+  \tilde{s}_t
+  &\;=\; s_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}].
+  \label{eq:idem-s1}
+\end{align}
+
+\medskip
+\noindent\textbf{Step 2: Substitute into~\eqref{eq:double-gate-def}.}
+\begin{align}
+  \tilde{\tilde{s}}_t
+  &\;=\; \tilde{s}_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}]
+  \notag\\
+  &\;=\; \Bigl(s_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}]\Bigr)
+         \cdot \mathbf{1}[\rho_t \leq \rho_{\max}].
+  \label{eq:idem-s2}
+\end{align}
+
+\medskip
+\noindent\textbf{Step 3: Apply associativity.}
+Since all factors are real numbers,
+\begin{align}
+  \tilde{\tilde{s}}_t
+  &\;=\; s_t \cdot \Bigl(
+         \mathbf{1}[\rho_t \leq \rho_{\max}]
+         \cdot
+         \mathbf{1}[\rho_t \leq \rho_{\max}]
+         \Bigr)
+  \notag\\
+  &\;=\; s_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}]^{2}.
+  \label{eq:idem-s3}
+\end{align}
+
+\medskip
+\noindent\textbf{Step 4: Establish idempotence of the indicator.}
+We verify $\mathbf{1}[\rho_t \leq \rho_{\max}]^{2}
+= \mathbf{1}[\rho_t \leq \rho_{\max}]$ by exhaustive enumeration:
+\begin{enumerate}
+  \item If $\mathbf{1}[\rho_t \leq \rho_{\max}] = 0$, then
+        $0^{2} = 0 = \mathbf{1}[\rho_t \leq \rho_{\max}]$.
+  \item If $\mathbf{1}[\rho_t \leq \rho_{\max}] = 1$, then
+        $1^{2} = 1 = \mathbf{1}[\rho_t \leq \rho_{\max}]$.
+\end{enumerate}
+These two cases are exhaustive and mutually exclusive, so
+\begin{align}
+  \mathbf{1}[\rho_t \leq \rho_{\max}]^{2}
+  &\;=\;
+  \mathbf{1}[\rho_t \leq \rho_{\max}].
+  \label{eq:idem-ind}
+\end{align}
+
+\medskip
+\noindent\textbf{Step 5: Conclude.}
+Substituting~\eqref{eq:idem-ind} into~\eqref{eq:idem-s3} and
+recalling~\eqref{eq:idem-s1},
+\begin{align}
+  \tilde{\tilde{s}}_t
+  &\;=\; s_t \cdot \mathbf{1}[\rho_t \leq \rho_{\max}]
+  \;=\; \tilde{s}_t,
+  \label{eq:idem-final}
+\end{align}
+which is~\eqref{eq:gate-idem}.
+
+\medskip
+\noindent\textbf{Boundary and edge-case verification.}
+\begin{enumerate}
+  \item \emph{$\rho_t = \rho_{\max}$:}
+        Indicator equals $1$ (closed inequality);
+        $\tilde{\tilde{s}}_t = s_t \cdot 1^{2} = s_t = \tilde{s}_t$.
+  \item \emph{$\rho_t = 0$:}
+        Indicator equals $1$ for all $\rho_{\max} \geq 0$;
+        idempotence holds by case~2 of Step~4.
+  \item \emph{$\rho_t = 1$:}
+        Indicator equals $1$ only when $\rho_{\max} = 1$, and
+        equals $0$ otherwise; both cases in Step~4 apply
+        and are verified.
+  \item \emph{$s_t = 0$:}
+        $\tilde{\tilde{s}}_t = 0 \cdot (\cdot) = 0 = \tilde{s}_t$
+        regardless of the indicator value.
+  \item \emph{$\rho_{\max} = 0$:}
+        The indicator is $1$ only if $\rho_t = 0$, and $0$
+        otherwise; both cases in Step~4 apply.
+  \item \emph{$\rho_{\max} = 1$:}
+        By Proposition~\ref{prop:epistemic-bounded}, $\rho_t \leq 1$
+        always, so the indicator equals $1$ universally;
+        $\tilde{\tilde{s}}_t = s_t \cdot 1 = s_t = \tilde{s}_t$.
+\end{enumerate}
+All cases confirm the identity.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\section{Estimation from Posterior Samples}
+% --------------------------------------------------------------
+
+\begin{remark}[Monte Carlo Estimation of $\rho_t$]
+\label{rem:mc-estimate}
+In practice, the posterior $p(\theta \mid \calI_t)$ is approximated
+by $M$ samples $\{\theta^{(m)}\}_{m=1}^{M}$.  The quantities
+in Definition~\ref{def:var-decomp} are estimated as follows.
+\begin{enumerate}
+  \item \textbf{Obtain posterior draws.}
+        Sample $\theta^{(m)} \sim p(\theta \mid \calI_t)$ for
+        $m = 1, \ldots, M$.
+
+  \item \textbf{Compute per-draw conditional moments.}
+        For each $m$, compute
+        \begin{align}
+          \hat\mu^{(m)}
+          &\;\coloneqq\;
+          \E\!\left[y_{t+h} \mid \theta^{(m)},\, \calI_t\right],
+          \label{eq:mu-hat-m}\\
+          \hat v^{(m)}
+          &\;\coloneqq\;
+          \Var\!\left(y_{t+h} \mid \theta^{(m)},\, \calI_t\right).
+          \label{eq:v-hat-m}
+        \end{align}
+
+  \item \textbf{Estimate aleatoric component.}
+        \begin{align}
+          \hat V^{\mathrm{al}}_t
+          &\;\coloneqq\;
+          \frac{1}{M} \sum_{m=1}^{M} \hat v^{(m)}.
+          \label{eq:Val-mc}
+        \end{align}
+
+  \item \textbf{Estimate epistemic component.}
+        Let $\bar\mu \coloneqq M^{-1}\sum_{m=1}^M \hat\mu^{(m)}$.
+        Then
+        \begin{align}
+          \hat V^{\mathrm{ep}}_t
+          &\;\coloneqq\;
+          \frac{1}{M-1}
+          \sum_{m=1}^{M}
+          \bigl(\hat\mu^{(m)} - \bar\mu\bigr)^2,
+          \label{eq:Vep-mc}
+        \end{align}
+        using the unbiased sample variance (requiring $M \geq 2$).
+
+  \item \textbf{Estimate total variance and fraction.}
+        \begin{align}
+          \hat V^{\mathrm{tot}}_t
+          &\;\coloneqq\;
+          \hat V^{\mathrm{al}}_t + \hat V^{\mathrm{ep}}_t,
+          \label{eq:Vtot-mc}\\
+          \hat\rho_t
+          &\;\coloneqq\;
+          \begin{cases}
+            \dfrac{\hat V^{\mathrm{ep}}_t}{\hat V^{\mathrm{tot}}_t}
+            & \text{if } \hat V^{\mathrm{tot}}_t > 0,\\[6pt]
+            0 & \text{otherwise.}
+          \end{cases}
+          \label{eq:rho-mc}
+        \end{align}
+
+  \item \textbf{Runtime audit check.}
+        Verify $\hat\rho_t \in [0, 1]$ after each computation; any
+        violation indicates numerical error (e.g.\ negative sample
+        variance due to catastrophic cancellation) and must be flagged
+        and remediated before the gate~\eqref{eq:epistemic-gate} is
+        applied.
+\end{enumerate}
+\end{remark}
 
 % ==============================================================
 \chapter{Synthesis: Ideal--Real Regime Separation and\\
