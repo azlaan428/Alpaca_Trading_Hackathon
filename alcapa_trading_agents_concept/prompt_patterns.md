@@ -1,4 +1,3 @@
-
 # Trading-Agent Repository Migration Meta-Prompt Set
 
 ## META-PROMPT 0 — MASTER OPERATING DIRECTIVE
@@ -39,28 +38,23 @@ Markdown may document an agent, but Markdown MUST NOT constitute the executable 
 
 Model the system as a graph of typed operators:
 
-```text
-Data Sources
-    ↓
-Normalization Operators
-    ↓
-Feature Operators
-    ↓
-Market-Regime Operators
-    ↓
-Signal Operators
-    ↓
-Risk Operators
-    ↓
-Portfolio Operators
-    ↓
-Hedging / Allocation Operators
-    ↓
-Execution Simulation
-    ↓
-Performance / Risk Analysis
-    ↓
-Validation / QA / Audit
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000
+
+    A[Data Sources]:::node
+    B[Normalization Operators]:::node
+    C[Feature Operators]:::node
+    D[Market-Regime Operators]:::node
+    E[Signal Operators]:::node
+    F[Risk Operators]:::node
+    G[Portfolio Operators]:::node
+    H[Hedging / Allocation Operators]:::node
+    I[Execution Simulation]:::node
+    J[Performance / Risk Analysis]:::node
+    K[Validation / QA / Audit]:::node
+
+    A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K
 ```
 
 Operators may be composed into larger agents.
@@ -196,13 +190,15 @@ Then place each category in the correct architectural location.
 
 Example:
 
-```text
-.agent.md
-    |
-    +--> capability --------> source-code interface / implementation
-    +--> policy ------------> policy configuration / validator
-    +--> configuration -----> TOML/YAML/JSON/config object
-    +--> documentation -----> Markdown documentation
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A[".agent.md"]:::node
+    B["capability"]:::node --> F["source-code interface / implementation"]:::node
+    C["policy"]:::node --> G["policy configuration / validator"]:::node
+    D["configuration"]:::node --> H["TOML / YAML / JSON / config object"]:::node
+    E["documentation"]:::node --> I["Markdown documentation"]:::node
+    A --> B & C & D & E
 ```
 
 No executable agent shall require a Markdown persona in order to exist.
@@ -219,10 +215,10 @@ class Operator(Protocol):
 
 A language-model implementation might then satisfy that interface:
 
-```text
-Operator
-   ↑
-LLMOperator
+```mermaid
+flowchart BT
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A["LLMOperator"]:::node --> B["Operator"]:::node
 ```
 
 but:
@@ -469,22 +465,10 @@ Design market information as a provenance-preserving pipeline.
 
 Conceptual stages:
 
-```text
-RawData
-    ↓
-ValidatedData
-    ↓
-NormalizedData
-    ↓
-TimestampAlignedData
-    ↓
-FeatureData
-    ↓
-ModelInput
-    ↓
-Signal
-    ↓
-Decision
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A["RawData"]:::node --> B["ValidatedData"]:::node --> C["NormalizedData"]:::node --> D["TimestampAlignedData"]:::node --> E["FeatureData"]:::node --> F["ModelInput"]:::node --> G["Signal"]:::node --> H["Decision"]:::node
 ```
 
 Potential data categories include:
@@ -635,16 +619,10 @@ A profitable-looking signal must NOT automatically produce an order.
 
 Conceptual flow:
 
-```text
-SignalOperator
-      ↓
-PortfolioDecisionOperator
-      ↓
-RiskOperator
-      ↓
-ExecutionPolicy
-      ↓
-ExecutionSimulator / BrokerAdapter
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A["SignalOperator"]:::node --> B["PortfolioDecisionOperator"]:::node --> C["RiskOperator"]:::node --> D["ExecutionPolicy"]:::node --> E["ExecutionSimulator / BrokerAdapter"]:::node
 ```
 
 Risk operators should be capable of rejecting, modifying, sizing, delaying, or hedging a proposed action.
@@ -733,29 +711,33 @@ Implement complex agents by composing smaller operators.
 
 Example:
 
-```text
-PortfolioGuardianAgent
-    |
-    +-- MarketRegimeOperator
-    +-- VolatilityOperator
-    +-- CorrelationOperator
-    +-- DrawdownOperator
-    +-- HedgeOptimizationOperator
-    +-- PositionSizingOperator
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A["PortfolioGuardianAgent"]:::node
+    B["MarketRegimeOperator"]:::node
+    C["VolatilityOperator"]:::node
+    D["CorrelationOperator"]:::node
+    E["DrawdownOperator"]:::node
+    F["HedgeOptimizationOperator"]:::node
+    G["PositionSizingOperator"]:::node
+    A --> B & C & D & E & F & G
 ```
 
 Another example:
 
-```text
-NewsMarketAgent
-    |
-    +-- NewsIngestionOperator
-    +-- EntityExtractionOperator
-    +-- EventClassificationOperator
-    +-- SentimentOperator
-    +-- NoveltyOperator
-    +-- MarketRelevanceOperator
-    +-- ConfidenceOperator
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A["NewsMarketAgent"]:::node
+    B["NewsIngestionOperator"]:::node
+    C["EntityExtractionOperator"]:::node
+    D["EventClassificationOperator"]:::node
+    E["SentimentOperator"]:::node
+    F["NoveltyOperator"]:::node
+    G["MarketRelevanceOperator"]:::node
+    H["ConfidenceOperator"]:::node
+    A --> B & C & D & E & F & G & H
 ```
 
 Do not create giant god-objects called `TradingAgent` that ingest every possible datum and make every possible decision.
@@ -987,36 +969,10 @@ Create a local quality pipeline that can run before ordinary repository CI.
 
 Conceptual sequence:
 
-```text
-FORMAT
-  ↓
-LINT
-  ↓
-STATIC ANALYSIS
-  ↓
-TYPE CHECK
-  ↓
-BUILD
-  ↓
-UNIT TEST
-  ↓
-PROPERTY TEST
-  ↓
-NUMERICAL TEST
-  ↓
-TEMPORAL-LEAKAGE TEST
-  ↓
-INTEGRATION TEST
-  ↓
-CROSS-LANGUAGE CONTRACT TEST
-  ↓
-SIMULATION TEST
-  ↓
-SECURITY / SECRET SCAN
-  ↓
-PERFORMANCE REGRESSION CHECK
-  ↓
-DOCUMENTATION VALIDATION
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A["FORMAT"]:::node --> B["LINT"]:::node --> C["STATIC ANALYSIS"]:::node --> D["TYPE CHECK"]:::node --> E["BUILD"]:::node --> F["UNIT TEST"]:::node --> G["PROPERTY TEST"]:::node --> H["NUMERICAL TEST"]:::node --> I["TEMPORAL-LEAKAGE TEST"]:::node --> J["INTEGRATION TEST"]:::node --> K["CROSS-LANGUAGE CONTRACT TEST"]:::node --> L["SIMULATION TEST"]:::node --> M["SECURITY / SECRET SCAN"]:::node --> N["PERFORMANCE REGRESSION CHECK"]:::node --> O["DOCUMENTATION VALIDATION"]:::node
 ```
 
 Record results in machine-readable form.
@@ -1376,11 +1332,16 @@ WHAT
 WHY
 HOW
 INPUTS
+ARGS
+THROWS
+EXCEPTIONS
+RETURNS
 OUTPUTS
 INVARIANTS
 FAILURE MODES
 TESTING
 PERFORMANCE CHARACTERISTICS
+SPACE AND TIME ANALYSIS (BIG O FOR BOTH)
 ```
 
 ---
@@ -1452,22 +1413,10 @@ Prioritize foundational abstractions supporting extension.
 
 Start with a narrow vertical slice such as:
 
-```text
-historical market data
-    ↓
-features
-    ↓
-market regime
-    ↓
-signal
-    ↓
-portfolio decision
-    ↓
-risk validation
-    ↓
-paper execution
-    ↓
-performance analysis
+```mermaid
+flowchart TD
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    A["historical market data"]:::node --> B["features"]:::node --> C["market regime"]:::node --> D["signal"]:::node --> E["portfolio decision"]:::node --> F["risk validation"]:::node --> G["paper execution"]:::node --> H["performance analysis"]:::node
 ```
 
 Prove the architecture with one coherent path.
@@ -1590,24 +1539,20 @@ Do not declare the repository migrated merely because files have been renamed.
 
 Migration is complete only when the architecture, implementation, tests, documentation, build system, and repository semantics consistently represent the new trading-agent platform.
 
+```mermaid
+flowchart BT
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    DataOp["DataOp"]:::node --> Op["Operator[TInput, TOutput]"]:::node
+    FeatureOp["FeatureOp"]:::node --> Op
+    RiskOp["RiskOp"]:::node --> Op
+    PortfolioRiskOp["PortfolioRiskOp"]:::node --> RiskOp
+```
 
-
-Operator<TInput, TOutput>
-        ↑
- ┌──────┼──────────┐
-Data   Feature    Risk
-Op      Op         Op
-                  ↑
-              PortfolioRiskOp
-
-Agent
-  = orchestrated composition of Operators
-
-Strategy
-  = domain-specific decision policy
-
-Service
-  = long-lived infrastructure/process
-
-Adapter
-  = external-system boundary
+```mermaid
+flowchart LR
+    classDef node fill:#FFACE9,stroke:#b76e79,color:#000000,stroke-width:2px
+    Agent["Agent"]:::node --- AgentDef["orchestrated composition of Operators"]:::node
+    Strategy["Strategy"]:::node --- StratDef["domain-specific decision policy"]:::node
+    Service["Service"]:::node --- SvcDef["long-lived infrastructure / process"]:::node
+    Adapter["Adapter"]:::node --- AdpDef["external-system boundary"]:::node
+```
