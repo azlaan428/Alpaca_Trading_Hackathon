@@ -36,3 +36,4 @@ ENUMERATED NESTED FORMAT (for AI agent digestion and instruction following):
             2.1.2.1. Need for speed and performance in trading scenarios.
             2.1.2.2. Goal to learn more about each language and its performance characteristics in trading contexts.
 
+3. When done, save this operation to /CHATS as chat md file. 
