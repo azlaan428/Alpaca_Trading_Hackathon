@@ -93,13 +93,13 @@
 .[Pp][Rr][Oo][Jj][Ee][Cc][Tt].*
 
 # --- Python ---
-__ [Pp][Yy][Cc][Aa][Cc][Hh][Ee]__/
+__[Pp][Yy][Cc][Aa][Cc][Hh][Ee]__/
 *.[Pp][Yy][Cc]
 *.[Pp][Yy][Oo]
 *.[Pp][Yy][Dd]
-*.[Pp][Yy],[Cc][Ll][Aa][Ss][Ss]
+*.[Pp][Yy].[Cc][Ll][Aa][Ss][Ss]
 *.[Pp][Yy][Cc].*
-*.[Pp][Yy],[Cc][Oo][Vv]
+*.[Pp][Yy].[Cc][Oo][Vv]
 .[Pp][Yy][Tt][Hh][Oo][Nn]-[Vv][Ee][Rr][Ss][Ii][Oo][Nn]
 
 # Python virtual environments
@@ -183,11 +183,51 @@ __ [Pp][Yy][Cc][Aa][Cc][Hh][Ee]__/
 
 # --- Local-only private dependencies ---
 [Cc][Oo][Dd][Ii][Nn][Gg]_[Ss][Tt][Dd][Ss]/**
-[Rr][Ee][Pp][[Oo][Rr][Tt][Ss]/**
+[Rr][Ee][Pp][Oo][Rr][Tt][Ss]/**
 [Pp][Ll][Aa][Nn][Ss]/**
 [Pp][Rr][Oo][Mm][Pp][Tt][Ss]/**
-[Cc][Oo][Dd][I][Nn][Gg]_[Ss][Tt][Aa][Nn][Dd][Aa][Rr][Dd][Ss]/**
+[Cc][Oo][Dd][Ii][Nn][Gg]_[Ss][Tt][Aa][Nn][Dd][Aa][Rr][Dd][Ss]/**
 [Vv][Oo][Ii][Cc][Ee][Ss][Hh][Ii][Ee][Ll][Dd][Vv]2-[Ss][Oo][Uu][Rr][Cc][Ee]-[Cc][Oo][Dd][Ee].*
 [Vv][Oo][Ii][Cc][Ee][Ss][Hh][Ii][Ee][Ll][Dd][Vv]2-[Ss][Oo][Uu][Rr][Cc][Ee]-[Cc][Oo][Dd][Ee]/**
 
-.[Ss][Ee][Cc][Rr][Ee][Tt]*/** 
+.[Ss][Ee][Cc][Rr][Ee][Tt]*/**
+
+# --- LaTeX ---
+*.[Aa][Uu][Xx]
+*.[Ll][Oo][Gg]
+*.[Tt][Oo][Cc]
+*.[Ll][Oo][Ff]
+*.[Ll][Oo][Tt]
+*.[Oo][Uu][Tt]
+*.[Bb][Bb][Ll]
+*.[Bb][Ll][Gg]
+*.[Ff][Ll][Ss]
+*.[Ff][Dd][Bb]_[Ll][Aa][Tt][Ee][Xx][Mm][Kk]
+*.[Ss][Yy][Nn][Cc][Tt][Ee][Xx].[Gg][Zz]
+*.[Ss][Yy][Nn][Cc][Tt][Ee][Xx]([Bb][Uu][Ss][Yy])
+*.[Ss][Nn][Mm]
+*.[Nn][Aa][Vv]
+*.[Vv][Rr][Bb]
+*.[Ss][Tt][Aa][Mm][Pp]
+*.[Mm][Kk][Tt][Cc]
+*.[Ll][Ss][Tt]
+*.[Aa][Cc][Nn]
+*.[Aa][Cc][Rr]
+*.[Aa][Ll][Gg]
+*.[Gg][Ll][Gg]
+*.[Gg][Ll][Oo]
+*.[Gg][Ll][Ss]
+*.[Gg][Ll][Ss][Dd][Ee][Ff][Ss]
+*.[Gg][Ll][Ss][Ee][Nn][Tt][Rr][Ii][Ee][Ss]
+*.[Xx][Dd][Yy]
+*.[Ii][Dd][Xx]
+*.[Ii][Nn][Dd]
+*.[Ii][Ll][Gg]
+*.[Gg][Ll][Gg]
+*.[Rr][Uu][Nn].[Xx][Mm][Ll]
+*.[Cc][Oo][Dd][Ee][Ss]
+*.[Pp][Dd][Ff]
+_[Mm][Ii][Nn][Tt][Ee][Dd]/
+_[Mm][Ii][Nn][Tt][Ee][Dd].[Ee][Rr][Rr]
+
+
