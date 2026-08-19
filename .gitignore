@@ -230,3 +230,15 @@ __[Pp][Yy][Cc][Aa][Cc][Hh][Ee]__/
 _[Mm][Ii][Nn][Tt][Ee][Dd]/
 _[Mm][Ii][Nn][Tt][Ee][Dd].[Ee][Rr][Rr]
 *.[Ll][Oo][Ee]
+
+# --- Alpaca Trading Hackathon ---
+# Real credentials — never commit
+.env
+
+# Named Python venvs for this project
+.venv-alpaca-trading/
+.venv-alpaca-*/
+
+# Keep VS Code MCP config (credentials are NOT stored in it — they use input prompts)
+!.vscode/
+!.vscode/mcp.json

@@ -1,0 +1,30 @@
+{
+  "mcp": {
+    "servers": {
+      "alpaca": {
+        "type": "stdio",
+        "command": "uvx",
+        "args": ["alpaca-mcp-server"],
+        "env": {
+          "ALPACA_API_KEY": "${input:alpaca_api_key}",
+          "ALPACA_SECRET_KEY": "${input:alpaca_secret_key}",
+          "ALPACA_PAPER_TRADE": "true"
+        }
+      }
+    },
+    "inputs": [
+      {
+        "id": "alpaca_api_key",
+        "type": "promptString",
+        "description": "Alpaca API Key (APCA-API-KEY-ID from paper dashboard)",
+        "password": false
+      },
+      {
+        "id": "alpaca_secret_key",
+        "type": "promptString",
+        "description": "Alpaca Secret Key (APCA-API-SECRET-KEY from paper dashboard)",
+        "password": true
+      }
+    ]
+  }
+}

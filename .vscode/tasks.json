@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Compile high_level_architecture_proof",
+			"type": "shell",
+			"command": "cd /d \"c:\\Users\\lordx\\Desktop\\Alpaca_Trading_Hackathon\\high_level_proofs\" && latexmk -pdf -interaction=nonstopmode -halt-on-error high_level_architecture_proof.tex",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}
