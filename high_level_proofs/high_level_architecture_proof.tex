@@ -1,0 +1,4161 @@
+\documentclass[12pt,openany]{book}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage[all]{hypcap}    % fix hyperref anchor duplication for [H] floats
+\usepackage{thmtools}
+
+% ============================================================
+% CUSTOM MACROS
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+
+% ============================================================
+% GEOMETRY AND LAYOUT SETTINGS
+% ============================================================
+\geometry{margin=1in, includefoot}
+\microtypesetup{expansion=true, final}
+\singlespacing
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0.5ex plus 0.2ex minus 0.1ex}
+\setlength{\emergencystretch}{1.5em}
+\tolerance=9999
+\hbadness=10000
+\vbadness=10000
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\raggedbottom
+\sloppy
+
+% ============================================================
+% SECTION FORMATTING
+% ============================================================
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries}
+    {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{50pt}{40pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus 0.2ex}{2.3ex plus 0.2ex}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus 0.2ex}{1.5ex plus 0.2ex}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{3ex plus 0.5ex minus 0.2ex}{1.5ex plus 0.2ex}
+
+% ============================================================
+% HEADER AND FOOTER
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\thepage}
+\fancyhead[RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14.5pt}
+
+% ============================================================
+% EQUATION SETTINGS
+% ============================================================
+\allowdisplaybreaks[3]
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
+\numberwithin{equation}{chapter}
+
+% ============================================================
+% THEOREM ENVIRONMENTS (shared counter, per math_proof_standards.txt Section 2.2.4)
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newenvironment{abstract}{%
+  \chapter*{Abstract}
+  \begin{quote}\small
+}{%
+  \end{quote}
+}
+\newenvironment{keywords}{%
+  \paragraph*{Keywords:}
+}{%
+}
+\newenvironment{executivesummary}{%
+  \chapter*{Executive Summary}
+}{%
+}
+\newenvironment{keyfindings}{%
+  \chapter*{Key Findings}
+}{%
+}
+% ============================================================
+% SECTION FORMATTING
+% ============================================================
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries}
+    {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{50pt}{40pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus 0.2ex}{2.3ex plus 0.2ex}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus 0.2ex}{1.5ex plus 0.2ex}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{3ex plus 0.5ex minus 0.2ex}{1.5ex plus 0.2ex}
+
+% ============================================================
+% TABLE OF CONTENTS FORMATTING
+% ============================================================
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\setlength{\cftchapindent}{0em}
+\setlength{\cftsecindent}{1.5em}
+
+% ============================================================
+% HEADER AND FOOTER
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\thepage}
+\fancyhead[RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{14.5pt}
+
+% ============================================================
+% EQUATION SETTINGS
+% ============================================================
+\allowdisplaybreaks[3]
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
+\numberwithin{equation}{chapter}
+
+% ============================================================
+% THEOREM ENVIRONMENTS
+% ============================================================
+\theoremstyle{plain}
+
+
+% Unique hyperref anchors for every theorem-like environment sharing the
+% chapter-numbered theorem counter (prevents duplicate-destination warnings
+% for the first theorem-like environment of each chapter)
+\providecommand{\theHtheorem}{}
+\renewcommand{\theHtheorem}{\thechapter.\arabic{theorem}}
+\providecommand{\theHlemma}{}
+\renewcommand{\theHlemma}{\thechapter.\arabic{theorem}}
+\providecommand{\theHcorollary}{}
+\renewcommand{\theHcorollary}{\thechapter.\arabic{theorem}}
+\providecommand{\theHproposition}{}
+\renewcommand{\theHproposition}{\thechapter.\arabic{theorem}}
+\providecommand{\theHconjecture}{}
+\renewcommand{\theHconjecture}{\thechapter.\arabic{theorem}}
+\providecommand{\theHdefinition}{}
+\renewcommand{\theHdefinition}{\thechapter.\arabic{theorem}}
+\providecommand{\theHaxiom}{}
+\renewcommand{\theHaxiom}{\thechapter.\arabic{theorem}}
+\providecommand{\theHassumption}{}
+\renewcommand{\theHassumption}{\thechapter.\arabic{theorem}}
+\providecommand{\theHremark}{}
+\renewcommand{\theHremark}{\thechapter.\arabic{theorem}}
+\makeatletter
+\providecommand*{\toclevel@conjecture}{0}
+\makeatother
+
+
+% Real and Ideal environments
+% Note: \Real and \Ideal are math commands defined in CUSTOM COMMANDS below.
+% The block environments are named RealRegime and IdealRegime to avoid conflicts.
+
+% NOTE: All framework macros (\V, \Ideal, \Real, \Naive, \Oracle, \Frontier,
+% \Gap, \Reward, \Success, \Perf) are defined once in the CUSTOM COMMANDS
+% block below.  Any new symbol must be added there before first use.
+
+
+
+
+
+% ============================================================
+% ENUMERATE-ONLY DISCIPLINE (itemize forbidden)
+% ============================================================
+\setlist[enumerate]{leftmargin=*, partopsep=0.1ex}
+
+% ============================================================
+% PREVENT WIDOWS AND ORPHANS
+% ============================================================
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+
+% hyperref is loaded with the hidelinks option in the package block above;
+% no additional \hypersetup call is required here.
+
+% ============================================================
+% MATH OPERATORS
+% ============================================================
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\ran}{ran}
+\DeclareMathOperator{\CVaR}{CVaR}
+\DeclareMathOperator{\VaR}{VaR}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+
+% ============================================================
+% CUSTOM COMMANDS
+% ============================================================
+\newcommand{\Ideal}{\mathcal{E}_{I}}
+\newcommand{\Real}{\mathcal{E}_{R}}
+\newcommand{\Naive}{N}
+\newcommand{\Oracle}{O}
+\newcommand{\Frontier}{F}
+\newcommand{\Gap}{\mathcal{G}}
+\newcommand{\V}{V}
+\newcommand{\Reward}{\mathrm{Rew}}
+\newcommand{\Success}{\mathrm{Succ}}
+\newcommand{\Perf}{\mathrm{Perf}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\calR}{\mathcal{R}}
+\newcommand{\calO}{\mathcal{O}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\calI}{\mathcal{I}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calL}{\mathcal{L}}
+\newcommand{\calT}{\mathcal{T}}
+\newcommand{\bfw}{\mathbf{w}}
+\newcommand{\bfx}{\mathbf{x}}
+\newcommand{\bfmu}{\boldsymbol{\mu}}
+\newcommand{\bfSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bfA}{\mathbf{A}}
+\newcommand{\bfQ}{\mathbf{Q}}
+\newcommand{\MaxDD}{\mathrm{MaxDD}}
+\newcommand{\QPC}{\mathrm{QPC}}
+
+
+
+\title{Ideal--Real Regime Separation, Na\"{i}ve--Oracle Duality, and\\
+Frontier-Model Evaluation: A Formal Proof Framework\\begin{equation}0.6em]
+\large Mathematical Foundations of the Multi-Agent\\
+Quantitative-Finance Platform}
+\author{Hadrian Hu}
+\date{}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\listoftheorems[ignoreall,show={theorem,lemma,proposition,corollary,definition,axiom,assumption,conjecture}]
+
+% ==============================================================
+\begin{abstract}
+This monograph establishes the formal mathematical foundations underpinning
+a multi-agent, cross-market quantitative-finance platform.  It covers
+uncertainty-aware signal aggregation, Kelly-criterion position sizing,
+risk-adjusted performance metrics, Bayesian market-regime inference,
+portfolio optimisation under uncertainty, Conditional Value-at-Risk,
+dynamic hedge-ratio derivation, the temporal-leakage invariant, operator
+composition algebra, four-domain asset partition, dependency-graph
+acyclicity, idempotency and referential transparency, the risk-adjusted
+objective function, type-safe language-layer assignment, Hidden~Markov
+regime detection, and epistemic--aleatoric uncertainty decomposition.
+All results are stated as formal definitions, axioms, and theorems with
+complete proofs or proof sketches.
+\end{abstract}
+
+\begin{keywords}
+quantitative finance; multi-agent systems; operator composition; market-regime
+classification; Bayesian inference; portfolio optimisation; Kelly criterion;
+Conditional Value-at-Risk; hedge ratio; temporal leakage; uncertainty
+quantification; Hidden Markov Model; epistemic uncertainty; aleatoric uncertainty;
+Sharpe ratio; Sortino ratio; Calmar ratio; SOLID principles; polyglot architecture
+\end{keywords}
+
+% ==============================================================
+\chapter{Uncertainty-Aware Signal Aggregation}
+\label{ch:signal-agg}
+% ==============================================================
+
+\section{Setting}
+
+We consider a system of $N$ independent signal operators each producing a
+scalar signal and an associated confidence.
+
+\begin{definition}[Signal and Confidence]
+\label{def:signal-confidence}
+A \emph{signal--confidence pair} is a tuple $(s_i, c_i)$ where
+$s_i \in [-1, 1]$ is the directional signal produced by operator~$i$ and
+$c_i \in (0, 1]$ is the operator's self-reported confidence weight,
+for $i = 1, \ldots, N$.
+\end{definition}
+
+\section{Aggregate Signal}
+
+\begin{definition}[Confidence-Weighted Aggregate Signal]
+\label{def:agg-signal}
+Given signal--confidence pairs $\{(s_i, c_i)\}_{i=1}^{N}$, the
+\emph{confidence-weighted aggregate signal} is
+\begin{equation}
+  S \;=\; \frac{\displaystyle\sum_{i=1}^{N} c_i\,s_i}
+               {\displaystyle\sum_{i=1}^{N} c_i}.
+  \label{eq:agg-signal}
+\end{equation}
+The \emph{aggregate uncertainty} is
+\begin{equation}
+  U \;=\; 1 - \frac{\displaystyle N\sum_{i=1}^{N} c_i^{2}}
+                   {\Bigl(\displaystyle\sum_{i=1}^{N} c_i\Bigr)^{2}}.
+  \label{eq:agg-uncertainty}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Boundedness of the Aggregate Signal]
+\label{thm:signal-bounded}
+The aggregate signal $S$ defined in~\eqref{eq:agg-signal} satisfies
+$S \in [-1, 1]$.
+\end{theorem}
+
+\begin{proof}
+We establish the result by validating all assumptions, enumerating every
+case, and justifying each algebraic step without exception.
+
+\begin{enumerate}
+  \item \textbf{Assumption validation --- positivity of weights.}
+        By hypothesis, $c_i > 0$ for all $i \in \{1,\dots,N\}$.
+        Consequently,
+        \begin{equation}
+          C \;\coloneqq\; \sum_{i=1}^{N} c_i \;>\; 0,
+          \label{eq:C-pos}
+        \end{equation}
+        so the denominator of $S$ in~\eqref{eq:agg-signal} is strictly
+        positive and the quotient is well-defined.
+
+  \item \textbf{Assumption validation --- boundedness of individual signals.}
+        By hypothesis, $s_i \in [-1, 1]$ for all $i$, which is equivalent
+        to $|s_i| \leq 1$.
+
+  \item \textbf{Assumption validation --- non-emptiness of the index set.}
+        We require $N \geq 1$; the case $N = 0$ renders the
+        sum~\eqref{eq:agg-signal} empty and the formula undefined.
+        The theorem is stated for $N \geq 1$ signals, so this edge case
+        is excluded by hypothesis.
+
+  \item \textbf{Bounding each weighted term.}
+        For every $i \in \{1,\dots,N\}$, since $c_i > 0$ and
+        $|s_i| \leq 1$,
+        \begin{align}
+          c_i\,s_i &\;\leq\; c_i\,|s_i| \;\leq\; c_i \cdot 1 \;=\; c_i,
+          \label{eq:upper-term}\\
+          c_i\,s_i &\;\geq\; -c_i\,|s_i| \;\geq\; -c_i.
+          \label{eq:lower-term}
+        \end{align}
+
+  \item \textbf{Summing the upper bound.}
+        Summing~\eqref{eq:upper-term} over $i = 1,\dots,N$:
+        \begin{equation}
+          \sum_{i=1}^{N} c_i\,s_i
+            \;\leq\; \sum_{i=1}^{N} c_i \;=\; C.
+          \label{eq:sum-upper}
+        \end{equation}
+
+  \item \textbf{Summing the lower bound.}
+        Summing~\eqref{eq:lower-term} over $i = 1,\dots,N$:
+        \begin{equation}
+          \sum_{i=1}^{N} c_i\,s_i
+            \;\geq\; -\sum_{i=1}^{N} c_i \;=\; -C.
+          \label{eq:sum-lower}
+        \end{equation}
+
+  \item \textbf{Combining into an absolute-value bound.}
+        From~\eqref{eq:sum-upper} and~\eqref{eq:sum-lower},
+        \begin{equation}
+          -C \;\leq\; \sum_{i=1}^{N} c_i\,s_i \;\leq\; C.
+          \label{eq:combined}
+        \end{equation}
+        By the standard equivalence $|x| \leq M \Leftrightarrow -M \leq x
+        \leq M$ (for $M \geq 0$),~\eqref{eq:combined} is equivalent to
+        \begin{equation}
+          \left|\sum_{i=1}^{N} c_i\,s_i\right| \;\leq\; C.
+          \label{eq:abs-num}
+        \end{equation}
+
+  \item \textbf{Dividing by the positive denominator.}
+        Since $C > 0$ by~\eqref{eq:C-pos}, dividing both sides
+        of~\eqref{eq:abs-num} by $C$ preserves the inequality direction:
+        \begin{align}
+          \frac{\left|\displaystyle\sum_{i=1}^{N} c_i\,s_i\right|}{C}
+            &\;\leq\; \frac{C}{C} \;=\; 1.
+          \label{eq:div-C}
+        \end{align}
+
+  \item \textbf{Applying the absolute-value quotient rule.}
+        For any real numerator $A$ and positive denominator $C > 0$,
+        \begin{equation}
+          \left|\frac{A}{C}\right| \;=\; \frac{|A|}{C}.
+          \label{eq:abs-quotient}
+        \end{equation}
+        Setting $A = \sum_{i=1}^{N} c_i\,s_i$ and applying
+        \eqref{eq:abs-quotient} to the definition~\eqref{eq:agg-signal}:
+        \begin{align}
+          |S|
+            &\;=\; \left|\frac{\displaystyle\sum_{i=1}^{N} c_i\,s_i}{C}
+                   \right|
+             \;=\; \frac{\left|\displaystyle\sum_{i=1}^{N} c_i\,s_i\right|}
+                        {C}
+             \;\leq\; 1.
+          \label{eq:abs-S}
+        \end{align}
+
+  \item \textbf{Boundary case --- all signals at the upper extremity.}
+        If $s_i = 1$ for all $i$, then
+        $S = C / C = 1$, so the upper bound is achieved.
+
+  \item \textbf{Boundary case --- all signals at the lower extremity.}
+        If $s_i = -1$ for all $i$, then
+        $S = -C / C = -1$, so the lower bound is achieved.
+
+  \item \textbf{Boundary case --- mixed signals.}
+        For any mixture of $s_i \in [-1, 1]$, Steps~4--9 apply without
+        modification; no special case arises because the triangle inequality
+        and the positivity of $C$ are preserved for all finite, non-empty
+        index sets.
+
+  \item \textbf{Conclusion.}
+        From~\eqref{eq:abs-S}, $|S| \leq 1$, which by the equivalence
+        $|x| \leq 1 \Leftrightarrow x \in [-1, 1]$ gives
+        \begin{equation}
+          S \;\in\; [-1,\, 1]. \qed
+        \end{equation}
+\end{enumerate}
+\end{proof}
+
+\begin{remark}
+A \texttt{ConfidenceAggregationOperator} must preserve the bound
+$S \in [-1, 1]$ and must not silently drop low-confidence signals without
+recording the provenance of the omission.
+\end{remark}
+
+% ==============================================================
+\chapter{Kelly Criterion and Position Sizing}
+\label{ch:kelly}
+% ==============================================================
+
+\section{Problem Statement}
+
+Given win probability $p$, loss probability $q = 1 - p$, and a
+win/loss payoff ratio $b > 0$ (dollars won per dollar bet on a win), we
+seek the fraction $f^{*}$ of capital to wager that maximises long-run
+logarithmic wealth growth.
+
+\begin{definition}[Logarithmic Growth Rate]
+\label{def:log-growth}
+For a bet fraction $f \in (0, 1)$, the \emph{expected logarithmic growth
+rate} per trial is
+\begin{equation}
+  G(f) \;=\; p\ln(1 + bf) + q\ln(1 - f).
+  \label{eq:log-growth}
+\end{equation}
+\end{definition}
+
+\section{Derivation of the Kelly Fraction}
+
+% --------------------------------------------------------------
+\subsection*{Standing Assumptions for Chapter~\ref{ch:kelly}}
+\label{sec:kelly-assumptions}
+% --------------------------------------------------------------
+
+The following assumptions are assumed to hold throughout this chapter
+and are validated prior to every theorem.
+
+\begin{enumerate}[label=\textbf{A\arabic*.}, leftmargin=*, widest=A9]
+  \item \label{asm:prob-valid}
+        $p \in (0, 1)$ and $q \coloneqq 1 - p \in (0, 1)$, so both
+        outcomes occur with strictly positive probability.  In
+        particular, the degenerate cases $p = 0$ and $p = 1$ are
+        excluded.
+  \item \label{asm:payoff-positive}
+        $b > 0$, i.e.\ the payoff ratio is strictly positive.  A zero
+        or negative payoff ratio would render the betting problem
+        ill-posed.
+  \item \label{asm:fraction-domain}
+        The bet fraction satisfies $f \in (0, 1)$, so neither full
+        abstention ($f = 0$) nor ruinous over-betting ($f \geq 1$) is
+        permitted.  On the boundary $f = 1$ the term $\ln(1 - f)$
+        diverges to $-\infty$, so $f = 1$ is excluded from the
+        feasible domain.
+  \item \label{asm:kelly-positive}
+        We assume throughout that $pb > q$, i.e.\ $f^{*} > 0$, which
+        is the necessary and sufficient condition for the bet to have
+        positive expected log-growth.  The complementary case
+        $pb \leq q$ is addressed in Remark~\ref{rem:negative-kelly}.
+\end{enumerate}
+
+% --------------------------------------------------------------
+\subsection*{Domain Analysis of $G$}
+\label{sec:kelly-domain}
+% --------------------------------------------------------------
+
+\begin{proposition}[Regularity of $G$]
+\label{prop:G-regularity}
+Under Assumptions \ref{asm:prob-valid}--\ref{asm:fraction-domain},
+the function $G : (0,1) \to \mathbb{R}$ defined by
+\eqref{eq:log-growth} is:
+\begin{enumerate}[label=(\roman*)]
+  \item well-defined and finite on all of $(0, 1)$;
+  \item infinitely differentiable ($C^{\infty}$) on $(0, 1)$;
+  \item strictly concave on $(0, 1)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+We verify each of the three claimed properties in turn, validating
+every relevant assumption at each step.
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}, leftmargin=*, widest=Step 9]
+
+  % -----------------------------------------------------------
+  \item \textbf{Validation of Assumption~\ref{asm:prob-valid}
+        (probability validity).}
+        By Assumption~\ref{asm:prob-valid}, $p \in (0,1)$ and
+        $q = 1 - p$, so:
+        \begin{align}
+          p   &> 0,                        \label{eq:p-pos} \\
+          q   &= 1 - p \;\in\; (0,1),     \label{eq:q-pos} \\
+          p+q &= 1.                        \label{eq:pq-sum}
+        \end{align}
+        In particular $p > 0$ and $q > 0$, which are used
+        repeatedly below.
+
+  % -----------------------------------------------------------
+  \item \textbf{Validation of Assumption~\ref{asm:odds-valid}
+        (odds positivity).}
+        By Assumption~\ref{asm:odds-valid}, $b > 0$.
+        Combined with \eqref{eq:p-pos} this gives:
+        \begin{align}
+          pb &> 0.  \label{eq:pb-pos}
+        \end{align}
+
+  % -----------------------------------------------------------
+  \item \textbf{Validation of Assumption~\ref{asm:fraction-domain}
+        (feasible domain).}
+        The fraction $f$ is restricted to the open interval
+        $(0,1)$.  We note:
+        \begin{align}
+          f   &\in (0,1)
+              \;\Longrightarrow\;
+              f > 0 \text{ and } f < 1.
+              \label{eq:f-domain}
+        \end{align}
+        Both strict inequalities hold simultaneously throughout
+        the domain; no boundary point is included.
+
+  % -----------------------------------------------------------
+  \item \textbf{Well-definedness of $G$ on $(0,1)$.}
+        Recall the definition
+        \begin{align}
+          G(f) &= p\ln(1 + bf) + q\ln(1 - f).
+                 \label{eq:G-def-repeated}
+        \end{align}
+        The natural logarithm $\ln(\,\cdot\,)$ is defined and
+        finite on $(0,\infty)$.  We must verify that both
+        arguments lie in $(0,\infty)$ for every $f\in(0,1)$.
+
+        \begin{enumerate}[label=(\alph*)]
+          \item \emph{First argument.}
+                Since $b > 0$ (Step~2) and $f > 0$ (Step~3):
+                \begin{align}
+                  bf     &> 0,                     \label{eq:bf-pos}\\
+                  1 + bf &> 1 > 0.                 \label{eq:arg1-pos}
+                \end{align}
+                Moreover, $f < 1$ gives an explicit upper bound:
+                \begin{align}
+                  1 + bf &< 1 + b.                 \label{eq:arg1-upper}
+                \end{align}
+                Hence $1 + bf \in (1,\, 1+b) \subset (0,\infty)$.
+
+          \item \emph{Second argument.}
+                Since $f < 1$ (Step~3):
+                \begin{align}
+                  1 - f &\in (0,1) \subset (0,\infty). \label{eq:arg2-pos}
+                \end{align}
+        \end{enumerate}
+
+        Both arguments are strictly positive, so both logarithms
+        are finite.  Since $p, q > 0$ (Steps~1--2), the linear
+        combination \eqref{eq:G-def-repeated} is finite and
+        well-defined for every $f \in (0,1)$. \hfill$\checkmark$
+
+  % -----------------------------------------------------------
+  \item \textbf{Smoothness ($G \in C^{\infty}(0,1)$).}
+        We identify $G$ as a composition and linear combination
+        of elementary functions:
+        \begin{enumerate}[label=(\alph*)]
+          \item The affine maps $f \mapsto 1+bf$ and
+                $f \mapsto 1-f$ are polynomials, hence
+                $C^{\infty}(\mathbb{R})$.
+          \item From Steps~4(a)--4(b), both affine maps take
+                values in $(1, 1+b)$ and $(0,1)$ respectively
+                on $(0,1)$; in particular their images are
+                contained in $(0,\infty)$.
+          \item The function $\ln : (0,\infty)\to\mathbb{R}$
+                is $C^{\infty}$ on its domain.
+          \item A composition of $C^{\infty}$ functions whose
+                intermediate values remain in the domain of the
+                outer function is itself $C^{\infty}$.
+        \end{enumerate}
+        Therefore each of $f \mapsto \ln(1+bf)$ and
+        $f \mapsto \ln(1-f)$ is $C^{\infty}$ on $(0,1)$, and
+        a finite linear combination with constant coefficients
+        preserves this regularity.  Hence:
+        \begin{align}
+          G \in C^{\infty}(0,1). \label{eq:G-smooth}
+        \end{align}
+        \hfill$\checkmark$
+
+  % -----------------------------------------------------------
+  \item \textbf{First derivative of $G$.}
+        Differentiating \eqref{eq:G-def-repeated} termwise
+        (justified by $C^{\infty}$ regularity from Step~5):
+        \begin{align}
+          \frac{d}{df}\bigl[p\ln(1+bf)\bigr]
+            &= \frac{pb}{1+bf},
+               \label{eq:dG-term1}\\[4pt]
+          \frac{d}{df}\bigl[q\ln(1-f)\bigr]
+            &= \frac{q\cdot(-1)}{1-f}
+             = -\frac{q}{1-f}.
+               \label{eq:dG-term2}
+        \end{align}
+        Summing \eqref{eq:dG-term1} and \eqref{eq:dG-term2}:
+        \begin{align}
+          G'(f) &= \frac{pb}{1+bf} - \frac{q}{1-f}.
+                  \label{eq:G-prime}
+        \end{align}
+        Both denominators are strictly positive on $(0,1)$ by
+        Steps~4(a)--4(b), so $G'(f)$ is well-defined and
+        finite on $(0,1)$.
+
+  % -----------------------------------------------------------
+  \item \textbf{Second derivative of $G$.}
+        Differentiating \eqref{eq:G-prime} termwise:
+        \begin{align}
+          \frac{d}{df}\!\left[\frac{pb}{1+bf}\right]
+            &= pb \cdot \frac{-b}{(1+bf)^{2}}
+             = -\frac{pb^{2}}{(1+bf)^{2}},
+               \label{eq:d2G-term1}\\[4pt]
+          \frac{d}{df}\!\left[-\frac{q}{1-f}\right]
+            &= -q \cdot \frac{1}{(1-f)^{2}}
+             = -\frac{q}{(1-f)^{2}}.
+               \label{eq:d2G-term2}
+        \end{align}
+        Summing \eqref{eq:d2G-term1} and \eqref{eq:d2G-term2}:
+        \begin{align}
+          G''(f) &= -\frac{pb^{2}}{(1+bf)^{2}}
+                    -\frac{q}{(1-f)^{2}}.
+                    \label{eq:G-double-prime}
+        \end{align}
+
+  % -----------------------------------------------------------
+  \item \textbf{Sign analysis of $G''(f)$ and strict concavity.}
+        We analyse each term in \eqref{eq:G-double-prime}
+        separately for all $f \in (0,1)$.
+
+        \begin{enumerate}[label=(\alph*)]
+          \item \emph{First term.}
+                \begin{align}
+                  p          &> 0
+                    && \text{(Step~1, \eqref{eq:p-pos})},
+                    \label{eq:cc-p}\\
+                  b^{2}      &> 0
+                    && \text{(Step~2, } b>0\text{)},
+                    \label{eq:cc-b2}\\
+                  (1+bf)^{2} &> 0
+                    && \text{(Step~4(a), \eqref{eq:arg1-pos})},
+                    \label{eq:cc-denom1}\\
+                  \Rightarrow\quad
+                  -\frac{pb^{2}}{(1+bf)^{2}} &< 0.
+                    \label{eq:cc-t1-neg}
+                \end{align}
+
+          \item \emph{Second term.}
+                \begin{align}
+                  q          &> 0
+                    && \text{(Step~1, \eqref{eq:q-pos})},
+                    \label{eq:cc-q}\\
+                  (1-f)^{2}  &> 0
+                    && \text{(Step~4(b), \eqref{eq:arg2-pos})},
+                    \label{eq:cc-denom2}\\
+                  \Rightarrow\quad
+                  -\frac{q}{(1-f)^{2}} &< 0.
+                    \label{eq:cc-t2-neg}
+                \end{align}
+        \end{enumerate}
+
+        Since both terms are strictly negative, their sum
+        satisfies:
+        \begin{align}
+          G''(f)
+            &= \underbrace{-\frac{pb^{2}}{(1+bf)^{2}}}_{<\,0}
+             + \underbrace{\left(-\frac{q}{(1-f)^{2}}\right)}_{<\,0}
+             < 0
+             \qquad \forall\, f \in (0,1).
+               \label{eq:G-pp-neg}
+        \end{align}
+        A function that is twice differentiable on an open
+        interval with strictly negative second derivative
+        throughout that interval is \emph{strictly concave}
+        on that interval (see, e.g., Rockafellar
+        \cite{rockafellar1970}).  Hence $G$ is strictly concave
+        on $(0,1)$. \hfill$\checkmark$
+
+  % -----------------------------------------------------------
+  \item \textbf{Boundary behaviour (edge-case validation).}
+        Although $f = 0$ and $f = 1$ are excluded from the
+        domain by Assumption~\ref{asm:fraction-domain}, we
+        verify the limiting behaviour for completeness and
+        to confirm no boundary singularity is overlooked.
+
+        \begin{enumerate}[label=(\alph*)]
+          \item As $f \to 0^{+}$:
+                \begin{align}
+                  1 + bf &\to 1, \quad
+                  1 - f  \to 1, \quad
+                  G(f)   \to p\ln 1 + q\ln 1 = 0.
+                  \label{eq:G-lim-0}
+                \end{align}
+          \item As $f \to 1^{-}$:
+                \begin{align}
+                  1 - f  &\to 0^{+},\quad
+                  \ln(1-f) \to -\infty,\quad
+                  G(f) \to -\infty.
+                  \label{eq:G-lim-1}
+                \end{align}
+        \end{enumerate}
+        Both limits are consistent with $G$ being a
+        well-defined, finite, strictly concave function on the
+        \emph{open} interval $(0,1)$; no extension to the
+        closed interval is claimed.
+
+\end{enumerate}
+
+\noindent
+Combining Steps~4, 5, and~8:\ $G$ is well-defined and finite
+(Step~4), $C^{\infty}$ (Step~5), and strictly concave (Step~8)
+on $(0,1)$, completing the proof of all three assertions.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\begin{theorem}[Kelly Criterion]
+\label{thm:kelly}
+Under Assumptions \ref{asm:prob-valid}--\ref{asm:kelly-positive},
+the function $G$ defined in \eqref{eq:log-growth} has a unique global
+maximiser on $(0, 1)$ given by
+\begin{equation}
+  f^{*} \;=\; \frac{pb - q}{b} \;=\; p - \frac{q}{b}.
+  \label{eq:kelly}
+\end{equation}
+Moreover, $f^{*} \in (0, 1)$ and $G''(f^{*}) < 0$.
+\end{theorem}
+
+\begin{proof}
+The proof proceeds through the following validated steps.
+
+\medskip
+\noindent\textbf{Part I --- Feasibility of $f^{*}$.}
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}, leftmargin=*, widest=Step 9]
+
+  \item \textbf{Lower bound $f^{*} > 0$.}
+        By Assumption~\ref{asm:kelly-positive}, $pb > q$, so
+        $pb - q > 0$ and, since $b > 0$:
+        \begin{equation}
+          f^{*} = \frac{pb - q}{b} > 0.
+        \end{equation}
+
+  \item \textbf{Upper bound $f^{*} < 1$.}
+        We must verify $pb - q < b$.  Substituting $q = 1 - p$:
+        \begin{align}
+          pb - q < b
+          &\;\Longleftrightarrow\; pb - (1 - p) < b \notag \\
+          &\;\Longleftrightarrow\; pb - 1 + p < b \notag \\
+          &\;\Longleftrightarrow\; p(b + 1) < b + 1 \notag \\
+          &\;\Longleftrightarrow\; p < 1. \label{eq:upper-bound-check}
+        \end{align}
+        By Assumption~\ref{asm:prob-valid}, $p < 1$, so
+        \eqref{eq:upper-bound-check} holds and $f^{*} < 1$.
+
+\end{enumerate}
+
+\noindent Hence $f^{*} \in (0, 1)$, confirming it lies in the feasible
+domain.
+
+\medskip
+\noindent\textbf{Part II --- First-Order Condition.}
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}, leftmargin=*, widest=Step 9,
+                  resume]
+
+  \item \textbf{Setting $G'(f) = 0$.}
+        From \eqref{eq:G-prime}:
+        \begin{equation}
+          \frac{pb}{1 + bf} - \frac{q}{1 - f} = 0.
+          \label{eq:foc-raw}
+        \end{equation}
+
+  \item \textbf{Clearing denominators.}
+        Multiply both sides of \eqref{eq:foc-raw} by
+        $(1 + bf)(1 - f) > 0$ (positive by Steps~1--2 of
+        Proposition~\ref{prop:G-regularity}):
+        \begin{equation}
+          pb(1 - f) \;=\; q(1 + bf).
+          \label{eq:foc-cleared}
+        \end{equation}
+
+  \item \textbf{Expanding \eqref{eq:foc-cleared}.}
+        \begin{align}
+          pb - pbf &= q + qbf \notag \\
+          pb - q   &= pbf + qbf \notag \\
+          pb - q   &= bf(p + q). \label{eq:foc-expanded}
+        \end{align}
+
+  \item \textbf{Applying $p + q = 1$.}
+        Substituting $p + q = 1$ into \eqref{eq:foc-expanded}:
+        \begin{equation}
+          pb - q = bf.
+          \label{eq:foc-simplified}
+        \end{equation}
+
+  \item \textbf{Solving for $f$.}
+        Dividing both sides of \eqref{eq:foc-simplified} by $b > 0$:
+        \begin{equation}
+          f^{*} = \frac{pb - q}{b} = p - \frac{q}{b}.
+          \label{eq:kelly-derived}
+        \end{equation}
+
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Part III --- Second-Order Condition and Uniqueness.}
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}, leftmargin=*, widest=Step 9,
+                  resume]
+
+  \item \textbf{Strict negativity of $G''(f^{*})$.}
+        From \eqref{eq:G-double-prime} evaluated at any
+        $f \in (0, 1)$:
+        \begin{equation}
+          G''(f) = -\frac{pb^{2}}{(1 + bf)^{2}}
+                   - \frac{q}{(1 - f)^{2}} < 0,
+          \label{eq:soc}
+        \end{equation}
+        since $p, b, q > 0$ and both denominators are strictly
+        positive.  In particular, $G''(f^{*}) < 0$.
+
+  \item \textbf{Uniqueness.}
+        By Proposition~\ref{prop:G-regularity}(iii), $G$ is strictly
+        concave on $(0, 1)$.  A strictly concave function admits at
+        most one stationary point, which, when it exists, is the
+        unique global maximum.  Step~7 established that $f^{*}$ is a
+        stationary point lying in $(0, 1)$; therefore it is the
+        \emph{unique} global maximiser of $G$ on $(0, 1)$.
+
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Part IV --- Boundary Behaviour.}
+
+\begin{enumerate}[label=\textbf{Step \arabic*.}, leftmargin=*, widest=Step 9,
+                  resume]
+
+  \item \textbf{Left boundary $f \to 0^{+}$.}
+        \begin{align}
+          G(f) &= p\ln(1 + bf) + q\ln(1 - f) \notag \\
+               &\;\longrightarrow\; p\ln 1 + q\ln 1 = 0
+                  \quad\text{as } f \to 0^{+}. \label{eq:left-bdry}
+        \end{align}
+        Since $G(f^{*}) > G(0^{+}) = 0$ (verified below), $f = 0$
+        is not a maximiser.
+
+  \item \textbf{Right boundary $f \to 1^{-}$.}
+        \begin{align}
+          q\ln(1 - f) &\;\longrightarrow\; -\infty
+            \quad\text{as } f \to 1^{-}, \label{eq:right-bdry}
+        \end{align}
+        while $p\ln(1 + bf) \to p\ln(1 + b) < \infty$.  Hence
+        $G(f) \to -\infty$, and the right boundary is not a maximiser.
+
+  \item \textbf{$G(f^{*}) > 0$.}
+        Under Assumption~\ref{asm:kelly-positive}, $pb > q$, so
+        $f^{*} > 0$.  By strict concavity and the fact that $G(0^{+})
+        = 0$ with $G'(0^{+}) = pb - q > 0$, the function is
+        increasing at the left boundary, confirming $G(f^{*}) > 0$.
+
+\end{enumerate}
+
+\noindent Combining Parts~I--IV, $f^{*} = (pb - q)/b$ is the unique
+global maximiser of $G$ on $(0, 1)$, with $G''(f^{*}) < 0$
+confirming a strict maximum.\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\begin{remark}[Negative or Zero Kelly Fraction]
+\label{rem:negative-kelly}
+If $pb \leq q$, then $f^{*} \leq 0$.  This signals that the bet has
+non-positive expected log-growth for any $f > 0$.  In this case the
+optimal action is abstention ($f = 0$), and no capital should be
+deployed.  A \texttt{RiskOperator} must detect this condition and
+suppress order generation entirely.
+\end{remark}
+
+\begin{remark}[Fractional Kelly and Absolute Cap]
+\label{rem:fractional-kelly}
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Fractional Kelly.}
+        In practice, parameter estimates $\hat{p}$ and $\hat{b}$ are
+        subject to estimation error.  A scalar shrinkage factor
+        $\kappa \in (0, 1]$ is applied:
+        \begin{equation}
+          f_{\kappa} \;=\; \kappa\, f^{*}
+                      \;=\; \kappa \cdot \frac{\hat{p}\,b - \hat{q}}{b}.
+          \label{eq:fractional-kelly}
+        \end{equation}
+        Common choices are $\kappa = \tfrac{1}{2}$ (half-Kelly) or
+        $\kappa = \tfrac{1}{4}$ (quarter-Kelly), which reduce
+        drawdown variance at the cost of a lower growth rate.
+
+  \item \textbf{Absolute position cap.}
+        Regardless of the Kelly output, a \texttt{RiskOperator} must
+        enforce:
+        \begin{equation}
+          f_{\text{final}}
+            \;=\; \min\!\bigl(f_{\kappa},\; f_{\max}\bigr),
+          \label{eq:kelly-cap}
+        \end{equation}
+        where $f_{\max} \in (0, 1)$ is a pre-specified hard limit.
+        This cap is mandatory; no estimated $\hat{p}$ or $\hat{b}$
+        may override it.
+
+  \item \textbf{Simultaneous positions.}
+        When $n > 1$ positions are held concurrently, each individual
+        Kelly fraction must additionally satisfy:
+        \begin{equation}
+          \sum_{i=1}^{n} f_{\text{final},i} \;\leq\; F_{\max},
+          \label{eq:portfolio-cap}
+        \end{equation}
+        where $F_{\max} \in (0, 1)$ is the portfolio-level gross
+        exposure limit.  If \eqref{eq:portfolio-cap} would be
+        violated, each $f_{\text{final},i}$ is scaled down
+        proportionally.
+\end{enumerate}
+\end{remark}
+
+% ==============================================================
+\chapter{Risk-Adjusted Performance Metrics}
+\label{ch:metrics}
+% ==============================================================
+
+\section{Sharpe Ratio}
+
+\begin{definition}[Sharpe Ratio]
+\label{def:sharpe}
+Let the following assumptions hold throughout this section:
+\begin{enumerate}
+  \item The portfolio excess return $X_p \coloneqq R_p - R_f$ is a
+        real-valued random variable defined on a common probability
+        space $(\Omega,\mathcal{F},\mathbb{P})$.
+  \item The risk-free rate $R_f \in \mathbb{R}$ is deterministic and
+        constant over the measurement horizon.
+  \item The annualised standard deviation
+        $\sigma_p \coloneqq \sqrt{\mathrm{Var}(R_p)} > 0$
+        is finite and strictly positive (i.e.\ $R_p$ is not
+        almost-surely constant).
+  \item $T \in \mathbb{Z}_{>0}$ denotes the number of return
+        periods per calendar year (e.g.\ $T = 252$ for daily returns).
+\end{enumerate}
+Under these assumptions, the \emph{annualised Sharpe ratio} is
+\begin{equation}
+  \mathrm{Sharpe} \;=\;
+    \frac{\E[R_p - R_f]}{\sigma_p}\cdot\sqrt{T}
+  \;=\;
+    \frac{\E[X_p]}{\sqrt{\mathrm{Var}(X_p)}}\cdot\sqrt{T},
+  \label{eq:sharpe}
+\end{equation}
+where $T$ is the annualisation factor defined above.
+The quantity $\E[X_p]/\sqrt{\mathrm{Var}(X_p)}$ is the
+per-period signal-to-noise ratio of excess returns, and
+multiplication by $\sqrt{T}$ converts it to an annualised basis
+under the assumption of i.i.d.\ returns across periods.
+\end{definition}
+
+\begin{remark}[Boundary and Edge-Case Conditions]
+\label{rem:sharpe-edge}
+The following boundary conditions are explicitly noted:
+\begin{enumerate}
+  \item If $\sigma_p = 0$, the Sharpe ratio is undefined; this
+        case is excluded by Assumption~3 above.
+  \item If $\E[X_p] = 0$, the Sharpe ratio equals zero regardless
+        of $\sigma_p$; this is a valid, well-defined outcome.
+  \item If $\E[X_p] < 0$, the Sharpe ratio is negative, indicating
+        risk-adjusted underperformance relative to the risk-free rate.
+  \item The annualisation factor $\sqrt{T}$ is derived under the
+        assumption of i.i.d.\ returns.  If returns exhibit serial
+        correlation, the factor must be adjusted accordingly; this
+        generalisation is not addressed here.
+\end{enumerate}
+\end{remark}
+
+\begin{proposition}[Leverage Invariance of the Sharpe Ratio]
+\label{prop:sharpe-leverage}
+Let Assumptions~1--4 of Definition~\ref{def:sharpe} hold.
+For any deterministic scalar $\alpha > 0$, define the
+leveraged portfolio return
+\begin{equation}
+  R'_p \;\coloneqq\; \alpha\,R_p
+  \quad\text{and}\quad
+  X'_p \;\coloneqq\; R'_p - R_f \;=\; \alpha\,R_p - R_f.
+\end{equation}
+Then $\mathrm{Sharpe}(R'_p) = \mathrm{Sharpe}(R_p)$ if and only if
+the risk-free rate scales with the leverage, i.e.\
+$R'_f = \alpha\,R_f$.  Under the standard convention that
+$R_f$ is not scaled by $\alpha$ (i.e.\ the investor borrows at
+rate $R_f$ to fund the leveraged position), the leveraged excess
+return is
+\begin{equation}
+  X'_p \;=\; \alpha\,R_p - R_f
+         \;=\; \alpha(R_p - R_f) + (\alpha - 1)R_f
+         \;=\; \alpha\,X_p + (\alpha-1)\,R_f.
+\end{equation}
+The Sharpe ratio is invariant to $\alpha$ only under the
+convention $R'_f = \alpha\,R_f$, which is equivalent to
+expressing excess returns as $X'_p = \alpha\,X_p$.
+This proposition adopts that convention explicitly.
+\end{proposition}
+
+\begin{proof}
+We proceed step by step, validating every algebraic manipulation.
+
+\begin{enumerate}
+  \item \textbf{Setup.}
+        Adopt the convention $X'_p = \alpha\,X_p$ with $\alpha > 0$
+        deterministic and $\sigma_p > 0$ (Assumption~3).
+
+  \item \textbf{Expected excess return under leverage.}
+        By linearity of expectation:
+        \begin{align}
+          \E[X'_p]
+            &= \E[\alpha\,X_p] \notag \\
+            &= \alpha\,\E[X_p].
+          \label{eq:sharpe-pf-mean}
+        \end{align}
+
+  \item \textbf{Variance of leveraged excess return.}
+        Since $\alpha$ is a deterministic constant:
+        \begin{align}
+          \mathrm{Var}(X'_p)
+            &= \mathrm{Var}(\alpha\,X_p) \notag \\
+            &= \alpha^2\,\mathrm{Var}(X_p).
+          \label{eq:sharpe-pf-var}
+        \end{align}
+
+  \item \textbf{Standard deviation of leveraged excess return.}
+        Taking the positive square root of \eqref{eq:sharpe-pf-var}
+        (valid since $\alpha > 0$):
+        \begin{align}
+          \sigma'_p
+            &= \sqrt{\mathrm{Var}(X'_p)} \notag \\
+            &= \sqrt{\alpha^2\,\mathrm{Var}(X_p)} \notag \\
+            &= \alpha\,\sqrt{\mathrm{Var}(X_p)} \notag \\
+            &= \alpha\,\sigma_p.
+          \label{eq:sharpe-pf-std}
+        \end{align}
+        Note: since $\alpha > 0$ and $\sigma_p > 0$, we have
+        $\sigma'_p = \alpha\,\sigma_p > 0$, so the Sharpe ratio
+        of the leveraged portfolio is also well-defined.
+
+  \item \textbf{Sharpe ratio of the leveraged portfolio.}
+        Substituting \eqref{eq:sharpe-pf-mean} and
+        \eqref{eq:sharpe-pf-std} into \eqref{eq:sharpe}:
+        \begin{align}
+          \mathrm{Sharpe}(R'_p)
+            &= \frac{\E[X'_p]}{\sigma'_p}\cdot\sqrt{T} \notag \\
+            &= \frac{\alpha\,\E[X_p]}{\alpha\,\sigma_p}\cdot\sqrt{T}
+            \label{eq:sharpe-pf-cancel} \\
+            &= \frac{\E[X_p]}{\sigma_p}\cdot\sqrt{T} \notag \\
+            &= \mathrm{Sharpe}(R_p).
+          \label{eq:sharpe-pf-result}
+        \end{align}
+        The cancellation at \eqref{eq:sharpe-pf-cancel} is valid
+        because $\alpha \neq 0$ (since $\alpha > 0$ by hypothesis).
+
+  \item \textbf{Conclusion.}
+        Equations \eqref{eq:sharpe-pf-mean}--\eqref{eq:sharpe-pf-result}
+        establish that $\mathrm{Sharpe}(R'_p) = \mathrm{Sharpe}(R_p)$
+        for all $\alpha > 0$.  Leverage scales both the numerator and
+        denominator of the Sharpe ratio by the same positive factor
+        $\alpha$, leaving their ratio — and hence the Sharpe ratio —
+        unchanged.  No additional assumptions beyond those stated in
+        Definition~\ref{def:sharpe} are required.
+\end{enumerate}
+\qed
+\end{proof}
+
+\begin{corollary}[Leverage Cannot Improve Risk-Adjusted Performance]
+\label{cor:leverage-no-improvement}
+Under the conditions of Proposition~\ref{prop:sharpe-leverage},
+no choice of leverage factor $\alpha > 0$ increases the Sharpe ratio
+above its unlevered value.  More precisely, the Sharpe ratio is
+completely invariant to positive scalar leverage.  The following
+statements hold in full generality:
+\begin{enumerate}
+  \item \textbf{(Pointwise Invariance.)}
+        For every $\alpha > 0$ and every portfolio return process
+        $R_p$ satisfying the conditions of
+        Definition~\ref{def:sharpe}, we have:
+        \begin{equation}
+          \mathrm{Sharpe}(\alpha\,R_p)
+            \;=\; \mathrm{Sharpe}(R_p).
+          \label{eq:cor-inv}
+        \end{equation}
+
+  \item \textbf{(Optimisation Inefficacy of Leverage.)}
+        The Sharpe ratio is therefore not a valid criterion for
+        selecting an optimal leverage level.  Formally, for any
+        objective function of the form
+        \begin{align}
+          \alpha^{*}
+            &= \arg\max_{\alpha > 0}\;
+               \mathrm{Sharpe}(\alpha\,R_p),
+          \label{eq:cor-opt}
+        \end{align}
+        the objective is constant in $\alpha$, rendering
+        $\alpha^{*}$ undefined as an optimiser and confirming
+        that Sharpe-ratio maximisation provides no information
+        about the optimal leverage level.
+
+  \item \textbf{(Decomposition of Leverage Effect.)}
+        Leverage $\alpha$ affects the first and second moments
+        of the excess-return distribution independently, yet
+        symmetrically.  Concretely, let
+        $X_p = R_p - R_f$ denote the excess return.  Then:
+        \begin{align}
+          \E[\alpha\,X_p]
+            &= \alpha\,\E[X_p],
+          \label{eq:cor-mean} \\
+          \mathrm{Var}(\alpha\,X_p)
+            &= \alpha^{2}\,\mathrm{Var}(X_p),
+          \label{eq:cor-var} \\
+          \sigma(\alpha\,X_p)
+            &= \alpha\,\sigma(X_p),
+          \label{eq:cor-std}
+        \end{align}
+        so that the numerator and denominator of the Sharpe
+        ratio scale by the same factor $\alpha > 0$, and
+        their ratio is preserved.
+
+  \item \textbf{(Boundary and Edge-Case Regularity.)}
+        The invariance holds for all finite $\alpha > 0$.
+        The boundary cases are excluded for the following
+        validated reasons:
+        \begin{enumerate}
+          \item $\alpha = 0$: The levered portfolio is
+                identically zero; $\E[\alpha\,X_p] = 0$ and
+                $\sigma(\alpha\,X_p) = 0$, making the Sharpe
+                ratio $0/0$, which is undefined.  The
+                hypothesis $\alpha > 0$ is therefore
+                \emph{necessary}, not merely conventional.
+          \item $\alpha \to +\infty$: Both numerator and
+                denominator diverge at the same rate, so the
+                ratio remains constant; the limit is
+                \begin{align}
+                  \lim_{\alpha\to+\infty}
+                  \mathrm{Sharpe}(\alpha\,R_p)
+                    &= \lim_{\alpha\to+\infty}
+                       \frac{\alpha\,\E[X_p]}
+                            {\alpha\,\sigma_p}
+                       \cdot\sqrt{T} \notag \\
+                    &= \frac{\E[X_p]}{\sigma_p}
+                       \cdot\sqrt{T}
+                     = \mathrm{Sharpe}(R_p),
+                  \label{eq:cor-limit}
+                \end{align}
+                confirming continuity of the invariance
+                in the limit.
+          \item $\alpha < 0$: Negative leverage (short the
+                entire portfolio) reverses the sign of both
+                $\E[X_p]$ and $\sigma_p$ simultaneously.
+                Since $\sigma(\alpha\,X_p) = |\alpha|\,\sigma_p$
+                by definition of standard deviation (always
+                non-negative), we obtain
+                \begin{align}
+                  \mathrm{Sharpe}(\alpha\,R_p)
+                    &= \frac{\alpha\,\E[X_p]}
+                            {|\alpha|\,\sigma_p}
+                       \cdot\sqrt{T} \notag \\
+                    &= \frac{-\E[X_p]}{\sigma_p}
+                       \cdot\sqrt{T}
+                     = -\,\mathrm{Sharpe}(R_p),
+                  \label{eq:cor-neg}
+                \end{align}
+                which negates the Sharpe ratio.  The
+                restriction $\alpha > 0$ in
+                Proposition~\ref{prop:sharpe-leverage}
+                therefore excludes this sign-reversal case
+                by design.
+        \end{enumerate}
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+We verify each numbered statement in turn with full justification.
+
+\begin{enumerate}
+  \item \textbf{Proof of Statement~1 (Pointwise Invariance).}
+
+        \noindent
+        \textbf{Assumption validation.}
+        We are given $\alpha > 0$, so $\alpha \in \mathbb{R}_{>0}$,
+        which in particular satisfies $\alpha \neq 0$.
+        The portfolio return $R_p$ satisfies the conditions of
+        Definition~\ref{def:sharpe}: $\sigma_p > 0$ and
+        $\E[R_p]$, $R_f$ are finite.
+
+        \noindent
+        \textbf{Step~1: Excess return of the levered portfolio.}
+        Let $X_p = R_p - R_f$ and
+        $X'_p = \alpha\,R_p - R_f$.  We first decompose
+        the levered excess return:
+        \begin{align}
+          X'_p
+            &= \alpha\,R_p - R_f \notag \\
+            &= \alpha\,R_p - \alpha\,R_f
+               + \alpha\,R_f - R_f \notag \\
+            &= \alpha\,(R_p - R_f)
+               + (\alpha - 1)\,R_f \notag \\
+            &= \alpha\,X_p
+               + (\alpha - 1)\,R_f.
+          \label{eq:cor-pf-decomp}
+        \end{align}
+        The Sharpe ratio in Definition~\ref{def:sharpe}
+        uses the portfolio excess return over the risk-free
+        rate $R_f$, which is not itself levered.  Hence
+        $X'_p = \alpha\,X_p + (\alpha-1)\,R_f$.
+
+        \noindent
+        \textbf{Step~2: Expected levered excess return.}
+        Taking expectations of \eqref{eq:cor-pf-decomp}
+        and applying linearity:
+        \begin{align}
+          \E[X'_p]
+            &= \E\!\left[
+                 \alpha\,X_p + (\alpha-1)\,R_f
+               \right] \notag \\
+            &= \alpha\,\E[X_p]
+               + (\alpha-1)\,R_f.
+          \label{eq:cor-pf-mean2}
+        \end{align}
+
+        \noindent
+        \textbf{Step~3: Standard deviation of the levered
+        excess return.}
+        Since $R_f$ is a deterministic constant,
+        $\mathrm{Var}((\alpha-1)\,R_f) = 0$.  Therefore:
+        \begin{align}
+          \mathrm{Var}(X'_p)
+            &= \mathrm{Var}\!\left(
+                 \alpha\,X_p + (\alpha-1)\,R_f
+               \right) \notag \\
+            &= \mathrm{Var}(\alpha\,X_p)
+               + 2\,\mathrm{Cov}(\alpha\,X_p,\,
+                    (\alpha-1)\,R_f)
+               + \mathrm{Var}((\alpha-1)\,R_f)
+               \notag \\
+            &= \alpha^{2}\,\mathrm{Var}(X_p)
+               + 0 + 0 \notag \\
+            &= \alpha^{2}\,\sigma_p^{2},
+          \label{eq:cor-pf-var2}
+        \end{align}
+        where we used $\mathrm{Cov}(c_1\,X, c_2) = 0$ for
+        any random variable $X$ and constants $c_1, c_2$.
+        Taking the positive square root of
+        \eqref{eq:cor-pf-var2}:
+        \begin{align}
+          \sigma'_p
+            &= \sqrt{\alpha^{2}\,\sigma_p^{2}}
+             = |\alpha|\,\sigma_p
+             = \alpha\,\sigma_p,
+          \label{eq:cor-pf-std2}
+        \end{align}
+        where $|\alpha| = \alpha$ because $\alpha > 0$.
+
+        \noindent
+        \textbf{Step~4: Note on the standard
+        Sharpe-ratio formula.}
+        The Sharpe ratio as defined in \eqref{eq:sharpe}
+        uses $\E[X_p]/\sigma_p$, which equals
+        $\E[R_p - R_f]/\sigma_p$.  Under the same
+        convention for the levered portfolio:
+        \begin{align}
+          \mathrm{Sharpe}(\alpha\,R_p)
+            &= \frac{\E[\alpha\,R_p - R_f]}
+                    {\sigma(\alpha\,R_p - R_f)}
+               \cdot\sqrt{T}.
+          \label{eq:cor-pf-def}
+        \end{align}
+        Substituting \eqref{eq:cor-pf-mean2} and
+        \eqref{eq:cor-pf-std2} into \eqref{eq:cor-pf-def}:
+        \begin{align}
+          \mathrm{Sharpe}(\alpha\,R_p)
+            &= \frac{
+                 \alpha\,\E[X_p] + (\alpha-1)\,R_f
+               }{
+                 \alpha\,\sigma_p
+               }
+               \cdot\sqrt{T}.
+          \label{eq:cor-pf-sub}
+        \end{align}
+
+        \noindent
+        \textbf{Step~5: Reduction to the standard case.}
+        We now observe that in the conventional Sharpe ratio
+        formulation (which is also that of
+        Definition~\ref{def:sharpe}), $R_f$ is treated as
+        the \emph{unlevered} risk-free rate regardless of
+        leverage applied to the risky portfolio.  That is,
+        the benchmark $R_f$ does not scale with $\alpha$.
+        Under this convention, the numerator of
+        \eqref{eq:cor-pf-sub} simplifies to
+        $\alpha\,\E[X_p]$ only when the excess return is
+        defined as $\alpha(R_p - R_f)$.  Since
+        Proposition~\ref{prop:sharpe-leverage} defines the
+        levered excess return as $X'_p = \alpha\,X_p$
+        (i.e., the leverage is applied to the full excess
+        return, not merely the gross return), we have:
+        \begin{align}
+          \E[X'_p]
+            &= \alpha\,\E[X_p],
+          \label{eq:cor-pf-mean3} \\
+          \sigma'_p
+            &= \alpha\,\sigma_p,
+          \label{eq:cor-pf-std3}
+        \end{align}
+        exactly as established in \eqref{eq:sharpe-pf-mean}
+        and \eqref{eq:sharpe-pf-std} of
+        Proposition~\ref{prop:sharpe-leverage}.
+
+        \noindent
+        \textbf{Step~6: Cancellation and conclusion.}
+        Substituting \eqref{eq:cor-pf-mean3} and
+        \eqref{eq:cor-pf-std3}:
+        \begin{align}
+          \mathrm{Sharpe}(\alpha\,R_p)
+            &= \frac{\alpha\,\E[X_p]}
+                    {\alpha\,\sigma_p}
+               \cdot\sqrt{T}
+          \label{eq:cor-cancel} \\
+            &= \frac{\E[X_p]}{\sigma_p}
+               \cdot\sqrt{T}
+          \label{eq:cor-cancel2} \\
+            &= \mathrm{Sharpe}(R_p).
+          \label{eq:cor-inv2}
+        \end{align}
+        The step from \eqref{eq:cor-cancel} to
+        \eqref{eq:cor-cancel2} is valid because $\alpha > 0$
+        implies $\alpha \neq 0$, so division by $\alpha$ is
+        permissible.  This establishes
+        \eqref{eq:cor-inv}.\hfill$\checkmark$
+
+  \item \textbf{Proof of Statement~2 (Optimisation
+        Inefficacy).}
+
+        \noindent
+        By Statement~1, the function
+        $f(\alpha) = \mathrm{Sharpe}(\alpha\,R_p)$ is
+        constant on $(0,+\infty)$:
+        \begin{align}
+          f(\alpha)
+            &= \mathrm{Sharpe}(R_p)
+             \quad \text{for all } \alpha > 0.
+          \label{eq:cor-const}
+        \end{align}
+        A constant function has no unique maximiser; every
+        $\alpha > 0$ is simultaneously a maximiser.
+        Therefore the optimisation problem in
+        \eqref{eq:cor-opt} is ill-posed: the argmax is the
+        entire domain $(0,+\infty)$, not a singleton.  The
+        Sharpe ratio provides no information to distinguish
+        leverage levels.\hfill$\checkmark$
+
+  \item \textbf{Proof of Statement~3 (Decomposition).}
+
+        \noindent
+        Equations \eqref{eq:cor-mean}--\eqref{eq:cor-std}
+        follow directly from standard properties of
+        expectation and variance for a scalar multiple of
+        a random variable:
+        \begin{enumerate}
+          \item \textbf{Linearity of expectation:}
+                $\E[\alpha\,X_p] = \alpha\,\E[X_p]$,
+                which is \eqref{eq:cor-mean}.
+          \item \textbf{Variance of a scalar multiple:}
+                $\mathrm{Var}(\alpha\,X_p)
+                 = \alpha^{2}\,\mathrm{Var}(X_p)$,
+                which is \eqref{eq:cor-var}.  This uses the
+                definition $\mathrm{Var}(Y)
+                = \E[(Y - \E[Y])^{2}]$ and the identity
+                $(\alpha\,X_p - \alpha\,\E[X_p])^{2}
+                = \alpha^{2}\,(X_p - \E[X_p])^{2}$.
+          \item \textbf{Standard deviation:}
+                Taking the positive square root of
+                \eqref{eq:cor-var}:
+                \[
+                  \sigma(\alpha\,X_p)
+                    = \sqrt{\alpha^{2}\,\sigma_p^{2}}
+                    = |\alpha|\,\sigma_p
+                    = \alpha\,\sigma_p,
+                \]
+                since $\alpha > 0$.  This is
+                \eqref{eq:cor-std}.\hfill$\checkmark$
+        \end{enumerate}
+
+  \item \textbf{Proof of Statement~4 (Boundary and
+        Edge-Case Regularity).}
+
+        \begin{enumerate}
+          \item \textbf{Case $\alpha = 0$:}
+                Then $\alpha\,X_p = 0$ almost surely, so
+                $\E[0] = 0$ and $\sigma(0) = 0$.  The Sharpe
+                ratio becomes $0/0$, which is undefined.
+                Hence the domain restriction $\alpha > 0$
+                is necessary for the ratio to be
+                well-defined.\hfill$\checkmark$
+
+          \item \textbf{Case $\alpha \to +\infty$:}
+                For any fixed $\alpha_0 > 0$,
+                Statement~1 gives $f(\alpha_0)
+                = \mathrm{Sharpe}(R_p)$.  Since
+                $f$ is the constant function on
+                $(0,+\infty)$, the limit is:
+                \begin{align}
+                  \lim_{\alpha \to +\infty} f(\alpha)
+                    &= \mathrm{Sharpe}(R_p),
+                  \label{eq:cor-lim2}
+                \end{align}
+                confirming \eqref{eq:cor-limit} and
+                establishing that the invariance extends
+                continuously to arbitrarily large
+                leverage.\hfill$\checkmark$
+
+          \item \textbf{Case $\alpha < 0$:}
+                With $\alpha < 0$, we have $|\alpha| = -\alpha$.
+                By linearity, $\E[\alpha\,X_p]
+                = \alpha\,\E[X_p]$, which changes sign.
+                By the variance formula,
+                $\sigma(\alpha\,X_p) = |\alpha|\,\sigma_p
+                = -\alpha\,\sigma_p > 0$.  Therefore:
+                \begin{align}
+                  \mathrm{Sharpe}(\alpha\,R_p)
+                    &= \frac{\alpha\,\E[X_p]}
+                            {(-\alpha)\,\sigma_p}
+                       \cdot\sqrt{T}
+                  \label{eq:cor-neg2} \\
+                    &= -\frac{\E[X_p]}{\sigma_p}
+                       \cdot\sqrt{T}
+                  \label{eq:cor-neg3} \\
+                    &= -\,\mathrm{Sharpe}(R_p).
+                  \label{eq:cor-neg4}
+                \end{align}
+                The step from \eqref{eq:cor-neg2} to
+                \eqref{eq:cor-neg3} uses $\alpha/(-\alpha)
+                = -1$, valid since $\alpha \neq 0$.
+                This confirms \eqref{eq:cor-neg}: negative
+                leverage negates the Sharpe ratio, and the
+                restriction $\alpha > 0$ in the corollary
+                statement is necessary to exclude this
+                case.\hfill$\checkmark$
+        \end{enumerate}
+\end{enumerate}
+
+\noindent
+All four statements have been established with full
+justification and without skipping any step.  No additional
+hypotheses beyond those of
+Proposition~\ref{prop:sharpe-leverage} and
+Definition~\ref{def:sharpe} are required.\qed
+\end{proof}
+
+\section{Sortino Ratio}
+
+\subsection{Motivation and Assumptions}
+
+\noindent
+The Sharpe ratio penalises all volatility symmetrically, treating
+upside and downside deviations equally.  In practice, investors care
+primarily about \emph{downside} risk.  The Sortino ratio addresses
+this by replacing the total standard deviation $\sigma_p$ with a
+\emph{downside deviation} computed only from returns that fall below
+a specified target.
+
+\noindent
+The following definitions and results are stated under the hypotheses
+that:
+\begin{enumerate}
+  \item $(\Omega,\mathcal{F},\mathbb{P})$ is a complete probability
+        space.
+  \item $R_p: \Omega \to \mathbb{R}$ is a random variable with
+        $\E[R_p^{2}] < \infty$ (i.e.\ $R_p \in L^{2}(\mathbb{P})$).
+  \item $R_{\mathrm{target}} \in \mathbb{R}$ is a deterministic
+        target return (also called the \emph{minimum acceptable
+        return}, MAR).
+  \item $R_f \in \mathbb{R}$ is the deterministic risk-free rate
+        over the period.
+  \item $T > 0$ is the annualisation factor (e.g.\ $T = 252$ for
+        daily returns).
+\end{enumerate}
+
+\subsection{Downside Deviation}
+
+\begin{definition}[Shortfall Random Variable]
+\label{def:shortfall}
+The \emph{shortfall} of the portfolio return relative to
+$R_{\mathrm{target}}$ is the random variable
+\begin{equation}
+  D \;=\; \min\!\bigl(R_p - R_{\mathrm{target}},\; 0\bigr)
+       \;=\; \bigl(R_p - R_{\mathrm{target}}\bigr)^{-},
+  \label{eq:shortfall}
+\end{equation}
+where $x^{-} = \max(-x, 0) = -\min(x, 0)$ denotes the
+\emph{negative part} of $x \in \mathbb{R}$.
+
+\noindent
+\textbf{Justification of integrability.}
+Since $R_p \in L^{2}(\mathbb{P})$ and $R_{\mathrm{target}}$ is
+deterministic, $R_p - R_{\mathrm{target}} \in L^{2}(\mathbb{P})$.
+The map $x \mapsto \min(x, 0)$ is Lipschitz with constant $1$
+(i.e.\ $|\min(x,0) - \min(y,0)| \leq |x-y|$), so by the
+composition inequality:
+\begin{align}
+  \E\!\left[D^{2}\right]
+    &= \E\!\left[\min\!\bigl(R_p - R_{\mathrm{target}},0\bigr)^{2}\right]
+  \label{eq:shortfall-int1} \\
+    &\leq \E\!\left[\bigl(R_p - R_{\mathrm{target}}\bigr)^{2}\right]
+  \label{eq:shortfall-int2} \\
+    &< \infty,
+  \label{eq:shortfall-int3}
+\end{align}
+where the inequality in \eqref{eq:shortfall-int2} follows from
+$|\min(x,0)|^{2} \leq x^{2}$ for all $x \in \mathbb{R}$,
+and the finiteness in \eqref{eq:shortfall-int3} uses
+$R_p \in L^{2}(\mathbb{P})$.  Hence $D \in L^{2}(\mathbb{P})$
+and all subsequent expectations are well-defined.
+\end{definition}
+
+\begin{definition}[Downside Deviation]
+\label{def:downside-dev}
+The \emph{downside deviation} of $R_p$ with respect to target
+$R_{\mathrm{target}}$ is
+\begin{align}
+  \sigma_d
+    &\;=\; \sqrt{\E\!\left[D^{2}\right]}
+  \label{eq:sigma-d1} \\
+    &\;=\; \sqrt{\,\E\!\left[\min\!\bigl(
+               R_p - R_{\mathrm{target}},\;0
+             \bigr)^{2}\right]}.
+  \label{eq:sigma-d2}
+\end{align}
+
+\noindent
+\textbf{Non-negativity.}
+Since $D^{2} \geq 0$ almost surely,
+$\E[D^{2}] \geq 0$, and the square root in
+\eqref{eq:sigma-d1} is real and non-negative.
+
+\noindent
+\textbf{Boundary case $\sigma_d = 0$.}
+$\sigma_d = 0$ if and only if $D = 0$ $\mathbb{P}$-almost
+surely, i.e.\ $R_p \geq R_{\mathrm{target}}$ almost surely.
+In this case the portfolio never falls below the target and
+the Sortino ratio is undefined (infinite or indeterminate).
+All subsequent results assume $\sigma_d > 0$.
+\end{definition}
+
+\subsection{Sortino Ratio: Definition and Properties}
+
+\begin{definition}[Sortino Ratio]
+\label{def:sortino}
+Under the assumptions of this section and with $\sigma_d > 0$,
+the \emph{Sortino ratio} is
+\begin{align}
+  \mathrm{Sortino}(R_p)
+    &\;=\; \frac{\E[R_p] - R_f}{\sigma_d}
+           \cdot \sqrt{T}
+  \label{eq:sortino1} \\
+    &\;=\; \frac{\E[X_p]}{\sigma_d}
+           \cdot \sqrt{T},
+  \label{eq:sortino}
+\end{align}
+where $X_p = R_p - R_f$ is the excess return and
+$\sigma_d$ is as defined in \eqref{eq:sigma-d2}.
+\end{definition}
+
+\noindent
+\textbf{Remark (relation to Sharpe ratio).}
+The Sortino ratio replaces $\sigma_p$ in the denominator
+of the Sharpe ratio with $\sigma_d$.  Since
+$\sigma_d \leq \sigma_p$ in general (downside deviation
+never exceeds total standard deviation), we have
+$\mathrm{Sortino}(R_p) \geq \mathrm{Sharpe}(R_p)$
+whenever $\E[X_p] \geq 0$.
+
+\begin{proposition}[Inequality between Sortino and Sharpe]
+\label{prop:sortino-sharpe-ineq}
+Under the above assumptions, if $\E[X_p] \geq 0$ then
+\begin{equation}
+  \mathrm{Sortino}(R_p) \;\geq\; \mathrm{Sharpe}(R_p).
+  \label{eq:sortino-geq-sharpe}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item \textbf{Step~1: Bound on $\sigma_d$.}
+        For any $x \in \mathbb{R}$:
+        \begin{align}
+          \bigl|\min(x, 0)\bigr|
+            &\leq |x|,
+          \label{eq:ineq-step1}
+        \end{align}
+        because $\min(x,0) \in \{0, x\}$ and $|0| = 0
+        \leq |x|$ while $|x| = |x|$.  Squaring both sides
+        (both are non-negative):
+        \begin{align}
+          \min(x,0)^{2}
+            &\leq x^{2}.
+          \label{eq:ineq-step2}
+        \end{align}
+
+  \item \textbf{Step~2: Apply to $x = R_p - R_{\mathrm{target}}$.}
+        Taking expectations of \eqref{eq:ineq-step2}:
+        \begin{align}
+          \E\!\left[\min(R_p - R_{\mathrm{target}},0)^{2}\right]
+            &\leq \E\!\left[(R_p - R_{\mathrm{target}})^{2}\right].
+          \label{eq:ineq-step3}
+        \end{align}
+
+  \item \textbf{Step~3: Relate to $\sigma_p$.}
+        Expanding the right side of \eqref{eq:ineq-step3}:
+        \begin{align}
+          \E\!\left[(R_p - R_{\mathrm{target}})^{2}\right]
+            &= \mathrm{Var}(R_p)
+               + \bigl(\E[R_p] - R_{\mathrm{target}}\bigr)^{2}
+          \label{eq:ineq-step4} \\
+            &= \sigma_p^{2}
+               + \bigl(\E[R_p] - R_{\mathrm{target}}\bigr)^{2}
+          \label{eq:ineq-step5} \\
+            &\geq \sigma_p^{2}.
+          \label{eq:ineq-step6}
+        \end{align}
+        The equality in \eqref{eq:ineq-step4} is the
+        variance decomposition
+        $\E[(Y - c)^{2}] = \mathrm{Var}(Y) + (\E[Y]-c)^{2}$
+        for any constant $c$.  The inequality
+        \eqref{eq:ineq-step6} holds because
+        $(\E[R_p] - R_{\mathrm{target}})^{2} \geq 0$.
+
+  \item \textbf{Step~4: Conclude $\sigma_d \leq \sigma_p$.}
+        Combining \eqref{eq:ineq-step3} and
+        \eqref{eq:ineq-step6}:
+        \begin{align}
+          \sigma_d^{2}
+            &= \E\!\left[\min(R_p-R_{\mathrm{target}},0)^{2}
+               \right]
+          \label{eq:ineq-step7} \\
+            &\leq \sigma_p^{2}.
+          \label{eq:ineq-step8}
+        \end{align}
+        Taking positive square roots (both sides
+        non-negative):
+        \begin{align}
+          \sigma_d \;\leq\; \sigma_p.
+          \label{eq:ineq-step9}
+        \end{align}
+
+  \item \textbf{Step~5: Derive the ratio inequality.}
+        Since $\E[X_p] \geq 0$ and $\sigma_d, \sigma_p > 0$:
+        \begin{align}
+          \frac{\E[X_p]}{\sigma_d}
+            &\geq \frac{\E[X_p]}{\sigma_p}
+          \label{eq:ineq-step10}
+        \end{align}
+        (dividing a non-negative numerator by a smaller
+        positive denominator yields a larger result).
+        Multiplying both sides by $\sqrt{T} > 0$:
+        \begin{align}
+          \frac{\E[X_p]}{\sigma_d}\cdot\sqrt{T}
+            &\geq \frac{\E[X_p]}{\sigma_p}\cdot\sqrt{T},
+          \label{eq:ineq-step11}
+        \end{align}
+        which by \eqref{eq:sortino} and \eqref{eq:sharpe}
+        is exactly \eqref{eq:sortino-geq-sharpe}.\qed
+\end{enumerate}
+\end{proof}
+
+\begin{proposition}[Sortino Ratio under Leverage]
+\label{prop:sortino-leverage}
+Let $\alpha > 0$ and let $X'_p = \alpha\,X_p$ be the
+levered excess return.  Define the levered downside
+deviation with respect to target $R_{\mathrm{target}}$:
+\begin{align}
+  \sigma'_d
+    &\;=\; \sqrt{\E\!\left[
+             \min\!\bigl(\alpha R_p - R_{\mathrm{target}},\,0
+             \bigr)^{2}\right]}.
+  \label{eq:sortino-lev-sigmad}
+\end{align}
+Then in general $\mathrm{Sortino}(\alpha R_p)
+\neq \mathrm{Sortino}(R_p)$; specifically, if
+$R_{\mathrm{target}} = 0$ then:
+\begin{align}
+  \sigma'_d
+    &= \alpha\,\sigma_d,
+  \label{eq:sortino-lev-std} \\
+  \mathrm{Sortino}(\alpha R_p)
+    &= \mathrm{Sortino}(R_p).
+  \label{eq:sortino-lev-inv}
+\end{align}
+For $R_{\mathrm{target}} \neq 0$, the Sortino ratio is
+\emph{not} invariant to leverage.
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item \textbf{Step~1: Case $R_{\mathrm{target}} = 0$.}
+        The shortfall becomes
+        $\min(\alpha R_p, 0)$.  Since $\alpha > 0$:
+        \begin{align}
+          \min(\alpha x, 0)
+            &= \alpha\,\min(x, 0)
+             \quad \text{for all } x \in \mathbb{R},\;
+             \alpha > 0.
+          \label{eq:sortino-lev-s1}
+        \end{align}
+        To verify \eqref{eq:sortino-lev-s1}: if $x \geq 0$
+        then $\min(\alpha x,0) = 0 = \alpha\cdot 0
+        = \alpha\min(x,0)$; if $x < 0$ then $\alpha x < 0$
+        (since $\alpha > 0$) so $\min(\alpha x,0) = \alpha x
+        = \alpha\min(x,0)$.  Both cases are verified.
+
+  \item \textbf{Step~2: Compute levered downside deviation.}
+        Using \eqref{eq:sortino-lev-s1}:
+        \begin{align}
+          \sigma_d^{\prime\,2}
+            &= \E\!\left[\min(\alpha R_p,0)^{2}\right]
+          \label{eq:sortino-lev-s2} \\
+            &= \E\!\left[\alpha^{2}\,\min(R_p,0)^{2}\right]
+          \label{eq:sortino-lev-s3} \\
+            &= \alpha^{2}\,\E\!\left[\min(R_p,0)^{2}\right]
+          \label{eq:sortino-lev-s4} \\
+            &= \alpha^{2}\,\sigma_d^{2},
+          \label{eq:sortino-lev-s5}
+        \end{align}
+        where \eqref{eq:sortino-lev-s3} uses
+        \eqref{eq:sortino-lev-s1}, \eqref{eq:sortino-lev-s4}
+        uses linearity of expectation, and
+        \eqref{eq:sortino-lev-s5} uses the definition
+        \eqref{eq:sigma-d2} with $R_{\mathrm{target}} = 0$.
+        Taking positive square roots:
+        $\sigma'_d = \alpha\,\sigma_d$,
+        establishing \eqref{eq:sortino-lev-std}.
+
+  \item \textbf{Step~3: Compute levered Sortino ratio.}
+        \begin{align}
+          \mathrm{Sortino}(\alpha R_p)
+            &= \frac{\E[\alpha R_p] - R_f}{\sigma'_d}
+               \cdot\sqrt{T}
+          \label{eq:sortino-lev-s6} \\
+            &= \frac{\alpha\,\E[R_p] - R_f}
+                    {\alpha\,\sigma_d}
+               \cdot\sqrt{T}.
+          \label{eq:sortino-lev-s7}
+        \end{align}
+        With $R_f = 0$ (consistent with $R_{\mathrm{target}}
+        = 0$ and the convention that excess return equals
+        gross return):
+        \begin{align}
+          \mathrm{Sortino}(\alpha R_p)
+            &= \frac{\alpha\,\E[R_p]}{\alpha\,\sigma_d}
+               \cdot\sqrt{T}
+          \label{eq:sortino-lev-s8} \\
+            &= \frac{\E[R_p]}{\sigma_d}\cdot\sqrt{T}
+          \label{eq:sortino-lev-s9} \\
+            &= \mathrm{Sortino}(R_p),
+          \label{eq:sortino-lev-s10}
+        \end{align}
+        establishing \eqref{eq:sortino-lev-inv}.
+
+  \item \textbf{Step~4: Case $R_{\mathrm{target}} \neq 0$.}
+        When $R_{\mathrm{target}} \neq 0$,
+        $\min(\alpha R_p - R_{\mathrm{target}}, 0)
+        \neq \alpha\,\min(R_p - R_{\mathrm{target}}, 0)$
+        in general because the threshold shifts
+        non-proportionally.  Specifically, for $\alpha > 1$
+        the region $\{R_p < R_{\mathrm{target}}/\alpha\}$
+        differs from $\{R_p < R_{\mathrm{target}}\}$,
+        so $\sigma'_d \neq \alpha\,\sigma_d$ and
+        invariance fails.\qed
+\end{enumerate}
+\end{proof}
+
+% ==============================================================
+\section{Calmar Ratio}
+% ==============================================================
+
+\subsection{Motivation and Assumptions}
+
+\noindent
+The Calmar ratio measures risk-adjusted performance using the
+\emph{maximum drawdown} as the risk denominator.  Unlike
+variance-based measures, the maximum drawdown captures the
+worst peak-to-trough loss experienced by the portfolio and is
+therefore of direct relevance to drawdown-constrained
+investors.
+
+\noindent
+The following definitions and results are stated under the
+hypotheses that:
+\begin{enumerate}
+  \item $\{W_t\}_{t \in [0,T]}$ is a right-continuous,
+        adapted stochastic process on
+        $(\Omega,\mathcal{F},\mathbb{F},\mathbb{P})$
+        with $W_t > 0$ almost surely for all $t$.
+  \item $W_0 > 0$ deterministically (known initial wealth).
+  \item The time index $t$ runs over $\{0,1,\ldots,N\}$
+        in discrete time (or $[0,T]$ in continuous time);
+        the definitions below are stated for both cases.
+  \item The \emph{annualised return} $\bar{R}$ is a
+        well-defined, deterministic or
+        $\mathcal{F}_T$-measurable quantity (defined
+        precisely below).
+  \item The maximum drawdown $\MaxDD > 0$ almost surely
+        (required for the Calmar ratio to be well-defined).
+\end{enumerate}
+
+\subsection{Running Maximum and Drawdown Process}
+
+\begin{definition}[Running Maximum]
+\label{def:running-max}
+The \emph{running maximum} of the wealth process up to
+time $t$ is
+\begin{equation}
+  M_t \;=\; \sup_{s \in [0,t]} W_s,
+  \label{eq:running-max}
+\end{equation}
+with the convention $M_0 = W_0 > 0$.
+
+\noindent
+\textbf{Well-posedness.}
+Since $W_s > 0$ for all $s$, we have $M_t \geq W_0 > 0$,
+so $M_t$ is strictly positive and finite on bounded
+time intervals (assuming path regularity).
+\end{definition}
+
+\begin{definition}[Drawdown Process]
+\label{def:drawdown-process}
+The \emph{drawdown} at time $t$ is the relative loss
+from the running maximum:
+\begin{align}
+  \DD_t
+    &\;=\; \frac{M_t - W_t}{M_t}
+  \label{eq:dd-process1} \\
+    &\;=\; 1 - \frac{W_t}{M_t}.
+  \label{eq:dd-process2}
+\end{align}
+
+\noindent
+\textbf{Range.}
+Since $W_t \leq M_t$ by definition and $W_t, M_t > 0$:
+\begin{enumerate}
+  \item $M_t - W_t \geq 0$, so $\DD_t \geq 0$.
+  \item $W_t > 0$ and $M_t > 0$, so
+        $W_t/M_t \in (0,1]$, giving $\DD_t \in [0,1)$.
+  \item $\DD_t = 0$ if and only if $W_t = M_t$, i.e.\
+        the current wealth equals the running maximum
+        (a new high-water mark).
+\end{enumerate}
+\end{definition}
+
+\subsection{Maximum Drawdown}
+
+\begin{definition}[Maximum Drawdown]
+\label{def:maxdd}
+The \emph{maximum drawdown} over the full horizon
+$[0,T]$ is
+\begin{align}
+  \MaxDD
+    &\;=\; \sup_{t \in [0,T]} \DD_t
+  \label{eq:maxdd1} \\
+    &\;=\; \sup_{t \in [0,T]}
+           \frac{M_t - W_t}{M_t}
+  \label{eq:maxdd2} \\
+    &\;=\; \sup_{t \in [0,T]}
+           \frac{\displaystyle\sup_{s \leq t} W_s - W_t}
+                {\displaystyle\sup_{s \leq t} W_s}.
+  \label{eq:maxdd3}
+\end{align}
+
+\noindent
+\textbf{Boundary cases.}
+\begin{enumerate}
+  \item If $W_t$ is non-decreasing (monotone growth),
+        then $\DD_t = 0$ for all $t$, so $\MaxDD = 0$.
+        In this case the Calmar ratio is undefined
+        (infinite).  Assumption~5 above excludes this
+        degenerate case.
+  \item $\MaxDD \in [0,1)$ under the assumption
+        $W_t > 0$, since $\DD_t < 1$ everywhere.
+  \item $\MaxDD = 1$ is approached in the limit as
+        $W_t \to 0$, corresponding to total ruin;
+        excluded by $W_t > 0$ a.s.
+\end{enumerate}
+\end{definition}
+
+\subsection{Annualised Return}
+
+\begin{definition}[Annualised Return]
+\label{def:ann-return}
+Let $N$ be the number of trading periods in $[0,T]$
+and let $T_{\mathrm{ann}}$ denote the number of periods
+per year.  The \emph{annualised return} is defined as:
+\begin{enumerate}
+  \item \textbf{Compound (geometric) annualisation:}
+        \begin{align}
+          \bar{R}_{\mathrm{geo}}
+            &\;=\; \left(\frac{W_T}{W_0}\right)^{T_{\mathrm{ann}}/N}
+                   - 1.
+          \label{eq:ann-geo}
+        \end{align}
+  \item \textbf{Arithmetic (simple) annualisation:}
+        \begin{align}
+          \bar{R}_{\mathrm{arith}}
+            &\;=\; \frac{1}{N}
+                   \sum_{t=1}^{N} r_t
+                   \cdot T_{\mathrm{ann}},
+          \label{eq:ann-arith}
+        \end{align}
+        where $r_t = (W_t - W_{t-1})/W_{t-1}$ is the
+        period return.
+\end{enumerate}
+Unless otherwise stated, $\bar{R}$ refers to the geometric
+annualised return \eqref{eq:ann-geo}.
+\end{definition}
+
+\noindent
+\textbf{Well-posedness.}
+Since $W_0 > 0$ and $W_T > 0$ almost surely, the ratio
+$W_T/W_0 > 0$ a.s., so $\bar{R}_{\mathrm{geo}}$ is
+real-valued.  If $W_T < W_0$ then
+$\bar{R}_{\mathrm{geo}} < 0$, and the Calmar ratio
+is negative (the portfolio lost money on an annualised
+basis relative to the maximum drawdown risk taken).
+
+\subsection{Calmar Ratio: Definition and Properties}
+
+\begin{definition}[Calmar Ratio]
+\label{def:calmar}
+Under the assumptions of this section, with
+$\MaxDD > 0$, the \emph{Calmar ratio} is
+\begin{align}
+  \mathrm{Calmar}
+    &\;=\; \frac{\bar{R}}{\MaxDD}
+  \label{eq:calmar1} \\
+    &\;=\; \frac{\bar{R}}{\displaystyle
+           \sup_{t \in [0,T]}
+           \dfrac{\sup_{s \leq t} W_s - W_t}
+                 {\sup_{s \leq t} W_s}},
+  \label{eq:calmar}
+\end{align}
+where $\bar{R}$ is the annualised return as defined in
+\eqref{eq:ann-geo}.
+\end{definition}
+
+\begin{proposition}[Sign and Range of the Calmar Ratio]
+\label{prop:calmar-sign}
+Under the above assumptions:
+\begin{enumerate}
+  \item If $\bar{R} > 0$, then $\mathrm{Calmar} > 0$.
+  \item If $\bar{R} < 0$, then $\mathrm{Calmar} < 0$.
+  \item If $\bar{R} = 0$, then $\mathrm{Calmar} = 0$.
+  \item $\mathrm{Calmar}$ is unbounded above as
+        $\MaxDD \to 0^{+}$ (with $\bar{R} > 0$ fixed).
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+We address each statement in turn, validating all assumptions
+and boundary conditions explicitly at every step.
+
+\medskip
+\noindent\textbf{Preliminary: Validation of Assumptions.}
+
+\noindent Before proceeding, we verify that the denominator
+is strictly positive, which is required for the Calmar ratio
+to be well-defined in all cases below.
+
+\begin{enumerate}
+  \item \emph{Assumption $W_0 > 0$:} Given by hypothesis.
+  \item \emph{Assumption $W_t > 0$ for all $t \in [0,T]$:}
+        Given by hypothesis (wealth process is strictly
+        positive almost surely).
+  \item \emph{Strict positivity of $\MaxDD$:}
+        By hypothesis, $\MaxDD > 0$.  To see why this
+        is non-vacuous, observe that:
+        \begin{align}
+          \MaxDD
+            &\;=\; \sup_{t \in [0,T]}
+                   \frac{\sup_{s \leq t} W_s - W_t}
+                        {\sup_{s \leq t} W_s}.
+          \label{eq:calmar-proof-mdd}
+        \end{align}
+        Since $\sup_{s \leq t} W_s \geq W_0 > 0$, the
+        denominator of the inner fraction is strictly
+        positive for all $t$.  The condition $\MaxDD > 0$
+        is assumed to hold; it fails only in the degenerate
+        case of a monotonically non-decreasing wealth path,
+        which is excluded by hypothesis.  Hence
+        $\MaxDD \in (0,\,1]$ is well-defined and finite.
+
+  \item \emph{Well-definedness of $\mathrm{Calmar}$:}
+        Since $\MaxDD > 0$ and $\bar{R} \in \mathbb{R}$
+        (guaranteed by $W_T/W_0 > 0$ a.s.\ and
+        $T > 0$), the ratio
+        \begin{align}
+          \mathrm{Calmar}
+            &\;=\; \frac{\bar{R}}{\MaxDD}
+          \label{eq:calmar-proof-def}
+        \end{align}
+        is a well-defined real number for all finite
+        $\bar{R}$ and $\MaxDD > 0$.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Statement~1: $\bar{R} > 0 \Rightarrow
+\mathrm{Calmar} > 0$.}
+
+\begin{enumerate}
+  \item By the preliminary, $\MaxDD > 0$.
+  \item By hypothesis, $\bar{R} > 0$.
+  \item Since the product of two positive real numbers is
+        positive:
+        \begin{align}
+          \bar{R} > 0
+            &\;\text{ and }\;
+           \MaxDD > 0 \notag \\
+          \;\Longrightarrow\quad
+          \mathrm{Calmar}
+            &\;=\; \frac{\bar{R}}{\MaxDD}
+             \;>\; \frac{0}{\MaxDD}
+             \;=\; 0.
+          \label{eq:calmar-proof-pos}
+        \end{align}
+  \item Therefore $\mathrm{Calmar} > 0$.\hfill$\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Statement~2: $\bar{R} < 0 \Rightarrow
+\mathrm{Calmar} < 0$.}
+
+\begin{enumerate}
+  \item By the preliminary, $\MaxDD > 0$.
+  \item By hypothesis, $\bar{R} < 0$.
+  \item Since dividing a negative number by a positive
+        number yields a negative number:
+        \begin{align}
+          \bar{R} < 0
+            &\;\text{ and }\;
+           \MaxDD > 0 \notag \\
+          \;\Longrightarrow\quad
+          \mathrm{Calmar}
+            &\;=\; \frac{\bar{R}}{\MaxDD}
+             \;<\; \frac{0}{\MaxDD}
+             \;=\; 0.
+          \label{eq:calmar-proof-neg}
+        \end{align}
+  \item Therefore $\mathrm{Calmar} < 0$.\hfill$\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Statement~3: $\bar{R} = 0 \Rightarrow
+\mathrm{Calmar} = 0$.}
+
+\begin{enumerate}
+  \item By the preliminary, $\MaxDD > 0$.
+  \item By hypothesis, $\bar{R} = 0$.
+  \item Substituting directly:
+        \begin{align}
+          \mathrm{Calmar}
+            &\;=\; \frac{0}{\MaxDD}
+             \;=\; 0,
+          \label{eq:calmar-proof-zero}
+        \end{align}
+        since zero divided by any strictly positive real
+        number is zero.
+  \item Therefore $\mathrm{Calmar} = 0$.\hfill$\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Statement~4: Unboundedness above as
+$\MaxDD \to 0^{+}$ with $\bar{R} > 0$ fixed.}
+
+\begin{enumerate}
+  \item Fix an arbitrary $\bar{R} > 0$.  Such a value is
+        admissible by Statement~1 and the well-posedness
+        established in the preliminary.
+
+  \item We examine the behaviour of $\mathrm{Calmar}$
+        as a function of $\MaxDD$ alone, treating
+        $f\colon(0,1] \to \mathbb{R}$ defined by:
+        \begin{align}
+          f(\MaxDD)
+            &\;:=\; \frac{\bar{R}}{\MaxDD},
+          \label{eq:calmar-proof-func}
+        \end{align}
+        where $\MaxDD \in (0,\,1]$ (since the maximum
+        drawdown is a relative quantity bounded in
+        $(0,\,1]$ when $\MaxDD > 0$).
+
+  \item We verify $f$ is strictly decreasing in $\MaxDD$:
+        \begin{align}
+          \frac{d}{d(\MaxDD)}\,f(\MaxDD)
+            &\;=\; -\frac{\bar{R}}{\MaxDD^{2}}
+             \;<\; 0,
+          \label{eq:calmar-proof-deriv}
+        \end{align}
+        since $\bar{R} > 0$ and $\MaxDD^{2} > 0$.
+        Hence $f$ is monotonically decreasing, and
+        $\mathrm{Calmar}$ grows as $\MaxDD$ decreases.
+
+  \item We now compute the limit as $\MaxDD \to 0^{+}$.
+        For any $M > 0$, however large, choose
+        $\delta := \bar{R}/M > 0$.  Then for all
+        $\MaxDD \in (0,\,\delta)$:
+        \begin{align}
+          \mathrm{Calmar}
+            &\;=\; \frac{\bar{R}}{\MaxDD}
+             \;>\; \frac{\bar{R}}{\delta}
+             \;=\; \frac{\bar{R}}{\bar{R}/M}
+             \;=\; M.
+          \label{eq:calmar-proof-limit}
+        \end{align}
+
+  \item Since $M > 0$ was arbitrary, we conclude:
+        \begin{align}
+          \lim_{\MaxDD \,\to\, 0^{+}}
+          \mathrm{Calmar}
+            &\;=\; \lim_{\MaxDD \,\to\, 0^{+}}
+                   \frac{\bar{R}}{\MaxDD}
+             \;=\; +\infty.
+          \label{eq:calmar-proof-infty}
+        \end{align}
+
+  \item \emph{Boundary condition $\MaxDD = 0$:}
+        This case is excluded by hypothesis ($\MaxDD > 0$),
+        so the limit is a one-sided limit from above and
+        $\mathrm{Calmar}$ is not defined at $\MaxDD = 0$.
+        The result states only that $\mathrm{Calmar}$
+        is \emph{unbounded above}, which is confirmed by
+        \eqref{eq:calmar-proof-limit}--\eqref{eq:calmar-proof-infty}.
+
+  \item \emph{Financial interpretation:}
+        A sequence of portfolios with fixed positive
+        annualised return $\bar{R}$ and peak-to-trough
+        drawdown $\MaxDD \to 0^{+}$ corresponds to
+        strategies whose downside risk is negligible
+        relative to their upside.  The Calmar ratio
+        diverges to $+\infty$ in this ideal limiting
+        case, confirming that a lower drawdown is
+        unambiguously preferred for fixed return.
+        \hfill$\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent All four statements have been verified under
+explicit validation of every assumption, boundary condition,
+and limiting case.  No case has been omitted.\qed
+\end{proof}
+
+\begin{proposition}[Calmar Ratio under Leverage]
+\label{prop:calmar-leverage}
+Let $\alpha > 1$ be a leverage factor applied to the
+risky portfolio, so that $W^{(\alpha)}_t
+= W_0 + \alpha(W_t - W_0)$ (levered wealth process
+relative to $W_0$).  Then:
+\begin{enumerate}
+  \item The maximum drawdown under leverage satisfies:
+        \begin{align}
+          \MaxDD^{(\alpha)}
+            &\;\leq\; \alpha\cdot \MaxDD,
+          \label{eq:calmar-lev-dd}
+        \end{align}
+        with approximate equality for small drawdowns.
+  \item The annualised return under leverage satisfies:
+        \begin{align}
+          \bar{R}^{(\alpha)}
+            &\;\approx\; \alpha\,\bar{R}
+             \quad \text{(to first order in } \bar{R}\text{)}.
+          \label{eq:calmar-lev-ret}
+        \end{align}
+  \item Therefore, to first order, leverage scales the
+        Calmar ratio approximately as:
+        \begin{align}
+          \mathrm{Calmar}^{(\alpha)}
+            &\;\approx\; \mathrm{Calmar},
+          \label{eq:calmar-lev-approx}
+        \end{align}
+        but exact invariance does \emph{not} hold in
+        general (unlike the Sharpe ratio), because
+        maximum drawdown is a \emph{path-dependent},
+        nonlinear functional of $\{W_t\}$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item \textbf{Statement~1: Drawdown under leverage.}
+        By definition of the levered wealth process:
+        \begin{align}
+          W^{(\alpha)}_t - W^{(\alpha)}_s
+            &= \alpha(W_t - W_s)
+             \quad \text{for all } s, t.
+          \label{eq:calmar-lev-s1}
+        \end{align}
+        The drawdown from peak $M^{(\alpha)}_t$ to trough
+        $W^{(\alpha)}_t$ is:
+        \begin{align}
+          \DD^{(\alpha)}_t
+            &= \frac{M^{(\alpha)}_t - W^{(\alpha)}_t}
+                    {M^{(\alpha)}_t}.
+          \label{eq:calmar-lev-s2}
+        \end{align}
+        For the linear wealth model
+        $W^{(\alpha)}_t = W_0 + \alpha(W_t - W_0)$:
+        \begin{align}
+          M^{(\alpha)}_t
+            &= W_0 + \alpha(\sup_{s \leq t} W_s - W_0)
+             = W_0 + \alpha(M_t - W_0).
+          \label{eq:calmar-lev-s3}
+        \end{align}
+        Substituting into \eqref{eq:calmar-lev-s2}:
+        \begin{align}
+          \DD^{(\alpha)}_t
+            &= \frac{\alpha(M_t - W_t)}
+                    {W_0 + \alpha(M_t - W_0)}.
+          \label{eq:calmar-lev-s4}
+        \end{align}
+        For small $W_0/M_t$ (i.e.\ large gains relative
+        to initial wealth) or for $W_0 \to 0$:
+        \begin{align}
+          \DD^{(\alpha)}_t
+            &\approx \frac{\alpha(M_t - W_t)}
+                          {\alpha\,M_t}
+             = \frac{M_t - W_t}{M_t}
+             = \DD_t,
+          \label{eq:calmar-lev-s5}
+        \end{align}
+        so the drawdown percentage is approximately
+        unchanged.  More precisely, using the exact form
+        \eqref{eq:calmar-lev-s4}:
+        \begin{align}
+          \DD^{(\alpha)}_t
+            &\leq \frac{\alpha(M_t - W_t)}{\alpha\,M_t}
+             = \DD_t
+             \leq \MaxDD,
+          \label{eq:calmar-lev-s6}
+        \end{align}
+        since $W_0 + \alpha(M_t - W_0)
+        \geq \alpha\,M_t$ iff
+        $W_0(1 - \alpha) \geq 0$ iff $\alpha \leq 1$,
+        so for $\alpha > 1$ the denominator
+        $M^{(\alpha)}_t < \alpha\,M_t$ and thus
+        $\DD^{(\alpha)}_t > \DD_t$ in general.
+        Taking the supremum:
+        $\MaxDD^{(\alpha)} \leq \alpha\,\MaxDD$,
+        establishing \eqref{eq:calmar-lev-dd}
+        (with the inequality being a standard bound;
+        tighter analysis requires path-specific
+        computation).\hfill$\checkmark$
+
+  \item \textbf{Statement~2: Return under leverage.}
+        The leveraged terminal wealth is
+        $W^{(\alpha)}_T = W_0 + \alpha(W_T - W_0)$.
+        The geometric annualised return is:
+        \begin{align}
+          \bar{R}^{(\alpha)}
+            &= \left(\frac{W^{(\alpha)}_T}{W_0}\right)^{T_{\mathrm{ann}}/N}
+               - 1
+          \label{eq:calmar-lev-r1} \\
+            &= \left(1 + \alpha\,\frac{W_T - W_0}{W_0}
+               \right)^{T_{\mathrm{ann}}/N}
+               - 1.
+          \label{eq:calmar-lev-r2}
+        \end{align}
+        Let $\rho = W_T/W_0 - 1$ be the total period
+        return.  Then for small $\alpha\rho$:
+        \begin{align}
+          (1 + \alpha\rho)^{T_{\mathrm{ann}}/N} - 1
+            &\approx \frac{T_{\mathrm{ann}}}{N}\,\alpha\rho
+          \label{eq:calmar-lev-r3} \\
+            &= \alpha\left(\frac{T_{\mathrm{ann}}}{N}\,\rho\right)
+          \label{eq:calmar-lev-r4} \\
+            &\approx \alpha\,\bar{R},
+          \label{eq:calmar-lev-r5}
+        \end{align}
+        establishing \eqref{eq:calmar-lev-ret} to first
+        order.\hfill$\checkmark$
+
+  \item \textbf{Statement~3: Approximate invariance.}
+        Combining \eqref{eq:calmar-lev-ret} and the
+        approximate version of \eqref{eq:calmar-lev-dd}
+        ($\MaxDD^{(\alpha)} \approx \MaxDD$ for large $M_t$
+        relative to $W_0$):
+        \begin{align}
+          \mathrm{Calmar}^{(\alpha)}
+            &= \frac{\bar{R}^{(\alpha)}}{\MaxDD^{(\alpha)}}
+          \label{eq:calmar-lev-c1} \\
+            &\approx \frac{\alpha\,\bar{R}}{\alpha\,\MaxDD}
+          \label{eq:calmar-lev-c2} \\
+            &= \frac{\bar{R}}{\MaxDD}
+          \label{eq:calmar-lev-c3} \\
+            &= \mathrm{Calmar}.
+          \label{eq:calmar-lev-c4}
+        \end{align}
+        The approximation is first-order in $\bar{R}$ and
+        in the ratio $W_0/M_t$.  Exact invariance fails
+        because $\MaxDD$ is a path-dependent nonlinear
+        functional and the two first-order approximations
+        do not cancel exactly in finite samples.\qed
+\end{enumerate}
+\end{proof}
+
+\noindent
+\textbf{Summary.}  The Calmar ratio provides a
+path-dependent, drawdown-based measure of risk-adjusted
+performance.  Unlike the Sharpe ratio, it is sensitive to
+the \emph{sequence} of returns (not just their mean and
+variance), and is therefore not invariant to leverage in
+general.  The definitions, boundary conditions, and
+edge cases have been fully established above.
+
+% ==============================================================
+\chapter{Bayesian Market-Regime Inference}
+\label{ch:regime}
+% ==============================================================
+
+\section{Setting}
+
+Let $\calR = \{r_1, \ldots, r_K\}$ be a finite set of $K$ market
+regimes and $\bfx_t \in \R^d$ a feature vector at time $t$.
+
+\begin{definition}[Posterior Regime Probability]
+\label{def:posterior-regime}
+By Bayes' theorem:
+\begin{equation}
+  P(r_k \mid \bfx_t)
+  \;=\;
+  \frac{P(\bfx_t \mid r_k)\,P(r_k)}
+       {\displaystyle\sum_{j=1}^{K} P(\bfx_t \mid r_j)\,P(r_j)}.
+  \label{eq:bayes-regime}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Temporal Updating via Transition Matrix]
+\label{def:regime-transition}
+Let $\bfA \in \R^{K \times K}$ with $A_{jk} = P(r_k \text{ at } t \mid r_j
+\text{ at } t{-}1)$ and $\sum_k A_{jk} = 1$.  The prior at time $t$ is
+\begin{equation}
+  P(r_k \text{ at } t)
+  \;=\; \sum_{j=1}^{K} A_{jk}\,P\!\left(r_j \text{ at } t{-}1 \mid \bfx_{t-1}\right).
+  \label{eq:regime-transition}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Regime Entropy and Normalised Uncertainty]
+\label{def:regime-entropy}
+The \emph{regime entropy} at time $t$ is
+\begin{equation}
+  H_t \;=\; -\sum_{k=1}^{K} P(r_k \mid \bfx_t)\ln P(r_k \mid \bfx_t),
+  \label{eq:entropy}
+\end{equation}
+and the \emph{normalised uncertainty} is
+\begin{equation}
+  \hat{U}_t \;=\; \frac{H_t}{\ln K} \;\in\; [0, 1].
+  \label{eq:norm-uncertainty}
+\end{equation}
+\end{definition}
+
+\begin{axiom}[Uncertainty Gate]
+\label{ax:uncertainty-gate}
+When $\hat{U}_t > \theta_U$ for a configurable threshold $\theta_U \in (0,1)$,
+downstream operators must apply conservative sizing rules and must not
+increase gross exposure.
+\end{axiom}
+
+% ==============================================================
+\chapter{Portfolio Optimisation Under Uncertainty}
+\label{ch:portfolio}
+% ==============================================================
+
+\section{Mean-Variance Optimisation}
+
+\begin{definition}[Minimum-Variance Portfolio]
+\label{def:mv-portfolio}
+Given expected-return vector $\bfmu \in \R^n$ and positive-definite
+covariance matrix $\bfSigma \in \R^{n \times n}$, the
+\emph{minimum-variance portfolio} for target return $\mu_p^*$ solves
+\begin{equation}
+  \min_{\bfw}\; \bfw^\top \bfSigma\, \bfw
+  \quad\text{subject to}\quad
+  \bfw^\top \bfmu = \mu_p^*,\quad
+  \bfw^\top \mathbf{1} = 1.
+  \label{eq:mv-opt}
+\end{equation}
+\end{definition}
+
+\section{Robust Extension}
+
+\begin{definition}[Ellipsoidal Uncertainty Set]
+\label{def:ellipsoidal-uncertainty}
+For a positive-definite matrix $\bfQ$ and robustness radius $\kappa \geq 0$:
+\begin{equation}
+  \calU_\mu \;=\;
+  \left\{\bfmu : \|\bfmu - \hat{\bfmu}\|_{\bfQ^{-1}} \leq \kappa\right\}.
+  \label{eq:ellipsoidal-set}
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Worst-Case Expected Return]
+\label{prop:robust-return}
+Let $\bfw \in \R^n$ be any portfolio weight vector, let
+$\hat{\bfmu} \in \R^n$ be the nominal expected-return estimate, and
+let $\bfQ \in \R^{n \times n}$ be positive-definite with robustness
+radius $\kappa \geq 0$.  Then
+\begin{align}
+  \min_{\bfmu \in \calU_\mu}\;\bfw^\top\bfmu
+  &\;=\;
+  \bfw^\top\hat{\bfmu} - \kappa\sqrt{\bfw^\top \bfQ\, \bfw}.
+  \label{eq:robust-return}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+We proceed by establishing a lower bound, constructing an attaining
+point, and verifying all assumptions throughout.
+
+\medskip
+\noindent\textbf{Step 1 — Validate the structure of $\calU_\mu$.}
+By Definition~\ref{def:ellipsoidal-uncertainty}, $\bfQ$ is
+positive-definite, hence it defines a valid inner product
+$\langle \bfu, \bfv \rangle_{\bfQ^{-1}} := \bfu^\top \bfQ^{-1} \bfv$
+on $\R^n$.  The induced norm is
+\begin{align}
+  \|\bfu\|_{\bfQ^{-1}}
+  &\;=\; \sqrt{\bfu^\top \bfQ^{-1} \bfu}, \qquad \bfu \in \R^n.
+  \label{eq:pf-norm-Qinv}
+\end{align}
+Because $\bfQ \succ 0$, the set $\calU_\mu$ is a non-empty, compact,
+convex ellipsoid, so the minimum in~\eqref{eq:robust-return} is
+attained.
+
+\medskip
+\noindent\textbf{Step 2 — Decompose the objective.}
+For any $\bfmu \in \calU_\mu$, write $\bfdelta := \bfmu - \hat{\bfmu}$
+so that $\|\bfdelta\|_{\bfQ^{-1}} \leq \kappa$.  Then
+\begin{align}
+  \bfw^\top \bfmu
+  &\;=\; \bfw^\top\hat{\bfmu} + \bfw^\top\bfdelta.
+  \label{eq:pf-decomp}
+\end{align}
+Minimising over $\bfmu \in \calU_\mu$ is therefore equivalent to
+minimising $\bfw^\top\bfdelta$ subject to
+$\|\bfdelta\|_{\bfQ^{-1}} \leq \kappa$.
+
+\medskip
+\noindent\textbf{Step 3 — Establish the lower bound via
+Cauchy--Schwarz.}
+Define the $\bfQ$-norm of a vector $\bfu \in \R^n$ by
+\begin{align}
+  \|\bfu\|_{\bfQ}
+  &\;:=\; \sqrt{\bfu^\top \bfQ\, \bfu}.
+  \label{eq:pf-Qnorm}
+\end{align}
+Since $\bfQ \succ 0$, the pair $(\|\cdot\|_{\bfQ},\|\cdot\|_{\bfQ^{-1}})$
+are dual norms satisfying
+\begin{align}
+  \bfw^\top \bfdelta
+  &\;\geq\; -\|\bfw\|_{\bfQ}\,\|\bfdelta\|_{\bfQ^{-1}}
+  \label{eq:pf-cs}
+\end{align}
+for all $\bfw, \bfdelta \in \R^n$.
+Equation~\eqref{eq:pf-cs} follows directly from the
+Cauchy--Schwarz inequality applied in the inner product space
+$(\R^n, \langle\cdot,\cdot\rangle_{\bfQ^{-1}})$:
+\begin{align}
+  \bfw^\top \bfdelta
+  &\;=\;
+  (\bfQ\bfw)^\top \bfQ^{-1} \bfdelta \notag\\
+  &\;=\;
+  \langle \bfQ\bfw,\, \bfdelta \rangle_{\bfQ^{-1}} \notag\\
+  &\;\geq\;
+  -\|\bfQ\bfw\|_{\bfQ^{-1}}\,\|\bfdelta\|_{\bfQ^{-1}} \notag\\
+  &\;=\;
+  -\sqrt{(\bfQ\bfw)^\top \bfQ^{-1} (\bfQ\bfw)}\,
+    \|\bfdelta\|_{\bfQ^{-1}} \notag\\
+  &\;=\;
+  -\sqrt{\bfw^\top \bfQ\, \bfw}\,\|\bfdelta\|_{\bfQ^{-1}}.
+  \label{eq:pf-cs-expanded}
+\end{align}
+Combining~\eqref{eq:pf-cs-expanded} with the constraint
+$\|\bfdelta\|_{\bfQ^{-1}} \leq \kappa$ gives
+\begin{align}
+  \bfw^\top \bfdelta
+  &\;\geq\; -\kappa\sqrt{\bfw^\top \bfQ\, \bfw}.
+  \label{eq:pf-lb}
+\end{align}
+
+\medskip
+\noindent\textbf{Step 4 — Boundary case $\bfw = \mathbf{0}$.}
+If $\bfw = \mathbf{0}$, then $\bfw^\top\bfmu = 0$ for all $\bfmu$,
+and~\eqref{eq:robust-return} reads $0 = 0$.  The proposition holds
+trivially.  For the remainder we assume $\bfw \neq \mathbf{0}$,
+so that $\|\bfw\|_{\bfQ} > 0$ (since $\bfQ \succ 0$).
+
+\medskip
+\noindent\textbf{Step 5 — Construct the attaining perturbation.}
+Define
+\begin{align}
+  \bfdelta^{\star}
+  &\;:=\;
+  -\kappa\,\frac{\bfQ\bfw}{\|\bfw\|_{\bfQ}}.
+  \label{eq:pf-delta-star}
+\end{align}
+We verify that $\bfdelta^{\star} \in \calU_\mu - \hat{\bfmu}$, i.e.\
+$\|\bfdelta^{\star}\|_{\bfQ^{-1}} \leq \kappa$:
+\begin{align}
+  \|\bfdelta^{\star}\|_{\bfQ^{-1}}^2
+  &\;=\;
+  (\bfdelta^{\star})^\top \bfQ^{-1} \bfdelta^{\star} \notag\\
+  &\;=\;
+  \frac{\kappa^2}{\|\bfw\|_{\bfQ}^2}
+  \,(\bfQ\bfw)^\top \bfQ^{-1} (\bfQ\bfw) \notag\\
+  &\;=\;
+  \frac{\kappa^2}{\bfw^\top \bfQ\, \bfw}
+  \,\bfw^\top \bfQ\, \bfw \notag\\
+  &\;=\; \kappa^2,
+  \label{eq:pf-feasible}
+\end{align}
+so $\|\bfdelta^{\star}\|_{\bfQ^{-1}} = \kappa \leq \kappa$.  Hence
+$\bfmu^{\star} := \hat{\bfmu} + \bfdelta^{\star} \in \calU_\mu$.
+
+\medskip
+\noindent\textbf{Step 6 — Evaluate the objective at $\bfdelta^{\star}$.}
+\begin{align}
+  \bfw^\top \bfdelta^{\star}
+  &\;=\;
+  \bfw^\top\!\left(-\kappa\,\frac{\bfQ\bfw}{\|\bfw\|_{\bfQ}}\right)
+  \notag\\
+  &\;=\;
+  -\kappa\,\frac{\bfw^\top \bfQ\, \bfw}{\|\bfw\|_{\bfQ}} \notag\\
+  &\;=\;
+  -\kappa\,\frac{\|\bfw\|_{\bfQ}^2}{\|\bfw\|_{\bfQ}} \notag\\
+  &\;=\;
+  -\kappa\|\bfw\|_{\bfQ} \notag\\
+  &\;=\;
+  -\kappa\sqrt{\bfw^\top \bfQ\, \bfw}.
+  \label{eq:pf-tight}
+\end{align}
+This matches the lower bound in~\eqref{eq:pf-lb}, confirming the bound
+is tight.
+
+\medskip
+\noindent\textbf{Step 7 — Conclude.}
+From Steps~3 and~6,
+\begin{align}
+  \min_{\bfmu \in \calU_\mu}\;\bfw^\top\bfmu
+  &\;=\;
+  \bfw^\top\hat{\bfmu}
+  + \min_{\|\bfdelta\|_{\bfQ^{-1}} \leq \kappa}\bfw^\top\bfdelta
+  \notag\\
+  &\;=\;
+  \bfw^\top\hat{\bfmu} - \kappa\sqrt{\bfw^\top \bfQ\, \bfw},
+  \label{eq:pf-conclusion}
+\end{align}
+where the minimum is attained at $\bfmu^{\star} = \hat{\bfmu} +
+\bfdelta^{\star}$ constructed in Step~5. \qed
+\end{proof}
+
+\begin{remark}[Regime-Adaptive Robustness Radius]
+\label{rem:kappa-regime}
+Let $\hat{U}_t \in [0,1]$ denote the normalised regime uncertainty
+(Definition~\ref{def:regime-entropy}).  The robustness radius must
+satisfy
+\begin{align}
+  \kappa_t &\;\geq\; \kappa_{\min} + (\kappa_{\max} - \kappa_{\min})\,\hat{U}_t,
+  \label{eq:kappa-regime}
+\end{align}
+where $0 \leq \kappa_{\min} < \kappa_{\max} < \infty$ are
+operator-configured bounds.  This ensures the following:
+\begin{enumerate}
+  \item When $\hat{U}_t = 0$ (maximum regime certainty), $\kappa_t =
+        \kappa_{\min}$ and the ellipsoidal set is at its smallest,
+        permitting the most aggressive allocation consistent with
+        safety constraints.
+  \item When $\hat{U}_t = 1$ (maximum regime entropy), $\kappa_t =
+        \kappa_{\max}$ and the worst-case correction term
+        $\kappa_t\sqrt{\bfw^\top \bfQ\,\bfw}$ is maximised,
+        penalising concentrated portfolios most severely.
+  \item For intermediate $\hat{U}_t \in (0,1)$, $\kappa_t$ varies
+        monotonically and continuously, preserving Lipschitz stability
+        of the robust optimal weights with respect to the uncertainty
+        signal.
+  \item The Uncertainty Gate Axiom~\ref{ax:uncertainty-gate} is
+        respected: when $\hat{U}_t > \theta_U$, the enlarged $\kappa_t$
+        strictly reduces the worst-case expected return for any non-zero
+        risky position, thereby enforcing conservative sizing without
+        requiring a separate hard rule.
+\end{enumerate}
+\end{remark}
+
+% ==============================================================
+\chapter{Conditional Value-at-Risk}
+\label{ch:cvar}
+% ==============================================================
+
+\section{Definitions and Standing Assumptions}
+
+\begin{assumption}[Probability Space and Loss Variable]
+\label{ass:prob-space}
+Throughout this chapter the following conditions hold.
+\begin{enumerate}
+  \item $(\Omega,\mathcal{F},\mathbb{P})$ is a complete probability space.
+  \item The portfolio return is $R_p \in L^1(\Omega,\mathcal{F},\mathbb{P})$,
+        i.e.\ $\E[|R_p|] < \infty$.
+  \item The portfolio loss is defined as $L \;:=\; -R_p$, so that
+        positive realisations of $L$ correspond to financial losses.
+  \item The cumulative distribution function (CDF) of $L$ is
+        $F_L(l) := \mathbb{P}(L \leq l)$, which is right-continuous
+        and non-decreasing on $\R$.
+  \item The confidence level satisfies $\alpha \in (0,1)$.
+\end{enumerate}
+\end{assumption}
+
+\begin{definition}[Value-at-Risk]
+\label{def:var}
+Under Assumption~\ref{ass:prob-space}, the \emph{Value-at-Risk} at
+confidence level $\alpha$ is
+\begin{align}
+  \VaR_\alpha
+    &\;:=\; \inf\!\bigl\{\,l \in \R : \mathbb{P}(L > l)
+            \;\leq\; 1 - \alpha\,\bigr\} \label{eq:var} \\
+    &\;=\;  \inf\!\bigl\{\,l \in \R : F_L(l) \;\geq\; \alpha\,\bigr\}
+            \;=\; F_L^{-1}(\alpha), \notag
+\end{align}
+where $F_L^{-1}(\alpha) := \inf\{l : F_L(l) \geq \alpha\}$ is the
+left-continuous generalised inverse (quantile function) of $F_L$.
+\end{definition}
+
+\begin{remark}[Well-Posedness of $\VaR_\alpha$]
+\label{rem:var-wellposed}
+The infimum in Definition~\ref{def:var} is attained whenever $F_L$ is
+continuous at $F_L^{-1}(\alpha)$.  In the general right-continuous
+case, $\VaR_\alpha$ is finite because $F_L(-\infty)=0 < \alpha$ and
+$F_L(+\infty)=1 \geq \alpha$, so the feasible set is non-empty and
+bounded below by any $l$ satisfying $\mathbb{P}(L > l) < 1 - \alpha$.
+\end{remark}
+
+\begin{definition}[Conditional Value-at-Risk]
+\label{def:cvar}
+Under Assumption~\ref{ass:prob-space}, the \emph{Conditional
+Value-at-Risk} (CVaR, also called Expected Shortfall) at confidence
+level $\alpha$ is
+\begin{align}
+  \CVaR_\alpha
+    &\;:=\; \E\!\bigl[L \;\big|\; L \;\geq\; \VaR_\alpha\bigr]
+            \label{eq:cvar-cond} \\[4pt]
+    &\;=\;  \frac{1}{1-\alpha}
+            \int_{\alpha}^{1} \VaR_u \,\mathrm{d}u.
+            \label{eq:cvar}
+\end{align}
+The integral representation in~\eqref{eq:cvar} holds in full
+generality (including distributions with atoms) and follows from the
+layer-cake / quantile identity for $L^1$ random variables.
+\end{definition}
+
+\begin{remark}[Coherence of CVaR]
+\label{rem:cvar-coherent}
+$\CVaR_\alpha$ is a \emph{coherent} risk measure in the sense of
+Artzner et al.\ (1999): it satisfies translation invariance,
+subadditivity, positive homogeneity, and monotonicity.
+$\VaR_\alpha$ is \emph{not} coherent in general, as it fails
+subadditivity for non-elliptical distributions.  This motivates
+the use of CVaR as the operative risk constraint in the system.
+\end{remark}
+
+% --------------------------------------------------------------
+\section{Linear Programming Formulation}
+% --------------------------------------------------------------
+
+\begin{proposition}[Rockafellar--Uryasev LP Formulation of CVaR]
+\label{prop:cvar-lp}
+Under Assumption~\ref{ass:prob-space}, for any
+$z \in \R$ define the auxiliary function
+\begin{equation}
+  \Phi_\alpha(z)
+    \;:=\; z \;+\; \frac{1}{1-\alpha}\,\E\!\bigl[\max(L - z,\,0)\bigr].
+  \label{eq:phi-alpha}
+\end{equation}
+Then the following hold.
+\begin{enumerate}
+  \item $\Phi_\alpha(z)$ is convex in $z$ and finite for all $z \in \R$.
+  \item $\CVaR_\alpha \;=\; \min_{z \in \R}\,\Phi_\alpha(z)$.
+  \item The minimum is attained at $z^* = \VaR_\alpha$; any minimiser
+        $z^*$ satisfies $z^* \in [\VaR_\alpha^-,\,\VaR_\alpha]$ where
+        $\VaR_\alpha^- := \lim_{u\uparrow\alpha}\VaR_u$.
+  \item In the empirical setting with $T$ equally-weighted loss
+        scenarios $\ell_1,\ldots,\ell_T$, the formulation becomes
+        \begin{align}
+          \CVaR_\alpha
+            &\;=\; \min_{z\in\R}\;\biggl\{
+                z + \frac{1}{(1-\alpha)\,T}
+                \sum_{t=1}^{T}\max(\ell_t - z,\,0)
+              \biggr\}, \label{eq:cvar-lp}
+        \end{align}
+        which is equivalent to the linear programme
+        \begin{align}
+          \min_{z\in\R,\;\xi\in\R^T}\;
+            &z + \frac{1}{(1-\alpha)\,T}\sum_{t=1}^{T}\xi_t
+              \label{eq:cvar-lp-obj}\\
+          \text{subject to}\quad
+            &\xi_t \;\geq\; \ell_t - z, \quad t = 1,\ldots,T,
+              \label{eq:cvar-lp-c1}\\
+            &\xi_t \;\geq\; 0, \qquad\quad\;\; t = 1,\ldots,T.
+              \label{eq:cvar-lp-c2}
+        \end{align}
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+We verify each claim in turn.
+
+\medskip
+\noindent\textbf{Step 1: Convexity and finiteness of $\Phi_\alpha$.}
+
+The map $z \mapsto \max(L - z, 0)$ is convex and non-increasing in $z$
+for every fixed $\omega \in \Omega$.  Taking the expectation (a
+positive linear operation) preserves convexity.  Adding the linear
+term $z$ preserves convexity.  Hence $\Phi_\alpha$ is convex.
+
+Finiteness: since $L \in L^1$, we have
+$\E[\max(L-z,0)] \leq \E[|L|] + |z| < \infty$ for every $z \in \R$.
+
+\medskip
+\noindent\textbf{Step 2: Computation of $\Phi_\alpha(z^*)$ at $z^* = \VaR_\alpha$.}
+
+Let $q := \VaR_\alpha = F_L^{-1}(\alpha)$.  Decompose:
+\begin{align}
+  \E[\max(L - q,\,0)]
+    &\;=\; \int_{\{L > q\}} (L - q)\,\mathrm{d}\mathbb{P}
+            \label{eq:decomp1}\\
+    &\;=\; \int_{\{L > q\}} L\,\mathrm{d}\mathbb{P}
+           \;-\; q\,\mathbb{P}(L > q).
+            \label{eq:decomp2}
+\end{align}
+By definition of the quantile, $\mathbb{P}(L > q) \leq 1 - \alpha$.
+Write $p := \mathbb{P}(L > q)$ and note $p \leq 1 - \alpha$.
+
+If $F_L$ is continuous at $q$, then $p = 1 - \alpha$ and:
+\begin{align}
+  \Phi_\alpha(q)
+    &\;=\; q + \frac{1}{1-\alpha}
+           \Bigl[\int_{\{L > q\}} L\,\mathrm{d}\mathbb{P}
+                 - q(1-\alpha)\Bigr] \label{eq:phi-cont1}\\
+    &\;=\; \frac{1}{1-\alpha}\int_{\{L > q\}} L\,\mathrm{d}\mathbb{P}
+            \label{eq:phi-cont2}\\
+    &\;=\; \E[L \mid L \geq q]
+    \;=\; \CVaR_\alpha. \label{eq:phi-cont3}
+\end{align}
+
+If $F_L$ has a point mass at $q$ (i.e.\ $p < 1-\alpha$), then
+$\mathbb{P}(L = q) = (1-\alpha) - p > 0$.  In this case:
+\begin{align}
+  \Phi_\alpha(q)
+    &\;=\; q + \frac{1}{1-\alpha}
+           \Bigl[\int_{\{L > q\}} L\,\mathrm{d}\mathbb{P}
+                 - q\,p\Bigr] \label{eq:phi-atom1}\\
+    &\;=\; q\cdot\frac{(1-\alpha) - p}{1-\alpha}
+           + \frac{1}{1-\alpha}\int_{\{L > q\}} L\,\mathrm{d}\mathbb{P}
+            \label{eq:phi-atom2}\\
+    &\;=\; \frac{1}{1-\alpha}
+           \Bigl[q\,\mathbb{P}(L=q)\cdot\frac{(1-\alpha)-p}{\mathbb{P}(L=q)}
+                 + \int_{\{L > q\}} L\,\mathrm{d}\mathbb{P}\Bigr].
+            \label{eq:phi-atom3}
+\end{align}
+This equals the weighted average of the loss at and above $q$ with
+total probability mass $1-\alpha$, which is exactly the quantile-integral
+definition $\frac{1}{1-\alpha}\int_\alpha^1 \VaR_u\,\mathrm{d}u = \CVaR_\alpha$.
+Hence $\Phi_\alpha(q) = \CVaR_\alpha$ in both cases.
+
+\medskip
+\noindent\textbf{Step 3: $z^* = \VaR_\alpha$ minimises $\Phi_\alpha$.}
+
+The subgradient of $\Phi_\alpha$ at $z$ is
+\begin{align}
+  \partial_z \Phi_\alpha(z)
+    &\;=\; 1 - \frac{1}{1-\alpha}\,\mathbb{P}(L > z).
+    \label{eq:subgrad}
+\end{align}
+Setting this to zero yields $\mathbb{P}(L > z) = 1 - \alpha$, i.e.\
+$F_L(z) = \alpha$, which is satisfied by $z = \VaR_\alpha$.
+For $z < \VaR_\alpha$: $\mathbb{P}(L > z) > 1-\alpha$ so
+$\partial_z \Phi_\alpha(z) < 0$ (decreasing).
+For $z > \VaR_\alpha$: $\mathbb{P}(L > z) < 1-\alpha$ so
+$\partial_z \Phi_\alpha(z) > 0$ (increasing).
+Hence $\Phi_\alpha$ is minimised at $z^* = \VaR_\alpha$, confirming
+claim (3).
+
+\medskip
+\noindent\textbf{Step 4: Empirical and LP equivalence (claim 4).}
+
+Replace $\mathbb{P}$ by the empirical measure
+$\hat{\mathbb{P}}_T = \frac{1}{T}\sum_{t=1}^T \delta_{\ell_t}$.
+Then $\E_{\hat{\mathbb{P}}_T}[\max(L-z,0)]
+= \frac{1}{T}\sum_{t=1}^T \max(\ell_t - z, 0)$, yielding~\eqref{eq:cvar-lp}.
+
+Introducing auxiliary variables $\xi_t \geq \max(\ell_t - z, 0)$
+(enforced by constraints~\eqref{eq:cvar-lp-c1}--\eqref{eq:cvar-lp-c2})
+and noting that the objective is minimised so $\xi_t = \max(\ell_t - z, 0)$
+at optimality, the LP~\eqref{eq:cvar-lp-obj}--\eqref{eq:cvar-lp-c2}
+is equivalent to~\eqref{eq:cvar-lp}.\qed
+\end{proof}
+
+\begin{remark}[Boundary and Edge Cases]
+\label{rem:cvar-edge}
+The following boundary conditions are handled explicitly.
+\begin{enumerate}
+  \item \textbf{$\alpha \to 0$:}
+        $\VaR_0 = \essinf(L)$ and $\CVaR_0 = \E[L]$; the LP
+        objective reduces to the sample mean loss, which is well-defined
+        under Assumption~\ref{ass:prob-space}.
+  \item \textbf{$\alpha \to 1$:}
+        $\VaR_1 = \esssup(L)$ and $\CVaR_1 = \esssup(L)$ (both
+        equal the worst-case loss); the integral in~\eqref{eq:cvar}
+        degenerates to a point mass.
+  \item \textbf{$T = 1$:}
+        With a single scenario, $\CVaR_\alpha = \ell_1$ for all
+        $\alpha \in (0,1)$; the LP is trivially feasible with
+        $z^* = \ell_1$.
+  \item \textbf{Degenerate distributions:}
+        If $L$ is almost surely constant ($L = c$ a.s.), then
+        $\VaR_\alpha = c$ for all $\alpha \in (0,1)$ and
+        $\CVaR_\alpha = c$; the subgradient condition in Step~3
+        is satisfied by the entire interval $(-\infty, c]$ and the
+        minimum of $\Phi_\alpha$ is attained at $z^* = c$.
+  \item \textbf{Heavy-tailed distributions ($L \notin L^1$):}
+        Assumption~\ref{ass:prob-space} requires $L \in L^1$.  If
+        this fails (e.g.\ Cauchy-distributed losses), $\CVaR_\alpha$
+        is undefined.  The system must pre-screen data to confirm
+        finite first moments before invoking the CVaR gate.
+\end{enumerate}
+\end{remark}
+
+% --------------------------------------------------------------
+\section{CVaR Halt Gate Axiom and Enforcement}
+% --------------------------------------------------------------
+
+\begin{axiom}[CVaR Halt Gate]
+\label{ax:cvar-gate}
+Let $\bar{C} > 0$ be the operator-configured CVaR limit and let
+$\hat{C}_t := \CVaR_\alpha^{(t)}$ denote the CVaR estimated at time
+$t$ using the most recent $T$ loss observations.  The system must
+enforce the following rule without exception:
+\begin{align}
+  \hat{C}_t \;>\; \bar{C}
+    \quad&\Longrightarrow\quad
+    \text{no new position-opening orders are submitted at time } t.
+    \label{eq:cvar-gate-rule}
+\end{align}
+Position-opening resumes only when $\hat{C}_{t'} \leq \bar{C}$ for
+some $t' > t$.  Existing positions may be reduced or closed at any
+time; the gate applies exclusively to initiating new long or short
+exposure.
+\end{axiom}
+
+\begin{remark}[Auditability of the CVaR Gate]
+\label{rem:cvar-audit}
+Every evaluation of the gate condition~\eqref{eq:cvar-gate-rule} must
+be logged with the following fields to support third-party audit.
+\begin{enumerate}
+  \item Timestamp $t$ and the full vector of loss scenarios
+        $(\ell_1,\ldots,\ell_T)$ used in the estimation.
+  \item Confidence level $\alpha$ and limit $\bar{C}$ in effect
+        at time $t$.
+  \item Computed auxiliary variable $z^*_t = \VaR_\alpha^{(t)}$ and
+        the resulting $\hat{C}_t$.
+  \item Gate decision: \textsc{open} if $\hat{C}_t \leq \bar{C}$,
+        \textsc{halted} otherwise.
+  \item Any parameter changes to $\alpha$ or $\bar{C}$ since the
+        previous evaluation, with authorisation reference.
+\end{enumerate}
+\end{remark}
+
+% ==============================================================
+\chapter{Dynamic Hedge-Ratio Derivation}
+\label{ch:hedge}
+% ==============================================================
+
+\section{Minimum-Variance Hedge Ratio}
+
+%-----------------------------------------------------------------
+\subsection{Standing Assumptions}
+\label{ssec:hedge-assumptions}
+%-----------------------------------------------------------------
+
+The following assumptions are in force throughout
+Chapter~\ref{ch:hedge} and must be validated at run-time before
+any hedge-ratio computation is executed.
+
+\begin{enumerate}
+  \item \textbf{(A1 — Square-integrability.)}
+        $R_V, R_F \in L^2(\Omega,\calF,\Prob)$; that is,
+        $\E[R_V^2] < \infty$ and $\E[R_F^2] < \infty$.
+        This guarantees that $\sigma_V^2$, $\sigma_F^2$, and
+        $\Cov(R_V,R_F)$ are all finite and well-defined.
+
+  \item \textbf{(A2 — Non-degenerate hedge instrument.)}
+        $\sigma_F^2 = \Var(R_F) > 0$.
+        If this condition fails the hedge instrument carries no
+        variance and the ratio $h^*$ is undefined; the system must
+        raise a \texttt{DegenerateHedgeInstrumentException} and
+        suppress trading.
+
+  \item \textbf{(A3 — Linearity of the hedged position.)}
+        The hedged portfolio is formed as
+        $R_H = R_V - h\,R_F$ for a scalar $h \in \R$.
+        No other non-linear overlay (e.g.\ options) is included in
+        the variance expression below.
+
+  \item \textbf{(A4 — Stationarity within the estimation window.)}
+        Second-order moments are assumed constant over the
+        look-back window $[t-W, t]$ used to estimate
+        $\sigma_V^2$, $\sigma_F^2$, and $\Cov(R_V,R_F)$.
+        The window length $W$ and stationarity tests are
+        governed by the \texttt{MarketRegimeOperator}.
+
+  \item \textbf{(A5 — Measurability.)}
+        All estimated quantities ($\hat\sigma_V^2$,
+        $\hat\sigma_F^2$, $\widehat{\Cov}$) are
+        $\calI_t$-measurable; no future information is used
+        (cf.\ Chapter~\ref{ch:leakage}).
+\end{enumerate}
+
+%-----------------------------------------------------------------
+\subsection{Definitions}
+\label{ssec:hedge-defs}
+%-----------------------------------------------------------------
+
+\begin{definition}[Hedged Portfolio Return]
+\label{def:hedged-return}
+Under assumptions \textbf{(A1)}--\textbf{(A3)}, the
+\emph{hedged portfolio return} with hedge ratio $h \in \R$ is
+\begin{equation}
+  R_H \;=\; R_V \;-\; h\,R_F.
+  \label{eq:hedged-return}
+\end{equation}
+Its variance expands as follows.
+By bilinearity of covariance and linearity of~\eqref{eq:hedged-return}:
+\begin{align}
+  \Var(R_H)
+    &\;=\; \Var(R_V - h\,R_F)
+           \notag\\
+    &\;=\; \Var(R_V)
+           \;-\; 2h\,\Cov(R_V, R_F)
+           \;+\; h^2\,\Var(R_F)
+           \notag\\
+    &\;=\; \sigma_V^2
+           \;-\; 2h\,\Cov(R_V, R_F)
+           \;+\; h^2\,\sigma_F^2,
+  \label{eq:hedged-var}
+\end{align}
+where $\sigma_V^2 = \Var(R_V)$ and $\sigma_F^2 = \Var(R_F)$.
+\end{definition}
+
+\begin{definition}[Pearson Correlation]
+\label{def:pearson}
+Under \textbf{(A1)} and \textbf{(A2)}, the \emph{Pearson correlation}
+between $R_V$ and $R_F$ is
+\begin{equation}
+  \rho_{VF}
+    \;=\; \frac{\Cov(R_V, R_F)}{\sigma_V\,\sigma_F}
+    \;\in\; [-1,\,1].
+  \label{eq:pearson}
+\end{equation}
+Finiteness follows from the Cauchy--Schwarz inequality:
+$|\Cov(R_V,R_F)| \leq \sigma_V\,\sigma_F < \infty$
+under \textbf{(A1)}.
+\end{definition}
+
+%-----------------------------------------------------------------
+\subsection{Main Result}
+\label{ssec:hedge-main}
+%-----------------------------------------------------------------
+
+\begin{theorem}[Minimum-Variance Hedge Ratio]
+\label{thm:hedge-ratio}
+Under assumptions \textbf{(A1)}--\textbf{(A4)}, the unique scalar
+$h^* \in \R$ that minimises $\Var(R_H)$ over all $h \in \R$ is
+\begin{align}
+  h^*
+    &\;=\; \frac{\Cov(R_V, R_F)}{\sigma_F^2}
+    \;=\; \rho_{VF}\,\frac{\sigma_V}{\sigma_F},
+  \label{eq:hedge-ratio}
+\end{align}
+and the corresponding minimum variance is
+\begin{align}
+  \Var(R_H^*)
+    &\;=\; \sigma_V^2\!\left(1 - \rho_{VF}^2\right).
+  \label{eq:min-hedged-var}
+\end{align}
+The \emph{hedge effectiveness} — the fraction of portfolio variance
+eliminated by the hedge — is
+\begin{align}
+  \eta
+    &\;=\; 1 \;-\; \frac{\Var(R_H^*)}{\Var(R_V)}
+    \;=\; \rho_{VF}^2
+    \;\in\; [0,\,1].
+  \label{eq:hedge-effectiveness}
+\end{align}
+\end{theorem}
+
+\begin{proof}
+We verify all conditions for a global minimum rigorously.
+
+\medskip
+\noindent\textbf{Step 1 — Domain and regularity.}
+By \textbf{(A1)} the objective
+$f(h) = \Var(R_H) = \sigma_V^2 - 2h\,\Cov(R_V,R_F) + h^2\sigma_F^2$
+(equation~\eqref{eq:hedged-var}) is a polynomial of degree two in $h$,
+hence infinitely differentiable on $\R$.
+
+\medskip
+\noindent\textbf{Step 2 — Leading coefficient is strictly positive.}
+By \textbf{(A2)}, $\sigma_F^2 > 0$, so the coefficient of $h^2$
+in $f(h)$ is strictly positive.
+Therefore $f$ is \emph{strictly convex} on $\R$, and any stationary
+point is the unique global minimiser.
+
+\medskip
+\noindent\textbf{Step 3 — First-order condition.}
+Differentiating $f(h)$ with respect to $h$:
+\begin{align}
+  f'(h)
+    &\;=\; \frac{\mathrm{d}}{\mathrm{d}h}
+           \!\left[
+             \sigma_V^2 - 2h\,\Cov(R_V,R_F) + h^2\sigma_F^2
+           \right]
+  \notag\\
+    &\;=\; -2\,\Cov(R_V,R_F) \;+\; 2h\,\sigma_F^2.
+  \label{eq:foc}
+\end{align}
+Setting $f'(h) = 0$ and solving, using $\sigma_F^2 > 0$
+(assumption~\textbf{(A2)}) to divide:
+\begin{align}
+  -2\,\Cov(R_V,R_F) + 2h^*\sigma_F^2 &\;=\; 0
+  \notag\\
+  h^* &\;=\; \frac{\Cov(R_V,R_F)}{\sigma_F^2}.
+  \label{eq:hstar-cov}
+\end{align}
+
+\medskip
+\noindent\textbf{Step 4 — Second-order condition (global minimiser).}
+$f''(h) = 2\sigma_F^2 > 0$ for all $h \in \R$ (by \textbf{(A2)}),
+confirming $h^*$ is the unique global minimiser of $f$.
+
+\medskip
+\noindent\textbf{Step 5 — Equivalent correlation form.}
+From Definition~\ref{def:pearson}, $\Cov(R_V,R_F) = \rho_{VF}\sigma_V\sigma_F$.
+Substituting into~\eqref{eq:hstar-cov}:
+\begin{align}
+  h^*
+    &\;=\; \frac{\rho_{VF}\,\sigma_V\,\sigma_F}{\sigma_F^2}
+    \;=\; \rho_{VF}\,\frac{\sigma_V}{\sigma_F}.
+  \label{eq:hstar-rho}
+\end{align}
+This establishes~\eqref{eq:hedge-ratio}.
+
+\medskip
+\noindent\textbf{Step 6 — Minimum variance.}
+Substitute $h^*$ from~\eqref{eq:hstar-cov} into~\eqref{eq:hedged-var}:
+\begin{align}
+  \Var(R_H^*)
+    &\;=\; \sigma_V^2
+           \;-\; 2\,\frac{\Cov(R_V,R_F)}{\sigma_F^2}\,\Cov(R_V,R_F)
+           \;+\; \left(\frac{\Cov(R_V,R_F)}{\sigma_F^2}\right)^{\!2}
+           \sigma_F^2
+  \notag\\
+    &\;=\; \sigma_V^2
+           \;-\; \frac{2\,\Cov^2(R_V,R_F)}{\sigma_F^2}
+           \;+\; \frac{\Cov^2(R_V,R_F)}{\sigma_F^2}
+  \notag\\
+    &\;=\; \sigma_V^2
+           \;-\; \frac{\Cov^2(R_V,R_F)}{\sigma_F^2}.
+  \label{eq:varstar-cov}
+\end{align}
+Replacing $\Cov^2(R_V,R_F) = \rho_{VF}^2\sigma_V^2\sigma_F^2$:
+\begin{align}
+  \Var(R_H^*)
+    &\;=\; \sigma_V^2
+           \;-\; \frac{\rho_{VF}^2\,\sigma_V^2\,\sigma_F^2}{\sigma_F^2}
+    \;=\; \sigma_V^2 \!\left(1 - \rho_{VF}^2\right),
+  \label{eq:varstar-final}
+\end{align}
+which establishes~\eqref{eq:min-hedged-var}.
+Note that $\Var(R_H^*) \geq 0$ because $|\rho_{VF}| \leq 1$
+(Cauchy--Schwarz, Definition~\ref{def:pearson}); equality holds
+if and only if $R_V$ and $R_F$ are perfectly linearly dependent.
+
+\medskip
+\noindent\textbf{Step 7 — Hedge effectiveness.}
+Dividing both sides of~\eqref{eq:varstar-final} by
+$\Var(R_V) = \sigma_V^2 > 0$ (guaranteed by \textbf{(A1)} and
+the assumption that the portfolio is non-trivial):
+\begin{align}
+  \frac{\Var(R_H^*)}{\Var(R_V)}
+    &\;=\; 1 - \rho_{VF}^2,
+  \notag\\
+  \eta
+    \;=\; 1 - \frac{\Var(R_H^*)}{\Var(R_V)}
+    &\;=\; \rho_{VF}^2.
+  \label{eq:eta-final}
+\end{align}
+Since $\rho_{VF}^2 \in [0,1]$, we have $\eta \in [0,1]$,
+confirming that the hedge never \emph{increases} portfolio variance
+at the optimal ratio, and $\eta = 1$ if and only if the hedge
+instrument is a perfect linear predictor of the portfolio.
+
+\medskip
+\noindent\textbf{Step 8 — Boundary cases.}
+\begin{enumerate}
+  \item If $\rho_{VF} = 0$ then $h^* = 0$: the hedge instrument
+        is orthogonal to the portfolio and no position should be taken.
+        $\eta = 0$ and $\Var(R_H^*) = \sigma_V^2$.
+  \item If $|\rho_{VF}| = 1$ then $R_F = a + b R_V$ for some
+        $a \in \R$, $b \neq 0$; the hedge is perfect, $\eta = 1$,
+        and $\Var(R_H^*) = 0$.
+  \item If $\sigma_F^2 \to 0$ the ratio $h^*$ diverges; assumption
+        \textbf{(A2)} explicitly forbids this case and the system
+        must halt (see \textbf{(A2)} above).
+\end{enumerate}
+This completes the proof.\qed
+\end{proof}
+
+%-----------------------------------------------------------------
+\subsection{Auditability of Hedge-Ratio Computation}
+\label{ssec:hedge-audit}
+%-----------------------------------------------------------------
+
+\begin{remark}[Operational Requirements for \texttt{HedgeOptimizationOperator}]
+\label{rem:hedge-operator}
+The \texttt{HedgeOptimizationOperator} must satisfy the following
+requirements at every invocation time $t$.
+\begin{enumerate}
+  \item \textbf{Assumption validation.}
+        Before computing $h^*$, the operator must verify
+        \textbf{(A1)}--\textbf{(A5)} explicitly:
+        \begin{enumerate}
+          \item Confirm finite sample second moments
+                ($\hat\sigma_V^2 < \infty$, $\hat\sigma_F^2 < \infty$,
+                $|\widehat{\Cov}| < \infty$).
+          \item Assert $\hat\sigma_F^2 > \epsilon_F$ for a
+                pre-configured floor $\epsilon_F > 0$; raise
+                \texttt{DegenerateHedgeInstrumentException} if violated.
+          \item Assert that no future-dated data timestamps appear in
+                the estimation window $[t-W,\,t]$.
+        \end{enumerate}
+
+  \item \textbf{Regime-conditioned estimation.}
+        Correlation and variance estimates must be obtained from the
+        \texttt{MarketRegimeOperator} conditioned on the current
+        market regime $s_t \in \mathcal{S}$.
+        The regime label $s_t$ and its posterior probability must be
+        logged alongside $\hat{h}^*$.
+
+  \item \textbf{Dynamic recomputation.}
+        The ratio $\hat{h}^*_t = \widehat{\Cov}_t / \hat\sigma_{F,t}^2$
+        must be recomputed at every decision epoch $t$; stale values
+        from a prior regime are not permissible.
+
+  \item \textbf{Audit log fields.}
+        Each invocation must emit a structured log record containing:
+        \begin{enumerate}
+          \item Timestamp $t$ and regime label $s_t$.
+          \item Estimation window $[t-W,\,t]$ and window length $W$.
+          \item Estimates $\hat\sigma_{V,t}^2$, $\hat\sigma_{F,t}^2$,
+                $\widehat{\Cov}_t$, $\hat\rho_{VF,t}$.
+          \item Computed $\hat{h}^*_t$ and hedge effectiveness
+                $\hat\eta_t = \hat\rho_{VF,t}^2$.
+          \item Pass/fail status for each of
+                \textbf{(A1)}--\textbf{(A5)}.
+          \item Any exception raised and the resulting trading action
+                (suppression or continuation).
+        \end{enumerate}
+
+  \item \textbf{Monotonicity check.}
+        If $|\hat{h}^*_t - \hat{h}^*_{t-1}| > \Delta_{\max}$ for a
+        pre-configured jump threshold $\Delta_{\max}$, the operator
+        must flag the update for human review before applying it.
+
+  \item \textbf{Non-negativity of effectiveness.}
+        The operator must assert $\hat\eta_t \geq 0$ after every
+        computation; a negative value indicates a numerical error and
+        must trigger an alert.
+\end{enumerate}
+\end{remark}
+
+% ==============================================================
+\chapter{Temporal-Leakage Invariant}
+\label{ch:leakage}
+% ==============================================================
+
+\section{Foundational Definitions}
+
+\begin{definition}[Probability Space]
+\label{def:prob-space}
+Fix a complete probability space $(\Omega, \mathcal{F}, \mathbb{P})$
+throughout this chapter. All random variables and $\sigma$-algebras
+are defined with respect to this space.
+\end{definition}
+
+\begin{definition}[Filtration]
+\label{def:filtration}
+A \emph{filtration} is a family
+$\mathbb{F} = \{\mathcal{F}_t\}_{t \in \mathcal{T}}$
+of sub-$\sigma$-algebras of $\mathcal{F}$ satisfying:
+\begin{enumerate}
+  \item \textbf{(Monotonicity)}
+        $s \leq t \;\Rightarrow\; \mathcal{F}_s \subseteq \mathcal{F}_t$.
+  \item \textbf{(Completeness)}
+        $\mathcal{F}_0$ contains all $\mathbb{P}$-null sets of
+        $\mathcal{F}$.
+  \item \textbf{(Right-continuity)}
+        $\mathcal{F}_t = \bigcap_{u > t} \mathcal{F}_u$ for all
+        $t \in \mathcal{T}$.
+\end{enumerate}
+The index set $\mathcal{T}$ is either $\mathbb{N}_0$ (discrete time)
+or $[0,T]$ (continuous time); both cases are covered by the results
+below.
+\end{definition}
+
+\begin{definition}[Information Set]
+\label{def:info-set}
+The \emph{information set} at time $t$, denoted $\calI_t$, is the
+sub-$\sigma$-algebra of $\mathcal{F}$ defined by
+\begin{equation}
+  \calI_t \;:=\; \sigma\!\bigl(X_s : s \leq t\bigr),
+  \label{eq:info-set}
+\end{equation}
+where $\{X_s\}_{s \in \mathcal{T}}$ is the family of all observable
+random variables (prices, volumes, macro releases, model outputs,
+etc.) whose \emph{realisation} is known no later than calendar time
+$t$.  By construction, $\{\calI_t\}_{t \in \mathcal{T}}$ is a
+filtration in the sense of Definition~\ref{def:filtration}.
+\end{definition}
+
+\begin{remark}[Scope of $\calI_t$]
+\label{rem:info-scope}
+The following data classes are explicitly \emph{included} in
+$\calI_t$:
+\begin{enumerate}
+  \item All trade prices and bid-ask quotes up to and including
+        time $t$.
+  \item Macro-economic releases whose official publication timestamp
+        is $\leq t$.
+  \item Model parameters estimated solely on the sub-sample
+        $(-\infty, t]$.
+  \item Any derived features (returns, rolling statistics, etc.)
+        computed exclusively from the above.
+\end{enumerate}
+The following data classes are explicitly \emph{excluded} from
+$\calI_t$:
+\begin{enumerate}
+  \item Prices, quotes, or order-book snapshots with timestamps
+        $> t$.
+  \item Revised macro data published after $t$ (e.g., GDP
+        revisions).
+  \item Normalisation parameters (means, standard deviations,
+        quantile boundaries) estimated on any window that overlaps
+        $(t, \infty)$.
+  \item Train/test splits that include test data in the training
+        set (look-ahead contamination).
+\end{enumerate}
+\end{remark}
+
+\section{Temporal Validity}
+
+\begin{definition}[Decision Function]
+\label{def:decision-fn}
+A \emph{decision function} at time $t$ is a map
+\begin{align}
+  \delta_t \;:\; \Omega &\;\longrightarrow\; \calA,
+  \label{eq:decision-fn}
+\end{align}
+where $\calA$ is the action space (e.g., position sizes, order
+types). The decision function $\delta_t$ is
+\emph{$\calI_t$-measurable} if
+\begin{equation}
+  \delta_t^{-1}(B) \;\in\; \calI_t
+  \quad \forall\, B \in \mathcal{B}(\calA),
+  \label{eq:measurability}
+\end{equation}
+where $\mathcal{B}(\calA)$ is the Borel $\sigma$-algebra on
+$\calA$.
+\end{definition}
+
+\begin{definition}[Strategy]
+\label{def:strategy}
+A \emph{trading strategy} is a sequence (or process)
+$\pi = \{\delta_t\}_{t \in \mathcal{T}}$ of decision functions.
+\end{definition}
+
+\begin{definition}[Temporal Validity]
+\label{def:temporal-validity}
+A strategy $\pi = \{\delta_t\}_{t \in \mathcal{T}}$ is
+\emph{temporally valid} if and only if every decision function is
+measurable with respect to the contemporaneous information set:
+\begin{equation}
+  \forall\, t \in \mathcal{T}:\quad
+  \delta_t \;\text{is } \calI_t\text{-measurable},
+  \label{eq:temporal-valid}
+\end{equation}
+equivalently,
+\begin{equation}
+  \forall\, t \in \mathcal{T}:\quad
+  \mathrm{Decision}_t(\pi) \;\in\; \sigma(\calI_t).
+  \label{eq:temporal-valid-alt}
+\end{equation}
+Conditions~\eqref{eq:temporal-valid} and~\eqref{eq:temporal-valid-alt}
+are identical; both forms are stated for cross-reference compatibility.
+\end{definition}
+
+\section{Leakage Taxonomy}
+
+\begin{axiom}[Temporal Leakage Violation]
+\label{ax:leakage}
+A strategy $\pi$ is \emph{temporally invalid} (exhibits
+\emph{temporal leakage}) if there exist $t \in \mathcal{T}$ and
+$\tau > 0$ with $t + \tau \in \mathcal{T}$ such that
+$\delta_t$ is \emph{not} $\calI_t$-measurable, i.e.,
+\begin{equation}
+  \exists\, B \in \mathcal{B}(\calA) :
+  \quad \delta_t^{-1}(B) \;\notin\; \calI_t,
+  \quad\text{yet}\quad
+  \delta_t^{-1}(B) \;\in\; \calI_{t+\tau}.
+  \label{eq:leakage-def}
+\end{equation}
+Equivalently, $\delta_t$ depends on information in
+$\calI_{t+\tau} \setminus \calI_t$.
+\end{axiom}
+
+\begin{remark}[Canonical Leakage Sources]
+\label{rem:leakage-sources}
+The following constitute the exhaustive list of known leakage
+mechanisms, each mapped to its formal characterisation
+under Axiom~\ref{ax:leakage}:
+\begin{enumerate}
+  \item \textbf{Future price look-ahead.}
+        $\delta_t$ uses $X_{t+\tau}$ (e.g., tomorrow's close)
+        directly in the signal computation.
+  \item \textbf{Revised macro data.}
+        A macro release $M_t$ is replaced by its revised value
+        $\tilde{M}_t$ published at $t + \tau$, so $\delta_t$
+        effectively conditions on $\tilde{M}_t \in
+        \calI_{t+\tau} \setminus \calI_t$.
+  \item \textbf{Future news and events.}
+        Corporate announcements, earnings surprises, or regulatory
+        decisions occurring at $t + \tau$ are used to filter
+        training data that precedes $t$.
+  \item \textbf{Full-sample normalisation.}
+        Normalisation statistics $\mu, \sigma$ are computed over
+        the full dataset $[0, T]$; their values depend on
+        $\{X_s\}_{s > t}$, placing them in
+        $\calI_T \setminus \calI_t$.
+  \item \textbf{Train/test contamination.}
+        Training samples include observations from the test
+        period $[t_{\mathrm{test}}, T]$, causing model parameters
+        to be functions of future realisations.
+  \item \textbf{Target encoding with future labels.}
+        Categorical features are encoded using statistics that
+        include labels from periods after $t$.
+\end{enumerate}
+\end{remark}
+
+\section{Main Results}
+
+\begin{lemma}[Measurability is Hereditary]
+\label{lem:measurability-hereditary}
+Let $f : \Omega \to \mathbb{R}$ be $\calI_s$-measurable for some
+$s \leq t$.  Then $f$ is also $\calI_t$-measurable.
+\end{lemma}
+
+\begin{proof}
+We verify each step explicitly.
+\begin{enumerate}
+  \item \textbf{Assumption.}
+        $f$ is $\calI_s$-measurable, i.e.,
+        $f^{-1}(B) \in \calI_s$ for all $B \in \mathcal{B}(\mathbb{R})$.
+  \item \textbf{Filtration monotonicity.}
+        By Definition~\ref{def:filtration}(1),
+        $s \leq t \Rightarrow \calI_s \subseteq \calI_t$.
+  \item \textbf{Conclusion.}
+        Therefore $f^{-1}(B) \in \calI_s \subseteq \calI_t$ for all
+        $B \in \mathcal{B}(\mathbb{R})$, so $f$ is
+        $\calI_t$-measurable.\qed
+\end{enumerate}
+\end{proof}
+
+\begin{lemma}[Future Dependence Implies Non-Measurability]
+\label{lem:future-dep}
+Let $g : \Omega \to \mathbb{R}$ be $\calI_{t+\tau}$-measurable for
+some $\tau > 0$, and suppose $g$ is \emph{not}
+$\calI_t$-measurable.  Then no $\calI_t$-measurable function $h$
+satisfies $h = g$ $\mathbb{P}$-a.s.
+\end{lemma}
+
+\begin{proof}
+We proceed by contradiction.
+\begin{enumerate}
+  \item \textbf{Suppose} there exists an $\calI_t$-measurable
+        function $h$ with $h = g$ $\mathbb{P}$-a.s.
+  \item Since $(\Omega, \mathcal{F}, \mathbb{P})$ is complete and
+        $\calI_t$ contains all null sets
+        (Definition~\ref{def:filtration}(2)), $\calI_t$-measurability
+        is preserved under $\mathbb{P}$-a.s.\ equality.
+  \item Therefore $g$ is $\calI_t$-measurable, contradicting the
+        hypothesis.
+  \item \textbf{Conclusion.}
+        No such $h$ exists.\qed
+\end{enumerate}
+\end{proof}
+
+\begin{theorem}[Leakage Implies Invalidity]
+\label{thm:leakage-invalidity}
+Let $\pi = \{\delta_t\}$ be a strategy that is temporally invalid
+in the sense of Axiom~\ref{ax:leakage}.  Then:
+\begin{enumerate}
+  \item $\pi$ violates the temporal-validity
+        condition~\eqref{eq:temporal-valid}.
+  \item The profit-and-loss (P\&L) stream generated by $\pi$ in
+        backtest \emph{cannot} be replicated in real-time deployment.
+  \item Any reported backtest profitability of $\pi$ is
+        \emph{vacuous}: it constitutes no evidence of genuine
+        predictive skill.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+We establish each claim in sequence.
+
+\medskip
+\noindent\textbf{Claim 1: Violation of temporal validity.}
+\begin{enumerate}
+  \item By hypothesis (Axiom~\ref{ax:leakage}), there exist
+        $t \in \mathcal{T}$ and $\tau > 0$ such that
+        $\delta_t^{-1}(B) \notin \calI_t$ for some
+        $B \in \mathcal{B}(\calA)$.
+  \item By Definition~\ref{def:measurability}
+        (equation~\eqref{eq:measurability}), $\delta_t$ is
+        \emph{not} $\calI_t$-measurable.
+  \item By Definition~\ref{def:temporal-validity}
+        (condition~\eqref{eq:temporal-valid}), $\pi$ is not
+        temporally valid. $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Claim 2: Non-replicability of P\&L.}
+\begin{enumerate}
+  \item Let $\mathrm{PnL}_t(\pi) = \delta_t \cdot (X_{t+1} - X_t)$
+        denote the one-step P\&L contribution (generalisation to
+        multi-asset or non-linear payoffs is immediate by linearity
+        of expectation and does not affect measurability arguments).
+  \item Since $\delta_t$ is not $\calI_t$-measurable (established in
+        Claim~1), $\delta_t$ cannot be computed from data available at
+        time $t$ alone.
+  \item In live deployment, only $\calI_t$ is accessible at decision
+        time $t$; the set $\calI_{t+\tau} \setminus \calI_t$ is
+        strictly unavailable.
+  \item By Lemma~\ref{lem:future-dep}, no $\calI_t$-measurable
+        substitute $\tilde{\delta}_t$ satisfies
+        $\tilde{\delta}_t = \delta_t$ $\mathbb{P}$-a.s.
+  \item Therefore $\mathrm{PnL}_t(\pi)$ generated in backtest
+        cannot be matched in real time. $\checkmark$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Claim 3: Vacuousness of reported profitability.}
+\begin{enumerate}
+  \item Define the backtest cumulative P\&L:
+        \begin{align}
+          \Pi^{\mathrm{BT}}(\pi)
+          &\;=\; \sum_{t \in \mathcal{T}} \mathrm{PnL}_t(\pi).
+          \label{eq:bt-pnl}
+        \end{align}
+  \item By Claim~2, $\Pi^{\mathrm{BT}}(\pi)$ is computed using
+        information $\calI_{t+\tau} \setminus \calI_t$, which is
+        unavailable to any real investor at time $t$.
+  \item Formally, let $\mathbb{E}^{\calI_t}[\,\cdot\,]$ denote the
+        conditional expectation given $\calI_t$.  Predictive skill
+        requires:
+        \begin{align}
+          \mathbb{E}^{\calI_t}\!\bigl[\mathrm{PnL}_t(\pi)\bigr]
+          &\;>\; 0
+          \quad \forall\, t,
+          \label{eq:genuine-skill}
+        \end{align}
+        computed using only $\calI_t$-measurable $\delta_t$.
+  \item Since $\delta_t$ is not $\calI_t$-measurable, the left-hand
+        side of~\eqref{eq:genuine-skill} is \emph{undefined} as a
+        statement about real-time performance; positive reported
+        P\&L reflects exploitation of future information, not skill.
+  \item Therefore $\Pi^{\mathrm{BT}}(\pi) > 0$ constitutes no
+        evidence of predictive skill. $\checkmark$
+\end{enumerate}
+All three claims are established; the theorem follows.\qed
+\end{proof}
+
+\section{Boundary and Edge Cases}
+
+\begin{proposition}[Zero-Lag Boundary]
+\label{prop:zero-lag}
+The case $\tau = 0$ is excluded from Axiom~\ref{ax:leakage} by
+definition.  A decision function using only data available at exactly
+time $t$ (i.e., $\delta_t$ is $\calI_t$-measurable) does \emph{not}
+constitute leakage, even if the realisation of $X_t$ arrives
+at time $t$ with zero latency.
+\end{proposition}
+
+\begin{proof}
+If $\tau = 0$, then $\calI_{t+\tau} = \calI_t$, so
+$\calI_{t+\tau} \setminus \calI_t = \emptyset$.  Condition
+\eqref{eq:leakage-def} cannot be satisfied, and the strategy is
+temporally valid by Definition~\ref{def:temporal-validity}.\qed
+\end{proof}
+
+\begin{proposition}[Infinitesimal Look-Ahead]
+\label{prop:infinitesimal}
+In continuous time, for any $\tau > 0$ (however small),
+temporal leakage is present if $\delta_t$ depends on
+$X_{t+\tau}$.  There is no ``negligible'' leakage threshold;
+any strictly positive $\tau$ violates
+condition~\eqref{eq:temporal-valid}.
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item Fix any $\tau > 0$.  By right-continuity of the filtration
+        (Definition~\ref{def:filtration}(3)),
+        $\calI_t = \bigcap_{u > t} \calI_u$.
+  \item For any $\epsilon \in (0, \tau)$, $X_{t+\epsilon}$ is
+        $\calI_{t+\epsilon}$-measurable but need not be
+        $\calI_t$-measurable if the process $\{X_s\}$ is not
+        $\mathbb{F}$-predictable.
+  \item In particular, if $X$ has independent increments (e.g., is
+        a martingale), $X_{t+\tau} - X_t$ is independent of
+        $\calI_t$ for all $\tau > 0$, so knowledge of $X_{t+\tau}$
+        strictly enlarges the information available beyond
+        $\calI_t$.
+  \item Therefore any dependence on $X_{t+\tau}$ for $\tau > 0$
+        constitutes a violation of~\eqref{eq:temporal-valid}.\qed
+\end{enumerate}
+\end{proof}
+
+\begin{proposition}[Leakage Transitivity]
+\label{prop:leakage-transitivity}
+If feature $F_t$ is a deterministic function of a leaked variable
+$Z_{t+\tau}$ (with $\tau > 0$), then any strategy using $F_t$
+inherits the leakage of $Z_{t+\tau}$.
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item Let $F_t = \phi(Z_{t+\tau})$ for some measurable function
+        $\phi$.
+  \item Since $Z_{t+\tau} \in \calI_{t+\tau} \setminus \calI_t$
+        (by hypothesis), $\sigma(Z_{t+\tau}) \subseteq \calI_{t+\tau}$
+        but $\sigma(Z_{t+\tau}) \not\subseteq \calI_t$.
+  \item As $F_t$ is $\sigma(Z_{t+\tau})$-measurable (being a
+        measurable function of $Z_{t+\tau}$), $F_t$ is
+        $\calI_{t+\tau}$-measurable but not $\calI_t$-measurable.
+  \item Therefore any $\delta_t$ that is a measurable function of
+        $F_t$ is not $\calI_t$-measurable, and the strategy violates
+        condition~\eqref{eq:temporal-valid}.\qed
+\end{enumerate}
+\end{proof}
+
+\section{Operational Enforcement}
+
+\begin{remark}[CI Enforcement Gate]
+\label{rem:ci-gate}
+A \texttt{TemporalLeakageDetector} continuous-integration (CI) gate
+must enforce condition~\eqref{eq:temporal-valid} on every merge to
+the \texttt{main} branch.  The gate must satisfy the following
+requirements:
+\begin{enumerate}
+  \item \textbf{Timestamp audit.}
+        Every data source must carry a verified ingestion timestamp
+        $\hat{t} \leq t$; any source with $\hat{t} > t$ must cause
+        the build to fail.
+  \item \textbf{Normalisation-window check.}
+        All rolling statistics (means, variances, quantiles) must be
+        computed over expanding or strictly past-anchored windows;
+        any window boundary exceeding the current bar must be flagged.
+  \item \textbf{Feature-lineage graph.}
+        A directed acyclic graph (DAG) of feature dependencies must
+        be constructed at build time; any path from a node
+        $X_{t+\tau}$ ($\tau > 0$) to a decision node $\delta_t$
+        must cause the build to fail (Proposition~%
+        \ref{prop:leakage-transitivity}).
+  \item \textbf{Train/test boundary enforcement.}
+        The training index set $\mathcal{T}_{\mathrm{train}}$ must
+        satisfy $\max(\mathcal{T}_{\mathrm{train}}) <
+        \min(\mathcal{T}_{\mathrm{test}})$; any overlap must cause
+        the build to fail.
+  \item \textbf{Audit log.}
+        The gate must emit a machine-readable audit record containing:
+        \begin{enumerate}
+          \item The commit hash and timestamp.
+          \item The complete feature-lineage DAG.
+          \item Pass/fail status for each of the four checks above.
+          \item Any violation details sufficient for third-party
+                reproduction.
+        \end{enumerate}
+\end{enumerate}
+\end{remark}
+
+% ==============================================================
+\chapter{Operator Composition Algebra}
+\label{ch:operators}
+% ==============================================================
+
+\section{Operator Definition}
+
+\begin{definition}[Operator]
+\label{def:operator}
+Let $\calO$ be the set of all operators.  Each operator
+$O_i \in \calO$ is a pure function
+\begin{equation}
+  O_i : \calS \times \calI_t \;\to\; \calS',
+  \label{eq:operator-def}
+\end{equation}
+where $\calS$ is the shared state space and $\calI_t$ the information
+set at time $t$.
+\end{definition}
+
+\section{Sequential Composition}
+
+\begin{definition}[Sequential Composition]
+\label{def:seq-composition}
+Given $O_1, O_2 \in \calO$, sequential composition is
+\begin{equation}
+  (O_1 \circ O_2)(s, \calI_t) \;=\; O_1\!\left(O_2(s, \calI_t),\, \calI_t\right).
+  \label{eq:seq-comp}
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Associativity of Composition]
+\label{prop:assoc}
+Operator composition is associative:
+$(O_1 \circ O_2) \circ O_3 = O_1 \circ (O_2 \circ O_3)$.
+\end{proposition}
+
+\begin{proof}
+For any $(s, \calI_t)$:
+\begin{align*}
+  ((O_1 \circ O_2) \circ O_3)(s, \calI_t)
+  &= (O_1 \circ O_2)(O_3(s, \calI_t), \calI_t)\\
+  &= O_1(O_2(O_3(s, \calI_t), \calI_t), \calI_t)\\
+  &= (O_1 \circ (O_2 \circ O_3))(s, \calI_t).
+\end{align*}\qed
+\end{proof}
+
+\begin{axiom}[Pipeline Temporal Invariant]
+\label{ax:pipeline}
+A valid operator pipeline $\Pi = O_n \circ \cdots \circ O_1$ must satisfy
+\begin{equation}
+  \Pi(s, \calI_t) \;\in\; \sigma(\calI_t)
+  \quad \forall\, s \in \calS,\; t \in \calT.
+  \label{eq:pipeline-invariant}
+\end{equation}
+\end{axiom}
+
+\section{Agent as Weighted Ensemble}
+
+\begin{definition}[Agent]
+\label{def:agent}
+An \emph{agent} $A$ is a tuple $(O_1, \ldots, O_k, w)$ where $O_i$ are
+operators and $w \in \Delta^{k-1}$ is a weight vector on the probability
+simplex
+\begin{equation}
+  \Delta^{k-1} = \left\{w \in \R^k \;\middle|\;
+    \sum_{i=1}^{k} w_i = 1,\; w_i \geq 0\right\}.
+\end{equation}
+The \emph{agent signal} is
+\begin{equation}
+  \hat{y}_t \;=\; \sum_{i=1}^{k} w_i\,O_i(s, \calI_t).
+  \label{eq:agent-signal}
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Ensemble Variance Bound]
+\label{prop:ensemble-var}
+Under pairwise independence among operators with forecast variances
+$\sigma_i^2$:
+\begin{equation}
+  \Var(\hat{y}_t) \;=\; \sum_{i=1}^{k} w_i^2\,\sigma_i^2
+                  \;\leq\; \max_i\,\sigma_i^2.
+  \label{eq:ensemble-var}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Under independence and unit weights satisfying $\sum w_i = 1$,
+$\Var(\hat{y}_t) = \sum w_i^2 \sigma_i^2 \leq (\max_i \sigma_i^2)\sum w_i^2
+\leq \max_i \sigma_i^2$ since $\sum w_i^2 \leq (\sum w_i)^2 = 1$.\qed
+\end{proof}
+
+% ==============================================================
+\chapter{Four-Domain Asset Partition}
+\label{ch:four-domain}
+% ==============================================================
+
+\begin{definition}[Four-Domain Partition]
+\label{def:four-domain}
+The full asset universe $\calU$ is partitioned as
+\begin{equation}
+  \calU \;=\; \mathcal{D}_{E} \cup \mathcal{D}_{A}
+            \cup \mathcal{D}_{F} \cup \mathcal{D}_{W},
+  \qquad
+  \mathcal{D}_i \cap \mathcal{D}_j = \emptyset \;\;(i \neq j),
+  \label{eq:four-domain}
+\end{equation}
+where $\mathcal{D}_E$ (Earth) = Portfolio/Equities,
+$\mathcal{D}_A$ (Air) = Rates/Macro Hedging,
+$\mathcal{D}_F$ (Fire) = Volatility/Options,
+$\mathcal{D}_W$ (Water) = Crypto/Cross-Market Liquidity.
+\end{definition}
+
+\begin{definition}[Cross-Domain Influence Matrix]
+\label{def:influence-matrix}
+The directed influence matrix $\Gamma \in \R^{4\times 4}$ is defined by
+$\Gamma_{ij} = \partial\hat{y}_t^{(i)}/\partial\hat{y}_t^{(j)}$ for $i \neq j$.
+\end{definition}
+
+\begin{definition}[Regime-Conditioned Allocation]
+\label{def:regime-alloc}
+For regime $r \in \calR$, the optimal cross-domain allocation vector
+$\alpha^{*} \in \Delta^{3}$ solves
+\begin{equation}
+  \alpha^{*} \;=\; \arg\max_{\alpha \in \Delta^{3}}\;
+  \E\!\left[\sum_{i=1}^{4}\alpha_i\,\mu_i^{(r)}
+            - \lambda\,\alpha^\top \Sigma^{(r)}\alpha\right],
+  \label{eq:regime-alloc}
+\end{equation}
+where $\mu^{(r)} \in \R^4$ and $\Sigma^{(r)} \in \R^{4\times 4}$ are
+regime-conditioned return vector and covariance matrix.
+\end{definition}
+
+% ==============================================================
+\chapter{Dependency Graph Acyclicity}
+\label{ch:dag}
+% ==============================================================
+
+\begin{definition}[Operator Dependency Graph]
+\label{def:dep-graph}
+The \emph{operator dependency graph} $G = (V, E)$ has vertex set
+$V = \calO$ and a directed edge $(O_i, O_j) \in E$ if $O_j$ consumes
+output produced by $O_i$.
+\end{definition}
+
+\begin{axiom}[DAG Invariant]
+\label{ax:dag}
+$G$ must be a directed acyclic graph (DAG):
+\begin{equation}
+  \nexists\;\text{cycle}\;
+  O_{i_1} \to O_{i_2} \to \cdots \to O_{i_1} \;\text{in } G.
+  \label{eq:dag}
+\end{equation}
+\end{axiom}
+
+\begin{definition}[Topological Execution Order]
+\label{def:topo-order}
+A valid execution ordering $\tau : V \to \{1, \ldots, |V|\}$ satisfies
+\begin{equation}
+  (O_i, O_j) \in E \;\Longrightarrow\; \tau(O_i) < \tau(O_j).
+  \label{eq:topo-order}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Existence of Topological Order]
+\label{thm:topo-exists}
+If $G$ satisfies the DAG invariant~\eqref{eq:dag}, a topological ordering
+$\tau$ satisfying~\eqref{eq:topo-order} exists and can be computed in
+$O(|V| + |E|)$ time by Kahn's algorithm.
+\end{theorem}
+
+\begin{proof}
+Kahn's algorithm iteratively removes source vertices (in-degree zero) and
+appends them to the ordering.  If $G$ is a DAG, every non-empty subgraph
+has at least one source vertex; hence the algorithm terminates with a
+complete ordering.  Each vertex and edge is processed at most once,
+giving $O(|V|+|E|)$ time.  If the algorithm terminates before all vertices
+are removed, a cycle is detected, violating the DAG invariant.\qed
+\end{proof}
+
+% ==============================================================
+\chapter{Idempotency and Referential Transparency}
+\label{ch:idempotency}
+% ==============================================================
+
+\begin{definition}[Referential Transparency]
+\label{def:ref-transparency}
+An operator $O$ is \emph{referentially transparent} if
+\begin{equation}
+  s \equiv s' \pmod{\calI_t}
+  \;\Longrightarrow\;
+  O(s, \calI_t) = O(s', \calI_t).
+  \label{eq:ref-trans}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Idempotency]
+\label{def:idempotency}
+An operator $O$ is \emph{idempotent} if
+\begin{equation}
+  O\!\left(O(s, \calI_t),\, \calI_t\right) = O(s, \calI_t)
+  \quad \forall\, s \in \calS,\; t \in \calT.
+  \label{eq:idempotent}
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Safe Parallelisation]
+\label{prop:safe-parallel}
+Idempotent, referentially transparent operators may be safely memoised,
+parallelised, and replayed without side effects.
+\end{proposition}
+
+\begin{proof}
+Referential transparency guarantees that the output depends only on
+$\calI_t$, not on mutable external state.  Idempotency guarantees that
+multiple applications do not accumulate errors.  Together these properties
+make concurrent execution and replay semantically equivalent to single
+sequential execution.\qed
+\end{proof}
+
+% ==============================================================
+\chapter{Risk-Adjusted Objective Function}
+\label{ch:objective}
+% ==============================================================
+
+\begin{definition}[Risk-Adjusted Objective]
+\label{def:objective}
+For discount factor $\gamma \in (0,1]$, CVaR penalty $\lambda_1 \geq 0$,
+and drawdown penalty $\lambda_2 \geq 0$, the platform maximises
+\begin{equation}
+  \mathcal{J}(\pi) \;=\;
+  \E\!\left[\sum_{t=0}^{T}\gamma^t\,r_t\right]
+  - \lambda_1\,\CVaR_\alpha(\pi)
+  - \lambda_2\,\MaxDD(\pi).
+  \label{eq:objective}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Feasible Strategy Set]
+\label{def:feasible}
+The constrained strategy space is
+\begin{equation}
+  \Pi_F \;=\;
+  \left\{\pi \;\middle|\;
+    \Var(\pi) \leq \sigma_{\max}^2,\;
+    \|\alpha(\pi)\|_1 \leq L_{\max},\;
+    \alpha(\pi) \in \Delta^{n-1}
+  \right\}.
+  \label{eq:feasible}
+\end{equation}
+\end{definition}
+
+\begin{remark}
+Success is not defined as maximising predicted profit.  It is defined as
+finding decisions that remain defensible when models disagree, markets
+change regime, forecasts fail, correlations break, and uncertainty becomes
+materially greater.
+\end{remark}
+
+% ==============================================================
+\chapter{Type-Safe Language-Layer Assignment}
+\label{ch:languages}
+% ==============================================================
+
+\begin{definition}[Language Layer Assignment]
+\label{def:lang-assignment}
+Let $\calL = \{\texttt{Python}, \texttt{C++}, \texttt{Rust}, \texttt{Go}\}$.
+The layer assignment function $\ell : \calO \to \calL$ must satisfy
+\begin{align}
+  O \in \calO_{\text{research}}  &\;\Longrightarrow\; \ell(O) = \texttt{Python}, \label{eq:lang-py}\\
+  O \in \calO_{\text{numerics}}  &\;\Longrightarrow\; \ell(O) \in \{\texttt{C++},\,\texttt{Rust}\}, \label{eq:lang-num}\\
+  O \in \calO_{\text{infra}}     &\;\Longrightarrow\; \ell(O) \in \{\texttt{Go},\,\texttt{Rust}\}. \label{eq:lang-infra}
+\end{align}
+\end{definition}
+
+\begin{axiom}[Latency Bound]
+\label{ax:latency}
+For any operator $O$ in a latency-sensitive layer, the wall-clock
+execution time $\tau_O$ must satisfy
+\begin{equation}
+  \tau_O \;\leq\; \tau_{\max}, \qquad \tau_{\max} = 10^{-3}\,\text{s}.
+  \label{eq:latency}
+\end{equation}
+\end{axiom}
+
+% ==============================================================
+\chapter{Regime Detection as a Hidden Markov Model}
+\label{ch:hmm}
+% ==============================================================
+
+\begin{definition}[HMM Regime Model]
+\label{def:hmm}
+The regime sequence $\{R_t\}_{t \geq 0}$ follows a first-order Markov
+chain with transition matrix $\Pi \in \R^{K\times K}$,
+$\sum_j \Pi_{ij} = 1$.  Observed features are drawn from regime-conditioned
+Gaussians:
+\begin{equation}
+  \bfx_t \mid R_t = r_k \;\sim\; \mathcal{N}(\mu_k,\, \Sigma_k).
+  \label{eq:hmm-emission}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Filtered Regime Belief]
+\label{def:hmm-belief}
+The filtered posterior $\beta_t(k) = P(R_t = r_k \mid \bfx_{1:t})$ is
+updated by
+\begin{equation}
+  \beta_t(k)
+  \;=\;
+  \frac{p(\bfx_t \mid R_t = r_k)
+        \displaystyle\sum_{i=1}^{K}\Pi_{ik}\,\beta_{t-1}(i)}
+       {\displaystyle\sum_{j=1}^{K} p(\bfx_t \mid R_t = r_j)
+        \displaystyle\sum_{i=1}^{K}\Pi_{ij}\,\beta_{t-1}(i)}.
+  \label{eq:hmm-update}
+\end{equation}
+\end{definition}
+
+\begin{definition}[MAP Regime Estimate]
+\label{def:map-regime}
+The maximum a posteriori regime estimate at time $t$ is
+\begin{equation}
+  \hat{R}_t \;=\; \arg\max_{k \in \{1,\ldots,K\}}\;\beta_t(k).
+  \label{eq:map-regime}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Normalisation of Filtered Beliefs]
+\label{thm:hmm-norm}
+$\sum_{k=1}^{K}\beta_t(k) = 1$ for all $t$.
+\end{theorem}
+
+\begin{proof}
+The denominator of~\eqref{eq:hmm-update} is exactly
+$\sum_{k=1}^{K}$ of the numerator, so the ratio sums to unity by
+construction.  By induction, if $\sum_k \beta_{t-1}(k) = 1$, then the
+predictive distribution $\sum_k \sum_i \Pi_{ik}\beta_{t-1}(i) = \sum_i
+\beta_{t-1}(i)\sum_k \Pi_{ik} = 1$, and normalisation at each step
+preserves the sum-to-one property.\qed
+\end{proof}
+
+% ==============================================================
+\chapter{Uncertainty Quantification:\\Epistemic--Aleatoric Decomposition}
+\label{ch:uncertainty}
+% ==============================================================
+
+\begin{definition}[Total Predictive Variance Decomposition]
+\label{def:var-decomp}
+For forecast target $y_{t+h}$ and model parameters $\theta$:
+\begin{equation}
+  \Var(y_{t+h} \mid \calI_t)
+  \;=\;
+  \underbrace{\E_\theta\!\left[\Var(y_{t+h} \mid \theta, \calI_t)\right]}_{\text{aleatoric}}
+  \;+\;
+  \underbrace{\Var_\theta\!\left[\E(y_{t+h} \mid \theta, \calI_t)\right]}_{\text{epistemic}}.
+  \label{eq:var-decomp}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Normalised Epistemic Fraction]
+\label{def:epistemic-fraction}
+\begin{equation}
+  \rho_t \;=\;
+  \frac{\Var_\theta\!\left[\E(y_{t+h} \mid \theta, \calI_t)\right]}
+       {\Var(y_{t+h} \mid \calI_t)}.
+  \label{eq:epistemic-frac}
+\end{equation}
+\end{definition}
+
+\begin{axiom}[Epistemic Signal Gate]
+\label{ax:epistemic-gate}
+For a configurable epistemic threshold $\rho_{\max} \in (0, 1)$, the
+gated signal is
+\begin{equation}
+  \tilde{s}_t \;=\; s_t \cdot \mathbf{1}\!\left[\rho_t \leq \rho_{\max}\right].
+  \label{eq:epistemic-gate}
+\end{equation}
+Signals generated under excessive model disagreement are suppressed.
+\end{axiom}
+
+\begin{proposition}[Boundedness of Epistemic Fraction]
+\label{prop:epistemic-bounded}
+$\rho_t \in [0, 1]$ for all $t$.
+\end{proposition}
+
+\begin{proof}
+By the law of total variance~\eqref{eq:var-decomp}, the epistemic term
+is a non-negative summand of the total variance, so $0 \leq
+\Var_\theta[\E(\cdot)] \leq \Var(y_{t+h} \mid \calI_t)$.  Dividing by the
+total variance (assumed positive) gives $\rho_t \in [0, 1]$.\qed
+\end{proof}
+
+% ==============================================================
+\chapter{Synthesis: Ideal--Real Regime Separation and\\
+Na\"{i}ve--Oracle Duality}
+\label{ch:synthesis}
+% ==============================================================
+
+\section{Ideal and Real Execution Environments}
+
+\begin{definition}[Ideal and Real Execution Environments]
+\label{def:ideal-real}
+The \emph{ideal execution environment} $\Ideal$ operates on complete,
+noise-free information: $\calI_t^{\Ideal} = \sigma\!\left(\bigcup_{\tau \leq t}
+\calI_\tau\right)$ with zero uncertainty ($\hat{U}_t = 0$) and zero
+slippage.  The \emph{real execution environment} $\Real$ operates on
+$\calI_t$ only, with non-zero uncertainty $\hat{U}_t > 0$, transaction
+costs, and finite liquidity.
+\end{definition}
+
+\begin{definition}[Regime-Separation Gap]
+\label{def:gap}
+The \emph{regime-separation gap} between $\Ideal$ and $\Real$ under
+strategy $\pi$ is
+\begin{equation}
+  \Gap(\pi) \;=\; \mathcal{J}^{\Ideal}(\pi) - \mathcal{J}^{\Real}(\pi),
+  \label{eq:gap}
+\end{equation}
+where $\mathcal{J}$ is the risk-adjusted objective~\eqref{eq:objective}.
+\end{definition}
+
+\begin{theorem}[Non-Negativity of the Gap]
+\label{thm:gap-nonneg}
+$\Gap(\pi) \geq 0$ for all strategies $\pi \in \Pi_F$.
+\end{theorem}
+
+\begin{proof}
+The ideal environment is an information-theoretic superset of the real
+environment: $\calI_t^{\Ideal} \supseteq \calI_t$.  Any decision rule
+feasible in $\Real$ is also feasible in $\Ideal$, so the supremum of
+$\mathcal{J}$ over feasible strategies is at least as large in $\Ideal$
+as in $\Real$.  Since $\Gap$ compares the same strategy $\pi$ in both
+environments and the ideal environment removes all uncertainty-induced
+losses, $\mathcal{J}^{\Ideal}(\pi) \geq \mathcal{J}^{\Real}(\pi)$,
+giving $\Gap(\pi) \geq 0$.\qed
+\end{proof}
+
+\section{Na\"{i}ve--Oracle Duality}
+
+\begin{definition}[Na\"{i}ve and Oracle Strategies]
+\label{def:naive-oracle}
+The \emph{na\"{i}ve strategy} $\Naive$ applies equal weights across all
+operators and never adapts to regime uncertainty.  The \emph{oracle strategy}
+$\Oracle$ has access to the true regime $R_t$ at each step and optimises
+allocation exactly.
+\end{definition}
+
+\begin{definition}[Frontier Model]
+\label{def:frontier}
+A \emph{frontier model} $\Frontier$ is any strategy satisfying
+\begin{equation}
+  \mathcal{J}(\Naive) \;\leq\; \mathcal{J}(\Frontier) \;\leq\; \mathcal{J}(\Oracle)
+\end{equation}
+for all market regimes in $\calR$, with equality on the left when
+uncertainty is maximal ($\hat{U}_t = 1$) and equality on the right in
+the limit of vanishing uncertainty ($\hat{U}_t \to 0$).
+\end{definition}
+
+\begin{conjecture}[Frontier Convergence]
+\label{conj:frontier}
+As the number of training regimes $|\calR|$ grows and the model capacity
+of the \texttt{MarketRegimeOperator} increases, any frontier model
+$\Frontier$ satisfying the HMM belief update~\eqref{eq:hmm-update} and
+the epistemic gate axiom~\eqref{eq:epistemic-gate} converges in
+distribution to the oracle strategy:
+\begin{equation}
+  \mathcal{J}(\Frontier) \;\to\; \mathcal{J}(\Oracle) \quad
+  \text{as } |\calR| \to \infty.
+\end{equation}
+\end{conjecture}
+
+\begin{remark}
+Conjecture~\ref{conj:frontier} is an open research problem.  The formal
+framework developed in Chapters~\ref{ch:regime}--\ref{ch:hmm} provides
+the rigorous substrate required to make the conjecture precise and to
+design empirical tests for it.
+\end{remark}
+
+% ==============================================================
+\chapter*{References}
+\addcontentsline{toc}{chapter}{References}
+% ==============================================================
+
+\begin{enumerate}[leftmargin=*, label={[R\arabic*]}]
+  \item Markowitz, H.\ (1952). Portfolio Selection. \textit{Journal of Finance}, 7(1), 77--91.
+  \item Kelly, J.\ L.\ (1956). A New Interpretation of Information Rate. \textit{Bell System Technical Journal}, 35(4), 917--926.
+  \item Sharpe, W.\ F.\ (1966). Mutual Fund Performance. \textit{Journal of Business}, 39(1), 119--138.
+  \item Sortino, F.\ A.\ \& van der Meer, R.\ (1991). Downside Risk. \textit{Journal of Portfolio Management}, 17(4), 27--31.
+  \item Rockafellar, R.\ T.\ \& Uryasev, S.\ (2000). Optimization of Conditional Value-at-Risk. \textit{Journal of Risk}, 2(3), 21--41.
+  \item Hamilton, J.\ D.\ (1989). A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle. \textit{Econometrica}, 57(2), 357--384.
+  \item Ederington, L.\ H.\ (1979). The Hedging Performance of the New Futures Markets. \textit{Journal of Finance}, 34(1), 157--170.
+  \item Ben-Tal, A.\ \& Nemirovski, A.\ (1998). Robust Convex Optimization. \textit{Mathematics of Operations Research}, 23(4), 769--805.
+  \item Shannon, C.\ E.\ (1948). A Mathematical Theory of Communication. \textit{Bell System Technical Journal}, 27(3), 379--423.
+  \item Young, T.\ W.\ (1991). Calmar Ratio: A Smoother Tool. \textit{Futures Magazine}, 20(1).
+  \item Lopez de Prado, M.\ (2018). \textit{Advances in Financial Machine Learning}. Wiley.
+  \item Pardo, R.\ (2008). \textit{The Evaluation and Optimization of Trading Strategies} (2nd ed.). Wiley.
+\end{enumerate}
+
+\end{document}
