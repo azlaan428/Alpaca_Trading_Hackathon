@@ -1,6 +1,8 @@
 [submodule "coding_stds/CodingStandardsRef"]
 	path = coding_stds/CodingStandardsRef
 	url = https://github.com/psi16181918161phi/CodingStandardsRef.git
+	branch = main
 [submodule "voiceshield"]
 	path = voiceshield
 	url = https://github.com/taqi-ul-hassan/voiceshield.git
+	branch = main
