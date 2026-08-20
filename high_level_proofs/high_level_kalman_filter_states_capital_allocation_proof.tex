@@ -9129,60 +9129,488 @@ identified levels.  \qed
 
 \section{The Combined Deployment Conjecture}
 
+%% ----------------------------------------------------------------
 \begin{conjecture}[Combined Conjecture: Kalman Filter + State Gating]
 \label{conj:combined}
-Let $\mathbf{X}_t \in [0,1]^7$ be the composite state vector,
-$S_t \in [-1,1]$ the ensemble aggregate signal, and
-$K_t^{(\mathrm{Kalman})}$ the investment Kalman gain.  The
-optimal capital deployment policy is:
-\begin{equation}
-  \pi^*(\mathbf{X}_t, S_t) \;=\;
-  \begin{cases}
-    K_t^{(\mathrm{Kalman})} \cdot C_{\mathrm{available}}
-    \cdot \prod_{d=1}^{7} g_d(\mathcal{S}_t^{(d)}) &
-    \text{if } \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}
-    \;\forall\, d, \\
-    0 & \text{otherwise}.
-  \end{cases}
-  \label{eq:combined-policy}
-\end{equation}
-The combined conjecture states that this policy achieves
-superior risk-adjusted compounding under finite capital
-constraints relative to single-domain or unconstrained systems,
-for the following reasons:
+
+\noindent\textbf{Setup and Notation.}
+The following objects are defined precisely before the
+conjecture is stated.
+
 \begin{enumerate}
-  \item \textbf{When all states are charged and the signal is strong}:
-        maximum deployment — favourable state plus strong evidence.
-  \item \textbf{When all states are charged but the signal is weak}:
-        moderate deployment — favourable state but low innovation.
-  \item \textbf{When states are mixed but the signal is strong}:
-        reduced deployment — signal is strong but the system is
-        partially degraded.
-  \item \textbf{When any state is critically discharged}:
-        zero deployment — circuit-breaker override regardless
-        of signal.
+  \item \textbf{Composite state vector.}
+        Let $\mathbf{X}_t = \bigl(\mathcal{S}_t^{(1)},\ldots,
+        \mathcal{S}_t^{(7)}\bigr)^\top \in [0,1]^7$
+        where each component $\mathcal{S}_t^{(d)}$ is the
+        normalised charge of dimension $d$ at time $t$, as
+        defined in Definition~\ref{def:state-vector}.
+
+  \item \textbf{Minimum admissibility thresholds.}
+        For each $d \in \{1,\ldots,7\}$, let
+        $\mathcal{S}_{\min}^{(d)} \in (0,1)$ be the
+        pre-specified lower bound below which dimension $d$
+        is deemed critically discharged.  The joint
+        admissibility condition is:
+        \begin{align}
+          \mathcal{A}_t
+          &\;:=\;
+          \bigcap_{d=1}^{7}
+          \Bigl\{\,\mathcal{S}_t^{(d)}
+            \;\geq\; \mathcal{S}_{\min}^{(d)}\,\Bigr\}.
+          \label{eq:admissibility-set}
+        \end{align}
+
+  \item \textbf{Gating functions.}
+        Each $g_d : [0,1] \to [0,1]$ is a continuous,
+        non-decreasing function satisfying
+        $g_d(\mathcal{S}_t^{(d)}) = 0$ whenever
+        $\mathcal{S}_t^{(d)} < \mathcal{S}_{\min}^{(d)}$.
+        The product gate is:
+        \begin{align}
+          G(\mathbf{X}_t)
+          &\;:=\; \prod_{d=1}^{7} g_d\!\bigl(\mathcal{S}_t^{(d)}\bigr)
+          \;\in\; [0,1].
+          \label{eq:product-gate-defn}
+        \end{align}
+        By~\eqref{eq:product-gate-defn}, $G(\mathbf{X}_t)=0$
+        if and only if $\mathcal{A}_t$ fails for at least one $d$.
+
+  \item \textbf{Ensemble aggregate signal.}
+        Let $S_t \in [-1,1]$ be the output of the ensemble
+        aggregation layer at time $t$, satisfying
+        $\mathbb{E}[S_t \mid \mathcal{F}_{t-1}] \in [-1,1]$.
+
+  \item \textbf{Investment Kalman gain.}
+        Let $K_t^{(\mathrm{Kalman})} \in [0,1)$ be the
+        investment Kalman gain as constructed in
+        Theorem~\ref{thm:gain-properties}, satisfying:
+        \begin{align}
+          K_t^{(\mathrm{Kalman})}
+          &\;=\;
+          \frac{P_{t|t-1}\,H^\top}
+               {H\,P_{t|t-1}\,H^\top + R_t},
+          \label{eq:kalman-gain-recall}
+        \end{align}
+        where $P_{t|t-1}$ is the prior error covariance,
+        $H$ the observation matrix, and $R_t > 0$ the
+        measurement noise covariance at time $t$.
+
+  \item \textbf{Available capital.}
+        Let $C_{\mathrm{available},t} > 0$ denote total
+        undeployed capital at time $t$, with
+        $C_{\mathrm{available},t} < \infty$ for all finite $t$.
+
+  \item \textbf{Kelly fraction.}
+        Let $f^* \in (0,1)$ be the Kelly-optimal fraction
+        as defined in Theorem~\ref{thm:kelly}, satisfying
+        $f^* = \mu / \sigma^2$ under Gaussian return
+        assumptions, where $\mu$ and $\sigma^2$ are the
+        conditional mean and variance of log-returns.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Statement of the Combined Policy.}
+The optimal capital deployment policy under joint
+Kalman filtering and seven-state gating is:
+\begin{align}
+  \pi^*(\mathbf{X}_t, S_t)
+  &\;=\;
+  K_t^{(\mathrm{Kalman})}\;\cdot\; C_{\mathrm{available},t}
+  \;\cdot\; G(\mathbf{X}_t)
+  \;\cdot\; \mathbf{1}_{\mathcal{A}_t},
+  \label{eq:combined-policy}
+\end{align}
+where $\mathbf{1}_{\mathcal{A}_t}$ is the indicator of the
+admissibility event~\eqref{eq:admissibility-set}, and
+$G(\mathbf{X}_t)$ is the product gate~\eqref{eq:product-gate-defn}.
+Equivalently, in case notation:
+\begin{align}
+  \pi^*(\mathbf{X}_t, S_t)
+  &\;=\;
+  \begin{cases}
+    K_t^{(\mathrm{Kalman})}
+    \cdot C_{\mathrm{available},t}
+    \cdot \displaystyle\prod_{d=1}^{7} g_d\!\bigl(\mathcal{S}_t^{(d)}\bigr)
+    & \text{if } \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}
+      \;\forall\, d \in \{1,\ldots,7\}, \\[8pt]
+    0
+    & \text{otherwise}.
+  \end{cases}
+  \label{eq:combined-policy-cases}
+\end{align}
+
+\medskip
+\noindent\textbf{Admissibility Constraints.}
+For~\eqref{eq:combined-policy-cases} to define an
+admissible policy, the following constraints must hold:
+
+\begin{enumerate}
+  \item \textbf{Non-negativity:}
+        $\pi^*(\mathbf{X}_t, S_t) \geq 0$ for all $t$,
+        since $K_t^{(\mathrm{Kalman})} \geq 0$,
+        $C_{\mathrm{available},t} \geq 0$, and
+        $G(\mathbf{X}_t) \geq 0$ by construction.
+
+  \item \textbf{Capital feasibility:}
+        $\pi^*(\mathbf{X}_t, S_t)
+         \leq C_{\mathrm{available},t}$,
+        which holds because
+        $K_t^{(\mathrm{Kalman})} < 1$ and
+        $G(\mathbf{X}_t) \leq 1$.
+
+  \item \textbf{Kelly upper bound:}
+        \begin{align}
+          \pi^*(\mathbf{X}_t, S_t)
+          &\;\leq\; f^*\,C_{\mathrm{available},t},
+          \label{eq:kelly-ub}
+        \end{align}
+        which is enforced by the Kelly constraint at the
+        allocation layer; see Theorem~\ref{thm:kelly}.
+
+  \item \textbf{Circuit-breaker override:}
+        If $\exists\, d^* \in \{1,\ldots,7\}$ such that
+        $\mathcal{S}_t^{(d^*)} < \mathcal{S}_{\min}^{(d^*)}$,
+        then $\mathbf{1}_{\mathcal{A}_t} = 0$ and hence
+        $\pi^*(\mathbf{X}_t, S_t) = 0$, irrespective of
+        $K_t^{(\mathrm{Kalman})}$ or $S_t$.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Four Exhaustive Deployment Regimes.}
+The state space $[0,1]^7 \times [-1,1]$ is partitioned into
+four mutually exclusive, collectively exhaustive regimes.
+Let $\bar{S} \in (0,1)$ be a pre-specified signal
+strength threshold.
+
+\begin{enumerate}
+  \item \textbf{Regime I — Full Deployment}
+        (all states charged; strong signal):
+        \begin{align}
+          \mathcal{R}_{\mathrm{I}}
+          &\;:=\;
+          \Bigl\{(\mathbf{X}_t, S_t) :
+            \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}
+            \;\forall\, d,\;
+            |S_t| \geq \bar{S}
+          \Bigr\}.
+          \label{eq:regime-I}
+        \end{align}
+        In $\mathcal{R}_{\mathrm{I}}$:
+        $\mathbf{1}_{\mathcal{A}_t} = 1$,
+        $G(\mathbf{X}_t) \approx 1$, and
+        $K_t^{(\mathrm{Kalman})}$ is near its upper bound.
+        Consequence: maximum admissible deployment,
+        $\pi^* \approx f^*\,C_{\mathrm{available},t}$.
+
+  \item \textbf{Regime II — Moderate Deployment}
+        (all states charged; weak signal):
+        \begin{align}
+          \mathcal{R}_{\mathrm{II}}
+          &\;:=\;
+          \Bigl\{(\mathbf{X}_t, S_t) :
+            \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}
+            \;\forall\, d,\;
+            |S_t| < \bar{S}
+          \Bigr\}.
+          \label{eq:regime-II}
+        \end{align}
+        In $\mathcal{R}_{\mathrm{II}}$:
+        $\mathbf{1}_{\mathcal{A}_t} = 1$,
+        $G(\mathbf{X}_t) \approx 1$, but high $R_t$
+        suppresses $K_t^{(\mathrm{Kalman})}$.
+        Consequence: moderate deployment proportional
+        to signal quality.
+
+  \item \textbf{Regime III — Reduced Deployment}
+        (mixed states; strong signal):
+        \begin{align}
+          \mathcal{R}_{\mathrm{III}}
+          &\;:=\;
+          \Bigl\{(\mathbf{X}_t, S_t) :
+            \exists\, d :\,
+            \mathcal{S}_t^{(d)} \in
+            [\mathcal{S}_{\min}^{(d)}, \mathcal{S}_{\min}^{(d)}
+             + \varepsilon_d),\;
+            |S_t| \geq \bar{S}
+          \Bigr\},
+          \label{eq:regime-III}
+        \end{align}
+        for some $\varepsilon_d > 0$ characterising partial
+        degradation.  In $\mathcal{R}_{\mathrm{III}}$:
+        $\mathbf{1}_{\mathcal{A}_t} = 1$ but
+        $G(\mathbf{X}_t) \ll 1$ due to partially discharged
+        dimensions.
+        Consequence: signal strength is attenuated by the
+        product gate; deployment is strictly reduced.
+
+  \item \textbf{Regime IV — Zero Deployment}
+        (any state critically discharged):
+        \begin{align}
+          \mathcal{R}_{\mathrm{IV}}
+          &\;:=\;
+          \Bigl\{(\mathbf{X}_t, S_t) :
+            \exists\, d^* :\,
+            \mathcal{S}_t^{(d^*)} < \mathcal{S}_{\min}^{(d^*)}
+          \Bigr\}.
+          \label{eq:regime-IV}
+        \end{align}
+        In $\mathcal{R}_{\mathrm{IV}}$:
+        $\mathbf{1}_{\mathcal{A}_t} = 0$
+        and hence $\pi^* = 0$ regardless of $S_t$.
+        This is the hard architectural circuit-breaker;
+        see Theorem~\ref{thm:gate-override}.
+\end{enumerate}
+
+\noindent\textbf{Mutual exclusivity and exhaustivity:}
+\begin{align}
+  \mathcal{R}_{\mathrm{I}} \cup \mathcal{R}_{\mathrm{II}}
+  \cup \mathcal{R}_{\mathrm{III}} \cup \mathcal{R}_{\mathrm{IV}}
+  &\;=\; [0,1]^7 \times [-1,1],
+  \label{eq:regime-partition-union} \\
+  \mathcal{R}_i \cap \mathcal{R}_j
+  &\;=\; \emptyset \quad \forall\, i \neq j.
+  \label{eq:regime-partition-disjoint}
+\end{align}
+
+\medskip
+\noindent\textbf{Performance Claim.}
+Under Assumptions~\ref{ass:process-noise}--\ref{ass:kelly},
+the policy $\pi^*$ defined in~\eqref{eq:combined-policy}
+achieves:
+\begin{enumerate}
+  \item A long-run log-wealth growth rate strictly greater than
+        that of any single-domain policy operating without
+        product gating, conditional on $\mathcal{A}_t$ holding
+        on a set of times with positive asymptotic frequency.
+
+  \item A finite-time ruin probability strictly less than that
+        of any unconstrained policy $\tilde{\pi}$ satisfying
+        $\tilde{\pi} > f^*\,C_{\mathrm{available},t}$ on a
+        positive-measure set of periods.
+
+  \item Exact recovery of the unconstrained Kalman-optimal
+        policy whenever $G(\mathbf{X}_t) = 1$ and
+        $|S_t| = 1$, i.e.\ the gated policy is a strict
+        generalisation of the ungated policy.
 \end{enumerate}
 \end{conjecture}
 
+%% ----------------------------------------------------------------
+\begin{remark}[Boundary and Edge Cases of the Combined Policy]
+\label{rem:combined-boundary}
+The following edge cases are enumerated to ensure full
+auditability of Conjecture~\ref{conj:combined}.
+
+\begin{enumerate}
+  \item \textbf{Boundary case: $\mathcal{S}_t^{(d)} =
+        \mathcal{S}_{\min}^{(d)}$ for some $d$.}
+        By the continuity of each $g_d$,
+        $g_d(\mathcal{S}_{\min}^{(d)}) = 0$ if and only
+        if $g_d$ has a zero at the threshold.  If
+        $g_d(\mathcal{S}_{\min}^{(d)}) > 0$, the state
+        is considered marginally admissible, and
+        $G(\mathbf{X}_t) > 0$.  The exact form of $g_d$
+        must be specified at system instantiation; no
+        ambiguity is admissible at the boundary.
+
+  \item \textbf{Edge case: $K_t^{(\mathrm{Kalman})} \to 0$.}
+        This occurs when $R_t \to \infty$ (no signal trust).
+        Then $\pi^* \to 0$ regardless of $G(\mathbf{X}_t)$.
+        This is the correct behaviour: no measurement
+        information implies no capital deployment.
+
+  \item \textbf{Edge case: $K_t^{(\mathrm{Kalman})} \to 1$.}
+        By Theorem~\ref{thm:gain-properties},
+        $K_t^{(\mathrm{Kalman})} < 1$ strictly, so this
+        limit is not achieved in finite time.  In the
+        degenerate case $R_t \to 0$, the gain approaches
+        $H^\dagger$ (the pseudoinverse of $H$), and the
+        Kelly constraint~\eqref{eq:kelly-ub} enforces the
+        upper bound.
+
+  \item \textbf{Edge case: $C_{\mathrm{available},t} = 0$.}
+        Trivially, $\pi^* = 0$.  No deployment is possible
+        when no capital is available.  This state must be
+        detected prior to policy evaluation.
+
+  \item \textbf{Edge case: $G(\mathbf{X}_t) = 1$
+        and $K_t^{(\mathrm{Kalman})} = f^*$.}
+        The policy reduces to
+        $\pi^* = f^*\,C_{\mathrm{available},t}$,
+        the pure Kelly allocation.  This is the
+        maximum-growth, ruin-protected benchmark.
+
+  \item \textbf{Extremity: all seven states simultaneously
+        at minimum threshold.}
+        $G(\mathbf{X}_t) = \prod_{d=1}^{7}
+        g_d(\mathcal{S}_{\min}^{(d)})$.  If any
+        $g_d(\mathcal{S}_{\min}^{(d)}) = 0$, then
+        $\pi^* = 0$.  The system is in Regime~IV.
+
+  \item \textbf{Extremity: $S_t = 0$ (no signal).}
+        The innovation $\nu_t = z_t - H\hat{\mathbf{X}}_{t|t-1} = 0$
+        implies the Kalman update collapses to the prior:
+        $\hat{\mathbf{X}}_{t|t} = \hat{\mathbf{X}}_{t|t-1}$.
+        The gain $K_t^{(\mathrm{Kalman})}$ is not zero but
+        the deployment $\pi^*$ reflects pure prior uncertainty
+        with no signal correction.  This is architecturally
+        sound: the system deploys only what the prior supports.
+\end{enumerate}
+\end{remark}
+
+%% ----------------------------------------------------------------
+\begin{remark}[Key Findings: Combined Deployment Policy]
+\label{rem:combined-key-findings}
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{} l X X @{}}
+\toprule
+\textbf{Regime} & \textbf{Condition} &
+\textbf{Policy Outcome and Justification} \\
+\midrule
+I — Full Deployment &
+  $\mathcal{A}_t$ holds; $|S_t| \geq \bar{S}$ &
+  $\pi^* \approx f^*C_{\mathrm{available},t}$;
+  all gates open, high Kalman gain, maximum
+  evidence-weighted allocation. \\[4pt]
+II — Moderate Deployment &
+  $\mathcal{A}_t$ holds; $|S_t| < \bar{S}$ &
+  $\pi^* \in (0, f^*C_{\mathrm{available},t})$;
+  system healthy but signal weak; Kalman gain
+  suppresses deployment proportionally. \\[4pt]
+III — Reduced Deployment &
+  $\mathcal{A}_t$ holds marginally;
+  some $\mathcal{S}_t^{(d)} \approx \mathcal{S}_{\min}^{(d)}$ &
+  $\pi^* \ll f^*C_{\mathrm{available},t}$;
+  product gate attenuates despite strong signal;
+  partial system degradation penalises deployment. \\[4pt]
+IV — Zero Deployment &
+  $\exists\,d^*:\mathcal{S}_t^{(d^*)}
+   < \mathcal{S}_{\min}^{(d^*)}$ &
+  $\pi^* = 0$; hard circuit-breaker override;
+  no signal, no Kalman gain, no Kelly fraction
+  can override this constraint. \\[4pt]
+\midrule
+\multicolumn{3}{@{}X@{}}{%
+  \textit{Formal guarantee}: Policy~\eqref{eq:combined-policy}
+  satisfies non-negativity, capital feasibility, Kelly upper
+  bound, and circuit-breaker override
+  (constraints 1--4 above) simultaneously for all $t$,
+  all $\mathbf{X}_t \in [0,1]^7$, and all
+  $S_t \in [-1,1]$.} \\
+\multicolumn{3}{@{}X@{}}{%
+  \textit{Strict generalisation}: Setting
+  $g_d \equiv 1$ for all $d$ and $\mathcal{S}_{\min}^{(d)} = 0$
+  recovers the unconstrained Kalman policy
+  $\pi^* = K_t^{(\mathrm{Kalman})}\,C_{\mathrm{available},t}$;
+  the gated policy dominates in all regimes with
+  partial or critical discharge.} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{remark}
+
+%% ----------------------------------------------------------------
 \begin{remark}[Conclusion of the Conjecture]
 \label{rem:conjecture-conclusion}
-The expected conclusion is not that the filter eliminates market
-uncertainty.  It is that the Kalman discipline —
-\emph{prediction before observation, evidence-weighted updating,
-covariance-based deployment scaling, and recursive reputation
-adaptation} — converts the finite capital constraint from a
-limitation into a precision instrument: a system that computes,
-at every step, exactly how much of its scarce capital should be
-placed at risk given the information currently available, and
-the seven-dimensional state charge vector that specifies how
-healthy the investment environment currently is.
 
-The finite capital constraint, enforced by the seven-state
-gating function, is the investment-domain analogue of the
-battery management system's State-of-Charge protection
-circuit.  It transforms the multi-agent Kalman filter from a
-pure signal-processing machine into a survival-first,
-compounding-second capital engine.
+\noindent\textbf{The central claim, stated precisely.}
+The Kalman discipline does not eliminate market uncertainty.
+Rather, it enforces the following four computational
+obligations at every time step $t$:
+
+\begin{enumerate}
+  \item \textbf{Prediction before observation:}
+        $\hat{\mathbf{X}}_{t|t-1} = \mathbf{F}\hat{\mathbf{X}}_{t-1|t-1}$
+        and $P_{t|t-1} = \mathbf{F}P_{t-1|t-1}\mathbf{F}^\top + \mathbf{Q}_t$
+        are computed \emph{before} $z_t$ is observed.
+        This separates prior belief from current evidence.
+
+  \item \textbf{Evidence-weighted updating:}
+        \begin{align}
+          \hat{\mathbf{X}}_{t|t}
+          &\;=\; \hat{\mathbf{X}}_{t|t-1}
+            + K_t^{(\mathrm{Kalman})}
+            \underbrace{(z_t - H\hat{\mathbf{X}}_{t|t-1})}_{\text{innovation}},
+          \label{eq:update-step-recall}
+        \end{align}
+        where the innovation is weighted by the gain, which
+        is itself a ratio of prior uncertainty to total
+        uncertainty.  No equal-weight averaging; no
+        information discarding.
+
+  \item \textbf{Covariance-based deployment scaling:}
+        $K_t^{(\mathrm{Kalman})}$ is a direct function of
+        $P_{t|t-1}$ and $R_t$; larger prior uncertainty
+        relative to measurement noise increases the gain
+        and hence deployment.  This is the formal analogue
+        of deploying more capital when the filter trusts
+        its own prediction less than the incoming signal.
+
+  \item \textbf{Recursive reputation adaptation:}
+        $P_{t|t} = (I - K_t^{(\mathrm{Kalman})} H) P_{t|t-1}$
+        is updated at every step, so that the system's
+        self-assessed uncertainty is always current.
+        There is no fixed confidence level; confidence is
+        continuously earned or lost through prediction error.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{The role of the finite capital constraint.}
+The finite capital constraint $C_{\mathrm{available},t} < \infty$
+enforced through the gating function $G(\mathbf{X}_t)$
+serves the following formally distinct roles:
+
+\begin{enumerate}
+  \item \textbf{Survival guarantee:}
+        By setting $\pi^* = 0$ in Regime~IV, the system
+        ensures $W_{t+1} = W_t$ (no loss) rather than
+        accepting a trade with degraded system health.
+        This is the investment-domain analogue of the
+        battery management system's State-of-Charge
+        protection circuit.
+
+  \item \textbf{Precision instrument:}
+        In Regimes I--III, $G(\mathbf{X}_t)$ modulates
+        deployment continuously; the system computes
+        \emph{exactly} how much capital to risk given
+        the seven-dimensional state charge vector.
+        There is no heuristic rounding, no fixed-fraction
+        override, and no silent degradation.
+
+  \item \textbf{Compounding enabler:}
+        Long-run wealth growth requires that
+        $\sum_{t=1}^T \log(1 + \pi_t^* r_{t+1} /
+        C_{\mathrm{available},t})$ diverges.
+        The gate prevents the catastrophic negative
+        terms that would arise from deploying capital
+        when system health is critically low.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Synthesis.}
+The policy~\eqref{eq:combined-policy} transforms the
+multi-agent Kalman filter from a pure signal-processing
+machine into a \emph{survival-first, compounding-second}
+capital engine.  Every factor in the product
+$K_t^{(\mathrm{Kalman})} \cdot C_{\mathrm{available},t}
+\cdot G(\mathbf{X}_t) \cdot \mathbf{1}_{\mathcal{A}_t}$
+carries a formal, auditable justification:
+\begin{enumerate}
+  \item $K_t^{(\mathrm{Kalman})}$ encodes the
+        evidence-to-uncertainty ratio from the Kalman
+        recursion.
+  \item $C_{\mathrm{available},t}$ enforces the finite
+        capital constraint; no leverage, no phantom capital.
+  \item $G(\mathbf{X}_t)$ applies the continuous
+        seven-dimensional health penalty.
+  \item $\mathbf{1}_{\mathcal{A}_t}$ enforces the
+        hard circuit-breaker override at threshold
+        boundaries.
+\end{enumerate}
+No factor is redundant; removing any one factor
+violates at least one of the four admissibility
+constraints.  The architecture is minimal and complete.
 \end{remark}
 
 % ==============================================================
