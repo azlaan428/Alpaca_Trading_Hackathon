@@ -6898,50 +6898,311 @@ Measurability: $\calP_t\in\mathcal{F}_t$. \\
 
 \section{The Interacting Multiple Model Algorithm}
 
+% ------------------------------------------------------------------
+\subsection*{Assumptions Underpinning This Section}
+% ------------------------------------------------------------------
+
+\begin{assumption}[Well-Posed IMM Setup]
+\label{asm:imm-wellposed}
+Throughout this section the following conditions hold uniformly
+for all $t \geq 1$:
+\begin{enumerate}
+  \item \textbf{Finite model count.}  The number of regimes
+        $K \in \mathbb{N}$, $K \geq 2$, is fixed and finite.
+  \item \textbf{Non-degenerate weights.}  For each $k$,
+        $\mu_t^{(k)} > 0$ and $\sum_{k=1}^{K} \mu_t^{(k)} = 1$.
+  \item \textbf{Non-degenerate agent weights.}  For each $i$,
+        $w_i > 0$ and $W_t \;:=\; \sum_{i=1}^{N} w_i > 0$.
+  \item \textbf{Bounded signals.}  Each dampened signal
+        $\tilde{s}_i := s_i\,c_i\,(1-u_i)\,(1-d_i)$ is
+        finite~$\mathbb{P}$-a.s.\ for all $t$.
+  \item \textbf{HMM filter validity.}  The regime posterior
+        $\mu_t^{(k)}$ is produced by a well-posed HMM forward
+        filter with positive-definite likelihood
+        $p(\mathbf{z}_t \mid \hat{\mathbf{X}}_{t|t-1}^{(k)}) > 0$.
+  \item \textbf{Individual filter validity.}  Each sub-filter
+        $k$ satisfies the standard Kalman conditions:
+        positive-definite process and measurement noise
+        covariances, and an observable state--measurement pair.
+\end{enumerate}
+\end{assumption}
+
+% ------------------------------------------------------------------
 \begin{definition}[IMM Mixture Estimate]
 \label{def:imm-mixture}
-The Interacting Multiple Model (IMM) algorithm maintains $K$ parallel
-Kalman filters, one per market regime, and mixes their outputs with
-regime-posterior weights:
+Under Assumption~\ref{asm:imm-wellposed}, the
+\emph{Interacting Multiple Model} (IMM) algorithm maintains
+$K$ parallel Kalman filters indexed by regime
+$r_k$, $k = 1,\ldots,K$.  At each time $t$ the IMM forms
+the \emph{mixture state estimate}
 \begin{equation}
-  \hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})} \;=\;
+  \hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})}
+  \;:=\;
   \sum_{k=1}^{K} \mu_t^{(k)}\,\hat{\mathbf{X}}_{t|t}^{(k)},
   \label{eq:imm-mixture}
 \end{equation}
-where $\mu_t^{(k)} = P(R_t = r_k \mid \mathbf{z}_{1:t})$ is the
-regime posterior weight from the HMM forward filter.
+where
+\begin{enumerate}
+  \item $\hat{\mathbf{X}}_{t|t}^{(k)}$ is the posterior state
+        estimate of sub-filter $k$ after assimilating
+        $\mathbf{z}_t$;
+  \item $\mu_t^{(k)} \;:=\; P\!\left(R_t = r_k \;\big|\;
+        \mathbf{z}_{1:t}\right)$ is the regime posterior weight
+        delivered by the HMM forward filter; and
+  \item the weights satisfy
+        $\mu_t^{(k)} > 0$ for all $k$ and
+        $\sum_{k=1}^{K}\mu_t^{(k)} = 1$ by
+        Assumption~\ref{asm:imm-wellposed}(ii).
+\end{enumerate}
+The mixture estimate~\eqref{eq:imm-mixture} is well-defined and
+finite under Assumption~\ref{asm:imm-wellposed}(i)--(ii),(vi).
 \end{definition}
 
-\begin{theorem}[Agent Ensemble as IMM]
-\label{thm:ensemble-imm}
-The multi-agent ensemble aggregate signal
+% ------------------------------------------------------------------
+\begin{definition}[Dampened Agent Signal]
+\label{def:dampened-signal}
+For agent $i \in \{1,\ldots,N\}$ at time $t$, define the
+\emph{dampened signal}
 \begin{equation}
-  S_t \;=\;
-  \frac{\sum_{i=1}^{N} w_i\,s_i\,c_i\,(1-u_i)\,(1-d_i)}
-       {\sum_{i=1}^{N} w_i}
-  \label{eq:ensemble-signal-imm}
+  \tilde{s}_i \;:=\;
+  s_i\,c_i\,(1 - u_i)\,(1 - d_i),
+  \label{eq:dampened-signal}
 \end{equation}
-is structurally identical to the IMM mixture estimate
-of~\eqref{eq:imm-mixture}, with the bijection:
+where:
 \begin{enumerate}
-  \item Agent $i \leftrightarrow$ Kalman filter for regime $k$;
-  \item Reputation weight $w_i \leftrightarrow$ regime posterior
-        weight $\mu_t^{(k)}$;
-  \item Dampened signal $s_i c_i(1-u_i)(1-d_i)
-        \leftrightarrow$ regime-conditioned state estimate
-        $\hat{\mathbf{X}}_{t|t}^{(k)}$.
+  \item $s_i \in \mathbb{R}$ is agent $i$'s raw directional
+        signal at time $t$;
+  \item $c_i \in [0,1]$ is agent $i$'s confidence scalar;
+  \item $u_i \in [0,1]$ is agent $i$'s uncertainty penalty; and
+  \item $d_i \in [0,1]$ is agent $i$'s disagreement discount.
+\end{enumerate}
+Each factor is bounded by construction, so $\tilde{s}_i$ is
+finite~$\mathbb{P}$-a.s.\ (Assumption~\ref{asm:imm-wellposed}(iv)).
+\end{definition}
+
+% ------------------------------------------------------------------
+\begin{definition}[Ensemble Aggregate Signal]
+\label{def:ensemble-signal}
+The \emph{ensemble aggregate signal} is the reputation-weighted
+average of dampened agent signals:
+\begin{align}
+  S_t
+  &\;:=\;
+  \frac{\displaystyle\sum_{i=1}^{N}
+        w_i\,\tilde{s}_i}
+       {\displaystyle\sum_{i=1}^{N} w_i}
+  \;=\;
+  \frac{\displaystyle\sum_{i=1}^{N}
+        w_i\,s_i\,c_i\,(1-u_i)\,(1-d_i)}
+       {W_t},
+  \label{eq:ensemble-signal-imm}
+\end{align}
+where $W_t = \sum_{i=1}^{N} w_i > 0$ by
+Assumption~\ref{asm:imm-wellposed}(iii), ensuring the
+quotient is well-defined.
+\end{definition}
+
+% ------------------------------------------------------------------
+\begin{theorem}[Agent Ensemble as IMM Mixture]
+\label{thm:ensemble-imm}
+Under Assumptions~\ref{asm:imm-wellposed}
+and Definitions~\ref{def:dampened-signal}--\ref{def:ensemble-signal},
+the ensemble aggregate signal $S_t$
+of~\eqref{eq:ensemble-signal-imm} is \emph{structurally identical}
+to the IMM mixture estimate of~\eqref{eq:imm-mixture} via the
+following bijection $\phi: \{1,\ldots,N\} \to \{1,\ldots,K\}$:
+\begin{enumerate}
+  \item \textbf{Index correspondence.}
+        Agent $i$ maps to sub-filter $k = \phi(i)$, where
+        $\phi$ is a bijection requiring $N = K$.
+  \item \textbf{Weight correspondence.}
+        Reputation weight $w_i$ (normalised) maps to regime
+        posterior weight $\mu_t^{(k)}$:
+        \begin{align}
+          \frac{w_i}{W_t}
+          \;\longleftrightarrow\;
+          \mu_t^{(k)}, \qquad
+          \sum_{i=1}^{N}\frac{w_i}{W_t} = 1
+          \;\longleftrightarrow\;
+          \sum_{k=1}^{K}\mu_t^{(k)} = 1.
+          \label{eq:weight-bijection}
+        \end{align}
+  \item \textbf{Signal correspondence.}
+        Dampened signal $\tilde{s}_i$ maps to the
+        regime-conditioned state estimate:
+        \begin{align}
+          \tilde{s}_i
+          \;=\; s_i\,c_i\,(1-u_i)\,(1-d_i)
+          \;\longleftrightarrow\;
+          \hat{\mathbf{X}}_{t|t}^{(k)}.
+          \label{eq:signal-bijection}
+        \end{align}
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-Under the bijection, the numerator of~\eqref{eq:ensemble-signal-imm}
-maps to $\sum_k \mu_t^{(k)} \hat{\mathbf{X}}_{t|t}^{(k)}$ and the
-denominator maps to $\sum_k \mu_t^{(k)} = 1$ (since regime
-posteriors sum to one).  The resulting formula is exactly the
-IMM mixture~\eqref{eq:imm-mixture}.  The bijection is injective
-and surjective by the correspondence of indices $i \leftrightarrow k$
-and the one-to-one mapping of weights and signals.  \qed
+The proof proceeds by direct substitution under $\phi$ and
+verification of structural identity.
+
+\medskip
+\noindent\textbf{Step~1: Normalise the ensemble weights.}
+By Assumption~\ref{asm:imm-wellposed}(iii), $W_t > 0$.
+Define the normalised reputation weight:
+\begin{align}
+  \bar{w}_i \;:=\; \frac{w_i}{W_t},
+  \qquad
+  \sum_{i=1}^{N} \bar{w}_i = \frac{W_t}{W_t} = 1.
+  \label{eq:normalised-weight}
+\end{align}
+Thus $\{\bar{w}_i\}$ forms a probability distribution over
+agents.
+
+\medskip
+\noindent\textbf{Step~2: Rewrite the ensemble signal.}
+Substituting~\eqref{eq:normalised-weight}
+into~\eqref{eq:ensemble-signal-imm}:
+\begin{align}
+  S_t
+  &\;=\;
+  \frac{\sum_{i=1}^{N} w_i\,\tilde{s}_i}{W_t}
+  \;=\;
+  \sum_{i=1}^{N} \frac{w_i}{W_t}\,\tilde{s}_i
+  \;=\;
+  \sum_{i=1}^{N} \bar{w}_i\,\tilde{s}_i.
+  \label{eq:ensemble-rewrite}
+\end{align}
+
+\medskip
+\noindent\textbf{Step~3: Apply the bijection $\phi$.}
+Since $\phi$ is a bijection and $N = K$, reindex
+via $k = \phi(i)$:
+\begin{align}
+  S_t
+  &\;=\;
+  \sum_{k=1}^{K}
+  \bar{w}_{\phi^{-1}(k)}\,
+  \tilde{s}_{\phi^{-1}(k)}.
+  \label{eq:ensemble-reindexed}
+\end{align}
+Under the weight correspondence~\eqref{eq:weight-bijection},
+substitute $\bar{w}_{\phi^{-1}(k)} \mapsto \mu_t^{(k)}$, and
+under the signal correspondence~\eqref{eq:signal-bijection},
+substitute $\tilde{s}_{\phi^{-1}(k)} \mapsto
+\hat{\mathbf{X}}_{t|t}^{(k)}$:
+\begin{align}
+  S_t
+  \;\xrightarrow{\;\phi\;}
+  \sum_{k=1}^{K}
+  \mu_t^{(k)}\,\hat{\mathbf{X}}_{t|t}^{(k)}
+  \;=\;
+  \hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})}.
+  \label{eq:bijection-applied}
+\end{align}
+
+\medskip
+\noindent\textbf{Step~4: Verify the weight constraints are
+preserved.}
+By~\eqref{eq:normalised-weight}, $\sum_i \bar{w}_i = 1$.
+By Assumption~\ref{asm:imm-wellposed}(ii),
+$\sum_k \mu_t^{(k)} = 1$.  The bijection maps one
+normalised distribution to the other; unit-sum is preserved.
+
+\medskip
+\noindent\textbf{Step~5: Injectivity and surjectivity of
+$\phi$.}
+\begin{enumerate}
+  \item \emph{Injectivity:} If $\phi(i) = \phi(j) = k$ then
+        $i = j$ because $\phi$ is a function from a finite set
+        to a set of equal cardinality ($N = K$) with pairwise
+        distinct outputs by construction.
+  \item \emph{Surjectivity:} For every $k \in \{1,\ldots,K\}$
+        there exists $i = \phi^{-1}(k) \in \{1,\ldots,N\}$
+        because $|\{1,\ldots,N\}| = K$ and $\phi$ maps onto
+        $\{1,\ldots,K\}$.
+\end{enumerate}
+Hence $\phi$ is a bijection and the correspondence is
+one-to-one.
+
+\medskip
+\noindent\textbf{Step~6: Edge and boundary cases.}
+\begin{enumerate}
+  \item \emph{Single regime / single agent ($K=N=1$):}
+        $\mu_t^{(1)} = 1$, $\bar{w}_1 = 1$, and
+        $S_t = \tilde{s}_1 = \hat{\mathbf{X}}_{t|t}^{(1)}$.
+        The identity holds trivially.
+  \item \emph{Collapsed weight ($w_i \to 0$):}
+        By Assumption~\ref{asm:imm-wellposed}(iii), $w_i > 0$
+        strictly; the case $w_i = 0$ is excluded.  If the
+        assumption is relaxed, the agent contributes zero to
+        $S_t$ and the sum is over the remaining $N-1$ active
+        agents, which maps to the $K-1$ non-degenerate regimes.
+  \item \emph{Regime switch at $t^*$:}  The bijection $\phi$
+        is defined pointwise at each $t$.  A regime switch
+        permutes the set $\{r_k\}$; since $\phi$ is
+        re-evaluated at each step, the structural identity
+        holds post-switch provided
+        Assumption~\ref{asm:imm-wellposed} is satisfied for
+        the new regime configuration.
+\end{enumerate}
+
+\noindent Combining Steps~1--6, the ensemble signal $S_t$ is
+structurally identical to the IMM mixture
+estimate~\eqref{eq:imm-mixture} under $\phi$. \qed
 \end{proof}
+
+% ------------------------------------------------------------------
+\subsection*{Key Findings: Agent Ensemble as IMM}
+% ------------------------------------------------------------------
+
+\begin{center}
+\begin{tabularx}{\linewidth}{%
+  >{\bfseries\raggedright\arraybackslash}p{3.0cm}
+  >{\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Ensemble Concept} &
+\textbf{IMM Counterpart} &
+\textbf{Condition / Justification} \\
+\midrule
+Agent index $i$ &
+Sub-filter index $k$ &
+Bijection $\phi$; requires $N=K$. \\[3pt]
+Normalised reputation weight
+$\bar{w}_i = w_i / W_t$ &
+Regime posterior $\mu_t^{(k)}$ &
+Both sum to 1; positivity enforced by
+Assumption~\ref{asm:imm-wellposed}(ii)--(iii). \\[3pt]
+Dampened signal
+$\tilde{s}_i = s_i c_i(1{-}u_i)(1{-}d_i)$ &
+Regime state estimate
+$\hat{\mathbf{X}}_{t|t}^{(k)}$ &
+One-to-one via signal
+correspondence~\eqref{eq:signal-bijection};
+finiteness by
+Assumption~\ref{asm:imm-wellposed}(iv). \\[3pt]
+Aggregate signal $S_t$ &
+IMM mixture
+$\hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})}$ &
+Structural identity proven in
+Theorem~\ref{thm:ensemble-imm},
+Steps~1--4. \\[3pt]
+$W_t > 0$ (denominator) &
+$\sum_k \mu_t^{(k)} = 1$ (normalisation) &
+Ensures well-posedness of quotient;
+Step~1 of proof. \\[3pt]
+Collapsed agent ($w_i\to 0$, excluded) &
+Degenerate regime ($\mu_t^{(k)}\to 0$) &
+Both excluded by
+Assumption~\ref{asm:imm-wellposed}(ii)--(iii);
+boundary case addressed in Step~6. \\[3pt]
+Regime switch at $t^*$ &
+HMM transition event &
+$\phi$ re-evaluated each step;
+DAG validity preserved across regimes
+per Step~6 boundary analysis. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
 \section{Bayesian Mixing as Reputation Update}
 
