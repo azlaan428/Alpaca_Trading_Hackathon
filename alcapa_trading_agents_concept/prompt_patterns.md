@@ -2422,7 +2422,7 @@ audit/<ISO-8601-date>_<sequence-slug>.md
 ### Rules
 
 1. **Every entry must be justified.** A change without a justification is invalid and must be flagged `UNJUSTIFIED`.
-2. The audit file is **append-only after creation** — do not overwrite a prior audit file; create a new one per sequence. In fact, create a new audit file. Safer. Save into AUDIT_LOGS/ at parent root level.
+2. The audit file is **append-only after creation** — do not overwrite a prior audit file; create a new one per sequence. **In fact, create a new audit file. Safer. Save into AUDIT_LOGS/ at parent root level.**
 3. If a sequence produced **no changes**, still create the file and populate `Investigated` and `Justification Summary` explaining why no changes were warranted.
 4. The audit file **must be committed** alongside any code or documentation changes it describes.
 5. The audit log is itself subject to changelog tracking — add an `ADDED` row to the [Changelog Table](#changelog-table) for every new audit file.
