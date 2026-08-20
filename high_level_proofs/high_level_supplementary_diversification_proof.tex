@@ -57,6 +57,7 @@
 
 \DeclareMathOperator{\Var}{Var}
 \DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator{\Corr}{Corr}
 \DeclareMathOperator{\CVaR}{CVaR}
 \DeclareMathOperator{\VaR}{VaR}
 \DeclareMathOperator{\MaxDD}{MaxDD}
@@ -730,12 +731,12 @@ Chapters~3--4).
                 with $\bfSigma \succ 0$.
           \item A symmetric correlation-band constraint is given:
                 for a tolerance matrix
-                $\overline{\bfC} \in \R^{n \times n}$ with
+                $\overline{\mathbf{C}} \in \mathbb{R}^{n \times n}$ with
                 $\overline{C}_{ij} = \bar{c}_{ij} \geq 0$,
                 the soft constraint requires
                 \begin{align}
                   \bigl|
-                    \Corr(R_i, R_j) - \hat{\rho}_{ij}
+                    \mathrm{Corr}(R_i, R_j) - \hat{\rho}_{ij}
                   \bigr|
                     &\;\leq\; \bar{c}_{ij}
                   \qquad \forall\; i < j,
@@ -746,13 +747,13 @@ Chapters~3--4).
                 $\mu_{ij} \geq 0$ for each pair $(i,j)$ with $i < j$.
           \item The Lagrangian is
                 \begin{align}
-                  \calL(\bfw, \bfmu)
+                  \mathcal{L}(\mathbf{w}, \boldsymbol{\mu})
                     &\;:=\;
-                      \bfw^\top\bfSigma\bfw
-                      - \lambda\bfmu^\top\bfw
+                      \mathbf{w}^\top\boldsymbol{\Sigma}\mathbf{w}
+                      - \lambda\boldsymbol{\mu}^\top\mathbf{w}
                       + \sum_{i<j} \mu_{ij}
                         \bigl(
-                          |\Corr(R_i,R_j) - \hat{\rho}_{ij}|
+                          |\mathrm{Corr}(R_i,R_j) - \hat{\rho}_{ij}|
                           - \bar{c}_{ij}
                         \bigr).
                   \label{eq:sum-lagrangian}
@@ -760,19 +761,19 @@ Chapters~3--4).
         \end{enumerate}
 
         \emph{Conclusion.}
-        At any KKT point $(\bfw^*,\bfmu^*)$:
+        At any KKT point $(\mathbf{w}^*,\boldsymbol{\mu}^*)$:
         \begin{enumerate}[label=(\alph*), itemsep=2pt]
           \item The effective covariance matrix is
                 \begin{align}
-                  \bfSigma_{\mathrm{eff}}
+                  \boldsymbol{\Sigma}_{\mathrm{eff}}
                     &\;:=\;
-                      \bfSigma
-                      + \bfDelta(\bfmu^*),
+                      \boldsymbol{\Sigma}
+                      + \boldsymbol{\Delta}(\boldsymbol{\mu}^*),
                   \label{eq:sum-sigma-eff}
                 \end{align}
-                where $\bfDelta(\bfmu^*)$ is the symmetric penalty
+                where $\boldsymbol{\Delta}(\boldsymbol{\mu}^*)$ is the symmetric penalty
                 adjustment matrix with
-                $[\bfDelta]_{ij} = \mu^*_{ij}\,\mathrm{sgn}(\Corr(R_i,R_j)
+                $[\boldsymbol{\Delta}]_{ij} = \mu^*_{ij}\,\mathrm{sgn}(\mathrm{Corr}(R_i,R_j)
                 - \hat{\rho}_{ij})$ for $i \neq j$ and zero diagonal.
           \item The constrained efficient frontier is
                 \begin{align}
@@ -789,7 +790,7 @@ Chapters~3--4).
                 budget constraint, determined by
                 $\bfone^\top\bfw^* = 1$.
           \item $\bfSigma_{\mathrm{eff}} \succ 0$ whenever
-                $\bfSigma \succ 0$ and $\bfDelta(\bfmu^*)$ is
+                $\bfSigma \succ 0$ and $\boldsymbol{\Delta}(\bfmu^*)$ is
                 positive semi-definite, which holds at all KKT points
                 with $\mu^*_{ij} \geq 0$.
           \item The soft-constraint frontier collapses to the
@@ -798,7 +799,7 @@ Chapters~3--4).
         \end{enumerate}
 
         \emph{Dependencies.} B2; Lagrangian duality
-        (Boyd--Vandenberghe~\cite{boyd2004}); invertibility of
+        (Boyd--Vandenberghe~\cite{Boyd2004}); invertibility of
         $\bfSigma_{\mathrm{eff}}$ under strict positive definiteness.
 
 \end{enumerate}
@@ -851,9 +852,9 @@ and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
         \end{enumerate}
 
         \emph{Conclusion.}
-        The rebalancing trigger $\calT(t)$ satisfies
+        The rebalancing trigger $\mathcal{T}(t)$ satisfies
         \begin{align}
-          \calT(t) = 1
+          \mathcal{T}(t) = 1
             &\;\iff\;
               H(t) = 1
               \;\text{ or }\;
@@ -865,13 +866,13 @@ and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
           \item Evaluating $H(t)$ requires $O(n)$ comparisons.
           \item Evaluating $S(t)$ requires $O(n^2)$ pairwise
                 comparisons.
-          \item Therefore $\calT(t)$ is \emph{decidable} in $O(n^2)$
+          \item Therefore $\mathcal{T}(t)$ is \emph{decidable} in $O(n^2)$
                 time given $\bfw(t)$ and $\{\hat{\rho}_{ij}(t)\}$.
-          \item The trigger is \emph{sound}: $\calT(t)=1$ implies at
+          \item The trigger is \emph{sound}: $\mathcal{T}(t)=1$ implies at
                 least one constraint is violated or nearly violated.
           \item The trigger is \emph{complete}: if any hard constraint
                 is violated or any soft violation exceeds
-                $\varepsilon_S$, then $\calT(t)=1$.
+                $\varepsilon_S$, then $\mathcal{T}(t)=1$.
         \end{enumerate}
 
         \emph{Dependencies.} B2, B3; definitions of hard and soft
@@ -942,7 +943,7 @@ and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
                 satisfies $\bfone^\top\bfw^{(k)} = 1$,
                 $w^{(k)}_i \geq 0$.
           \item Pairwise within-bucket correlations satisfy
-                $\Corr(R_i,R_j) = \rho^{(k)} < 1$ for all
+                $\mathrm{Corr}(R_i,R_j) = \rho^{(k)} < 1$ for all
                 $i \neq j$ within $\calD_k$ (equi-correlation within
                 bucket, strict bound).
         \end{enumerate}
@@ -971,7 +972,7 @@ and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
                 where $\sigma_{k,\min}^2 := \min_{i \in \calD_k}
                 \sigma_{k,i}^2$.
           \item The result extends to all nine buckets
-                simultaneously; see Proposition~\ref{prop:bucket-sum}
+                simultaneously; see Proposition~\ref{prop:bucket-variance-sum}
                 in Chapter~7.
         \end{enumerate}
 
@@ -1048,6 +1049,7 @@ and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
         (Dhaene et al.~\cite{dhaene2002}).
 
 \end{enumerate}
+
 
 
 % ==============================================================
@@ -8131,6 +8133,12 @@ A Well-Conditioned Estimator for Large-Dimensional Covariance Matrices.
 \textit{Journal of Multivariate Analysis}, 88(2), 365--411.
 \href{https://doi.org/10.1016/S0047-259X(03)00096-4}{doi:10.1016/S0047-259X(03)00096-4}
 
+\bibitem{rockafellar1970}
+Rockafellar, R.\ T.\ (1970).
+\textit{Convex Analysis}.
+Princeton University Press.
+\href{https://doi.org/10.1515/9781400873173}{doi:10.1515/9781400873173}
+
 \bibitem{bertsekas1999}
 Bertsekas, D.\ P.\ (1999).
 \textit{Nonlinear Programming} (2nd ed.).
@@ -8152,6 +8160,12 @@ Wiley.
 Qian, E.\ (2005).
 Risk Parity Portfolios: Efficient Portfolios through True Diversification.
 \textit{PanAgora Asset Management White Paper}.
+
+\bibitem{dhaene2002}
+Dhaene, J., Denuit, M., Goovaerts, M.\ J., Kaas, R., \& Vyncke, D.\ (2002).
+The Concept of Comonotonicity in Actuarial Science and Finance: Theory.
+\textit{Insurance: Mathematics and Economics}, 31(1), 3--33.
+\href{https://doi.org/10.1016/S0167-6687(02)00134-8}{doi:10.1016/S0167-6687(02)00134-8}
 
 \end{thebibliography}
 
