@@ -469,57 +469,585 @@ of each theorem discussed in the concluding remarks of each chapter.
 \addcontentsline{toc}{chapter}{Summary of Key Results}
 % ==============================================================
 
-\begin{center}
-\begin{tabularx}{\textwidth}{@{} l X l @{}}
-\hline
-\textbf{Result} & \textbf{Statement (brief)} & \textbf{Chapter} \\
-\hline
-Thm.~\ref{thm:naive-concentration} &
-  A single-asset portfolio is never variance-minimising unless it has
-  zero covariance with every other asset. & 2 \\
-\addlinespace
-Thm.~\ref{thm:diversification-bound} &
-  Portfolio variance satisfies
-  $\Var(R_p) \leq \bar{\sigma}^2 / n + (1 - 1/n)\bar{\rho}\,\bar{\sigma}^2$;
-  diversification strictly reduces variance when $\bar{\rho} < 1$. & 2 \\
-\addlinespace
-Thm.~\ref{thm:correlation-regime} &
-  Diversification benefit $\Delta V$ is a decreasing function of the
-  inter-asset correlation $\rho$; regime shifts that increase $\rho$
-  erode the benefit and trigger rebalancing. & 3 \\
-\addlinespace
-Thm.~\ref{thm:hard-constraint} &
-  Under a maximum-concentration hard constraint $w_i \leq w_{\max}$,
-  the feasible set is non-empty, compact, and convex; the constrained
-  optimum exists and is unique under a strictly convex objective. & 4 \\
-\addlinespace
-Thm.~\ref{thm:soft-constraint} &
-  The Lagrangian relaxation of a soft correlation-band constraint
-  yields a closed-form penalty adjustment to the mean-variance
-  efficient frontier. & 4 \\
-\addlinespace
-Thm.~\ref{thm:rebalance-trigger} &
-  A rebalancing trigger fires at time $t$ if and only if at least one
-  hard constraint is violated or the soft-constraint violation exceeds
-  the configured tolerance; the trigger is decidable in $O(n^2)$ time. & 5 \\
-\addlinespace
-Thm.~\ref{thm:time-horizon-layer} &
-  The aggregate risk of a layered portfolio is bounded by the sum of
-  per-layer risk budgets; layers are mutually uncorrelated across
-  horizons under the stated independence assumption. & 6 \\
-\addlinespace
-Thm.~\ref{thm:within-bucket} &
-  Within any asset-class bucket, internal diversification across
-  factors, geographies, and durations reduces bucket variance below
-  the variance of any single constituent. & 7 \\
-\addlinespace
-Thm.~\ref{thm:cross-asset-cvar} &
-  Cross-asset CVaR satisfies a sub-additivity inequality; the benefit
-  of cross-asset diversification is strictly positive whenever assets
-  are not perfectly co-monotonic. & 8 \\
-\hline
-\end{tabularx}
-\end{center}
+%% ---------------------------------------------------------------
+%% Summary of Key Results — fully expanded, rigorous presentation
+%% Subdivided into three sub-tables to respect page margins.
+%% ---------------------------------------------------------------
+
+\noindent
+The nine principal results of this document are catalogued below.
+Each entry states the result label, the precise mathematical content
+including all hypotheses and conclusions, the chapter in which the
+complete proof appears, and the logical dependencies on earlier
+results.  All notation is as established in Chapter~1.
+
+\medskip
+\noindent\textbf{Sub-Table~A\,: Variance Concentration and
+Diversification Bounds} (Theorems~\ref{thm:naive-concentration}
+and~\ref{thm:diversification-bound}, Chapter~2).
+
+\smallskip
+\begin{enumerate}[label=\textbf{A\arabic*.}, leftmargin=*, widest=A2,
+                  itemsep=6pt, parsep=2pt]
+
+  \item \textbf{Theorem~\ref{thm:naive-concentration}
+        (Naive Concentration — Chapter~2).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item The asset universe satisfies $|\calU|=n\geq 2$.
+          \item Returns $R_1,\ldots,R_n$ are square-integrable random
+                variables on a common probability space
+                $(\Omega,\calF,\Prob)$.
+          \item The covariance matrix
+                $\bfSigma = [\Cov(R_i,R_j)]_{i,j=1}^n$ is
+                positive semi-definite.
+          \item The portfolio weight vector
+                $\bfw=(w_1,\ldots,w_n)^\top$ satisfies the budget
+                constraint $\bfone^\top\bfw = 1$,
+                $\bfw \in \R^n$.
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        Let $\bfe_k = (0,\ldots,1,\ldots,0)^\top$ denote the
+        $k$-th standard basis vector.  The single-asset (concentrated)
+        portfolio $\bfw = \bfe_k$ achieves
+        \begin{align}
+          \Var(R_p)\big|_{\bfw=\bfe_k}
+            &= \sigma_{kk}
+             = \Var(R_k).
+          \label{eq:sum-conc-var}
+        \end{align}
+        This portfolio is a solution to the minimum-variance problem
+        \begin{align}
+          \min_{\bfw:\;\bfone^\top\bfw=1}
+            \bfw^\top \bfSigma\, \bfw
+          \label{eq:sum-mv-prob}
+        \end{align}
+        if and only if
+        \begin{align}
+          \Cov(R_k, R_j) &= 0
+          \qquad \forall\; j \in \{1,\ldots,n\} \setminus \{k\},
+          \label{eq:sum-cov-zero}
+        \end{align}
+        i.e.\ asset $k$ has zero covariance with every other
+        asset in the universe.  In all other cases, there exists
+        a portfolio $\bfw^* \neq \bfe_k$ with
+        $\bfone^\top\bfw^*=1$ and
+        ${\bfw^*}^\top\bfSigma\,\bfw^* < \sigma_{kk}$.
+
+        \emph{Dependencies.} Definition~\ref{def:universe};
+        positive semi-definiteness of $\bfSigma$; first-order
+        Karush--Kuhn--Tucker conditions for quadratic programmes.
+
+  \item \textbf{Theorem~\ref{thm:diversification-bound}
+        (Diversification Variance Bound — Chapter~2).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item Same universe, probability space, and
+                square-integrability as in A1.
+          \item All marginal variances are equal:
+                $\Var(R_i) = \sigma^2 > 0$ for $i=1,\ldots,n$.
+          \item All pairwise correlations are equal:
+                $\mathrm{Corr}(R_i,R_j) = \bar{\rho} \in (-1/(n-1),\,1]$
+                for $i \neq j$ (equi-correlation).
+          \item The equal-weight portfolio is employed:
+                $w_i = 1/n$ for all $i$.
+        \end{enumerate}
+
+        \emph{Notation.}  Define the average variance and average
+        correlation:
+        \begin{align}
+          \bar{\sigma}^2
+            &\;:=\; \frac{1}{n}\sum_{i=1}^n \Var(R_i),
+          \label{eq:sum-avg-var} \\[4pt]
+          \bar{\rho}
+            &\;:=\;
+              \frac{2}{n(n-1)}
+              \sum_{1 \leq i < j \leq n}
+              \mathrm{Corr}(R_i,R_j).
+          \label{eq:sum-avg-rho}
+        \end{align}
+
+        \emph{Conclusion.}
+        Under the equi-correlation, equal-weight model,
+        portfolio variance satisfies
+        \begin{align}
+          \Var(R_p)
+            &\;=\;
+              \frac{\bar{\sigma}^2}{n}
+              \;+\;
+              \Bigl(1 - \frac{1}{n}\Bigr)\bar{\rho}\,\bar{\sigma}^2.
+          \label{eq:sum-div-bound}
+        \end{align}
+        In particular:
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item If $\bar{\rho} < 1$, then
+                $\Var(R_p) < \bar{\sigma}^2 = \Var(R_i)$, so
+                diversification strictly reduces variance.
+          \item As $n \to \infty$,
+                $\Var(R_p) \to \bar{\rho}\,\bar{\sigma}^2$;
+                the systematic (undiversifiable) floor is
+                $\bar{\rho}\,\bar{\sigma}^2$.
+          \item If $\bar{\rho} = 0$, then
+                $\Var(R_p) = \bar{\sigma}^2/n \to 0$ as
+                $n \to \infty$ (full idiosyncratic elimination).
+          \item The bound \eqref{eq:sum-div-bound} is attained with
+                equality under the stated equi-correlation,
+                equal-weight model and is a strict upper bound under
+                any heterogeneous-weight or heterogeneous-correlation
+                regime satisfying $\bar{\rho} < 1$.
+        \end{enumerate}
+
+        \emph{Dependencies.} A1; Definition~\ref{def:buckets};
+        algebra of covariance for linear combinations of random
+        variables.
+
+\end{enumerate}
+
+\bigskip
+\noindent\textbf{Sub-Table~B\,: Correlation Regimes, Constraints,
+and the Efficient Frontier} (Theorems~\ref{thm:correlation-regime},
+\ref{thm:hard-constraint}, and~\ref{thm:soft-constraint},
+Chapters~3--4).
+
+\smallskip
+\begin{enumerate}[label=\textbf{B\arabic*.}, leftmargin=*, widest=B3,
+                  itemsep=6pt, parsep=2pt]
+
+  \item \textbf{Theorem~\ref{thm:correlation-regime}
+        (Correlation-Regime Sensitivity — Chapter~3).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item Universe, probability space, and square-integrability
+                as in A1.
+          \item An equi-correlation model parameterised by
+                $\rho \in (-1/(n-1),\,1)$ governs pairwise
+                correlations.
+          \item Marginal variances satisfy
+                $\Var(R_i) = \sigma^2 > 0$ for all $i$.
+          \item The diversification benefit is defined as
+                \begin{align}
+                  \Delta V(\rho)
+                    &\;:=\;
+                      \sigma^2 - \Var(R_p;\rho),
+                  \label{eq:sum-dv-def}
+                \end{align}
+                where $\Var(R_p;\rho)$ is the equal-weight portfolio
+                variance under equi-correlation $\rho$.
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item $\Delta V(\rho)$ is a \emph{strictly decreasing}
+                affine function of $\rho$ on $(-1/(n-1),\,1)$:
+                \begin{align}
+                  \frac{\partial\,\Delta V}{\partial \rho}
+                    &\;=\;
+                      -\Bigl(1 - \frac{1}{n}\Bigr)\sigma^2
+                      \;<\; 0.
+                  \label{eq:sum-dv-deriv}
+                \end{align}
+          \item For any regime shift increasing $\rho$ by
+                $\delta > 0$, the benefit decreases by
+                $(1-1/n)\sigma^2\delta > 0$.
+          \item If a regime shift causes $\rho$ to cross the
+                rebalancing threshold $\rho^* := 1 - \varepsilon$
+                for a pre-specified tolerance $\varepsilon > 0$,
+                a rebalancing trigger is activated
+                (formalised in Theorem~\ref{thm:rebalance-trigger}).
+          \item $\Delta V(\rho) = 0$ if and only if $\rho = 1$
+                (perfect positive correlation; no diversification
+                benefit).
+          \item $\Delta V(\rho) = \sigma^2(1 - 1/n)$ if and only if
+                $\rho = 0$ (zero correlation; maximum idiosyncratic
+                reduction for $n$ fixed).
+        \end{enumerate}
+
+        \emph{Dependencies.} A2 \eqref{eq:sum-div-bound};
+        elementary real analysis (monotone functions).
+
+  \item \textbf{Theorem~\ref{thm:hard-constraint}
+        (Hard-Constraint Feasibility and Uniqueness — Chapter~4).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item Universe and covariance structure as in A1 with
+                $\bfSigma \succ 0$ (strictly positive definite).
+          \item A scalar maximum-concentration parameter
+                $w_{\max} \in (1/n,\,1]$ is given.
+          \item The feasible set is
+                \begin{align}
+                  \calC_{\mathrm{hard}}
+                    &\;:=\;
+                      \bigl\{
+                        \bfw \in \R^n
+                        \;\big|\;
+                        \bfone^\top \bfw = 1,\;
+                        0 \leq w_i \leq w_{\max}\;
+                        \forall\, i
+                      \bigr\}.
+                  \label{eq:sum-hard-feas}
+                \end{align}
+          \item The objective is the mean-variance function
+                $f(\bfw) := \bfw^\top\bfSigma\bfw - \lambda\bfmu^\top\bfw$
+                for a risk-aversion parameter $\lambda > 0$ and
+                mean-return vector $\bfmu \in \R^n$.
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item \emph{Non-emptiness.}  Since $w_{\max} \geq 1/n$,
+                the equal-weight vector $(1/n,\ldots,1/n)^\top$
+                lies in $\calC_{\mathrm{hard}}$, so
+                $\calC_{\mathrm{hard}} \neq \emptyset$.
+          \item \emph{Compactness.}  $\calC_{\mathrm{hard}}$ is a
+                bounded, closed polytope in $\R^n$, hence compact.
+          \item \emph{Convexity.}  $\calC_{\mathrm{hard}}$ is the
+                intersection of finitely many closed half-spaces and
+                a hyperplane, hence convex.
+          \item \emph{Existence.}  Since $f$ is continuous and
+                $\calC_{\mathrm{hard}}$ is compact, the minimum is
+                attained by the extreme-value theorem.
+          \item \emph{Uniqueness.}  Since $\bfSigma \succ 0$,
+                $f$ is strictly convex on $\R^n$; a strictly convex
+                function attains its minimum at most one point in any
+                convex set.  Combined with (d), the constrained
+                minimiser $\bfw^*_{\mathrm{hard}}$ is unique.
+        \end{enumerate}
+
+        \emph{Dependencies.} A1; convex analysis
+        (Rockafellar~\cite{rockafellar1970}); extreme-value theorem.
+
+  \item \textbf{Theorem~\ref{thm:soft-constraint}
+        (Soft-Constraint Lagrangian Frontier — Chapter~4).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item Universe and covariance structure as in B2(i)--(ii)
+                with $\bfSigma \succ 0$.
+          \item A symmetric correlation-band constraint is given:
+                for a tolerance matrix
+                $\overline{\bfC} \in \R^{n \times n}$ with
+                $\overline{C}_{ij} = \bar{c}_{ij} \geq 0$,
+                the soft constraint requires
+                \begin{align}
+                  \bigl|
+                    \Corr(R_i, R_j) - \hat{\rho}_{ij}
+                  \bigr|
+                    &\;\leq\; \bar{c}_{ij}
+                  \qquad \forall\; i < j,
+                  \label{eq:sum-soft-band}
+                \end{align}
+                where $\hat{\rho}_{ij}$ are target correlations.
+          \item Violation is penalised by a Lagrange multiplier
+                $\mu_{ij} \geq 0$ for each pair $(i,j)$ with $i < j$.
+          \item The Lagrangian is
+                \begin{align}
+                  \calL(\bfw, \bfmu)
+                    &\;:=\;
+                      \bfw^\top\bfSigma\bfw
+                      - \lambda\bfmu^\top\bfw
+                      + \sum_{i<j} \mu_{ij}
+                        \bigl(
+                          |\Corr(R_i,R_j) - \hat{\rho}_{ij}|
+                          - \bar{c}_{ij}
+                        \bigr).
+                  \label{eq:sum-lagrangian}
+                \end{align}
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        At any KKT point $(\bfw^*,\bfmu^*)$:
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item The effective covariance matrix is
+                \begin{align}
+                  \bfSigma_{\mathrm{eff}}
+                    &\;:=\;
+                      \bfSigma
+                      + \bfDelta(\bfmu^*),
+                  \label{eq:sum-sigma-eff}
+                \end{align}
+                where $\bfDelta(\bfmu^*)$ is the symmetric penalty
+                adjustment matrix with
+                $[\bfDelta]_{ij} = \mu^*_{ij}\,\mathrm{sgn}(\Corr(R_i,R_j)
+                - \hat{\rho}_{ij})$ for $i \neq j$ and zero diagonal.
+          \item The constrained efficient frontier is
+                \begin{align}
+                  \bfw^*
+                    &\;=\;
+                      \bfSigma_{\mathrm{eff}}^{-1}
+                      \bigl(
+                        \lambda\bfmu
+                        + \nu^*\bfone
+                      \bigr),
+                  \label{eq:sum-soft-opt}
+                \end{align}
+                where $\nu^*$ is the Lagrange multiplier for the
+                budget constraint, determined by
+                $\bfone^\top\bfw^* = 1$.
+          \item $\bfSigma_{\mathrm{eff}} \succ 0$ whenever
+                $\bfSigma \succ 0$ and $\bfDelta(\bfmu^*)$ is
+                positive semi-definite, which holds at all KKT points
+                with $\mu^*_{ij} \geq 0$.
+          \item The soft-constraint frontier collapses to the
+                unconstrained mean-variance frontier when
+                $\mu^*_{ij} = 0$ for all $i < j$.
+        \end{enumerate}
+
+        \emph{Dependencies.} B2; Lagrangian duality
+        (Boyd--Vandenberghe~\cite{boyd2004}); invertibility of
+        $\bfSigma_{\mathrm{eff}}$ under strict positive definiteness.
+
+\end{enumerate}
+
+\bigskip
+\noindent\textbf{Sub-Table~C\,: Rebalancing, Time Horizons,
+Within-Bucket Diversification, and Cross-Asset CVaR}
+(Theorems~\ref{thm:rebalance-trigger},
+\ref{thm:time-horizon-layer},
+\ref{thm:within-bucket},
+and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
+
+\smallskip
+\begin{enumerate}[label=\textbf{C\arabic*.}, leftmargin=*, widest=C4,
+                  itemsep=6pt, parsep=2pt]
+
+  \item \textbf{Theorem~\ref{thm:rebalance-trigger}
+        (Rebalancing Trigger Decidability — Chapter~5).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item At time $t$, observed weights $\bfw(t)$ and
+                realised correlations $\hat{\rho}_{ij}(t)$ are
+                available.
+          \item Hard-constraint parameters $w_{\max}$ and
+                soft-constraint tolerances $\bar{c}_{ij}$ are fixed
+                and known.
+          \item The hard-violation indicator is
+                \begin{align}
+                  H(t)
+                    &\;:=\;
+                      \mathbf{1}\bigl[
+                        \exists\, i:\; w_i(t) > w_{\max}
+                      \bigr].
+                  \label{eq:sum-hard-ind}
+                \end{align}
+          \item The soft-violation magnitude is
+                \begin{align}
+                  S(t)
+                    &\;:=\;
+                      \max_{i < j}
+                      \bigl(
+                        |\hat{\rho}_{ij}(t) - \hat{\rho}_{ij}|
+                        - \bar{c}_{ij}
+                      \bigr)_+,
+                  \label{eq:sum-soft-mag}
+                \end{align}
+                where $(x)_+ := \max(x,0)$.
+          \item A scalar tolerance $\varepsilon_S > 0$ is pre-specified.
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        The rebalancing trigger $\calT(t)$ satisfies
+        \begin{align}
+          \calT(t) = 1
+            &\;\iff\;
+              H(t) = 1
+              \;\text{ or }\;
+              S(t) > \varepsilon_S.
+          \label{eq:sum-trigger}
+        \end{align}
+        Furthermore:
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item Evaluating $H(t)$ requires $O(n)$ comparisons.
+          \item Evaluating $S(t)$ requires $O(n^2)$ pairwise
+                comparisons.
+          \item Therefore $\calT(t)$ is \emph{decidable} in $O(n^2)$
+                time given $\bfw(t)$ and $\{\hat{\rho}_{ij}(t)\}$.
+          \item The trigger is \emph{sound}: $\calT(t)=1$ implies at
+                least one constraint is violated or nearly violated.
+          \item The trigger is \emph{complete}: if any hard constraint
+                is violated or any soft violation exceeds
+                $\varepsilon_S$, then $\calT(t)=1$.
+        \end{enumerate}
+
+        \emph{Dependencies.} B2, B3; definitions of hard and soft
+        constraints \eqref{eq:sum-hard-feas}--\eqref{eq:sum-soft-band}.
+
+  \item \textbf{Theorem~\ref{thm:time-horizon-layer}
+        (Layered Portfolio Risk Bound — Chapter~6).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item The portfolio is decomposed into $L \geq 2$ layers
+                indexed $\ell = 1,\ldots,L$, corresponding to distinct
+                investment horizons $\tau_1 < \cdots < \tau_L$.
+          \item Layer $\ell$ has weight vector $\bfw^{(\ell)}$ with
+                $\bfone^\top\bfw^{(\ell)} = \alpha_\ell \geq 0$ and
+                $\sum_{\ell=1}^L \alpha_\ell = 1$.
+          \item Each layer's return $R^{(\ell)} :=
+                {\bfw^{(\ell)}}^\top \mathbf{R}$ is associated with
+                a risk budget $B_\ell > 0$ satisfying
+                $\Var(R^{(\ell)}) \leq B_\ell$.
+          \item Layers are mutually uncorrelated across horizons:
+                \begin{align}
+                  \Cov\bigl(R^{(\ell)}, R^{(\ell')}\bigr)
+                    &\;=\; 0
+                  \qquad \forall\; \ell \neq \ell'.
+                  \label{eq:sum-layer-uncorr}
+                \end{align}
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        The aggregate portfolio return
+        $R_p = \sum_{\ell=1}^L R^{(\ell)}$ satisfies
+        \begin{align}
+          \Var(R_p)
+            &\;=\;
+              \sum_{\ell=1}^L \Var\bigl(R^{(\ell)}\bigr)
+            \;\leq\;
+              \sum_{\ell=1}^L B_\ell,
+          \label{eq:sum-layer-bound}
+        \end{align}
+        where the equality follows from the mutual uncorrelatedness
+        assumption \eqref{eq:sum-layer-uncorr}.  Specifically:
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item The bound $\sum_\ell B_\ell$ is tight: it is attained
+                when $\Var(R^{(\ell)}) = B_\ell$ for every $\ell$.
+          \item If the layer uncorrelatedness assumption fails, the
+                true variance may exceed $\sum_\ell B_\ell$; the
+                assumption must be validated empirically or by
+                structural model arguments.
+          \item Adding a new layer $\ell'$ with budget $B_{\ell'}$
+                increases the bound by exactly $B_{\ell'}$ under
+                assumption \eqref{eq:sum-layer-uncorr}.
+        \end{enumerate}
+
+        \emph{Dependencies.} A1; bilinearity of covariance;
+        mutual uncorrelatedness axiom \eqref{eq:sum-layer-uncorr}.
+
+  \item \textbf{Theorem~\ref{thm:within-bucket}
+        (Within-Bucket Internal Diversification — Chapter~7).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item Fix a bucket $k \in \{1,\ldots,9\}$ with constituent
+                set $\calD_k$ and $|\calD_k| = m \geq 2$.
+          \item Within-bucket returns $R_i$, $i \in \calD_k$, are
+                square-integrable with $\Var(R_i) = \sigma_{k,i}^2 > 0$.
+          \item The within-bucket weight vector $\bfw^{(k)} \in \R^m$
+                satisfies $\bfone^\top\bfw^{(k)} = 1$,
+                $w^{(k)}_i \geq 0$.
+          \item Pairwise within-bucket correlations satisfy
+                $\Corr(R_i,R_j) = \rho^{(k)} < 1$ for all
+                $i \neq j$ within $\calD_k$ (equi-correlation within
+                bucket, strict bound).
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        For any non-degenerate within-bucket weight vector
+        (i.e.\ $\bfw^{(k)} \neq \bfe_j$ for all $j$):
+        \begin{align}
+          \Var\!\left(
+            \sum_{i \in \calD_k} w^{(k)}_i R_i
+          \right)
+            &\;<\;
+              \sigma_{k,j}^2
+          \qquad \forall\; j \in \calD_k,
+          \label{eq:sum-bucket-bound}
+        \end{align}
+        i.e.\ the bucket portfolio variance is strictly below
+        the variance of every single constituent.  Furthermore:
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item The bound holds for any within-bucket weights, not
+                only equal weights, provided $\rho^{(k)} < 1$ and
+                $m \geq 2$.
+          \item Diversification across factors, geographies, and
+                durations within the bucket reduces idiosyncratic
+                variance by at least $(1 - \rho^{(k)})\sigma_{k,\min}^2$,
+                where $\sigma_{k,\min}^2 := \min_{i \in \calD_k}
+                \sigma_{k,i}^2$.
+          \item The result extends to all nine buckets
+                simultaneously; see Proposition~\ref{prop:bucket-sum}
+                in Chapter~7.
+        \end{enumerate}
+
+        \emph{Dependencies.} A2; Definition~\ref{def:buckets}
+        (partition axioms); B1.
+
+  \item \textbf{Theorem~\ref{thm:cross-asset-cvar}
+        (Cross-Asset CVaR Sub-Additivity — Chapter~8).}
+
+        \emph{Hypotheses.}
+        \begin{enumerate}[label=(\roman*), itemsep=2pt]
+          \item Returns $R_1,\ldots,R_n$ have a joint distribution
+                with finite first moments and continuous marginal
+                CDFs.
+          \item A confidence level $\alpha \in (0,1)$ is fixed.
+          \item $\CVaR_\alpha(X)$ denotes the Conditional
+                Value-at-Risk (Expected Shortfall) of random variable
+                $X$ at level $\alpha$:
+                \begin{align}
+                  \CVaR_\alpha(X)
+                    &\;:=\;
+                      \frac{1}{1-\alpha}
+                      \int_\alpha^1
+                      \VaR_u(X)\,\mathrm{d}u,
+                  \label{eq:sum-cvar-def}
+                \end{align}
+                where $\VaR_u(X) := \inf\{x : \Prob(X \leq x)
+                \geq u\}$.
+          \item The cross-asset portfolio loss is
+                $L_p := -R_p = -\bfw^\top\mathbf{R}$.
+          \item Assets are \emph{not} perfectly co-monotonic:
+                there do not exist increasing functions
+                $h_1,\ldots,h_n$ and a scalar $Z$ such that
+                $R_i = h_i(Z)$ a.s.\ for all $i$.
+        \end{enumerate}
+
+        \emph{Conclusion.}
+        \begin{enumerate}[label=(\alph*), itemsep=2pt]
+          \item \emph{Sub-additivity.}  For any weights
+                $\bfw = (w_1,\ldots,w_n)^\top$ with
+                $\bfone^\top\bfw = 1$, $w_i \geq 0$:
+                \begin{align}
+                  \CVaR_\alpha(L_p)
+                    &\;\leq\;
+                      \sum_{i=1}^n w_i\,\CVaR_\alpha(-R_i).
+                  \label{eq:sum-cvar-subadd}
+                \end{align}
+          \item \emph{Strict benefit.}  Under the non-co-monotonicity
+                hypothesis (v), the inequality in
+                \eqref{eq:sum-cvar-subadd} is strict:
+                \begin{align}
+                  \CVaR_\alpha(L_p)
+                    &\;<\;
+                      \sum_{i=1}^n w_i\,\CVaR_\alpha(-R_i),
+                  \label{eq:sum-cvar-strict}
+                \end{align}
+                i.e.\ cross-asset diversification strictly reduces
+                tail risk.
+          \item \emph{Boundary case.}  Equality in
+                \eqref{eq:sum-cvar-subadd} holds if and only if
+                $(R_1,\ldots,R_n)$ are perfectly co-monotonic,
+                which is excluded by hypothesis~(v).
+          \item \emph{Scale invariance.}
+                The diversification benefit
+                $\Delta\CVaR := \sum_i w_i\CVaR_\alpha(-R_i)
+                - \CVaR_\alpha(L_p) > 0$ scales linearly
+                with the portfolio size $\|\bfw\|_1 = 1$ under
+                the stated normalisation.
+        \end{enumerate}
+
+        \emph{Dependencies.} A1; coherent risk measure theory
+        (Artzner et al.~\cite{artzner1999}); Rockafellar--Uryasev
+        representation of CVaR; co-monotonicity theory
+        (Dhaene et al.~\cite{dhaene2002}).
+
+\end{enumerate}
 
 
 % ==============================================================
