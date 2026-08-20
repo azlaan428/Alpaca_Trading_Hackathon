@@ -1051,6 +1051,325 @@ and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
 \end{enumerate}
 
 
+% ==============================================================
+% NOTATION AND SYMBOLS TABLES
+% ==============================================================
+
+\chapter*{Notation and Symbol Reference}
+\addcontentsline{toc}{chapter}{Notation and Symbol Reference}
+\label{ch:notation}
+
+The following tables collect every symbol used throughout this paper,
+grouped by category.  Each entry gives the symbol, its \LaTeX\ name
+for reference, and a concise description.  Where a symbol appears in
+multiple contexts, the primary meaning is listed first.
+
+\medskip
+
+% ------------------------------------------------------------------
+% Table 1: Sets and Index Collections
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Sets and index collections.}
+\label{tab:symbols-sets}
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Macro} & \textbf{Description} \\
+\midrule
+$\calU$ & \texttt{\textbackslash calU} &
+  Full investable asset universe; $\calU=\{a_1,\ldots,a_n\}$. \\
+$\calD_k$, $k=1,\ldots,9$ & \texttt{\textbackslash calD\_k} &
+  The $k$-th bucket (sub-class) of the nine-bucket partition of $\calU$. \\
+$\calD_{\mathrm{EQ}}$ & & Equities bucket ($k=1$). \\
+$\calD_{\mathrm{FI}}$ & & Fixed-income bucket ($k=2$). \\
+$\calD_{\mathrm{FX}}$ & & Foreign-exchange bucket ($k=3$). \\
+$\calD_{\mathrm{CM}}$ & & Commodities bucket ($k=4$). \\
+$\calD_{\mathrm{FT}}$ & & FinTech / digital-asset bucket ($k=5$). \\
+$\calD_{\mathrm{FD}}$ & & Fund / ETF bucket ($k=6$). \\
+$\calD_{\mathrm{CR}}$ & & Credit / structured-product bucket ($k=7$). \\
+$\calD_{\mathrm{RE}}$ & & Real-estate / REIT bucket ($k=8$). \\
+$\calD_{\mathrm{AL}}$ & & Alternatives bucket ($k=9$). \\
+$\calA$ & \texttt{\textbackslash calA} &
+  Generic $\sigma$-algebra or sub-collection of events. \\
+$\calF$ & \texttt{\textbackslash calF} &
+  Filtration $(\calF_t)_{t\geq0}$ on the underlying probability space. \\
+$\calC$ & \texttt{\textbackslash calC} &
+  Cone of feasible portfolio weight vectors; also used for copula families. \\
+$[n]$ & & Shorthand for the index set $\{1,2,\ldots,n\}$. \\
+$\N$ & \texttt{\textbackslash N} & Natural numbers $\{0,1,2,\ldots\}$. \\
+$\R$ & \texttt{\textbackslash R} & Real line $(-\infty,+\infty)$. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ------------------------------------------------------------------
+% Table 2: Scalar and Vector Quantities
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Scalar quantities and deterministic parameters.}
+\label{tab:symbols-scalars}
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Macro} & \textbf{Description} \\
+\midrule
+$n$ & & Number of assets: $n=|\calU|\geq1$. \\
+$K$ & & Number of buckets; $K=9$ throughout. \\
+$n_k$ & & Number of assets in bucket $k$; $\sum_{k=1}^K n_k = n$. \\
+$T$ & & Investment horizon (number of periods). \\
+$t$ & & Time index, $t\in\{0,1,\ldots,T\}$ or $t\in[0,T]$. \\
+$\alpha$ & & Confidence level for VaR / CVaR, $\alpha\in(0,1)$. \\
+$\lambda$ & & Lagrange multiplier or regularisation parameter. \\
+$\gamma$ & & Risk-aversion coefficient in mean--variance objective. \\
+$\delta$ & & Small positive tolerance; also used for perturbation size. \\
+$\epsilon$ & & Arbitrarily small positive number; slackness. \\
+$\rho$ & & Generic correlation coefficient, $\rho\in[-1,1]$. \\
+$\rho_{ij}$ & & Pairwise correlation between assets $i$ and $j$. \\
+$\sigma_i$ & & Volatility (standard deviation) of asset $i$'s return. \\
+$\sigma_p$ & & Portfolio return volatility. \\
+$\sigma_p^2$ & & Portfolio return variance. \\
+$\mu_i$ & & Expected return of asset $i$. \\
+$\mu_p$ & & Portfolio expected return $\mu_p = \bfw^\top\bfmu$. \\
+$r_{i,t}$ & & Realised return of asset $i$ at time $t$. \\
+$R_i$ & & Random return of asset $i$ (random variable). \\
+$R_p$ & & Portfolio random return; $R_p = \bfw^\top\mathbf{R}$. \\
+$L_p$ & & Portfolio loss; $L_p = -R_p$. \\
+$q_\alpha$ & & $\alpha$-quantile of a distribution. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ------------------------------------------------------------------
+% Table 3: Vector and Matrix Quantities
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Vectors and matrices.}
+\label{tab:symbols-vectors}
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Macro} & \textbf{Description} \\
+\midrule
+$\bfw=(w_1,\ldots,w_n)^\top$ & \texttt{\textbackslash bfw} &
+  Portfolio weight vector; $\bfone^\top\bfw=1$, $w_i\geq0$. \\
+$\bfv$ & \texttt{\textbackslash bfv} &
+  Auxiliary vector; context-dependent. \\
+$\bfmu=(\mu_1,\ldots,\mu_n)^\top$ & \texttt{\textbackslash bfmu} &
+  Vector of expected asset returns. \\
+$\bfone$ & \texttt{\textbackslash bfone} &
+  All-ones vector of appropriate dimension. \\
+$\bfzero$ & \texttt{\textbackslash bfzero} &
+  All-zeros vector of appropriate dimension. \\
+$\bfe_i$ & \texttt{\textbackslash bfe} &
+  $i$-th standard basis vector. \\
+$\bfgamma$ & \texttt{\textbackslash bfgamma} &
+  Vector of risk-aversion or Lagrange multiplier coefficients. \\
+$\bfdelta$ & \texttt{\textbackslash bfdelta} &
+  Vector of perturbations or tolerance parameters. \\
+$\bfSigma\in\R^{n\times n}$ & \texttt{\textbackslash bfSigma} &
+  Asset return covariance matrix; symmetric positive semi-definite. \\
+$\bfQ$ & \texttt{\textbackslash bfQ} &
+  Generic positive (semi-)definite quadratic form matrix. \\
+$\Sigma_{ij}=\rho_{ij}\sigma_i\sigma_j$ & &
+  $(i,j)$-entry of $\bfSigma$; covariance between assets $i$ and $j$. \\
+$\mathbf{R}=(R_1,\ldots,R_n)^\top$ & &
+  Random return vector of the full asset universe. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ------------------------------------------------------------------
+% Table 4: Risk and Performance Measures (Part A)
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Risk and performance measures (Part~A: variance-based).}
+\label{tab:symbols-risk-A}
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Macro} & \textbf{Description} \\
+\midrule
+$\Var(X)$ & \texttt{\textbackslash Var} &
+  Variance of random variable $X$. \\
+$\Cov(X,Y)$ & \texttt{\textbackslash Cov} &
+  Covariance of random variables $X$ and $Y$. \\
+$\Corr(X,Y)$ & \texttt{\textbackslash Corr} &
+  Pearson correlation of $X$ and $Y$. \\
+$\sigma_p^2(\bfw)$ & &
+  Portfolio variance as a function of weights:
+  $\sigma_p^2 = \bfw^\top\bfSigma\bfw$. \\
+$\Delta\sigma^2$ & &
+  Variance reduction due to diversification:
+  $\Delta\sigma^2 = \sum_i w_i^2\sigma_i^2 - \sigma_p^2 \geq 0$. \\
+$\rho_{\min}$ & &
+  Minimum pairwise correlation across all asset pairs. \\
+$\rho_{\max}$ & &
+  Maximum pairwise correlation across all asset pairs. \\
+$\bar\rho$ & &
+  Weighted-average pairwise correlation. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ------------------------------------------------------------------
+% Table 5: Risk and Performance Measures (Part B)
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Risk and performance measures (Part~B: quantile-based and others).}
+\label{tab:symbols-risk-B}
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Macro} & \textbf{Description} \\
+\midrule
+$\VaR_\alpha(X)$ & \texttt{\textbackslash VaR} &
+  Value-at-Risk at confidence level $\alpha$:
+  $\VaR_\alpha(X)=\inf\{x:\Prob(X\leq x)\geq\alpha\}$. \\
+$\CVaR_\alpha(X)$ & \texttt{\textbackslash CVaR} &
+  Conditional Value-at-Risk (Expected Shortfall) at level $\alpha$:
+  $\CVaR_\alpha(X)=\E[X\mid X\geq\VaR_\alpha(X)]$. \\
+$\Delta\CVaR$ & &
+  CVaR diversification benefit:
+  $\Delta\CVaR=\sum_i w_i\CVaR_\alpha(-R_i)-\CVaR_\alpha(L_p)\geq0$. \\
+$\MaxDD(t)$ & \texttt{\textbackslash MaxDD} &
+  Maximum drawdown of a portfolio path up to time $t$. \\
+$\mathrm{SR}$ & &
+  Sharpe ratio: $(\mu_p - r_f)/\sigma_p$ where $r_f$ is the risk-free rate. \\
+$r_f$ & &
+  Risk-free rate of return. \\
+$\E[X]$ & \texttt{\textbackslash E} &
+  Expectation of random variable $X$ under $\Prob$. \\
+$\Prob$ & \texttt{\textbackslash Prob} &
+  Probability measure on the underlying filtered probability space. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ------------------------------------------------------------------
+% Table 6: Optimisation and Diversification Notation
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Optimisation, diversification, and structural notation.}
+\label{tab:symbols-optim}
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Macro} & \textbf{Description} \\
+\midrule
+$\argmin$ & \texttt{\textbackslash argmin} &
+  Argument minimising a function. \\
+$\argmax$ & \texttt{\textbackslash argmax} &
+  Argument maximising a function. \\
+$\bfw^*$ & &
+  Optimal portfolio weight vector (solution to the stated programme). \\
+$\bfw^{\mathrm{EW}}$ & &
+  Equal-weight (naive $1/n$) portfolio: $w_i=1/n$ for all $i$. \\
+$\bfw^{\mathrm{MV}}$ & &
+  Mean--variance efficient portfolio weight vector. \\
+$\bfw^{\mathrm{RP}}$ & &
+  Risk-parity portfolio weight vector. \\
+$\mathcal{W}$ & &
+  Feasible set of portfolio weights:
+  $\mathcal{W}=\{\bfw\in\R^n:\bfone^\top\bfw=1,\,\bfw\geq\bfzero\}$. \\
+$\mathrm{HHI}(\bfw)$ & &
+  Herfindahl--Hirschman concentration index:
+  $\mathrm{HHI}=\sum_i w_i^2$. \\
+$\mathrm{ENP}(\bfw)$ & &
+  Effective number of positions:
+  $\mathrm{ENP}=1/\mathrm{HHI}(\bfw)\in[1,n]$. \\
+$\mathrm{DR}(\bfw)$ & &
+  Diversification ratio:
+  $\mathrm{DR}=(\sum_i w_i\sigma_i)/\sigma_p\geq1$. \\
+$f(\bfw)$ & &
+  Generic objective function to be minimised or maximised. \\
+$g_j(\bfw)\leq0$ & &
+  $j$-th inequality constraint of the optimisation programme. \\
+$h_k(\bfw)=0$ & &
+  $k$-th equality constraint of the optimisation programme. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ------------------------------------------------------------------
+% Table 7: Stochastic and Copula Notation
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Stochastic-process, copula, and dependence notation.}
+\label{tab:symbols-stoch}
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Macro} & \textbf{Description} \\
+\midrule
+$(\Omega,\calF,\Prob)$ & &
+  Underlying probability space. \\
+$(\calF_t)_{t\geq0}$ & &
+  Filtration representing information available up to time $t$. \\
+$C(u_1,\ldots,u_n)$ & &
+  Copula function linking marginal CDFs to the joint CDF
+  (Sklar's theorem). \\
+$F_i(x)$ & &
+  Marginal cumulative distribution function of $R_i$. \\
+$F_i^{-1}(u)$ & &
+  Quantile (inverse CDF) of $R_i$ at probability level $u$. \\
+$\tau_{ij}$ & &
+  Kendall's $\tau$ rank correlation between assets $i$ and $j$. \\
+$\nu$ & &
+  Degrees-of-freedom parameter of the Student-$t$ distribution or copula. \\
+$\mathbf{Z}=(Z_1,\ldots,Z_n)^\top$ & &
+  Standard Gaussian random vector; used in Gaussian-copula construction. \\
+$W_t$ & &
+  Standard Brownian motion (Wiener process) at time $t$. \\
+$\mathbf{W}_t$ & &
+  Correlated $n$-dimensional Brownian motion. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ------------------------------------------------------------------
+% Table 8: Abbreviations
+% ------------------------------------------------------------------
+\begin{table}[H]
+\renewcommand{\arraystretch}{1.35}
+\caption{Abbreviations used in the text.}
+\label{tab:symbols-abbrev}
+\begin{tabularx}{\linewidth}{@{} l X @{}}
+\toprule
+\textbf{Abbreviation} & \textbf{Expansion and notes} \\
+\midrule
+CVaR & Conditional Value-at-Risk (synonymous with Expected Shortfall, ES). \\
+VaR  & Value-at-Risk. \\
+MV   & Mean--Variance (Markowitz framework). \\
+RP   & Risk Parity. \\
+EW   & Equal-Weight ($1/n$ allocation). \\
+EQ   & Equities bucket ($\calD_{\mathrm{EQ}}$). \\
+FI   & Fixed-Income bucket ($\calD_{\mathrm{FI}}$). \\
+FX   & Foreign-Exchange bucket ($\calD_{\mathrm{FX}}$). \\
+CM   & Commodities bucket ($\calD_{\mathrm{CM}}$). \\
+FT   & FinTech / Digital-Asset bucket ($\calD_{\mathrm{FT}}$). \\
+FD   & Fund / ETF bucket ($\calD_{\mathrm{FD}}$). \\
+CR   & Credit / Structured-Product bucket ($\calD_{\mathrm{CR}}$). \\
+RE   & Real-Estate / REIT bucket ($\calD_{\mathrm{RE}}$). \\
+AL   & Alternatives bucket ($\calD_{\mathrm{AL}}$). \\
+HHI  & Herfindahl--Hirschman Index (concentration measure). \\
+ENP  & Effective Number of Positions ($=1/\mathrm{HHI}$). \\
+DR   & Diversification Ratio. \\
+SR   & Sharpe Ratio. \\
+MaxDD & Maximum Drawdown. \\
+i.i.d.\ & Independent and identically distributed. \\
+w.r.t.\ & With respect to. \\
+a.s.\ & Almost surely (with probability one). \\
+CDF  & Cumulative Distribution Function. \\
+PDF  & Probability Density Function. \\
+PSD  & Positive Semi-Definite. \\
+SPSD & Symmetric Positive Semi-Definite. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\bigskip
+
 
 % ==============================================================
 
@@ -8077,6 +8396,421 @@ Regime-conditional CVaR &
 }
 \end{center}
 
+
+% ==============================================================
+\chapter*{Table E: Definitions of Key Terms}
+\addcontentsline{toc}{chapter}{Table E: Definitions of Key Terms}
+% ==============================================================
+
+{\small
+\begin{longtable}{@{} p{4.2cm} >{\RaggedRight\arraybackslash}p{\dimexpr\linewidth-4.2cm-2\tabcolsep\relax} @{}}
+\hline
+\textbf{Term} & \textbf{Definition} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Term} & \textbf{Definition} \\
+\hline
+\endhead
+\hline
+\endfoot
+Portfolio Weight Vector &
+  A vector $\bfw = (w_1,\ldots,w_N)^\top \in \R^N$ where $w_i$ denotes
+  the fraction of total capital allocated to asset $i$; the feasible
+  set requires $\bfone^\top\bfw = 1$ and, under long-only constraints,
+  $w_i \ge 0$ for all $i$. \\
+\addlinespace
+Covariance Matrix ($\bfSigma$) &
+  A symmetric positive semi-definite matrix $\bfSigma \in \R^{N\times N}$
+  whose $(i,j)$-entry is $\Cov(r_i, r_j)$, the covariance of returns
+  between assets $i$ and $j$. \\
+\addlinespace
+Portfolio Variance &
+  $\sigma_p^2(\bfw) = \bfw^\top \bfSigma\, \bfw$; the second central
+  moment of the portfolio return distribution induced by weights $\bfw$
+  and covariance matrix $\bfSigma$. \\
+\addlinespace
+Herfindahl--Hirschman Index (HHI) &
+  $\mathrm{HHI}(\bfw) = \sum_{i=1}^{N} w_i^2 \in [1/N,\,1]$; a scalar
+  measure of concentration.  $\mathrm{HHI} = 1/N$ corresponds to an
+  equal-weight portfolio; $\mathrm{HHI} = 1$ to a single-asset
+  portfolio. \\
+\addlinespace
+Value-at-Risk ($\VaR_\alpha$) &
+  For confidence level $\alpha \in (0,1)$, $\VaR_\alpha(X)$ is the
+  smallest loss $\ell$ such that $\Prob(X \le -\ell) \le 1-\alpha$,
+  i.e., the $(1-\alpha)$-quantile of the loss distribution of $X$. \\
+\addlinespace
+Conditional Value-at-Risk ($\CVaR_\alpha$) &
+  $\CVaR_\alpha(X) = \E[-X \mid X \le -\VaR_\alpha(X)]$; the expected
+  loss in the worst $(1-\alpha)$ fraction of outcomes.  Also called
+  Expected Shortfall (ES). \\
+\addlinespace
+Coherent Risk Measure &
+  A functional $\rho$ satisfying translation invariance, subadditivity,
+  positive homogeneity, and monotonicity (Artzner et al., 1999).
+  $\CVaR_\alpha$ is coherent; $\VaR_\alpha$ is not in general. \\
+\addlinespace
+Efficient Frontier &
+  The set of portfolios $\bfw^*(\mu_0)$ that minimise $\sigma_p^2$
+  subject to $\bfmu^\top\bfw \ge \mu_0$, $\bfone^\top\bfw = 1$, and
+  any additional constraints; traced out over all target returns
+  $\mu_0$. \\
+\addlinespace
+Diversification Ratio (DR) &
+  $\mathrm{DR}(\bfw) = \frac{\bfw^\top\boldsymbol{\sigma}}{\sigma_p(\bfw)}$,
+  where $\sigma_i = \sqrt{\Sigma_{ii}}$; ratio of the weighted average
+  of individual volatilities to portfolio volatility.  $\mathrm{DR}
+  \ge 1$ with equality iff all assets are perfectly correlated. \\
+\addlinespace
+Regime &
+  A latent state $s_t \in \{1,\ldots,K\}$ drawn from a hidden Markov
+  chain; each regime $k$ is characterised by a conditional distribution
+  $(\bfmu^{(k)}, \bfSigma^{(k)})$ for asset returns. \\
+\addlinespace
+Hard Constraint &
+  A constraint that must hold at every point in time with probability
+  one; violations trigger immediate order blocking (see
+  Axiom~\ref{ax:hard-concentration}). \\
+\addlinespace
+Soft Constraint &
+  A constraint monitored continuously but enforced only by a
+  rebalancing trigger when a breach is detected; allows transient
+  deviations within a tolerance band $\varepsilon$. \\
+\addlinespace
+Rebalancing Trigger ($T_t$) &
+  A binary indicator $T_t \in \{0,1\}$ that equals 1 when the
+  portfolio deviates from its target sufficiently to warrant
+  rebalancing; formally $T_t = \mathbf{1}[\|\hat{P}_t - P^*\|_F >
+  \varepsilon]$. \\
+\addlinespace
+Ledoit--Wolf Shrinkage &
+  A regularised covariance estimator
+  $\hat{\bfSigma}_{\mathrm{LW}} = (1-\delta)\hat{\bfSigma}_{\mathrm{sample}}
+  + \delta F$, where $F$ is a structured target and $\delta$ is the
+  optimal shrinkage intensity minimising expected Frobenius loss. \\
+\addlinespace
+Maximum Drawdown ($\MaxDD$) &
+  $\MaxDD(T) = \sup_{0 \le s \le t \le T}(V_s - V_t)/V_s$; the
+  largest peak-to-trough decline in portfolio value $V_t$ over
+  horizon $[0,T]$. \\
+\end{longtable}
+}
+
+\vspace{1.5em}
+
+% ==============================================================
+\chapter*{Table F: Notation and Symbol Index --- Part I (Mathematical Symbols)}
+\addcontentsline{toc}{chapter}{Table F: Notation and Symbol Index --- Part I}
+% ==============================================================
+
+\begin{center}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{3.2cm} p{3.8cm} X @{}}
+\hline
+\textbf{Symbol} & \textbf{Name} & \textbf{Description / First Use} \\
+\hline
+$N$ & Number of assets &
+  Total count of investable assets in the universe; $N \ge 2$
+  throughout. \\
+\addlinespace
+$\bfw \in \R^N$ & Weight vector &
+  Portfolio allocation weights; $\bfone^\top\bfw = 1$. \\
+\addlinespace
+$w_i$ & Weight of asset $i$ &
+  Scalar component of $\bfw$; $w_i \ge 0$ under long-only constraint. \\
+\addlinespace
+$\bfmu \in \R^N$ & Expected return vector &
+  $\mu_i = \E[r_i]$, the expected return of asset $i$. \\
+\addlinespace
+$\bfSigma \in \R^{N\times N}$ & Covariance matrix &
+  $\Sigma_{ij} = \Cov(r_i,r_j)$; symmetric positive semi-definite. \\
+\addlinespace
+$\sigma_p^2$ & Portfolio variance &
+  $\sigma_p^2 = \bfw^\top\bfSigma\bfw$. \\
+\addlinespace
+$\sigma_p$ & Portfolio volatility &
+  $\sigma_p = \sqrt{\bfw^\top\bfSigma\bfw}$. \\
+\addlinespace
+$\sigma_i$ & Asset $i$ volatility &
+  $\sigma_i = \sqrt{\Sigma_{ii}}$; marginal risk of asset $i$. \\
+\addlinespace
+$\rho_{ij}$ & Correlation coefficient &
+  $\rho_{ij} = \Sigma_{ij}/(\sigma_i\sigma_j) \in [-1,1]$. \\
+\addlinespace
+$\bar{\rho}$ & Average correlation &
+  $\bar{\rho} = \binom{N}{2}^{-1}\sum_{i<j}\rho_{ij}$; used in
+  Elton--Gruber variance formula. \\
+\addlinespace
+$\bar{\sigma}^2$ & Average asset variance &
+  $\bar{\sigma}^2 = N^{-1}\sum_{i=1}^N\sigma_i^2$. \\
+\addlinespace
+$\bar{\sigma}_c^2$ & Average covariance &
+  $\bar{\sigma}_c^2 = \bar{\rho}\bar{\sigma}^2$; systematic risk
+  floor as $N\to\infty$. \\
+\addlinespace
+$\mu_p$ & Portfolio expected return &
+  $\mu_p = \bfmu^\top\bfw$. \\
+\addlinespace
+$\mu_0$ & Target return &
+  Minimum acceptable expected return in mean--variance optimisation. \\
+\addlinespace
+$\lambda$ & Risk-aversion parameter &
+  Lagrange multiplier or utility parameter scaling variance penalty;
+  $\lambda \ge 0$. \\
+\addlinespace
+$\alpha$ & Confidence level &
+  $\alpha \in (0,1)$; probability level for $\VaR_\alpha$ and
+  $\CVaR_\alpha$ (typically 0.95 or 0.99). \\
+\addlinespace
+$\VaR_\alpha$ & Value-at-Risk &
+  $(1-\alpha)$-quantile loss functional; not coherent in general. \\
+\addlinespace
+$\CVaR_\alpha$ & Conditional VaR &
+  Expected loss beyond $\VaR_\alpha$; coherent risk measure. \\
+\addlinespace
+$\MaxDD$ & Maximum Drawdown &
+  Largest peak-to-trough loss over a horizon $T$. \\
+\addlinespace
+$\mathrm{HHI}$ & Herfindahl--Hirschman Index &
+  $\sum_i w_i^2$; concentration measure in $[1/N,1]$. \\
+\addlinespace
+$\mathrm{DR}$ & Diversification Ratio &
+  Ratio of weighted-average volatility to portfolio volatility;
+  $\ge 1$. \\
+\hline
+\end{tabularx}
+}
+\end{center}
+
+\vspace{1.5em}
+
+% ==============================================================
+\chapter*{Table G: Notation and Symbol Index --- Part II (Regime \& Operator Symbols)}
+\addcontentsline{toc}{chapter}{Table G: Notation and Symbol Index --- Part II}
+% ==============================================================
+
+\begin{center}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{3.2cm} p{3.8cm} X @{}}
+\hline
+\textbf{Symbol} & \textbf{Name} & \textbf{Description / First Use} \\
+\hline
+$K$ & Number of regimes &
+  Cardinality of the hidden Markov regime set; $K \ge 2$. \\
+\addlinespace
+$s_t \in \{1,\ldots,K\}$ & Regime state &
+  Latent regime at time $t$ drawn from the Markov chain. \\
+\addlinespace
+$\bfmu^{(k)}$ & Regime-$k$ mean &
+  Conditional expected return vector in regime $k$. \\
+\addlinespace
+$\bfSigma^{(k)}$ & Regime-$k$ covariance &
+  Conditional covariance matrix in regime $k$; typically
+  $\bfSigma^{(\mathrm{crisis})} \succ \bfSigma^{(\mathrm{normal})}$
+  entry-wise for variances. \\
+\addlinespace
+$\pi_k^{(t)}$ & Regime probability &
+  $\pi_k^{(t)} = \Prob(s_t = k \mid \mathcal{F}_t)$; posterior
+  probability of regime $k$ at time $t$. \\
+\addlinespace
+$\mathcal{F}_t$ & Filtration &
+  $\sigma$-algebra generated by all information available at time $t$. \\
+\addlinespace
+$\bfw^{(k)}$ & Regime-$k$ target weights &
+  Optimal portfolio weights prescribed for regime $k$. \\
+\addlinespace
+$\bfw^*_t$ & Time-$t$ optimal weights &
+  $\sum_k \pi_k^{(t)} \bfw^{(k)}$; mixture weights at time $t$. \\
+\addlinespace
+$T_t \in \{0,1\}$ & Rebalancing trigger &
+  Equals 1 when Frobenius deviation $\|\hat{P}_t - P^*\|_F > \varepsilon$. \\
+\addlinespace
+$\hat{P}_t$ & Estimated correlation matrix &
+  Sample or shrinkage estimate of the correlation matrix at time $t$. \\
+\addlinespace
+$P^*$ & Target correlation matrix &
+  Regime-specific target correlation matrix used in soft-constraint
+  monitoring. \\
+\addlinespace
+$\varepsilon$ & Rebalancing tolerance &
+  Frobenius-norm threshold for soft-constraint trigger; $\varepsilon > 0$. \\
+\addlinespace
+$\Pi_H$ & Hard-constraint polytope &
+  Feasible set defined by hard concentration limits:
+  $\Pi_H = \{\bfw : \mathrm{HHI}(\bfw) \le H_{\max},\;
+  w_i \le u_i^{\mathrm{asset}},\; \text{bucket bounds hold}\}$. \\
+\addlinespace
+$H_{\max}$ & HHI upper bound &
+  Hard upper bound on $\mathrm{HHI}$; enforced at every $t$. \\
+\addlinespace
+$u_i^{\mathrm{asset}}$ & Asset weight cap &
+  Maximum allowable weight in a single asset; hard constraint. \\
+\addlinespace
+$\hat{\bfSigma}_{\mathrm{LW}}$ & LW shrinkage estimator &
+  $(1-\delta)\hat{\bfSigma}_{\mathrm{sample}} + \delta F$; regularised
+  covariance estimate with shrinkage intensity $\delta$. \\
+\addlinespace
+$\delta$ & Shrinkage intensity &
+  Optimal Ledoit--Wolf shrinkage coefficient $\in [0,1]$. \\
+\addlinespace
+$F$ & Shrinkage target &
+  Structured covariance target matrix (e.g., single-factor or
+  constant-correlation) used in Ledoit--Wolf estimator. \\
+\addlinespace
+$\|\cdot\|_F$ & Frobenius norm &
+  $\|A\|_F = \sqrt{\sum_{i,j} A_{ij}^2}$; used to measure deviation
+  of estimated from target correlation matrix. \\
+\addlinespace
+$\bfone$ & Ones vector &
+  $\bfone = (1,\ldots,1)^\top \in \R^N$; used in budget constraint
+  $\bfone^\top\bfw = 1$. \\
+\addlinespace
+$\bfe_i$ & Standard basis vector &
+  $i$-th standard basis vector in $\R^N$. \\
+\addlinespace
+$\mathcal{A}$ & Asset universe &
+  Set of all investable assets; $|\mathcal{A}| = N$. \\
+\addlinespace
+$\mathcal{C}$ & Constraint set &
+  Feasible set for portfolio weights combining budget, long-only,
+  hard, and soft constraints. \\
+\addlinespace
+$r_i$ & Return of asset $i$ &
+  Random variable representing the period return of asset $i$;
+  $r_i \in L^2(\Omega, \mathcal{F}, \Prob)$. \\
+\addlinespace
+$R_p(\bfw)$ & Portfolio return &
+  $R_p = \bfw^\top \mathbf{r} = \sum_i w_i r_i$. \\
+\hline
+\end{tabularx}
+}
+\end{center}
+
+\vspace{1.5em}
+
+% ==============================================================
+\chapter*{Table H: Index of Definitions, Axioms, Propositions, and Theorems}
+\addcontentsline{toc}{chapter}{Table H: Index of Definitions, Axioms, Propositions, and Theorems}
+% ==============================================================
+
+\begin{center}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{2.4cm} p{5.2cm} X @{}}
+\hline
+\textbf{Label} & \textbf{Name} & \textbf{Brief Statement / Purpose} \\
+\hline
+\multicolumn{3}{@{}l}{\textit{Axioms}} \\[2pt]
+Ax.~\ref{ax:hard-concentration} & Hard Concentration Axiom &
+  No portfolio weight vector may exceed hard concentration limits at
+  any time $t$; violations are blocked unconditionally. \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Definitions (selected)}} \\[2pt]
+Def.\ (HHI) & Herfindahl--Hirschman Index &
+  $\mathrm{HHI}(\bfw) = \sum_i w_i^2$; scalar concentration measure. \\
+\addlinespace
+Def.\ (DR) & Diversification Ratio &
+  $\mathrm{DR}(\bfw) = (\bfw^\top\boldsymbol{\sigma})/\sigma_p(\bfw)$;
+  measures benefit of diversification. \\
+\addlinespace
+Def.\ ($\CVaR$) & Conditional Value-at-Risk &
+  $\CVaR_\alpha(X) = \E[-X \mid X \le -\VaR_\alpha(X)]$; coherent
+  risk measure used throughout Chapters on tail risk. \\
+\addlinespace
+Def.\ (Regime) & Markov Regime &
+  Latent state $s_t$ of a $K$-state hidden Markov chain governing the
+  conditional return distribution at time $t$. \\
+\addlinespace
+Def.\ ($T_t$) & Rebalancing Trigger &
+  $T_t = \mathbf{1}[\|\hat{P}_t - P^*\|_F > \varepsilon]$; binary
+  signal initiating \texttt{DiversificationRebalanceOperator}. \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Propositions}} \\[2pt]
+Prop.~\ref{prop:regime-cvar} & Regime CVaR Collapse &
+  In the crisis regime $\CVaR_\alpha^{(\mathrm{crisis})} >
+  \CVaR_\alpha^{(\mathrm{normal})}$; diversification premium in CVaR
+  shrinks as cross-asset correlations rise. \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Equations (key)}} \\[2pt]
+Eq.~\eqref{eq:hc-asset} & Asset hard constraint &
+  $w_i \le u_i^{\mathrm{asset}}$ for all $i$; enforced by
+  \texttt{RiskGateOperator} on every order. \\
+\addlinespace
+Eq.~\eqref{eq:hc-cur} & Currency hard constraint &
+  Bucket-level weight bound for currency exposure; enforced jointly
+  with asset hard constraint. \\
+\addlinespace
+Eq.~\eqref{eq:regime-target} & Regime target optimisation &
+  Regime-conditional mean--variance problem solved by
+  \texttt{DiversificationRebalanceOperator} subject to $\Pi_H$. \\
+\hline
+\end{tabularx}
+}
+\end{center}
+
+\vspace{1.5em}
+
+% ==============================================================
+\chapter*{Table I: Abbreviations and Acronyms}
+\addcontentsline{toc}{chapter}{Table I: Abbreviations and Acronyms}
+% ==============================================================
+
+\begin{center}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{3.0cm} X @{}}
+\hline
+\textbf{Abbreviation} & \textbf{Expansion and Context} \\
+\hline
+HHI & Herfindahl--Hirschman Index; scalar portfolio concentration
+  measure $\sum_i w_i^2 \in [1/N, 1]$. \\
+\addlinespace
+DR & Diversification Ratio; ratio of weighted-average asset volatility
+  to portfolio volatility. \\
+\addlinespace
+VaR & Value-at-Risk; quantile-based risk measure at confidence level
+  $\alpha$. \\
+\addlinespace
+CVaR / ES & Conditional Value-at-Risk / Expected Shortfall; expected
+  loss beyond VaR; coherent risk measure. \\
+\addlinespace
+MVO & Mean--Variance Optimisation; Markowitz (1952) framework
+  minimising $\sigma_p^2$ for a given target return $\mu_0$. \\
+\addlinespace
+HMM & Hidden Markov Model; probabilistic model for latent regime
+  states $s_t$ governing return distributions. \\
+\addlinespace
+LW & Ledoit--Wolf; shrinkage estimator for large-dimensional
+  covariance matrices (Ledoit \& Wolf, 2004). \\
+\addlinespace
+PSD & Positive Semi-Definite; property required of any valid
+  covariance matrix $\bfSigma$. \\
+\addlinespace
+i.i.d. & Independent and identically distributed; standard assumption
+  for residual return innovations in single-period models. \\
+\addlinespace
+a.s. & Almost surely; with probability one under measure $\Prob$. \\
+\addlinespace
+s.t. & Subject to; used in constrained optimisation problem
+  statements. \\
+\addlinespace
+w.r.t. & With respect to. \\
+\addlinespace
+WLOG & Without loss of generality. \\
+\addlinespace
+QP & Quadratic Programme; optimisation problem with quadratic
+  objective and linear constraints; MVO is a QP. \\
+\addlinespace
+LP & Linear Programme; optimisation with linear objective and
+  constraints; used in CVaR reformulations. \\
+\addlinespace
+MaxDD & Maximum Drawdown; largest peak-to-trough decline in portfolio
+  value over a specified horizon. \\
+\hline
+\end{tabularx}
+}
+\end{center}
+
+
 % ==============================================================
 \chapter*{References}
 \addcontentsline{toc}{chapter}{References}
@@ -8166,6 +8900,14 @@ Dhaene, J., Denuit, M., Goovaerts, M.\ J., Kaas, R., \& Vyncke, D.\ (2002).
 The Concept of Comonotonicity in Actuarial Science and Finance: Theory.
 \textit{Insurance: Mathematics and Economics}, 31(1), 3--33.
 \href{https://doi.org/10.1016/S0167-6687(02)00134-8}{doi:10.1016/S0167-6687(02)00134-8}
+
+\bibitem{Boyd2004}
+Boyd, S., \& Vandenberghe, L.\ (2004).
+\textit{Convex Optimization}.
+Cambridge University Press.
+\href{https://doi.org/10.1017/CBO9780511804441}{doi:10.1017/CBO9780511804441}
+
+
 
 \end{thebibliography}
 
