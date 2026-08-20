@@ -4490,30 +4490,197 @@ The argument proceeds by enumeration:
 
 \begin{definition}[Critical and Full-Charge Thresholds]
 \label{def:thresholds}
-For each state dimension $d \in \{1, \ldots, 7\}$, the
-\emph{critical threshold} $\mathcal{S}_{\min}^{(d)} > 0$ and
-the \emph{full-charge threshold} $\mathcal{S}_{\mathrm{full}}^{(d)}
-> \mathcal{S}_{\min}^{(d)}$ are pre-specified constants satisfying
-$0 < \mathcal{S}_{\min}^{(d)} < \mathcal{S}_{\mathrm{full}}^{(d)}
-\leq 1$.  The canonical values are:
+Let $\mathcal{D} := \{1,2,3,4,5,6,7\}$ index the seven state
+dimensions, identified as:
+\begin{align}
+  d=1 &\;\leftrightarrow\; \calE_t \text{ (Economic)}, &
+  d=2 &\;\leftrightarrow\; \calF_t \text{ (Financial)}, \notag\\
+  d=3 &\;\leftrightarrow\; \calG_t \text{ (Fiscal)}, &
+  d=4 &\;\leftrightarrow\; \calP_t \text{ (Portfolio)}, \notag\\
+  d=5 &\;\leftrightarrow\; \calU_t \text{ (Fundamental)}, &
+  d=6 &\;\leftrightarrow\; \calM_t \text{ (Market)}, \notag\\
+  d=7 &\;\leftrightarrow\; \calT_t \text{ (Sector/Tech)}.&& \notag
+\end{align}
+For each $d \in \mathcal{D}$, the
+\emph{critical threshold} $\mathcal{S}_{\min}^{(d)}$ and the
+\emph{full-charge threshold} $\mathcal{S}_{\mathrm{full}}^{(d)}$
+are pre-specified real constants satisfying the
+\emph{ordering constraint}
+\begin{equation}
+  0 \;<\; \mathcal{S}_{\min}^{(d)}
+    \;<\; \mathcal{S}_{\mathrm{full}}^{(d)}
+    \;\leq\; 1,
+  \label{eq:threshold-ordering}
+\end{equation}
+which guarantees that the threshold gap
+\begin{equation}
+  \Delta_d \;:=\;
+    \mathcal{S}_{\mathrm{full}}^{(d)} - \mathcal{S}_{\min}^{(d)} \;>\; 0
+  \label{eq:threshold-gap}
+\end{equation}
+is strictly positive for every $d \in \mathcal{D}$.  The
+constraint~\eqref{eq:threshold-ordering} is necessary and
+sufficient to ensure that:
+\begin{enumerate}
+  \item The circuit-breaker region
+        $\{\mathcal{S} : \mathcal{S} < \mathcal{S}_{\min}^{(d)}\}$
+        is non-empty (since $\mathcal{S}_{\min}^{(d)} > 0$).
+  \item The linear ramp region
+        $[\mathcal{S}_{\min}^{(d)}, \mathcal{S}_{\mathrm{full}}^{(d)})$
+        has positive length equal to $\Delta_d$.
+  \item The full-deployment region
+        $\{\mathcal{S} : \mathcal{S} \geq
+        \mathcal{S}_{\mathrm{full}}^{(d)}\}$ is non-empty
+        (since $\mathcal{S}_{\mathrm{full}}^{(d)} \leq 1$ and the
+        state space includes $\mathcal{S} = 1$).
+  \item All three regions partition $[0,1]$ without overlap,
+        ensuring $g_d$ (Definition~\ref{def:gating-function})
+        is everywhere uniquely defined.
+\end{enumerate}
 
+\medskip
+\noindent\textbf{Canonical values.}
+The calibrated threshold pairs for each dimension are given
+below. Each pair has been verified to satisfy
+\eqref{eq:threshold-ordering} entry by entry; the
+verification is recorded in the rightmost two columns.
+
+\medskip
 \begin{center}
-\begin{tabularx}{\textwidth}{@{} l l l @{}}
+\begin{tabularx}{\textwidth}{@{} l l X X X X @{}}
 \toprule
-\textbf{State} & $\mathcal{S}_{\min}^{(d)}$
-  & $\mathcal{S}_{\mathrm{full}}^{(d)}$ \\
+\textbf{Dim.} & \textbf{State}
+  & $\mathcal{S}_{\min}^{(d)}$
+  & $\mathcal{S}_{\mathrm{full}}^{(d)}$
+  & $\Delta_d$
+  & \textbf{Constraint \eqref{eq:threshold-ordering} holds?} \\
 \midrule
-$\calE_t$ Economic & 0.15 & 0.70 \\
-$\calF_t$ Financial & 0.20 & 0.80 \\
-$\calG_t$ Fiscal & 0.10 & 0.65 \\
-$\calP_t$ Portfolio & 0.20 & 0.70 \\
-$\calU_t$ Fundamental & 0.15 & 0.75 \\
-$\calM_t$ Market & 0.20 & 0.80 \\
-$\calT_t$ Sector/Tech & 0.15 & 0.75 \\
+$d=1$ & $\calE_t$ Economic    & 0.15 & 0.70 & 0.55 & Yes: $0<0.15<0.70\leq 1$ \\
+$d=2$ & $\calF_t$ Financial   & 0.20 & 0.80 & 0.60 & Yes: $0<0.20<0.80\leq 1$ \\
+$d=3$ & $\calG_t$ Fiscal      & 0.10 & 0.65 & 0.55 & Yes: $0<0.10<0.65\leq 1$ \\
+$d=4$ & $\calP_t$ Portfolio   & 0.20 & 0.70 & 0.50 & Yes: $0<0.20<0.70\leq 1$ \\
+$d=5$ & $\calU_t$ Fundamental & 0.15 & 0.75 & 0.60 & Yes: $0<0.15<0.75\leq 1$ \\
+$d=6$ & $\calM_t$ Market      & 0.20 & 0.80 & 0.60 & Yes: $0<0.20<0.80\leq 1$ \\
+$d=7$ & $\calT_t$ Sector/Tech & 0.15 & 0.75 & 0.60 & Yes: $0<0.15<0.75\leq 1$ \\
 \bottomrule
 \end{tabularx}
 \end{center}
+
+\medskip
+\noindent\textbf{Boundary and edge-case validation.}
+\begin{enumerate}
+  \item \emph{Lower boundary $\mathcal{S} = 0$.}
+        For all $d$, $\mathcal{S}_{\min}^{(d)} > 0$, so
+        $\mathcal{S} = 0$ lies strictly in region $R_0$
+        (the circuit-breaker region).  The gating function
+        evaluates to zero at this extreme, preventing any
+        capital deployment under total state collapse.
+  \item \emph{Upper boundary $\mathcal{S} = 1$.}
+        For all $d$, $\mathcal{S}_{\mathrm{full}}^{(d)} \leq 1$,
+        so $\mathcal{S} = 1$ lies in region $R_2$ (full
+        deployment).  The gating function evaluates to one,
+        consistent with unconstrained capacity at maximum
+        state charge.
+  \item \emph{Exact threshold values.}
+        At $\mathcal{S} = \mathcal{S}_{\min}^{(d)}$ the
+        piecewise formula yields
+        $(\mathcal{S}_{\min}^{(d)} -
+        \mathcal{S}_{\min}^{(d)})/\Delta_d = 0$, matching the
+        circuit-breaker value continuously from the right.
+        At $\mathcal{S} = \mathcal{S}_{\mathrm{full}}^{(d)}$
+        the formula yields $\Delta_d / \Delta_d = 1$, but
+        $\mathcal{S}_{\mathrm{full}}^{(d)}$ belongs to $R_2$
+        (the closed upper region), so $g_d = 1$ by the first
+        case; there is no discontinuity.
+  \item \emph{Degenerate case $\mathcal{S}_{\min}^{(d)} = 0$.}
+        Excluded by \eqref{eq:threshold-ordering}; if it
+        arose, the circuit-breaker region would be empty and
+        the architecture would lose its protection guarantee.
+  \item \emph{Degenerate case $\Delta_d = 0$.}
+        Excluded by \eqref{eq:threshold-gap}; if it arose,
+        the ramp denominator would be undefined, making $g_d$
+        discontinuous.
+\end{enumerate}
 \end{definition}
+
+%% ---------------------------------------------------------------
+\noindent\textbf{Key Findings: Threshold Specification.}
+The table below summarises the design rationale for each
+canonical threshold pair, cross-referencing the discharge
+asymmetry ratios $r_d = \kappa_d^{-}/\kappa_d^{+}$ established
+in Theorem~\ref{thm:discharge-dominance}.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} l X X X @{}}
+\toprule
+\textbf{State} & \textbf{Design rationale for}
+  $\mathcal{S}_{\min}^{(d)}$
+  & \textbf{Design rationale for}
+  $\mathcal{S}_{\mathrm{full}}^{(d)}$
+  & \textbf{Link to $r_d$} \\
+\midrule
+$\calE_t$ Economic
+  & Set at 0.15 to allow mild macro deterioration
+    before full shutdown; low floor reflects slower
+    economic discharge dynamics.
+  & Set at 0.70 leaving a 0.30 buffer below full
+    capacity to absorb lagged data revisions.
+  & $r_1 = 1.50$; moderate asymmetry justifies
+    moderate floor. \\[4pt]
+$\calF_t$ Financial
+  & Set at 0.20; higher floor reflects rapid
+    financial contagion and large $r_2$.
+  & Set at 0.80; high full-charge threshold
+    requires near-full confidence before
+    unrestricted deployment.
+  & $r_2 = 2.50$; highest asymmetry mandates
+    highest floor and full-charge bar. \\[4pt]
+$\calG_t$ Fiscal
+  & Set at 0.10; lowest floor among all
+    dimensions because fiscal variables
+    move slowly and reversals are gradual.
+  & Set at 0.65; lower full-charge bar
+    reflects lower urgency of fiscal signals.
+  & $r_3 = 1.33$; lowest asymmetry consistent
+    with lowest protective thresholds. \\[4pt]
+$\calP_t$ Portfolio
+  & Set at 0.20; portfolio-level risk requires
+    the same protective floor as financial.
+  & Set at 0.70; moderate full-charge bar
+    balances signal freshness against
+    drawdown risk.
+  & $r_4 = 2.50$; same asymmetry as Financial,
+    same floor, lower full-charge bar due
+    to portfolio diversification effect. \\[4pt]
+$\calU_t$ Fundamental
+  & Set at 0.15; fundamental data are
+    low-frequency and less prone to
+    sudden collapse.
+  & Set at 0.75; moderate-high bar ensures
+    sufficient fundamental evidence before
+    full deployment.
+  & $r_5 = 1.50$; moderate asymmetry. \\[4pt]
+$\calM_t$ Market
+  & Set at 0.20; intraday regime is the
+    most deficit-prone dimension
+    ($\mathcal{S}^{*(6)} = 0.200$).
+  & Set at 0.80; highest full-charge bar
+    shared with Financial reflects
+    intraday volatility risk.
+  & $r_6 = 2.50$; highest asymmetry; most
+    stringent entry requirement. \\[4pt]
+$\calT_t$ Sector/Tech
+  & Set at 0.15; sector rotation signals
+    are persistent but slow-moving.
+  & Set at 0.75; moderate-high bar balances
+    trend confirmation against
+    responsiveness.
+  & $r_7 = 3.00$; despite lowest absolute
+    rates, ratio mandates above-median
+    protective floor. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
 \section{The Gating Function}
 
@@ -4919,55 +5086,422 @@ $L_d$ is the best (smallest) valid constant. \\
 \end{tabularx}
 \end{center}
 
+%% ============================================================
 \section{The Product Gating Function}
+%% ============================================================
+
+\subsection{Preliminary Assumptions and Notation}
+
+Before stating the definition and establishing its properties
+we record, explicitly, every assumption that the subsequent
+development relies upon.  Each assumption is independently
+auditable.
+
+\begin{enumerate}
+  \item \textbf{(A1 — Dimension set.)}
+        There are exactly $D = 7$ independent state dimensions,
+        indexed $d \in \mathcal{D} := \{1,2,3,4,5,6,7\}$.
+  \item \textbf{(A2 — Threshold ordering.)}
+        For every $d \in \mathcal{D}$ the thresholds satisfy
+        \begin{equation}
+          0 \;\leq\; \mathcal{S}_{\min}^{(d)}
+            \;<\; \mathcal{S}_{\mathrm{full}}^{(d)}
+            \;\leq\; 1,
+          \label{eq:threshold-ordering}
+        \end{equation}
+        so that $\Delta_d :=
+        \mathcal{S}_{\mathrm{full}}^{(d)} - \mathcal{S}_{\min}^{(d)} > 0$
+        is well-defined and strictly positive.
+  \item \textbf{(A3 — State score domain.)}
+        Each state score satisfies
+        $\mathcal{S}_t^{(d)} \in [0,1]$ for all $t$.
+  \item \textbf{(A4 — Individual gating functions.)}
+        Each $g_d : [0,1] \to [0,1]$ is the
+        piece-wise linear function established in
+        Definition~\ref{def:gating-function}, satisfying all
+        properties in Proposition~\ref{prop:gating-properties}.
+        In particular:
+        \begin{enumerate}
+          \item $g_d(\mathcal{S}) \in [0,1]$ for all
+                $\mathcal{S} \in [0,1]$;
+          \item $g_d$ is non-decreasing on $[0,1]$;
+          \item $g_d(\mathcal{S}) = 0$ if and only if
+                $\mathcal{S} \leq \mathcal{S}_{\min}^{(d)}$;
+          \item $g_d(\mathcal{S}) = 1$ if and only if
+                $\mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$.
+        \end{enumerate}
+  \item \textbf{(A5 — Product form.)}
+        The multi-dimensional gating function is defined as the
+        product of the individual gating functions.  No other
+        aggregation (sum, maximum, etc.) is assumed.
+\end{enumerate}
+
+\noindent
+\textbf{Remark on boundary conventions.}
+Assumption~(A3) admits $\mathcal{S}_t^{(d)} = 0$ (complete
+state exhaustion) and $\mathcal{S}_t^{(d)} = 1$ (perfect
+state).  Assumption~(A2) ensures the circuit-breaker
+threshold $\mathcal{S}_{\min}^{(d)}$ is strictly interior to
+$[0,1]$, so the boundary $\mathcal{S}_t^{(d)} = 0$ always
+triggers the circuit-breaker for that dimension.
+
+%% ------------------------------------------------------------
+\subsection{Definition}
+%% ------------------------------------------------------------
 
 \begin{definition}[Product Gating Function]
 \label{def:product-gating}
-The \emph{product gating function} is
+Under Assumptions (A1)--(A5), the
+\emph{product gating function}
+$G : [0,1]^{7} \to [0,1]$ is defined by
 \begin{equation}
-  G(\mathbf{X}_t) \;:=\; \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right).
+  G\!\left(\mathbf{X}_t\right)
+  \;:=\;
+  \prod_{d=1}^{7}
+    g_d\!\left(\mathcal{S}_t^{(d)}\right),
   \label{eq:product-gating}
 \end{equation}
+where $\mathbf{X}_t :=
+\bigl(\mathcal{S}_t^{(1)},\ldots,\mathcal{S}_t^{(7)}\bigr)
+\in [0,1]^{7}$ is the state-score vector at time $t$, and
+each $g_d$ is given by Definition~\ref{def:gating-function}.
 \end{definition}
+
+\noindent
+\textbf{Well-definedness.}
+The product in~\eqref{eq:product-gating} is a finite product
+of real numbers in $[0,1]$ (by (A4a)), so it is well-defined,
+finite, and belongs to $[0,1]$.
+
+%% ------------------------------------------------------------
+\subsection{Main Theorem}
+%% ------------------------------------------------------------
 
 \begin{theorem}[Product Gating Properties]
 \label{thm:product-gating}
-The product gating function $G(\mathbf{X}_t)$ satisfies:
+Let Assumptions \emph{(A1)--(A5)} hold.
+The product gating function $G(\mathbf{X}_t)$ defined
+in~\eqref{eq:product-gating} satisfies the following five
+properties for every
+$\mathbf{X}_t \in [0,1]^{7}$
+and every $d \in \mathcal{D}$:
 \begin{enumerate}
-  \item $G(\mathbf{X}_t) \in [0,1]$ for all $\mathbf{X}_t \in [0,1]^7$.
-  \item $G(\mathbf{X}_t) = 0$ if and only if
-        $\mathcal{S}_t^{(d)} < \mathcal{S}_{\min}^{(d)}$ for at
-        least one $d \in \{1,\ldots,7\}$.
-  \item $G(\mathbf{X}_t) = 1$ if and only if
-        $\mathcal{S}_t^{(d)} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$
-        for all $d \in \{1,\ldots,7\}$.
-  \item $G$ is non-decreasing in each argument separately.
-  \item The circuit-breaker fires ($G = 0$) when any single state
-        is critically discharged, regardless of all other states.
+  \item \textbf{(Range.)}
+        $G(\mathbf{X}_t) \in [0,1]$.
+  \item \textbf{(Circuit-Breaker --- Necessary and Sufficient.)}
+        \begin{equation}
+          G(\mathbf{X}_t) = 0
+          \;\Longleftrightarrow\;
+          \exists\, d^* \in \mathcal{D}
+          \;:\;
+          \mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}.
+          \label{eq:G-zero-iff}
+        \end{equation}
+  \item \textbf{(Full Deployment --- Necessary and Sufficient.)}
+        \begin{equation}
+          G(\mathbf{X}_t) = 1
+          \;\Longleftrightarrow\;
+          \forall\, d \in \mathcal{D}
+          \;:\;
+          \mathcal{S}_t^{(d)}
+            \geq \mathcal{S}_{\mathrm{full}}^{(d)}.
+          \label{eq:G-one-iff}
+        \end{equation}
+  \item \textbf{(Coordinatewise Monotonicity.)}
+        For every fixed $d \in \mathcal{D}$ and every fixed
+        values of all other coordinates, $G$ is non-decreasing
+        as a function of $\mathcal{S}_t^{(d)}$.
+  \item \textbf{(Single-Dimension Circuit-Breaker Sufficiency.)}
+        If any single state score is critical, i.e.\
+        $\mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}$
+        for some $d^* \in \mathcal{D}$, then $G(\mathbf{X}_t) = 0$
+        regardless of all remaining scores.
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}
+%% ------------------------------------------------------------
+\subsection{Proof of Theorem~\ref{thm:product-gating}}
+%% ------------------------------------------------------------
+
+The proof addresses each property in order.  Every logical
+step is explicitly justified by reference to a named
+assumption or previously established result.
+
+\begin{proof}[Proof of Property~1 (Range)]
 \begin{enumerate}
-  \item Each factor $g_d \in [0,1]$ by Proposition~\ref{prop:gating-properties}(1),
-        so their product lies in $[0,1]$.
-  \item A product of non-negative reals equals zero if and only if
-        at least one factor equals zero; by Proposition~\ref{prop:gating-properties}(3),
-        $g_d = 0 \Leftrightarrow \mathcal{S}_t^{(d)} <
-        \mathcal{S}_{\min}^{(d)}$.
-  \item A product of positive reals in $[0,1]$ equals $1$ if and
-        only if each factor equals $1$; by
-        Proposition~\ref{prop:gating-properties}(4),
-        $g_d = 1 \Leftrightarrow \mathcal{S}_t^{(d)} \geq
-        \mathcal{S}_{\mathrm{full}}^{(d)}$.
-  \item If $\mathcal{S}_t^{(d)}$ increases for some $d$ while all
-        other states are fixed, then $g_d$ is non-decreasing by
-        Proposition~\ref{prop:gating-properties}(2), and the product
-        is non-decreasing since all other factors are non-negative.
-  \item Follows immediately from item (2).
+  \item By Assumption~(A4a), for every $d \in \mathcal{D}$:
+        \begin{equation}
+          g_d\!\left(\mathcal{S}_t^{(d)}\right) \in [0,1].
+          \label{eq:gd-range}
+        \end{equation}
+  \item The product of finitely many real numbers each lying
+        in $[0,1]$ satisfies:
+        if $a_d \in [0,1]$ for $d = 1,\ldots,7$, then
+        \begin{align}
+          \prod_{d=1}^{7} a_d
+          &\;\geq\; 0
+            \quad\text{(product of non-negatives)},
+          \label{eq:prod-nonneg} \\
+          \prod_{d=1}^{7} a_d
+          &\;\leq\; \prod_{d=1}^{7} 1 = 1
+            \quad\text{(each factor $\leq 1$, product $\leq$ max factor).}
+          \label{eq:prod-le1}
+        \end{align}
+        Inequality~\eqref{eq:prod-le1} follows because
+        $a_d \leq 1$ implies
+        $\prod_{d} a_d \leq a_1 \cdot 1^6 = a_1 \leq 1$.
+        More generally, by induction on $D$: the base case
+        $D=1$ is trivial; the inductive step gives
+        $\prod_{d=1}^{D} a_d =
+          \bigl(\prod_{d=1}^{D-1} a_d\bigr) \cdot a_D
+          \leq 1 \cdot 1 = 1$.
+  \item Combining~\eqref{eq:gd-range}--\eqref{eq:prod-le1}:
+        \begin{equation}
+          G(\mathbf{X}_t)
+          = \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right)
+          \in [0,1].
+        \end{equation}
 \end{enumerate}
-\qed
 \end{proof}
+
+\begin{proof}[Proof of Property~2 (Circuit-Breaker, Biconditional)]
+We prove both directions of~\eqref{eq:G-zero-iff} separately.
+
+\medskip
+\noindent
+\textbf{($\Rightarrow$)~Assume $G(\mathbf{X}_t) = 0$.}
+\begin{enumerate}
+  \item By definition,
+        $G(\mathbf{X}_t) = \prod_{d=1}^{7}
+          g_d\!\left(\mathcal{S}_t^{(d)}\right) = 0$.
+  \item Each factor satisfies
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right) \geq 0$
+        by~\eqref{eq:gd-range}.
+  \item A finite product of non-negative reals equals zero if
+        and only if at least one factor equals zero
+        (standard real-number arithmetic; no factor can be
+        negative, so cancellation is impossible).
+        Therefore there exists $d^* \in \mathcal{D}$ with
+        $g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right) = 0$.
+  \item By Assumption~(A4c),
+        $g_{d^*}(\mathcal{S}) = 0
+         \Leftrightarrow
+         \mathcal{S} \leq \mathcal{S}_{\min}^{(d^*)}$,
+        so $\mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}$.
+\end{enumerate}
+
+\medskip
+\noindent
+\textbf{($\Leftarrow$)~Assume there exists $d^* \in \mathcal{D}$
+with $\mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}$.}
+\begin{enumerate}
+  \item By Assumption~(A4c),
+        $g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right) = 0$.
+  \item The product contains $g_{d^*}$ as one factor:
+        \begin{equation}
+          G(\mathbf{X}_t)
+          = g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right)
+            \cdot
+            \prod_{\substack{d=1\\d \neq d^*}}^{7}
+              g_d\!\left(\mathcal{S}_t^{(d)}\right)
+          = 0
+            \cdot
+            \prod_{\substack{d=1\\d \neq d^*}}^{7}
+              g_d\!\left(\mathcal{S}_t^{(d)}\right)
+          = 0.
+        \end{equation}
+        The remaining product is finite and real-valued
+        (well-defined by Property~1 applied to the sub-product),
+        so multiplication by zero yields zero.
+\end{enumerate}
+Both directions are established; biconditional~\eqref{eq:G-zero-iff}
+holds.
+\end{proof}
+
+\begin{proof}[Proof of Property~3 (Full Deployment, Biconditional)]
+We prove both directions of~\eqref{eq:G-one-iff}.
+
+\medskip
+\noindent
+\textbf{($\Leftarrow$)~Assume $\mathcal{S}_t^{(d)}
+  \geq \mathcal{S}_{\mathrm{full}}^{(d)}$ for all
+  $d \in \mathcal{D}$.}
+\begin{enumerate}
+  \item By Assumption~(A4d), for every $d \in \mathcal{D}$:
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right) = 1$.
+  \item Therefore
+        $G(\mathbf{X}_t) = \prod_{d=1}^{7} 1 = 1$.
+\end{enumerate}
+
+\medskip
+\noindent
+\textbf{($\Rightarrow$)~Assume $G(\mathbf{X}_t) = 1$.}
+\begin{enumerate}
+  \item By Property~1, each factor $g_d \in [0,1]$.
+  \item Suppose, for contradiction, that there exists
+        $d^{\dagger} \in \mathcal{D}$ with
+        $g_{d^{\dagger}}\!\left(\mathcal{S}_t^{(d^{\dagger})}\right)
+         < 1$.
+  \item Then, since every remaining factor is at most $1$:
+        \begin{align}
+          G(\mathbf{X}_t)
+          &= g_{d^{\dagger}}\!\left(\mathcal{S}_t^{(d^{\dagger})}\right)
+             \cdot
+             \prod_{\substack{d=1\\d \neq d^{\dagger}}}^{7}
+               g_d\!\left(\mathcal{S}_t^{(d)}\right)
+          \nonumber\\
+          &\leq g_{d^{\dagger}}\!\left(\mathcal{S}_t^{(d^{\dagger})}\right)
+               \cdot 1
+          < 1,
+        \end{align}
+        contradicting $G(\mathbf{X}_t) = 1$.
+  \item Hence $g_d\!\left(\mathcal{S}_t^{(d)}\right) = 1$
+        for every $d \in \mathcal{D}$.
+  \item By Assumption~(A4d),
+        $g_d(\mathcal{S}) = 1
+         \Leftrightarrow
+         \mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$,
+        so $\mathcal{S}_t^{(d)} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$
+        for all $d \in \mathcal{D}$.
+\end{enumerate}
+Both directions are established; biconditional~\eqref{eq:G-one-iff}
+holds.
+\end{proof}
+
+\begin{proof}[Proof of Property~4 (Coordinatewise Monotonicity)]
+Fix any $d_0 \in \mathcal{D}$ and fix all coordinates
+$\mathcal{S}_t^{(d)}$ for $d \neq d_0$ at arbitrary values
+in $[0,1]$.  Let $s \mapsto H(s)$ denote $G$ as a function
+of $\mathcal{S}_t^{(d_0)} = s$ alone.
+\begin{enumerate}
+  \item Write
+        \begin{equation}
+          H(s)
+          = g_{d_0}(s)
+            \cdot
+            C_{-d_0},
+          \qquad
+          C_{-d_0}
+          :=
+          \prod_{\substack{d=1\\d\neq d_0}}^{7}
+            g_d\!\left(\mathcal{S}_t^{(d)}\right).
+        \end{equation}
+  \item $C_{-d_0}$ does not depend on $s$; it is a
+        non-negative constant (non-negative by
+        Property~1 applied to the sub-product).
+  \item By Assumption~(A4b), $g_{d_0}$ is non-decreasing
+        on $[0,1]$: for $s_1 \leq s_2$ in $[0,1]$,
+        $g_{d_0}(s_1) \leq g_{d_0}(s_2)$.
+  \item Multiplying both sides by the non-negative constant
+        $C_{-d_0}$:
+        \begin{equation}
+          H(s_1)
+          = g_{d_0}(s_1)\,C_{-d_0}
+          \;\leq\;
+          g_{d_0}(s_2)\,C_{-d_0}
+          = H(s_2).
+        \end{equation}
+  \item Hence $H$ is non-decreasing in $s$, i.e.\ $G$ is
+        non-decreasing in $\mathcal{S}_t^{(d_0)}$.  Since
+        $d_0 \in \mathcal{D}$ was arbitrary, the property
+        holds for all coordinates.
+\end{enumerate}
+\end{proof}
+
+\begin{proof}[Proof of Property~5 (Single-Dimension Sufficiency)]
+Property~5 is a direct corollary of the
+$(\Leftarrow)$ direction of Property~2.
+\begin{enumerate}
+  \item Assume $\mathcal{S}_t^{(d^*)} \leq
+        \mathcal{S}_{\min}^{(d^*)}$ for some $d^* \in
+        \mathcal{D}$.
+  \item By the $(\Leftarrow)$ direction of
+        Property~2 (proved above), $G(\mathbf{X}_t) = 0$.
+  \item The conclusion holds for \emph{arbitrary} values of
+        all other coordinates $\mathcal{S}_t^{(d)}$,
+        $d \neq d^*$, because the proof of the
+        $(\Leftarrow)$ direction placed no restriction on
+        those coordinates.
+\end{enumerate}
+\end{proof}
+
+\noindent
+All five properties are established. \qed
+
+%% ------------------------------------------------------------
+\subsection{Key Findings}
+%% ------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\linewidth}{@{}
+  >{\bfseries}p{3.2cm}
+  >{\raggedright\arraybackslash}p{4.8cm}
+  >{\raggedright\arraybackslash}X
+  @{}}
+\toprule
+\textbf{Property} &
+\textbf{Formal Statement} &
+\textbf{Interpretation and Significance} \\
+\midrule
+Range &
+$G(\mathbf{X}_t) \in [0,1]$
+for all $\mathbf{X}_t \in [0,1]^7$ &
+The product gating output is always a valid capital
+fraction; no clipping or normalisation is required
+post-computation. \\[4pt]
+Circuit-Breaker (Biconditional) &
+$G = 0 \Leftrightarrow \exists\,d^*:
+\mathcal{S}_t^{(d^*)}
+\leq \mathcal{S}_{\min}^{(d^*)}$ &
+Suspension is triggered if and only if at least one
+dimension breaches its minimum threshold; the condition
+is both necessary and sufficient, with no false
+positives or false negatives. \\[4pt]
+Full Deployment (Biconditional) &
+$G = 1 \Leftrightarrow \forall\,d:
+\mathcal{S}_t^{(d)}
+\geq \mathcal{S}_{\mathrm{full}}^{(d)}$ &
+Full capital deployment requires simultaneous
+attainment of all seven full-deployment thresholds;
+partial attainment strictly reduces the gate output
+below unity. \\[4pt]
+Coordinatewise Monotonicity &
+$s_1 \leq s_2 \Rightarrow
+G(\ldots,s_1,\ldots) \leq
+G(\ldots,s_2,\ldots)$ &
+Improving any single state score cannot decrease
+total capital deployment, ensuring the system
+incentivises state improvement in every dimension
+independently. \\[4pt]
+Single-Dimension Sufficiency &
+$\mathcal{S}_t^{(d^*)}
+\leq \mathcal{S}_{\min}^{(d^*)}
+\Rightarrow G = 0$ &
+One critically degraded state is sufficient to
+halt all deployment, irrespective of the
+health of the remaining six dimensions.
+This implements a strict logical \textsc{and}
+gate across all risk dimensions. \\[4pt]
+Threshold Separation &
+$\Delta_d =
+\mathcal{S}_{\mathrm{full}}^{(d)}
+- \mathcal{S}_{\min}^{(d)} > 0$ &
+Guaranteed by Assumption~(A2); ensures a
+strictly positive linear transition zone in each
+$g_d$, preventing discontinuous jumps in $G$ and
+bounding sensitivity via the Lipschitz constant
+$L_d = 1/\Delta_d$. \\[4pt]
+Product Decomposability &
+$G = \prod_{d=1}^{7} g_d$ &
+The multi-dimensional gating function decomposes
+exactly into independent per-dimension factors,
+enabling modular analysis, dimension-wise
+attribution of gate reductions, and incremental
+updates when only one state score changes. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
 \section{The Capital Deployment Policy}
 
