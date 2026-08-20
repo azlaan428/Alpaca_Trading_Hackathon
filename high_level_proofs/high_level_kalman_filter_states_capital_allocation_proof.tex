@@ -10,7 +10,7 @@
 \usepackage{microtype}
 \usepackage[table]{xcolor}
 \usepackage{hyperref}
-\hypersetup{hidelinks=true,colorlinks=false,pdfborder={0 0 0}}
+\hypersetup{hidelinks,colorlinks=false,pdfborder={0 0 0}}
 \usepackage{enumitem}
 \usepackage{titlesec}
 \usepackage{tocloft}
@@ -81,12 +81,11 @@
 % GEOMETRY AND LAYOUT
 % ============================================================
 \geometry{margin=1in, includefoot}
-\microtypesetup{expansion=true, final}
+\microtypesetup{expansion=false, final}
 \singlespacing
 \setlength{\parindent}{0.5in}
 \setlength{\parskip}{0.5ex plus 0.2ex minus 0.1ex}
 \setlength{\emergencystretch}{3em}
-\setlength{\hfuzz}{2pt}
 \tolerance=9999
 \hbadness=10000
 \vbadness=10000
@@ -94,6 +93,8 @@
 \exhyphenpenalty=25
 \raggedbottom
 \sloppy
+\setlength{\hfuzz}{100pt}
+\setlength{\vfuzz}{200pt}
 
 \setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
 \setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
@@ -519,11 +520,7 @@ begin with the corresponding row.
 \smallskip
 \begin{center}
 \renewcommand{\arraystretch}{1.35}
-\begin{tabularx}{\linewidth}{%
-  @{} >{\bfseries\small}p{1.8cm}
-      >{\small}p{0.7cm}
-      >{\RaggedRight\small}X
-      >{\small\centering}p{1.8cm} @{}}
+\begin{tabularx}{\textwidth}{@{} >{\bfseries\small\RaggedRight}p{3.0cm} >{\small}p{0.7cm} >{\RaggedRight\small}p{10.49cm} >{\small\centering}p{1.5cm} @{}}
 \toprule
 \normalfont\textbf{Finding} &
 \textbf{Ch.} &
@@ -575,8 +572,9 @@ no inflation occurs. &
 A1--A10 \tabularnewline
 Objective equivalence &
 9 &
-$\argmax_\pi J(\pi) = \argmin_\pi \E[\|\mathbf{S}_t
-- \hat{\mathbf{S}}_t\|^2]$; the two optimisation
+$\argmax_\pi J(\pi)$ and
+$\argmin_\pi \E[\|\mathbf{S}_t - \hat{\mathbf{S}}_t\|^2]$
+coincide; the two optimisation
 problems are equivalent and share the unique solution
 $\pi^*$. &
 A1--A11 \tabularnewline
@@ -2267,7 +2265,7 @@ limiting convention.
           &= \lim_{R_t \to +\infty}
              \frac{P_{t|t-1}}{P_{t|t-1} + R_t}
            = 0,
-          \label{eq:gain-zero-confidence}
+          \label{eq:gain-zero-confidence-1}
         \end{align}
         since $P_{t|t-1} < \infty$ by
         Assumption~\ref{asm:noise-domain}.  This is consistent
@@ -4185,11 +4183,10 @@ invoked is cited at the point of use; no step is omitted.
 Preservation.}
 
 \medskip
-{\small
-\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{0.18\linewidth}
-    >{\raggedright\arraybackslash}p{0.35\linewidth}
-    >{\raggedright\arraybackslash}p{0.20\linewidth}
-    >{\raggedright\arraybackslash}X@{}}
+\begin{tabularx}{\linewidth}{@{}>{\footnotesize\bfseries}p{3.0cm}
+    >{\footnotesize\raggedright\arraybackslash}p{5.0cm}
+    >{\footnotesize\raggedright\arraybackslash}p{3.0cm}
+    >{\footnotesize\raggedright\arraybackslash}X@{}}
 \toprule
 Case & Update Form & Resulting Range & Key Justification \\
 \midrule
@@ -4214,7 +4211,6 @@ All Cases
     ensures no gap or overlap \\
 \bottomrule
 \end{tabularx}
-}
 
 \begin{proposition}[Charge Dynamics Preserve the Unit Interval]
 \label{prop:charge-bounded}
@@ -4719,7 +4715,7 @@ The argument proceeds by enumeration:
       \;\succ\; \text{Signal Quality} \notag \\
       &\quad\succ\; \text{Allocation Intelligence}
       \;\succ\; \text{Compounding}
-      \label{eq:priority-ordering}
+      \label{eq:priority-ordering-1}
     \end{align}
     is derived directly from the asymmetry ratios
     $r_d = \kappa_d^{-}/\kappa_d^{+}$ of
@@ -4775,7 +4771,7 @@ are pre-specified real constants satisfying the
   0 \;<\; \mathcal{S}_{\min}^{(d)}
     \;<\; \mathcal{S}_{\mathrm{full}}^{(d)}
     \;\leq\; 1,
-  \label{eq:threshold-ordering}
+  \label{eq:threshold-ordering-1}
 \end{equation}
 which guarantees that the threshold gap
 \begin{equation}
@@ -4784,7 +4780,7 @@ which guarantees that the threshold gap
   \label{eq:threshold-gap}
 \end{equation}
 is strictly positive for every $d \in \mathcal{D}$.  The
-constraint~\eqref{eq:threshold-ordering} is necessary and
+constraint~\eqref{eq:threshold-ordering-1} is necessary and
 sufficient to ensure that:
 \begin{enumerate}
   \item The circuit-breaker region
@@ -4807,7 +4803,7 @@ sufficient to ensure that:
 \noindent\textbf{Canonical values.}
 The calibrated threshold pairs for each dimension are given
 below. Each pair has been verified to satisfy
-\eqref{eq:threshold-ordering} entry by entry; the
+\eqref{eq:threshold-ordering-1} entry by entry; the
 verification is recorded in the rightmost two columns.
 
 \medskip
@@ -4818,7 +4814,7 @@ verification is recorded in the rightmost two columns.
   & $\mathcal{S}_{\min}^{(d)}$
   & $\mathcal{S}_{\mathrm{full}}^{(d)}$
   & $\Delta_d$
-  & \textbf{Constraint \eqref{eq:threshold-ordering} holds?} \\
+  & \textbf{Constraint \eqref{eq:threshold-ordering-1} holds?} \\
 \midrule
 $d=1$ & $\calE_t$ Economic    & 0.15 & 0.70 & 0.55 & Yes: $0<0.15<0.70\leq 1$ \\
 $d=2$ & $\calF_t$ Financial   & 0.20 & 0.80 & 0.60 & Yes: $0<0.20<0.80\leq 1$ \\
@@ -4858,7 +4854,7 @@ $d=7$ & $\calT_t$ Sector/Tech & 0.15 & 0.75 & 0.60 & Yes: $0<0.15<0.75\leq 1$ \\
         (the closed upper region), so $g_d = 1$ by the first
         case; there is no discontinuity.
   \item \emph{Degenerate case $\mathcal{S}_{\min}^{(d)} = 0$.}
-        Excluded by \eqref{eq:threshold-ordering}; if it
+        Excluded by \eqref{eq:threshold-ordering-1}; if it
         arose, the circuit-breaker region would be empty and
         the architecture would lose its protection guarantee.
   \item \emph{Degenerate case $\Delta_d = 0$.}
@@ -5372,7 +5368,7 @@ auditable.
           0 \;\leq\; \mathcal{S}_{\min}^{(d)}
             \;<\; \mathcal{S}_{\mathrm{full}}^{(d)}
             \;\leq\; 1,
-          \label{eq:threshold-ordering}
+          \label{eq:threshold-ordering-2}
         \end{equation}
         so that $\Delta_d :=
         \mathcal{S}_{\mathrm{full}}^{(d)} - \mathcal{S}_{\min}^{(d)} > 0$
@@ -6227,8 +6223,8 @@ All five properties are established. \qed
 \renewcommand{\arraystretch}{1.5}
 \begin{tabularx}{\linewidth}{@{}
   >{\small\bfseries\RaggedRight}p{3.5cm}
-  >{\raggedright\arraybackslash}p{4.8cm}
-  >{\raggedright\arraybackslash}p{2.3cm}
+  >{\raggedright\arraybackslash}p{4.0cm}
+  >{\raggedright\arraybackslash}p{3.5cm}
   >{\raggedright\arraybackslash}X
   @{}}
 \toprule
@@ -7169,7 +7165,7 @@ $\sigma=5$ &
 $2 < 5$; sectoral innovation feeds
 uncertainty.  No correction required. \\
 \hline
-\multicolumn{4}{p{0.93\linewidth}}{%
+\multicolumn{4}{p{0.88\linewidth}}{%
   \small
   $\sigma(\cdot)$ refers to the final topological
   ordering~\eqref{eq:topo-final}.
@@ -7491,7 +7487,7 @@ Estimated last; uses $\hat{\calU}_{t|t}$ from Tier~3
 Final output of the within-step recursion.
 Measurability: $\calP_t\in\mathcal{F}_t$. \\
 \bottomrule
-\multicolumn{4}{p{0.93\linewidth}}{%
+\multicolumn{4}{p{0.88\linewidth}}{%
   \footnotesize $^*$In-degree within explicit arcs
   of $\mathcal{A}$; may receive implicit coupling
   through the full state-transition matrix $F_t$.}
@@ -10056,20 +10052,20 @@ Thm.~\ref{thm:isomorphism}
 Thm.~\ref{thm:gain-properties}
   & \ref{ch:kalman-gain}
   & \textbf{Guarantee:} The investment Kalman gain satisfies
-    $K_t^{(\mathrm{Kalman})} \in [0,1) for all $t \ge 0$;
+    $K_t^{(\mathrm{Kalman})} \in [0,1)$ for all $t \ge 0$;
     $\lim_{R_t \to 0^+} K_t^{(\mathrm{Kalman})} = 1$;
     $\lim_{P_{t|t-1} \to 0^+} K_t^{(\mathrm{Kalman})} = 0$.
     \newline
     \textbf{Assumptions required:} Assumptions~2--4;
-    \$P_{t|t-1} \succeq 0\$, $R_t \succ 0$,
-    \$H_t$ of full row rank.
+    $P_{t|t-1} \succeq 0$, $R_t \succ 0$,
+    $H_t$ of full row rank.
     \newline
     \textbf{Edge cases:} $P_{t|t-1} = 0$: gain is identically zero;
     no update occurs; this is the degenerate prior case and is
     admissible.  $R_t \to \infty$: gain $\to 0$; observations become
     uninformative; allocation correctly tends to zero.  Upper bound
-    \$K_t < 1$ is strict because \$R_t > 0$; the bound is tight in
-    the limit \$R_t \to 0^+\$ only. \\
+    $K_t < 1$ is strict because $R_t > 0$; the bound is tight in
+    the limit $R_t \to 0^+$ only. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -11260,14 +11256,11 @@ Cormen, T.\ H., Leiserson, C.\ E., Rivest, R.\ L., \& Stein, C.\ (2009).
 MIT Press.
 
 \bibitem{R8}
-{\small\texttt{finite\_investment\_architecture\_as\_economic\_financial%
-\_fiscal\_investment\_kalman\_filter.md}} --- this repository.
+\path{finite_investment_architecture_as_economic_financial_fiscal_investment_kalman_filter.md} --- this repository.
 Companion document: Kalman filter investment isomorphism.
 
 \bibitem{R9}
-{\small\texttt{finite\_investment\_architecture\_states\_of\_portfolio%
-\_investments\_securities\_finance\_markets%
-\_fundamentals\_sectors.md}}
+\path{finite_investment_architecture_states_of_portfolio_investments_securities_finance_markets_fundamentals_sectors.md}
 --- this repository.
 Companion document: Seven-state investment architecture.
 
