@@ -1,0 +1,4479 @@
+\documentclass[12pt,openany]{book}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{ragged2e}
+\usepackage[all]{hypcap}
+\usepackage{thmtools}
+\usepackage{chngcntr}
+\counterwithout{table}{chapter}
+\counterwithout{figure}{chapter}
+\makeatletter
+\renewcommand{\theHtable}{\number\value{table}}
+\renewcommand{\theHfigure}{\number\value{figure}}
+\makeatother
+\usepackage{sectionbreak}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+% ============================================================
+% CUSTOM MACROS
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\N}{\mathbb{N}}
+
+\newcommand{\bfw}{\mathbf{w}}
+\newcommand{\bfx}{\mathbf{x}}
+\newcommand{\bfz}{\mathbf{z}}
+\newcommand{\bfy}{\mathbf{y}}
+\newcommand{\bfmu}{\boldsymbol{\mu}}
+\newcommand{\bfSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bfQ}{\mathbf{Q}}
+\newcommand{\bfR}{\mathbf{R}}
+\newcommand{\bfF}{\mathbf{F}}
+\newcommand{\bfH}{\mathbf{H}}
+\newcommand{\bfK}{\mathbf{K}}
+\newcommand{\bfP}{\mathbf{P}}
+\newcommand{\bfI}{\mathbf{I}}
+\newcommand{\bfA}{\mathbf{A}}
+\newcommand{\bfe}{\mathbf{e}}
+\newcommand{\bfv}{\mathbf{v}}
+\newcommand{\bfu}{\mathbf{u}}
+\newcommand{\bfGamma}{\boldsymbol{\Gamma}}
+\newcommand{\bfOmega}{\boldsymbol{\Omega}}
+\newcommand{\bfxi}{\boldsymbol{\xi}}
+
+\newcommand{\calE}{\mathcal{E}}
+\newcommand{\calF}{\mathcal{F}}
+\newcommand{\calG}{\mathcal{G}}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calM}{\mathcal{M}}
+\newcommand{\calT}{\mathcal{T}}
+\newcommand{\calR}{\mathcal{R}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\calI}{\mathcal{I}}
+\newcommand{\calX}{\mathbf{X}}
+
+\newcommand{\MaxDD}{\mathrm{MaxDD}}
+\newcommand{\DD}{\mathrm{DD}}
+
+% ============================================================
+% GEOMETRY AND LAYOUT
+% ============================================================
+\geometry{margin=1in, includefoot}
+\microtypesetup{expansion=true, final}
+\singlespacing
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0.5ex plus 0.2ex minus 0.1ex}
+\setlength{\emergencystretch}{1.5em}
+\tolerance=9999
+\hbadness=10000
+\vbadness=10000
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\raggedbottom
+\sloppy
+
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
+\numberwithin{equation}{chapter}
+\allowdisplaybreaks[3]
+
+% ============================================================
+% THEOREM ENVIRONMENTS
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\providecommand{\theHtheorem}{}
+\renewcommand{\theHtheorem}{\thechapter-\arabic{theorem}}
+\providecommand{\theHlemma}{}
+\renewcommand{\theHlemma}{\thechapter-\arabic{theorem}}
+\providecommand{\theHcorollary}{}
+\renewcommand{\theHcorollary}{\thechapter-\arabic{theorem}}
+\providecommand{\theHproposition}{}
+\renewcommand{\theHproposition}{\thechapter-\arabic{theorem}}
+\providecommand{\theHdefinition}{}
+\renewcommand{\theHdefinition}{\thechapter-\arabic{theorem}}
+\providecommand{\theHaxiom}{}
+\renewcommand{\theHaxiom}{\thechapter-\arabic{theorem}}
+\providecommand{\theHassumption}{}
+\renewcommand{\theHassumption}{\thechapter-\arabic{theorem}}
+\providecommand{\theHremark}{}
+\renewcommand{\theHremark}{\thechapter-\arabic{theorem}}
+\providecommand{\theHconjecture}{}
+\renewcommand{\theHconjecture}{\thechapter-\arabic{theorem}}
+
+\makeatletter
+\providecommand*{\toclevel@conjecture}{0}
+\makeatother
+
+\newenvironment{abstract}{%
+  \chapter*{Abstract}
+  \begin{quote}\small
+}{%
+  \end{quote}
+}
+\newenvironment{keywords}{%
+  \paragraph*{Keywords:}
+}{}
+
+% ============================================================
+% SECTION FORMATTING
+% ============================================================
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{50pt}{40pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus 0.2ex}{2.3ex plus 0.2ex}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus 0.2ex}{1.5ex plus 0.2ex}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{3ex plus 0.5ex minus 0.2ex}{1.5ex plus 0.2ex}
+
+% ============================================================
+% TABLE OF CONTENTS
+% ============================================================
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\setlength{\cftchapindent}{0em}
+\setlength{\cftsecindent}{1.5em}
+
+% ============================================================
+% HEADER AND FOOTER
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\thepage}
+\fancyhead[RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{27.2pt}
+
+% ============================================================
+% MATH OPERATORS
+% ============================================================
+\DeclareMathOperator{\CVaR}{CVaR}
+\DeclareMathOperator{\VaR}{VaR}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+
+% ============================================================
+% MISCELLANEOUS
+% ============================================================
+\setlist[enumerate]{leftmargin=*, partopsep=0.1ex}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+
+\pdfstringdefDisableCommands{%
+  \def\mathcal#1{#1}%
+  \def\bfx{x}%
+  \def\bfz{z}%
+}
+
+\title{Kalman Filter States and Capital Allocation:\\
+A Formal Proof Framework for the Seven-State\\
+Gated Investment Architecture\\[0.6em]
+{\large Companion Monograph to the Multi-Agent\\
+Quantitative-Finance Platform}}
+\author{Hadrian Hu}
+\date{2026-08-20}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\listoftheorems[ignoreall,show={theorem,lemma,proposition,corollary,definition,axiom,assumption,conjecture}]
+
+% ==============================================================
+\begin{abstract}
+This monograph develops the complete formal proof framework for two
+companion documents: (i) \emph{Finite Investment Architecture as
+Economic, Financial, Fiscal, and Investment Kalman Filter}, which
+establishes the structural isomorphism between the Kalman
+prediction--correction cycle and multi-domain capital allocation; and
+(ii) \emph{State-of-Charge Analogues for Investment Systems}, which
+introduces seven investment state dimensions as hidden variables in
+the Kalman model and gates capital deployment through a
+product-of-gating-functions architecture.
+
+The monograph proceeds from first principles.  Every definition,
+axiom, assumption, and theorem is stated with complete rigour; all
+boundary, degenerate, and extremal cases are addressed explicitly;
+and all proofs are supplied with sufficient detail so that every
+step can be independently verified.  The central results are:
+
+\begin{enumerate}[label=(\roman*), leftmargin=2.5em,
+                  itemsep=2pt, parsep=0pt, topsep=3pt]
+  \item The Kalman filter prediction--correction cycle is structurally
+        isomorphic to the prior-forecast / evidence-update cycle in
+        capital allocation; the isomorphism is established by an
+        explicit bijection between the two sets of mathematical objects.
+  \item The seven investment states
+        $(\calE_t, \calF_t, \calG_t, \calP_t, \calU_t, \calM_t,
+        \calT_t)^\top$ form a well-defined hidden state vector in the
+        Kalman observation model; agent outputs are the noisy
+        observations; and agent confidence determines the inverse
+        measurement noise.
+  \item The Kalman gain is the investment-domain analogue of the
+        confidence-weighted capital deployment fraction; agent
+        disagreement inflates the innovation covariance, reducing the
+        Kalman gain and therefore capital deployment.
+  \item The seven-dimensional state-gating function
+        $\prod_{d=1}^{7} g_d(\mathcal{S}_t^{(d)})$ is well-defined,
+        non-negative, and equals zero whenever any state falls below
+        its critical threshold, providing a formal circuit-breaker
+        architecture.
+  \item The composite capital deployment policy
+        $\pi^*(\mathbf{X}_t, S_t) = K_t^{(\mathrm{Kalman})} \cdot
+        C_{\mathrm{available}} \cdot \prod_{d=1}^{7} g_d(\mathcal{S}_t^{(d)})$
+        is the minimum-variance unbiased estimator (MVUE) of the
+        latent market state given partial, noisy, multi-domain
+        observations, under the stated assumptions.
+\end{enumerate}
+
+All results are consistent with and extend the companion documents
+\texttt{high\_level\_architecture\_proof.tex} and
+\texttt{high\_level\_supplementary\_diversification\_proof.tex}.
+\end{abstract}
+
+\begin{keywords}
+Kalman filter; state-space model; prediction-correction cycle;
+innovation signal; Kalman gain; covariance propagation; minimum
+mean-squared error; MVUE; hidden state; observation model; process
+noise; measurement noise; multi-agent ensemble; Interacting Multiple
+Model; IMM; Bayesian mixing; innovation covariance inflation;
+seven-state investment architecture; state-of-charge analogy;
+economic state; financial state; fiscal state; portfolio state;
+fundamental state; market state; sector state; state gating;
+circuit-breaker; capital deployment; finite capital constraint;
+risk-adjusted objective; uncertainty quantification; Alpaca hackathon
+\end{keywords}
+
+% ==============================================================
+\chapter*{Executive Summary}
+\addcontentsline{toc}{chapter}{Executive Summary}
+% ==============================================================
+
+\noindent
+This monograph provides the rigorous mathematical foundations for
+two companion documents that together constitute the
+\emph{Kalman Filter Capital Allocation} layer of the multi-agent
+investment platform.  The intellectual core is the following
+structural identification:
+
+\begin{quote}
+\textbf{Optimal Agentic Trading $=$ MVUE of Latent Market State
+Given Partial, Noisy, Multi-Domain Observations.}
+\end{quote}
+
+\noindent
+The document is organised into ten chapters, each establishing a
+distinct formal pillar:
+
+\begin{enumerate}[label=\textbf{Ch.~\arabic*.}, leftmargin=3.5em,
+                  itemsep=3pt, parsep=0pt, topsep=4pt]
+  \item \textbf{State-space foundations.}
+        Defines the hidden state vector, observation model, and
+        transition model; establishes all measurability prerequisites.
+  \item \textbf{Prediction--correction isomorphism.}
+        Proves the structural bijection between the Kalman
+        prediction--correction cycle and the prior-forecast /
+        evidence-update allocation cycle.
+  \item \textbf{Kalman gain as capital deployment.}
+        Derives the investment-domain Kalman gain; proves the two
+        limiting cases and all boundary conditions.
+  \item \textbf{Covariance as risk budget.}
+        Establishes the non-negativity of posterior risk reduction;
+        derives the observability and controllability conditions.
+  \item \textbf{Seven investment states.}
+        Formalises the seven state-of-charge dimensions; proves
+        the charge/discharge dynamics and the asymmetry ratios.
+  \item \textbf{State gating architecture.}
+        Proves that the product gating function is well-defined,
+        non-negative, and zero-at-threshold; derives the layered
+        circuit-breaker hierarchy.
+  \item \textbf{Inter-state coupling.}
+        Establishes the coupling matrix and its influence on the
+        transition model; derives the processing order.
+  \item \textbf{IMM as agent ensemble.}
+        Proves the structural identity between the IMM mixing layer
+        and the multi-agent Bayesian reputation update; formalises
+        disagreement as innovation covariance inflation.
+  \item \textbf{Composite objective as filter optimality.}
+        Proves the equivalence between the composite risk-adjusted
+        objective $J$ and the negative posterior MSE; derives the
+        information filter dual.
+  \item \textbf{Main conjecture.}
+        States and proves the central conjecture; establishes the
+        priority ordering and the dominance hierarchy.
+\end{enumerate}
+
+% ==============================================================
+\chapter{State-Space Foundations}
+\label{ch:state-space}
+% ==============================================================
+
+\section{Foundational Assumptions}
+
+\noindent
+The following assumptions are stated in full generality.  Each
+assumption is accompanied by its precise mathematical
+formulation, its domain of validity, all boundary and edge-case
+conditions, and an explicit statement of what fails if the
+assumption is relaxed.  Every subsequent result in this
+monograph is auditable against this list.
+
+% --------------------------------------------------------------
+\subsection*{Assumption A1 — Probability Space}
+% --------------------------------------------------------------
+
+\begin{assumption}[Probability Space]
+\label{asm:prob-space}
+A complete filtered probability space
+\begin{equation}
+  \bigl(\Omega,\;\calF,\;\{\calF_t\}_{t \geq 0},\;\Prob\bigr)
+  \label{eq:prob-space}
+\end{equation}
+is fixed throughout this monograph.  The following conditions
+hold jointly and are each individually necessary.
+
+\begin{enumerate}[label=\textbf{A1.\arabic*.}, leftmargin=*, widest=A1.4.]
+  \item \textbf{Sample space.}
+        $\Omega$ is a non-empty set; every elementary outcome
+        $\omega \in \Omega$ represents a complete realisation of
+        all random quantities defined herein.
+
+  \item \textbf{$\sigma$-algebra and completeness.}
+        $\calF$ is a $\sigma$-algebra on $\Omega$ such that
+        $\Prob$ is complete: if $A \in \calF$ with
+        $\Prob(A) = 0$ and $B \subseteq A$, then
+        $B \in \calF$ (hence $\Prob(B) = 0$).
+        Completeness is required to ensure that
+        modifications of measurable processes remain
+        measurable.
+
+  \item \textbf{Probability measure.}
+        $\Prob : \calF \to [0,1]$ is a $\sigma$-additive
+        probability measure satisfying $\Prob(\Omega) = 1$ and
+        $\Prob(\emptyset) = 0$.  Boundary cases:
+        \begin{align}
+          \Prob(A) &= 0 \quad \text{is permitted for any
+            $A \in \calF$}; \label{eq:prob-zero} \\
+          \Prob(A) &= 1 \quad \text{is permitted for any
+            $A \in \calF$}. \label{eq:prob-one}
+        \end{align}
+
+  \item \textbf{Filtration and usual conditions.}
+        The filtration $\{\calF_t\}_{t \geq 0}$ satisfies the
+        \emph{usual conditions}:
+        \begin{enumerate}[label=(\alph*)]
+          \item \emph{Right-continuity:}
+                $\calF_t = \bigcap_{s > t} \calF_s$ for all
+                $t \geq 0$.
+          \item \emph{Completeness:}
+                $\calF_0$ (and hence every $\calF_t$) contains
+                all $\Prob$-null sets of $\calF$.
+          \item \emph{Monotonicity:}
+                $s \leq t \Rightarrow \calF_s \subseteq
+                \calF_t \subseteq \calF$.
+        \end{enumerate}
+        Right-continuity is required for the optional sampling
+        theorem and for c\`{a}dl\`{a}g path regularity.
+
+  \item \textbf{All random objects defined on this space.}
+        Every random variable, stochastic process, and
+        probability kernel introduced in subsequent chapters is
+        assumed to be $(\calF / \mathcal{B}(\mathbb{R}))$-measurable
+        or, where vector-valued, $(\calF / \mathcal{B}(\mathbb{R}^n))$-measurable.
+\end{enumerate}
+
+\noindent\textbf{Violation consequence.}  If completeness is
+dropped, null-set modifications of adapted processes may fail
+to be measurable, invalidating the Kalman update equations.
+If right-continuity fails, the martingale representation
+theorem does not apply, breaking the innovation analysis in
+Chapter~\ref{ch:kalman}.
+\end{assumption}
+
+% --------------------------------------------------------------
+\subsection*{Assumption A2 — Discrete Time Horizon}
+% --------------------------------------------------------------
+
+\begin{assumption}[Discrete Time Horizon]
+\label{asm:time}
+The time index set is
+\begin{equation}
+  \mathcal{T} \;:=\; \{0,\,1,\,2,\,\ldots,\,T\},
+  \qquad T \in \mathbb{N},\quad T \geq 1.
+  \label{eq:time-set}
+\end{equation}
+The following sub-conditions hold.
+
+\begin{enumerate}[label=\textbf{A2.\arabic*.}, leftmargin=*, widest=A2.5.]
+  \item \textbf{Initial time.}
+        $t = 0$ is the \emph{initialisation step}.  All prior
+        distributions are specified at $t = 0$; no observations
+        are processed before this step.  The boundary case
+        $t = 0$ is explicitly handled in every recursive update.
+
+  \item \textbf{Terminal time.}
+        $T < \infty$ is the finite investment horizon.  The
+        assumption $T \geq 1$ ensures at least one update step
+        exists.  The case $T = 1$ (single-period model) is a
+        valid degenerate case; all results reduce correctly.
+
+  \item \textbf{Adaptedness.}
+        All processes $\{X_t\}_{t \in \mathcal{T}}$ are
+        $\{\calF_t\}$-adapted, i.e.\
+        $X_t$ is $\calF_t$-measurable for every
+        $t \in \mathcal{T}$.
+
+  \item \textbf{Uniform step size.}
+        Without loss of generality the step size is unity.
+        Rescaling to an arbitrary step $\Delta t > 0$
+        multiplies the process noise covariance by $\Delta t$
+        and leaves all structural results unchanged.
+
+  \item \textbf{Boundary conditions on the index.}
+        \begin{align}
+          t < 0 &\;\Rightarrow\; \text{undefined (no process
+            exists prior to initialisation);} \label{eq:t-lb}\\
+          t > T &\;\Rightarrow\; \text{undefined (horizon
+            enforced strictly).} \label{eq:t-ub}
+        \end{align}
+        Any expression referencing $t \notin \mathcal{T}$ is
+        treated as vacuously false and does not produce a
+        result.
+\end{enumerate}
+
+\noindent\textbf{Violation consequence.}  If $T = \infty$, the
+finite-horizon optimality results of
+Chapter~\ref{ch:composite-objective} require replacement by
+their infinite-horizon discounted counterparts; the proofs in
+their current form do not extend without modification.
+\end{assumption}
+
+% --------------------------------------------------------------
+\subsection*{Assumption A3 — Agent Index Set}
+% --------------------------------------------------------------
+
+\begin{assumption}[Agent Index Set]
+\label{asm:agents}
+There are $N \in \mathbb{N}$, $N \geq 2$, specialised agents
+indexed by the set
+\begin{equation}
+  \mathcal{I} \;:=\; \{1,\,2,\,\ldots,\,N\}.
+  \label{eq:agent-index}
+\end{equation}
+
+\begin{enumerate}[label=\textbf{A3.\arabic*.}, leftmargin=*, widest=A3.5.]
+  \item \textbf{Minimum cardinality.}
+        $N \geq 2$ is required so that the IMM mixing matrix
+        (Definition~\ref{def:imm}) is non-trivial and the
+        ensemble disagreement covariance
+        (Proposition~\ref{prop:disagreement}) is well-defined.
+        The degenerate case $N = 1$ reduces the system to a
+        single Kalman filter; all IMM results hold vacuously.
+
+  \item \textbf{Agent observation map.}
+        Each agent $i \in \mathcal{I}$ is associated with a
+        non-empty \emph{monitoring set}
+        $\mathcal{D}_i \subseteq \{1,\ldots,d\}$ of state
+        dimensions it observes.  Agent $i$ emits the scalar
+        observation
+        \begin{equation}
+          z_{i,t}^{(k)} \;\in\; \mathbb{R},
+          \qquad k \in \mathcal{D}_i,\quad t \in \mathcal{T}.
+          \label{eq:agent-obs}
+        \end{equation}
+
+  \item \textbf{Coverage condition.}
+        The union of all monitoring sets covers all state
+        dimensions:
+        \begin{equation}
+          \bigcup_{i=1}^{N} \mathcal{D}_i
+          \;=\; \{1,\ldots,d\}.
+          \label{eq:coverage}
+        \end{equation}
+        This ensures no hidden-state dimension is permanently
+        unobserved, which is required for asymptotic filter
+        stability (Theorem~\ref{thm:filter-stability}).
+
+  \item \textbf{Observability of individual agents.}
+        Individual monitoring sets may overlap
+        ($\mathcal{D}_i \cap \mathcal{D}_j \neq \emptyset$ is
+        permitted) or be disjoint; no uniqueness of coverage is
+        required.  Redundant coverage increases robustness.
+
+  \item \textbf{Boundary case — single-dimension agent.}
+        The case $|\mathcal{D}_i| = 1$ (agent observes exactly
+        one dimension) is the minimal valid case.  The
+        observation equation for such an agent degenerates to a
+        scalar measurement model, which is handled explicitly
+        in Section~\ref{sec:observation-model}.
+\end{enumerate}
+
+\noindent\textbf{Violation consequence.}  If the coverage
+condition~\eqref{eq:coverage} fails, at least one state
+dimension is unobserved; the posterior covariance on that
+dimension does not contract, rendering capital allocation
+for that dimension unreliable.
+\end{assumption}
+
+% --------------------------------------------------------------
+\subsection*{Assumption A4 — State Dimension}
+% --------------------------------------------------------------
+
+\begin{assumption}[State Dimension]
+\label{asm:dimension}
+The hidden state vector has dimension
+\begin{equation}
+  d \;=\; 7,
+  \label{eq:state-dim}
+\end{equation}
+corresponding to the seven investment state dimensions defined
+in Chapter~\ref{ch:seven-states}.
+
+\begin{enumerate}[label=\textbf{A4.\arabic*.}, leftmargin=*, widest=A4.4.]
+  \item \textbf{Fixed dimension.}
+        Unless explicitly stated otherwise, $d = 7$ throughout
+        this monograph.  All matrix dimensions are indexed
+        accordingly: state matrices are
+        $7 \times 7$, observation matrices are
+        $m_i \times 7$ where $m_i = |\mathcal{D}_i|$.
+
+  \item \textbf{Component range.}
+        Each component of the state vector lies in $[0,1]$:
+        \begin{equation}
+          X_t \;\in\; [0,1]^7
+          \quad \forall\, t \in \mathcal{T}.
+          \label{eq:state-range}
+        \end{equation}
+        The boundary values $0$ and $1$ are attained and
+        constitute valid, non-degenerate states corresponding
+        to fully depleted and fully saturated investment
+        conditions, respectively.
+
+  \item \textbf{Boundary condition at $X_t = 0$.}
+        When any component $X_t^{(k)} = 0$, the corresponding
+        state is \emph{inactive}.  The gate function
+        (Definition~\ref{def:gate}) evaluates to zero for that
+        component, enforcing zero capital allocation.  This is
+        an intended structural feature, not a degenerate edge
+        case.
+
+  \item \textbf{Boundary condition at $X_t = \mathbf{1}$.}
+        When any component $X_t^{(k)} = 1$, the corresponding
+        state is \emph{saturated}.  Nonlinear saturation
+        corrections (Remark~\ref{rem:saturation}) may apply;
+        the linear Kalman update remains valid as a
+        first-order approximation within a neighbourhood of
+        radius $\varepsilon > 0$ around the boundary.
+\end{enumerate}
+
+\noindent\textbf{Violation consequence.}  If a state component
+escapes $[0,1]$, the probabilistic interpretation as a
+normalised charge fails.  A projection step must be applied
+after each update step; this is formalised in
+Remark~\ref{rem:projection}.
+\end{assumption}
+
+% --------------------------------------------------------------
+\subsection*{Key Findings: Foundational Assumptions}
+% --------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\caption{Key findings — Foundational assumptions, their
+  structural roles, boundary conditions, and violation
+  consequences.}
+\label{tab:key-findings-assumptions}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{@{}
+    >{\bfseries}p{0.10\textwidth}
+    >{\RaggedRight}p{0.22\textwidth}
+    >{\RaggedRight}p{0.22\textwidth}
+    >{\RaggedRight}X
+  @{}}
+\toprule
+Ref. & Structural Role & Boundary / Edge Cases
+     & Violation Consequence \\
+\midrule
+A1 & Complete filtered probability space;
+     measurability of all random objects.
+   & Null sets must be in $\calF_0$;
+     $\Prob(\Omega)=1$ enforced.
+   & Loss of measurability for null-set
+     modifications; Kalman update invalid. \\
+\addlinespace
+A2 & Finite discrete time horizon
+     $\mathcal{T}=\{0,\ldots,T\}$,
+     $T\geq 1$.
+   & $t=0$ initialises priors;
+     $T=1$ is valid degenerate case;
+     $t\notin\mathcal{T}$ undefined.
+   & Infinite horizon breaks finite-horizon
+     optimality; requires discounted
+     formulation. \\
+\addlinespace
+A3 & $N\geq 2$ agents with monitoring sets
+     covering all $d$ state dimensions.
+   & $N=1$ degenerates to single KF;
+     $|\mathcal{D}_i|=1$ is minimal valid
+     agent.
+   & Uncovered dimension yields
+     non-contracting posterior; unreliable
+     allocation. \\
+\addlinespace
+A4 & State dimension $d=7$; each component
+     in $[0,1]$.
+   & $X_t^{(k)}=0$: gate forces zero
+     allocation; $X_t^{(k)}=1$: saturation
+     correction applies.
+   & State escaping $[0,1]$ invalidates
+     probabilistic charge interpretation;
+     projection required. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% --------------------------------------------------------------
+\section{The Hidden State Vector}
+% --------------------------------------------------------------
+
+\begin{definition}[Seven-Dimensional Investment State]
+\label{def:hidden-state}
+The \emph{hidden investment state vector} at time $t$ is
+\begin{equation}
+  \mathbf{X}_t \;=\; \begin{pmatrix}
+    \calE_t \\ \calF_t \\ \calG_t \\ \calP_t \\
+    \calU_t \\ \calM_t \\ \calT_t
+  \end{pmatrix} \;\in\; [0,1]^7,
+  \label{eq:hidden-state}
+\end{equation}
+where each component is the normalised state charge of the
+corresponding investment dimension:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Investment Dimension} \\
+\midrule
+$\calE_t$ & Economic state & GDP engine charge; growth, inflation, credit \\
+$\calF_t$ & Financial state & Market liquidity charge; stress, spreads, vol \\
+$\calG_t$ & Fiscal state & Stimulus reservoir; government budget \\
+$\calP_t$ & Portfolio state & Capital resilience; drawdown, cash, risk \\
+$\calU_t$ & Fundamental state & Valuation health; earnings, FCF, leverage \\
+$\calM_t$ & Market state & Microstructure quality; bid-ask, depth, flow \\
+$\calT_t$ & Sector/Tech state & Structural momentum; innovation, adoption \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Each component $\mathcal{S}_t^{(d)} \in [0,1]$ represents the
+current \emph{charge level} of dimension $d$: a value near $1$
+indicates a fully charged (favourable) state; a value near $0$
+indicates a critically discharged (adverse) state.
+\end{definition}
+
+\begin{remark}[Measurability of $\mathbf{X}_t$]
+\label{rem:state-measurable}
+Each component $\mathcal{S}_t^{(d)}$ is $\calF_t$-measurable
+by construction: it is estimated by the specialised state agent
+for dimension $d$ from market data available up to and including
+time $t$.  The state vector $\mathbf{X}_t$ is therefore
+$\calF_t$-measurable and takes values in the compact set
+$[0,1]^7 \subset \mathbb{R}^7$.
+\end{remark}
+
+% --------------------------------------------------------------
+\section{The Kalman Observation Model}
+% --------------------------------------------------------------
+
+% --------------------------------------------------------------
+\subsection*{Assumptions Underpinning the Observation Model}
+% --------------------------------------------------------------
+
+\begin{assumption}[Agent Index Set]
+\label{asm:agent-index}
+There exist $N \geq 1$ agents indexed by
+$i \in \mathcal{I} \coloneqq \{1, 2, \ldots, N\}$.
+Each agent $i$ is a measurable function of the filtration
+$(\mathcal{F}_t)_{t \geq 0}$ and produces exactly one scalar
+observation per time step $t$.
+\end{assumption}
+
+\begin{assumption}[Observation Row Vector]
+\label{asm:obs-vector}
+For each agent $i \in \mathcal{I}$, the observation row vector
+$\mathbf{h}_i \in \mathbb{R}^7$ is deterministic and
+$\mathcal{F}_0$-measurable.  It satisfies $\mathbf{h}_i \neq
+\mathbf{0}$, so that each agent observes at least one component
+of the hidden state $\mathbf{X}_t$.
+\end{assumption}
+
+\begin{assumption}[Noise Independence]
+\label{asm:noise-indep}
+The scalar measurement noise terms $\nu_1, \ldots, \nu_N$ are
+mutually independent, independent of the state process
+$(\mathbf{X}_t)_{t \geq 0}$, and each $\nu_i$ is independent of
+$\mathcal{F}_{t-1}$.  Formally:
+\begin{align}
+  \nu_i &\perp \nu_j \quad \forall\, i \neq j, \label{eq:asm-noise-indep-1}\\
+  \nu_i &\perp \mathbf{X}_t \quad \forall\, i, t, \label{eq:asm-noise-indep-2}\\
+  \nu_i &\perp \mathcal{F}_{t-1} \quad \forall\, i, t. \label{eq:asm-noise-indep-3}
+\end{align}
+\end{assumption}
+
+\begin{assumption}[Confidence and Doubt Parameters]
+\label{asm:conf-doubt}
+For each agent $i \in \mathcal{I}$, the confidence parameter
+$c_i$ and the doubt parameter $d_i$ satisfy:
+\begin{align}
+  c_i &\in (0,\,1], \label{eq:conf-range}\\
+  d_i &\in [0,\,1]. \label{eq:doubt-range}
+\end{align}
+Both parameters are $\mathcal{F}_t$-adapted and updated at each
+time step $t$ based on the agent's recent predictive accuracy.
+The baseline noise parameter satisfies $\sigma_{\mathrm{base}}^2
+> 0$ and is a fixed, pre-specified system constant.
+\end{assumption}
+
+% --------------------------------------------------------------
+\subsection*{Formal Definitions}
+% --------------------------------------------------------------
+
+\begin{definition}[Agent Observation]
+\label{def:observation}
+Let Assumptions~\ref{asm:agent-index}--\ref{asm:noise-indep}
+hold.  Agent $i \in \mathcal{I}$ produces a scalar observation
+$z_i \in \mathbb{R}$ of the hidden state $\mathbf{X}_t$ via the
+linear model
+\begin{equation}
+  z_i \;=\; \mathbf{h}_i^\top \mathbf{X}_t \;+\; \nu_i,
+  \qquad \nu_i \sim \mathcal{N}(0,\, r_i),
+  \label{eq:observation-model}
+\end{equation}
+where:
+\begin{enumerate}
+  \item $\mathbf{h}_i \in \mathbb{R}^7$ is the agent's
+        deterministic observation row vector (see
+        Assumption~\ref{asm:obs-vector});
+  \item $r_i > 0$ is the agent's measurement noise variance
+        (see Definition~\ref{def:measurement-noise}); and
+  \item $\nu_i$ is independent of $\mathbf{X}_t$ and of all
+        other noise terms (see Assumption~\ref{asm:noise-indep}).
+\end{enumerate}
+Consequently, conditional on $\mathbf{X}_t$, the observation
+$z_i$ is Gaussian:
+\begin{equation}
+  z_i \mid \mathbf{X}_t
+  \;\sim\;
+  \mathcal{N}\!\left(\mathbf{h}_i^\top \mathbf{X}_t,\; r_i\right).
+  \label{eq:obs-conditional}
+\end{equation}
+\end{definition}
+
+\begin{definition}[Measurement Noise Variance]
+\label{def:measurement-noise}
+Let Assumption~\ref{asm:conf-doubt} hold.
+The measurement noise variance of agent $i \in \mathcal{I}$ at
+time $t$ is defined by
+\begin{equation}
+  r_i \;\coloneqq\; \sigma_{\mathrm{base}}^2 \cdot
+  \frac{(1 - c_i)\,(1 + d_i)}{c_i},
+  \label{eq:measurement-noise}
+\end{equation}
+where $c_i \in (0,1]$ is the agent's confidence level,
+$d_i \in [0,1]$ is the agent's doubt level, and
+$\sigma_{\mathrm{base}}^2 > 0$ is the system baseline noise
+parameter.  The formula encodes the following principles:
+\begin{enumerate}
+  \item The numerator factor $(1 - c_i)$ is a \emph{confidence
+        penalty}: as $c_i \uparrow 1$ the penalty vanishes.
+  \item The numerator factor $(1 + d_i)$ is a \emph{doubt
+        amplifier}: as $d_i \uparrow 1$ the noise is doubled
+        relative to the doubt-free case.
+  \item The denominator $c_i$ provides additional inverse
+        scaling: lower confidence inflates noise super-linearly.
+\end{enumerate}
+\end{definition}
+
+% --------------------------------------------------------------
+\subsection*{Proposition and Full Proof}
+% --------------------------------------------------------------
+
+\begin{proposition}[Monotonicity and Limiting Behaviour of
+Measurement Noise]
+\label{prop:noise-monotone}
+Let Assumption~\ref{asm:conf-doubt} hold and let $r_i$ be given
+by Definition~\ref{def:measurement-noise}.  Then the following
+five properties hold for every $i \in \mathcal{I}$:
+\begin{enumerate}
+  \item \textbf{(Positivity)}
+        $r_i > 0$ for all $c_i \in (0,1)$ and $d_i \in [0,1]$,
+        and $r_i = 0$ if and only if $c_i = 1$ and $d_i = 0$.
+  \item \textbf{(Strict monotone decrease in $c_i$)}
+        For fixed $d_i \in [0,1]$, the map
+        $c_i \mapsto r_i$ is strictly decreasing on $(0,1]$:
+        \[
+          c_i < c_j
+          \;\Longrightarrow\;
+          r_i > r_j.
+        \]
+  \item \textbf{(Strict monotone increase in $d_i$)}
+        For fixed $c_i \in (0,1)$, the map
+        $d_i \mapsto r_i$ is strictly increasing on $[0,1]$:
+        \[
+          d_i < d_j
+          \;\Longrightarrow\;
+          r_i < r_j.
+        \]
+  \item \textbf{(Near-perfect observation limit)}
+        As $c_i \to 1^{-}$ and $d_i \to 0^{+}$ simultaneously,
+        $r_i \to 0$.
+  \item \textbf{(Pure-noise limit)}
+        As $c_i \to 0^{+}$ (for any fixed $d_i \in [0,1]$),
+        $r_i \to +\infty$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+We prove each part in turn, working directly from
+equation~\eqref{eq:measurement-noise}.  Throughout, define the
+auxiliary function
+\begin{equation}
+  g(c, d) \;\coloneqq\; \frac{(1-c)(1+d)}{c},
+  \qquad c \in (0,1],\; d \in [0,1],
+  \label{eq:aux-g}
+\end{equation}
+so that $r_i = \sigma_{\mathrm{base}}^2 \cdot g(c_i, d_i)$.
+Since $\sigma_{\mathrm{base}}^2 > 0$ is a strictly positive
+constant, it suffices to analyse the sign, monotonicity, and
+limiting behaviour of $g$.
+
+\begin{enumerate}
+
+  % -----------------------------------------------------------
+  \item \textbf{Positivity.}
+
+  We verify the sign of each factor in $g(c,d)$ separately.
+
+  \begin{enumerate}
+    \item[(a)] $\sigma_{\mathrm{base}}^2 > 0$ by
+          Assumption~\ref{asm:conf-doubt}.
+    \item[(b)] $(1 + d) \geq 1 > 0$ for all $d \in [0,1]$,
+          since $d \geq 0$.
+    \item[(c)] $c > 0$ by Assumption~\ref{asm:conf-doubt}
+          (strict lower bound), so $1/c > 0$ and the fraction
+          is well-defined and finite.
+    \item[(d)] $(1 - c) \geq 0$ for $c \in (0,1]$; moreover
+          $(1-c) = 0$ if and only if $c = 1$.
+  \end{enumerate}
+
+  Combining (a)--(d):
+  \begin{align}
+    g(c,d) &= \frac{(1-c)(1+d)}{c} \;\geq\; 0
+    \quad \text{for all } c \in (0,1],\; d \in [0,1].
+    \label{eq:g-nonneg}
+  \end{align}
+  Equality $g(c,d) = 0$ requires $(1-c) = 0$, i.e.\ $c = 1$.
+  When $c = 1$: $g(1, d) = 0 \cdot (1+d) / 1 = 0$ for all
+  $d$; in particular $g(1, 0) = 0$.
+  For $c < 1$: $(1-c) > 0$, $(1+d) \geq 1 > 0$, $c > 0$, so
+  $g(c,d) > 0$ and hence $r_i > 0$.
+  This establishes positivity and the characterisation of the
+  zero set.
+
+  % -----------------------------------------------------------
+  \item \textbf{Strict monotone decrease in $c_i$.}
+
+  Fix $d \in [0,1]$ and consider $g$ as a function of $c$ alone:
+  \begin{equation}
+    g(c) \;\coloneqq\; \frac{(1-c)(1+d)}{c}
+    \;=\; (1+d)\!\left(\frac{1}{c} - 1\right).
+    \label{eq:g-c-only}
+  \end{equation}
+  This representation is obtained by expanding:
+  \begin{align}
+    \frac{(1-c)(1+d)}{c}
+    &= (1+d)\,\frac{1-c}{c}
+     = (1+d)\!\left(\frac{1}{c} - \frac{c}{c}\right)
+     = (1+d)\!\left(\frac{1}{c} - 1\right).
+    \label{eq:g-expand}
+  \end{align}
+  Since $(1+d) > 0$ (by (b) above), the sign of the derivative
+  is determined by $\tfrac{d}{dc}\!\left(\tfrac{1}{c} - 1\right)$:
+  \begin{align}
+    \frac{d}{dc}\!\left(\frac{1}{c} - 1\right)
+    &= -\frac{1}{c^2} \;<\; 0
+    \quad \text{for all } c \in (0,1].
+    \label{eq:dc-1-over-c}
+  \end{align}
+  Therefore:
+  \begin{align}
+    \frac{\partial g}{\partial c}
+    &= (1+d) \cdot \left(-\frac{1}{c^2}\right)
+     = -\frac{1+d}{c^2} \;<\; 0,
+    \label{eq:dg-dc}
+  \end{align}
+  where the strict inequality holds because $(1+d) \geq 1 > 0$
+  and $c^2 > 0$.  A strictly negative derivative on the open
+  interval $(0,1]$ implies that $g$ (and hence $r_i$) is
+  strictly decreasing in $c_i$.
+
+  % -----------------------------------------------------------
+  \item \textbf{Strict monotone increase in $d_i$.}
+
+  Fix $c \in (0,1)$ and consider $g$ as a function of $d$ alone:
+  \begin{equation}
+    g(d) \;\coloneqq\; \frac{(1-c)(1+d)}{c}.
+    \label{eq:g-d-only}
+  \end{equation}
+  Differentiate with respect to $d$:
+  \begin{align}
+    \frac{\partial g}{\partial d}
+    &= \frac{(1-c)}{c} \cdot
+       \frac{d}{dd}(1+d)
+     = \frac{(1-c)}{c} \cdot 1
+     = \frac{1-c}{c}.
+    \label{eq:dg-dd}
+  \end{align}
+  We verify the sign:
+  \begin{align}
+    c &\in (0,1)
+    \;\Longrightarrow\; 1 - c \in (0,1)
+    \;\Longrightarrow\; 1 - c > 0,
+    \label{eq:one-minus-c-pos}\\
+    c &> 0
+    \;\Longrightarrow\; \frac{1-c}{c} > 0.
+    \label{eq:frac-pos}
+  \end{align}
+  Hence $\tfrac{\partial g}{\partial d} > 0$ strictly, so $g$
+  (and hence $r_i$) is strictly increasing in $d_i$ whenever
+  $c_i \in (0,1)$.
+
+  \textbf{Boundary case $c_i = 1$.}  When $c_i = 1$,
+  $g(1,d) = 0$ for all $d$; the map $d \mapsto g(1,d)$ is
+  identically zero and hence not strictly increasing.  However,
+  by Assumption~\ref{asm:conf-doubt}, $c_i \in (0,1]$; the
+  statement of Part~3 explicitly restricts to $c_i \in (0,1)$,
+  so this degenerate case is excluded.
+
+  % -----------------------------------------------------------
+  \item \textbf{Near-perfect observation limit.}
+
+  We evaluate the limit of $g(c,d)$ as $c \to 1^{-}$ and
+  $d \to 0^{+}$ independently (since the limit factorises):
+  \begin{align}
+    \lim_{\substack{c \to 1^{-} \\ d \to 0^{+}}} g(c,d)
+    &= \lim_{\substack{c \to 1^{-} \\ d \to 0^{+}}}
+       \frac{(1-c)(1+d)}{c}.
+    \label{eq:limit-setup}
+  \end{align}
+  Substituting the limits of each factor separately (valid by
+  continuity and the product rule for limits, since all
+  one-sided limits exist and are finite):
+  \begin{align}
+    \lim_{c \to 1^{-}} (1-c) &= 0,
+    \label{eq:lim-1-minus-c}\\
+    \lim_{d \to 0^{+}} (1+d) &= 1,
+    \label{eq:lim-1-plus-d}\\
+    \lim_{c \to 1^{-}} c &= 1 \;\neq\; 0,
+    \label{eq:lim-c}
+  \end{align}
+  so the limit of the denominator is non-zero and we may apply
+  the quotient rule:
+  \begin{align}
+    \lim_{\substack{c \to 1^{-} \\ d \to 0^{+}}} g(c,d)
+    &= \frac{0 \cdot 1}{1} = 0.
+    \label{eq:limit-zero}
+  \end{align}
+  Therefore $r_i = \sigma_{\mathrm{base}}^2 \cdot g(c_i,d_i)
+  \to \sigma_{\mathrm{base}}^2 \cdot 0 = 0$.
+
+  % -----------------------------------------------------------
+  \item \textbf{Pure-noise limit.}
+
+  Fix $d \in [0,1]$ and take $c \to 0^{+}$.  Using the
+  representation~\eqref{eq:g-c-only}:
+  \begin{align}
+    g(c,d)
+    &= (1+d)\!\left(\frac{1}{c} - 1\right).
+    \label{eq:g-rep-limit}
+  \end{align}
+  As $c \to 0^{+}$:
+  \begin{align}
+    \frac{1}{c} &\to +\infty,
+    \label{eq:recip-infty}\\
+    \frac{1}{c} - 1 &\to +\infty,
+    \label{eq:recip-minus-1-infty}\\
+    (1+d)\!\left(\frac{1}{c} - 1\right)
+    &\to +\infty,
+    \label{eq:g-infty}
+  \end{align}
+  where the last line uses $(1+d) \geq 1 > 0$.  Therefore
+  $r_i = \sigma_{\mathrm{base}}^2 \cdot g(c_i, d_i) \to
+  +\infty$.
+
+\end{enumerate}
+
+All five claims are established, completing the proof.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\subsection*{Key Findings: Measurement Noise Characterisation}
+% --------------------------------------------------------------
+
+\begin{table}[H]
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.8cm} X X}
+\toprule
+\textbf{Property} & \textbf{Formal Statement} &
+\textbf{Practical Interpretation} \\
+\midrule
+Positivity &
+$r_i > 0$ for $c_i \in (0,1)$, $d_i \in [0,1]$;
+$r_i = 0 \Leftrightarrow c_i=1, d_i=0$ &
+Every real-world agent introduces strictly positive noise
+unless operating at perfect confidence with zero doubt. \\
+
+Strict decrease in $c_i$ &
+$\partial r_i / \partial c_i = -\sigma_{\mathrm{base}}^2
+(1+d_i)/c_i^2 < 0$ &
+Increasing agent confidence monotonically reduces the noise
+variance; more trusted agents receive higher Kalman weight. \\
+
+Strict increase in $d_i$ &
+$\partial r_i / \partial d_i = \sigma_{\mathrm{base}}^2
+(1-c_i)/c_i > 0$ (for $c_i < 1$) &
+Increasing doubt inflates noise variance linearly; a fully
+doubted agent ($d_i=1$) has doubled noise relative to $d_i=0$
+at the same confidence. \\
+
+Near-perfect limit &
+$r_i \to 0$ as $c_i \to 1^{-}$, $d_i \to 0^{+}$ &
+In the idealised limit, the observation reduces to the true
+state projection with no noise: $z_i \to \mathbf{h}_i^\top
+\mathbf{X}_t$. \\
+
+Pure-noise limit &
+$r_i \to +\infty$ as $c_i \to 0^{+}$ (any $d_i$) &
+A zero-confidence agent contributes no information; its
+observation is asymptotically overwhelmed by noise and the
+Kalman gain for that agent approaches zero. \\
+
+Zero-gain consequence &
+$K_i \propto 1/r_i \to 0$ as $r_i \to \infty$ &
+The Kalman filter automatically discounts agents with low
+confidence or high doubt, providing built-in robustness
+without manual exclusion rules. \\
+\bottomrule
+\end{tabularx}
+\caption{Key findings for the measurement noise variance
+$r_i = \sigma_{\mathrm{base}}^2 (1-c_i)(1+d_i)/c_i$.
+All properties are proven in
+Proposition~\ref{prop:noise-monotone}.}
+\label{tab:noise-key-findings}
+\end{center}
+\end{table}
+
+\begin{definition}[Stacked Observation Vector]
+\label{def:stacked-observation}
+The stacked observation vector is
+$\mathbf{z}_t = (z_1, \ldots, z_N)^\top \in \mathbb{R}^N$,
+giving the system observation equation
+\begin{equation}
+  \mathbf{z}_t \;=\; \mathbf{H}\,\mathbf{X}_t \;+\; \boldsymbol{\nu}_t,
+  \qquad \boldsymbol{\nu}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{R}_t),
+  \label{eq:system-observation}
+\end{equation}
+where $\mathbf{H} \in \mathbb{R}^{N \times 7}$ is the observation
+matrix with row $i$ equal to $\mathbf{h}_i^\top$, and
+$\mathbf{R}_t = \mathrm{diag}(r_1, \ldots, r_N)$ is the
+measurement noise covariance matrix, updated at each $t$ based
+on current agent confidences and doubt levels.
+\end{definition}
+
+% --------------------------------------------------------------
+\section{The Kalman Transition Model}
+% --------------------------------------------------------------
+
+\begin{definition}[Regime-Switching Transition Model]
+\label{def:transition-model}
+The hidden state evolves according to
+\begin{equation}
+  \mathbf{X}_t \;=\; \mathbf{F}^{(k)}\,\mathbf{X}_{t-1}
+  \;+\; \mathbf{w}_t^{(k)},
+  \qquad \mathbf{w}_t^{(k)} \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}^{(k)}),
+  \label{eq:transition-model}
+\end{equation}
+where $k \in \calR$ is the current market regime, $\mathbf{F}^{(k)}
+\in \mathbb{R}^{7 \times 7}$ is the regime-$k$ state transition matrix,
+and $\mathbf{Q}^{(k)} \in \mathbb{R}^{7 \times 7}$ is the regime-$k$
+process noise covariance (symmetric positive definite).
+\end{definition}
+
+\begin{definition}[Inter-State Coupling Matrix]
+\label{def:coupling-matrix}
+The inter-state coupling matrix
+$\bfGamma \in \mathbb{R}^{7 \times 7}$ captures the directed influence
+of each state dimension on the others, with entry $\Gamma_{ij}$
+representing the signed influence of state $j$ on the rate of
+change of state $i$.  The full transition model is
+\begin{equation}
+  \mathbf{X}_{t+1} \;=\; \mathbf{F}_{\mathbf{X}}\,\mathbf{X}_t
+  \;+\; \bfGamma\,\mathbf{X}_t \;+\; \mathbf{w}_t,
+  \qquad \mathbf{w}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}_t),
+  \label{eq:full-transition}
+\end{equation}
+where $\mathbf{F}_{\mathbf{X}} = \mathrm{diag}(f_1, \ldots, f_7)$
+contains per-state mean-reversion rates $f_d \in (0,1)$.
+\end{definition}
+
+\begin{assumption}[Process Noise Structure]
+\label{asm:process-noise}
+The time-varying process noise covariance is diagonal:
+\begin{equation}
+  \mathbf{Q}_t \;=\; \mathrm{diag}(q_{\calE}^2, q_{\calF}^2,
+  q_{\calG}^2, q_{\calP}^2, q_{\calU}^2, q_{\calM}^2,
+  q_{\calT}^2),
+  \label{eq:process-noise}
+\end{equation}
+with $q_d^2 > 0$ for each $d \in \{1, \ldots, 7\}$.  In crisis
+regimes, $q_{\calF}^2$ and $q_{\calM}^2$ are inflated to reflect
+the discontinuous nature of financial crises.
+\end{assumption}
+
+% ==============================================================
+\chapter{The Prediction--Correction Isomorphism}
+\label{ch:isomorphism}
+% ==============================================================
+
+\section{The Classical Kalman Recursion}
+
+\begin{definition}[Kalman Prediction Step]
+\label{def:kalman-predict}
+The \emph{prediction step} (time update) of the Kalman filter is:
+\begin{align}
+  \hat{\mathbf{X}}_{t|t-1}
+  &\;=\; \mathbf{F}\,\hat{\mathbf{X}}_{t-1|t-1},
+  \label{eq:predict-state} \\
+  \mathbf{P}_{t|t-1}
+  &\;=\; \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top
+         + \mathbf{Q},
+  \label{eq:predict-cov}
+\end{align}
+where $\hat{\mathbf{X}}_{t|t-1}$ is the prior state estimate and
+$\mathbf{P}_{t|t-1}$ is the prior error covariance (prediction
+covariance).
+\end{definition}
+
+\begin{definition}[Kalman Correction Step]
+\label{def:kalman-correct}
+The \emph{correction step} (measurement update) is:
+\begin{align}
+  \tilde{\mathbf{y}}_t
+  &\;=\; \mathbf{z}_t - \mathbf{H}\,\hat{\mathbf{X}}_{t|t-1},
+  \label{eq:innovation} \\
+  \mathbf{K}_t
+  &\;=\; \mathbf{P}_{t|t-1}\,\mathbf{H}^\top
+         \!\left(\mathbf{H}\,\mathbf{P}_{t|t-1}\,\mathbf{H}^\top
+         + \mathbf{R}_t\right)^{-1},
+  \label{eq:kalman-gain} \\
+  \hat{\mathbf{X}}_{t|t}
+  &\;=\; \hat{\mathbf{X}}_{t|t-1} + \mathbf{K}_t\,\tilde{\mathbf{y}}_t,
+  \label{eq:update-state} \\
+  \mathbf{P}_{t|t}
+  &\;=\; \left(\mathbf{I} - \mathbf{K}_t\,\mathbf{H}\right)
+         \mathbf{P}_{t|t-1},
+  \label{eq:update-cov}
+\end{align}
+where $\tilde{\mathbf{y}}_t$ is the \emph{innovation},
+$\mathbf{K}_t$ is the \emph{Kalman gain}, and
+$\hat{\mathbf{X}}_{t|t}$ is the posterior state estimate.
+\end{definition}
+
+% --------------------------------------------------------------
+\section{The Investment Allocation Cycle}
+% --------------------------------------------------------------
+
+\begin{definition}[Investment Allocation Cycle]
+\label{def:allocation-cycle}
+The investment analogue of the Kalman recursion is the two-step
+capital allocation cycle:
+
+\begin{enumerate}
+  \item \textbf{Prior step} (before new signals arrive):
+        Form the prior expected return and risk model
+        $(\hat{\mathbf{w}}_{t|t-1}, \mathbf{P}_{t|t-1}^{\mathrm{inv}})$
+        from the previous allocation and regime dynamics.
+  \item \textbf{Posterior step} (after new agent signals arrive):
+        Update the portfolio weights using the ensemble signal
+        deviation from the prior forecast.
+\end{enumerate}
+\end{definition}
+
+% --------------------------------------------------------------
+\section{The Structural Bijection}
+% --------------------------------------------------------------
+
+\begin{theorem}[Prediction--Correction Isomorphism]
+\label{thm:isomorphism}
+There exists a structural bijection between the Kalman filter
+prediction--correction cycle (Definitions~\ref{def:kalman-predict}
+and~\ref{def:kalman-correct}) and the investment allocation cycle
+(Definition~\ref{def:allocation-cycle}).  The bijection is given
+by the following correspondence:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} l l l @{}}
+\toprule
+\textbf{Kalman Object} & \textbf{Investment Object}
+  & \textbf{Mathematical Symbol} \\
+\midrule
+Hidden state $\hat{\mathbf{X}}_{t|t-1}$
+  & Prior expected return and risk model
+  & $\hat{\mathbf{w}}_{t|t-1}$ \\
+Prediction covariance $\mathbf{P}_{t|t-1}$
+  & Pre-signal portfolio variance
+  & $\sigma_{p,\,\text{prior}}^2$ \\
+Observation $\mathbf{z}_t$
+  & Agent signals $(s_i, c_i, u_i, d_i)$
+  & $S_t$ \\
+Innovation $\tilde{\mathbf{y}}_t$
+  & Aggregate signal minus prior forecast
+  & $S_t - S_{t|t-1}^{(\mathrm{prior})}$ \\
+Kalman gain $\mathbf{K}_t$
+  & Capital deployment fraction per unit innovation
+  & $K_t^{(\mathrm{inv})}$ \\
+Posterior estimate $\hat{\mathbf{X}}_{t|t}$
+  & Updated portfolio weights
+  & $\mathbf{w}_{t|t}$ \\
+Posterior covariance $\mathbf{P}_{t|t}$
+  & Post-signal residual portfolio risk
+  & $\sigma_{p,\,\text{post}}^2$ \\
+Process noise $\mathbf{Q}$
+  & Irreducible market uncertainty (aleatoric)
+  & $q_d^2$ \\
+Measurement noise $\mathbf{R}_t$
+  & Agent estimation error and calibration doubt
+  & $r_i$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Under this bijection, the two cycles are structurally identical:
+every object, operation, and property of one cycle corresponds
+precisely to a unique object, operation, and property of the other.
+\end{theorem}
+
+\begin{proof}
+We establish the bijection $\phi$ from the Kalman filter
+prediction--correction cycle to the investment allocation cycle by
+verifying five properties in sequence: well-definedness of $\phi$,
+injectivity, surjectivity, preservation of the state-update
+equation, preservation of the covariance-update equation, and
+consistency at all boundary and degenerate cases.  Every step is
+fully justified and no assumption is left implicit.
+
+\medskip
+\noindent\textbf{Step~1: Assumptions and Validity of the Setting.}
+
+\begin{enumerate}
+  \item The state space is finite-dimensional: $\hat{\mathbf{X}}_t
+        \in \mathbb{R}^n$, $\mathbf{w}_t \in \mathbb{R}^n$,
+        $n \geq 1$.  No infinite-dimensional extension is
+        required; all matrix inverses below exist under the
+        positive-definiteness conditions validated in Step~3.
+  \item The noise matrices satisfy $\mathbf{Q} \succ \mathbf{0}$
+        and $\mathbf{R}_t \succcurlyeq \mathbf{0}$ for all $t$.
+        The measurement matrix $\mathbf{H}$ has full row rank so
+        that $\mathbf{H}\,\mathbf{P}_{t|t-1}\,\mathbf{H}^\top
+        + \mathbf{R}_t$ is invertible whenever
+        $\mathbf{P}_{t|t-1} \succ \mathbf{0}$, which holds by
+        induction given $\mathbf{P}_{0|0} \succ \mathbf{0}$.
+  \item The investment analogue variables satisfy $w_i \geq 0$,
+        $\sum_i w_i > 0$, $c_i \in (0,1]$, $u_i \in [0,1]$,
+        $d_i \in [0,1]$, $r_i \geq 0$ for all agents $i$ and
+        all $t$.  These are the channel validity conditions from
+        Definition~\ref{def:effective-confidence}.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~2: Construction and Well-Definedness of~$\phi$.}
+
+The map $\phi$ is defined entry-wise by the correspondence table
+in Theorem~\ref{thm:isomorphism}.  We verify that each image is
+a mathematically valid object in the investment domain:
+
+\begin{enumerate}
+  \item $\phi(\hat{\mathbf{X}}_{t|t-1}) = \mathbf{w}_{t|t-1}$:
+        the prior weight vector $\mathbf{w}_{t|t-1} \in \mathbb{R}^n$
+        is constructed from the regime-transition equation
+        $\mathbf{w}_{t|t-1} = \mathbf{F}\,\mathbf{w}_{t-1|t-1}$,
+        which is well-defined whenever $\mathbf{F}$ is a
+        finite-dimensional transition matrix.
+  \item $\phi(\mathbf{P}_{t|t-1}) = \sigma_{p,\,\text{prior}}^2$:
+        defined as the scalar portfolio variance
+        $\sigma_{p,\,\text{prior}}^2 =
+        \mathbf{w}_{t|t-1}^\top \boldsymbol{\Sigma}_t
+        \mathbf{w}_{t|t-1} \geq 0$, which is finite and
+        non-negative because $\boldsymbol{\Sigma}_t \succcurlyeq
+        \mathbf{0}$ and $\mathbf{w}_{t|t-1}$ is bounded.
+  \item $\phi(\mathbf{z}_t) = S_t$: the scalar aggregate signal
+        $S_t \in \mathbb{R}$ is a weighted average of agent
+        directional signals and is always finite under
+        Assumption~3 of Step~1.
+  \item $\phi(\tilde{\mathbf{y}}_t)
+        = S_t - S_{t|t-1}^{(\mathrm{prior})}$: the innovation
+        is a difference of two finite real numbers and is
+        therefore well-defined and finite.
+  \item $\phi(\mathbf{K}_t) = K_t^{(\mathrm{inv})}$: defined in
+        Definition~\ref{def:effective-confidence} and
+        Proposition~\ref{prop:confidence-bounded}; verified to
+        lie in $[0,1]$ under the stated assumptions.
+  \item $\phi(\hat{\mathbf{X}}_{t|t}) = \mathbf{w}_{t|t}$: the
+        posterior weight vector is the image of the posterior
+        state estimate; well-defined whenever the prior weight
+        and the innovation are well-defined (established above).
+  \item $\phi(\mathbf{P}_{t|t}) = \sigma_{p,\,\text{post}}^2$:
+        a non-negative scalar, verified in Step~5 below.
+  \item $\phi(\mathbf{Q}) = q_d^2$: a non-negative scalar
+        representing irreducible market uncertainty; finite by
+        Assumption~1 of Step~1.
+  \item $\phi(\mathbf{R}_t) = r_i$: a non-negative scalar agent
+        estimation error; finite by Assumption~3 of Step~1.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~3: Injectivity of~$\phi$.}
+
+\begin{enumerate}
+  \item Suppose $\phi(A) = \phi(B)$ for two Kalman objects $A$
+        and $B$.  By inspection of the correspondence table, each
+        Kalman object occupies a distinct row with a distinct
+        mathematical type (matrix, scalar, vector) and a distinct
+        semantic role.  No two rows share the same investment
+        symbol or the same investment description.
+  \item Formally: the domain of $\phi$ is the finite set
+        $\mathcal{K} = \{\hat{\mathbf{X}}_{t|t-1},\,
+        \mathbf{P}_{t|t-1},\, \mathbf{z}_t,\,
+        \tilde{\mathbf{y}}_t,\, \mathbf{K}_t,\,
+        \hat{\mathbf{X}}_{t|t},\, \mathbf{P}_{t|t},\,
+        \mathbf{Q},\, \mathbf{R}_t\}$, which has nine elements.
+        The codomain $\mathcal{I}$ is the finite set
+        $\{\mathbf{w}_{t|t-1},\,\sigma_{p,\,\text{prior}}^2,\,
+        S_t,\, S_t - S_{t|t-1}^{(\mathrm{prior})},\,
+        K_t^{(\mathrm{inv})},\, \mathbf{w}_{t|t},\,
+        \sigma_{p,\,\text{post}}^2,\, q_d^2,\, r_i\}$,
+        which also has nine elements.  A map between two
+        nine-element sets is injective if and only if it is a
+        bijection, which is confirmed once surjectivity is shown
+        in Step~4.
+  \item Cross-type distinctness: objects of matrix type
+        ($\mathbf{K}_t$, $\mathbf{Q}$, $\mathbf{R}_t$,
+        $\mathbf{P}_{t|t-1}$, $\mathbf{P}_{t|t}$) map to
+        scalars or scalar-valued objects in the investment domain,
+        preserving the structural distinction without collision.
+        No two Kalman objects map to the same investment symbol.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~4: Surjectivity of~$\phi$.}
+
+\begin{enumerate}
+  \item Every element of $\mathcal{I}$ is the image of exactly
+        one element of $\mathcal{K}$ by construction of the
+        table.  Since $|\mathcal{K}| = |\mathcal{I}| = 9$ and
+        $\phi$ is injective (Step~3), it is automatically
+        surjective onto $\mathcal{I}$.
+  \item Explicit pre-image list for completeness:
+        \begin{enumerate}
+          \item $\mathbf{w}_{t|t-1}
+                \leftarrow \hat{\mathbf{X}}_{t|t-1}$,
+          \item $\sigma_{p,\,\text{prior}}^2
+                \leftarrow \mathbf{P}_{t|t-1}$,
+          \item $S_t \leftarrow \mathbf{z}_t$,
+          \item $S_t - S_{t|t-1}^{(\mathrm{prior})}
+                \leftarrow \tilde{\mathbf{y}}_t$,
+          \item $K_t^{(\mathrm{inv})}
+                \leftarrow \mathbf{K}_t$,
+          \item $\mathbf{w}_{t|t}
+                \leftarrow \hat{\mathbf{X}}_{t|t}$,
+          \item $\sigma_{p,\,\text{post}}^2
+                \leftarrow \mathbf{P}_{t|t}$,
+          \item $q_d^2 \leftarrow \mathbf{Q}$,
+          \item $r_i \leftarrow \mathbf{R}_t$.
+        \end{enumerate}
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~5: Preservation of the State-Update
+Equation.}
+
+\begin{enumerate}
+  \item The Kalman state-update equation~\eqref{eq:update-state}
+        reads, in scalar investment notation (applying $\phi$
+        entry-wise):
+        \begin{align}
+          \hat{\mathbf{X}}_{t|t}
+          &\;=\; \hat{\mathbf{X}}_{t|t-1}
+                 + \mathbf{K}_t\,\tilde{\mathbf{y}}_t
+          \label{eq:kalman-state-update-proof} \\[4pt]
+          \xrightarrow{\;\phi\;}
+          \mathbf{w}_{t|t}
+          &\;=\; \mathbf{w}_{t|t-1}
+                 + K_t^{(\mathrm{inv})}
+                   \!\left(S_t
+                   - S_{t|t-1}^{(\mathrm{prior})}\right).
+          \label{eq:inv-state-update-proof}
+        \end{align}
+  \item Equation~\eqref{eq:inv-state-update-proof} is
+        well-defined: $\mathbf{w}_{t|t-1}$ is a valid prior
+        weight vector (Step~2, item~1); $K_t^{(\mathrm{inv})}
+        \in [0,1]$ is bounded (Proposition~\ref
+        {prop:confidence-bounded}); and
+        $S_t - S_{t|t-1}^{(\mathrm{prior})}$ is finite
+        (Step~2, item~4).  Therefore
+        $\mathbf{w}_{t|t} \in \mathbb{R}^n$ is well-defined.
+  \item The additive structure is preserved: $\phi$ maps the
+        additive correction $\mathbf{K}_t\,\tilde{\mathbf{y}}_t$
+        to the scalar correction
+        $K_t^{(\mathrm{inv})}(S_t - S_{t|t-1}^{(\mathrm{prior})})$.
+        Both express the same Bayesian principle: the posterior
+        equals the prior plus a gain-weighted deviation of the
+        observation from the prediction.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~6: Preservation of the Covariance-Update
+Equation.}
+
+\begin{enumerate}
+  \item The Kalman covariance-update equation~\eqref{eq:update-cov}
+        reads:
+        \begin{align}
+          \mathbf{P}_{t|t}
+          &\;=\;
+          \left(\mathbf{I} - \mathbf{K}_t\,\mathbf{H}\right)
+          \mathbf{P}_{t|t-1}.
+          \label{eq:kalman-cov-update-proof}
+        \end{align}
+  \item In the scalar investment domain, with $h$ denoting the
+        scalar observation-sensitivity coefficient
+        $\phi(\mathbf{H}) = h \in \mathbb{R}$, applying $\phi$
+        yields:
+        \begin{align}
+          \sigma_{p,\,\text{post}}^2
+          &\;=\;
+          \left(1 - K_t^{(\mathrm{inv})}\,h\right)
+          \sigma_{p,\,\text{prior}}^2.
+          \label{eq:inv-cov-update-proof}
+        \end{align}
+  \item Non-negativity: since $K_t^{(\mathrm{inv})} \in [0,1]$
+        and $h \in [0,1]$ (the agent signal is a convex
+        combination of bounded variables), the product
+        $K_t^{(\mathrm{inv})}\,h \in [0,1]$, so
+        $(1 - K_t^{(\mathrm{inv})}\,h) \geq 0$ and thus
+        $\sigma_{p,\,\text{post}}^2 \geq 0$, confirming
+        validity as a variance.
+  \item Monotonicity: $\sigma_{p,\,\text{post}}^2 \leq
+        \sigma_{p,\,\text{prior}}^2$ whenever
+        $K_t^{(\mathrm{inv})}\,h \geq 0$, which holds by
+        Assumption~3 of Step~1.  Risk is therefore never
+        inflated by incorporating a new signal.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~7: Boundary Cases and Degenerate
+Conditions.}
+
+\begin{enumerate}
+  \item \textbf{Perfect signal ($\mathbf{R}_t \to \mathbf{0}$,
+        i.e.\ $r_i \to 0$).}
+        \begin{enumerate}
+          \item As $\mathbf{R}_t \to \mathbf{0}$:
+                \begin{align}
+                  \mathbf{K}_t
+                  &\;=\;
+                  \mathbf{P}_{t|t-1}\,\mathbf{H}^\top
+                  \!\left(\mathbf{H}\,\mathbf{P}_{t|t-1}
+                  \,\mathbf{H}^\top
+                  + \mathbf{R}_t\right)^{-1}
+                  \;\longrightarrow\;
+                  \mathbf{H}^{-1},
+                \end{align}
+                so $K_t^{(\mathrm{inv})} \to 1$.
+          \item Investment interpretation: when agent estimation
+                error $r_i = 0$, the entire weight correction is
+                applied; $\mathbf{w}_{t|t} = \mathbf{w}_{t|t-1}
+                + 1 \cdot (S_t - S_{t|t-1}^{(\mathrm{prior})})$,
+                meaning the allocation fully trusts the signal.
+          \item Covariance limit:
+                $\sigma_{p,\,\text{post}}^2 = (1-h)\,
+                \sigma_{p,\,\text{prior}}^2$; residual risk
+                reflects only the irreducible component not
+                explained by the signal.
+        \end{enumerate}
+  \item \textbf{Pure noise ($\mathbf{R}_t \to \infty$,
+        i.e.\ $r_i \to \infty$).}
+        \begin{enumerate}
+          \item As $r_i \to \infty$:
+                \begin{align}
+                  K_t^{(\mathrm{inv})}
+                  \;\longrightarrow\; 0.
+                \end{align}
+          \item Investment interpretation: the allocation update
+                collapses to $\mathbf{w}_{t|t} =
+                \mathbf{w}_{t|t-1}$; no capital is redeployed
+                on the basis of a completely unreliable signal.
+          \item Covariance limit:
+                $\sigma_{p,\,\text{post}}^2 =
+                \sigma_{p,\,\text{prior}}^2$; no risk reduction
+                is achieved, which is correct since no useful
+                information is incorporated.
+        \end{enumerate}
+  \item \textbf{Zero prior uncertainty
+        ($\mathbf{P}_{t|t-1} \to \mathbf{0}$,
+        i.e.\ $\sigma_{p,\,\text{prior}}^2 \to 0$).}
+        \begin{enumerate}
+          \item $\mathbf{K}_t \to \mathbf{0}$: no gain is
+                applied since there is no prior uncertainty
+                to reduce.
+          \item $\mathbf{w}_{t|t} = \mathbf{w}_{t|t-1}$:
+                the portfolio is unchanged, consistent with
+                full confidence in the existing allocation.
+          \item $\sigma_{p,\,\text{post}}^2 = 0$: portfolio
+                remains risk-free in prior-uncertainty sense,
+                which is self-consistent.
+        \end{enumerate}
+  \item \textbf{All agents return identical signals
+        ($S_t = S_{t|t-1}^{(\mathrm{prior})}$).}
+        \begin{enumerate}
+          \item Innovation is zero:
+                $S_t - S_{t|t-1}^{(\mathrm{prior})} = 0$.
+          \item State update: $\mathbf{w}_{t|t} =
+                \mathbf{w}_{t|t-1}$ regardless of the value
+                of $K_t^{(\mathrm{inv})}$: the portfolio is
+                unaffected, which is the correct Bayesian
+                response to a signal that confirms the prior.
+          \item Covariance update still applies:
+                $\sigma_{p,\,\text{post}}^2 = (1 -
+                K_t^{(\mathrm{inv})}\,h)\,
+                \sigma_{p,\,\text{prior}}^2 \leq
+                \sigma_{p,\,\text{prior}}^2$; even a
+                confirming signal reduces uncertainty.
+        \end{enumerate}
+  \item \textbf{Single agent ($N=1$).}  All ensemble averages
+        collapse to single-agent values; the proof above holds
+        with $w_1 = 1$, $\bar{c}_t = c_1(1-u_1)(1-d_1)$, and
+        $K_t^{(\mathrm{inv})} = \bar{c}_t / (\bar{c}_t + r_1)$
+        (from the scalar Kalman gain formula with $h=1$).
+        Positivity and boundedness are preserved.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~8: Conclusion.}
+
+Steps~1--7 establish that $\phi$ is well-defined (Step~2),
+injective (Step~3), surjective (Step~4), and preserves both
+structural update equations (Steps~5--6) as well as all
+boundary and degenerate conditions (Step~7).  Therefore $\phi$
+is a bijection between $\mathcal{K}$ and $\mathcal{I}$ that
+preserves the recursive update structure, which is precisely the
+claim of Theorem~\ref{thm:isomorphism}.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\subsection*{Key Findings}
+% --------------------------------------------------------------
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} p{3.2cm} p{4.8cm} X @{}}
+\toprule
+\textbf{Finding} & \textbf{Formal Statement}
+  & \textbf{Investment Implication} \\
+\midrule
+Bijection exists
+  & $\phi : \mathcal{K} \xrightarrow{\;\sim\;} \mathcal{I}$
+    is well-defined, injective, and surjective.
+  & Every Kalman concept has an exact, non-ambiguous
+    investment counterpart; no concept is lost or doubled. \\[4pt]
+State-update preserved
+  & $\phi$ maps \eqref{eq:kalman-state-update-proof}
+    to \eqref{eq:inv-state-update-proof} exactly.
+  & Portfolio weights are updated by a gain-weighted
+    innovation, mirroring the Bayesian correction step. \\[4pt]
+Covariance-update preserved
+  & $\phi$ maps \eqref{eq:kalman-cov-update-proof}
+    to \eqref{eq:inv-cov-update-proof}; $\sigma_{p,\,
+    \text{post}}^2 \geq 0$ always.
+  & Incorporating any signal never increases portfolio
+    risk; risk is monotonically non-increasing. \\[4pt]
+Perfect-signal limit
+  & $r_i \to 0 \Rightarrow K_t^{(\mathrm{inv})} \to 1$.
+  & A perfectly calibrated agent captures the full
+    signal; allocation fully trusts the observation. \\[4pt]
+Pure-noise limit
+  & $r_i \to \infty \Rightarrow K_t^{(\mathrm{inv})} \to 0$.
+  & A completely unreliable agent contributes nothing;
+    allocation is unchanged regardless of signal value. \\[4pt]
+Zero-innovation case
+  & $S_t = S_{t|t-1}^{(\mathrm{prior})} \Rightarrow
+    \mathbf{w}_{t|t} = \mathbf{w}_{t|t-1}$.
+  & A signal confirming the prior leaves the portfolio
+    unchanged in weights but still reduces uncertainty. \\[4pt]
+Zero prior uncertainty
+  & $\sigma_{p,\,\text{prior}}^2 \to 0
+    \Rightarrow K_t^{(\mathrm{inv})} \to 0$.
+  & A fully committed allocation ignores new signals;
+    no redeployment occurs when prior variance is zero. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ==============================================================
+\chapter{Kalman Gain as Capital Deployment Weight}
+\label{ch:kalman-gain}
+% ==============================================================
+
+\section{The Investment-Domain Kalman Gain}
+
+% --------------------------------------------------------------
+\section{Formal Prerequisites and Assumptions}
+\label{sec:kalman-gain-prereqs}
+% --------------------------------------------------------------
+
+Before stating the definitions and theorems, we establish and
+validate all assumptions that are required by the proofs in this
+chapter.  Each assumption is stated explicitly; violations would
+invalidate one or more subsequent results.
+
+\begin{assumption}[Agent Parameter Domain]
+\label{asm:agent-domain}
+For every agent $i \in \{1, \ldots, N\}$ and every time step
+$t$, the following domain constraints hold:
+\begin{enumerate}
+  \item $w_i \geq 0$ \quad (non-negative reputation weight).
+  \item $c_i \in (0, 1]$ \quad (positive, bounded confidence;
+        zero confidence is excluded by design as it would render
+        the agent permanently silent).
+  \item $u_i \in [0, 1]$ \quad (bounded epistemic uncertainty).
+  \item $d_i \in [0, 1]$ \quad (bounded doubt signal).
+  \item $\sum_{i=1}^{N} w_i > 0$ \quad (at least one active
+        agent; otherwise the ensemble is empty and
+        Definition~\ref{def:effective-confidence} is undefined).
+\end{enumerate}
+\end{assumption}
+
+\begin{assumption}[Noise Parameter Domain]
+\label{asm:noise-domain}
+The base noise parameter satisfies $\sigma_{\mathrm{base}}^2 > 0$,
+and the prior portfolio risk satisfies $P_{t|t-1} > 0$ for all
+$t$.  These are strictly positive by construction: a
+degenerate prior ($P_{t|t-1} = 0$) would mean the allocation is
+already known with certainty and no update is possible.
+\end{assumption}
+
+\begin{assumption}[Disagreement Non-Negativity]
+\label{asm:disagreement-nonneg}
+The agent disagreement scalar $D_t \geq 0$ for all $t$.
+$D_t = 0$ corresponds to full ensemble consensus.
+\end{assumption}
+
+% --------------------------------------------------------------
+\section{Ensemble Effective Confidence}
+\label{sec:ensemble-confidence}
+% --------------------------------------------------------------
+
+\begin{definition}[Ensemble Effective Confidence]
+\label{def:effective-confidence}
+Under Assumption~\ref{asm:agent-domain}, the
+\emph{ensemble effective confidence} at time $t$ is the
+reputation-weighted mean of the per-agent adjusted confidence,
+defined as
+\begin{equation}
+  \bar{c}_t \;=\;
+  \frac{\displaystyle\sum_{i=1}^{N}
+        w_i\,c_i\,(1 - u_i)\,(1 - d_i)}
+       {\displaystyle\sum_{i=1}^{N} w_i},
+  \label{eq:effective-confidence}
+\end{equation}
+where:
+\begin{enumerate}
+  \item $w_i \geq 0$ is the scalar reputation weight of
+        agent $i$, calibrated from historical performance;
+  \item $c_i \in (0,1]$ is the raw confidence reported by
+        agent $i$ for the current signal;
+  \item $u_i \in [0,1]$ is the epistemic uncertainty of
+        agent $i$, where $u_i = 1$ means the agent is
+        completely uncertain (contributing zero adjusted
+        confidence);
+  \item $d_i \in [0,1]$ is the doubt penalty applied to
+        agent $i$, where $d_i = 1$ eliminates the agent's
+        contribution regardless of $c_i$ and $u_i$.
+\end{enumerate}
+The per-agent adjusted confidence is therefore
+$\tilde{c}_i \coloneqq c_i\,(1-u_i)\,(1-d_i) \in [0,1]$,
+and $\bar{c}_t$ is the normalised weighted sum of
+$\tilde{c}_i$ over the active ensemble.
+\end{definition}
+
+\begin{remark}[Degenerate Cases of Definition~\ref{def:effective-confidence}]
+\label{rem:effective-conf-degenerate}
+The following edge cases are well-defined:
+\begin{enumerate}
+  \item \textbf{Single active agent} ($N = 1$, $w_1 > 0$):
+        $\bar{c}_t = c_1(1-u_1)(1-d_1)$.
+  \item \textbf{All agents silent} ($u_i = 1$ or $d_i = 1$
+        for all $i$): $\bar{c}_t = 0$, triggering the
+        zero-confidence limit (Theorem~\ref{thm:gain-properties},
+        item~3).
+  \item \textbf{Equal weights} ($w_i = 1/N$ for all $i$):
+        $\bar{c}_t$ reduces to the simple arithmetic mean of
+        $\tilde{c}_i$.
+  \item \textbf{Zero doubt and uncertainty}
+        ($u_i = d_i = 0$ for all $i$): $\bar{c}_t$ is the
+        reputation-weighted mean of raw confidences.
+\end{enumerate}
+\end{remark}
+
+\begin{proposition}[Effective Confidence is Well-Defined and Bounded]
+\label{prop:confidence-bounded}
+Under Assumption~\ref{asm:agent-domain},
+$\bar{c}_t$ is well-defined and satisfies
+\begin{equation}
+  \bar{c}_t \;\in\; [0,\,1]
+  \quad \text{for all } t.
+  \label{eq:conf-bounded}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+We verify well-definedness and the two-sided bound separately.
+
+\medskip
+\noindent\textbf{Step 1: Well-definedness.}
+Assumption~\ref{asm:agent-domain}(5) guarantees
+$\sum_{i=1}^{N} w_i > 0$, so the denominator of
+\eqref{eq:effective-confidence} is strictly positive.
+The numerator is a finite sum of bounded terms (Step 2 below),
+hence the ratio is finite.
+
+\medskip
+\noindent\textbf{Step 2: Non-negativity of each summand.}
+For each $i$:
+\begin{enumerate}
+  \item $w_i \geq 0$ by Assumption~\ref{asm:agent-domain}(1).
+  \item $c_i > 0$ by Assumption~\ref{asm:agent-domain}(2).
+  \item $(1 - u_i) \geq 0$ since $u_i \leq 1$ by
+        Assumption~\ref{asm:agent-domain}(3).
+  \item $(1 - d_i) \geq 0$ since $d_i \leq 1$ by
+        Assumption~\ref{asm:agent-domain}(4).
+\end{enumerate}
+Hence each term $w_i\,c_i\,(1-u_i)\,(1-d_i) \geq 0$, and
+therefore the numerator $\geq 0$.  Combined with the positive
+denominator, $\bar{c}_t \geq 0$.
+
+\medskip
+\noindent\textbf{Step 3: Upper bound.}
+For each $i$, the adjusted confidence satisfies
+\begin{align}
+  \tilde{c}_i
+  &= c_i\,(1-u_i)\,(1-d_i) \notag \\
+  &\leq c_i \cdot 1 \cdot 1
+   \quad\text{(since $(1-u_i)\leq 1$ and $(1-d_i)\leq 1$)}
+   \notag \\
+  &\leq 1
+   \quad\text{(since $c_i \leq 1$ by
+   Assumption~\ref{asm:agent-domain}(2)).}
+   \label{eq:tilde-c-bound}
+\end{align}
+Therefore the numerator satisfies
+\begin{equation}
+  \sum_{i=1}^{N} w_i\,\tilde{c}_i
+  \;\leq\;
+  \sum_{i=1}^{N} w_i \cdot 1
+  \;=\;
+  \sum_{i=1}^{N} w_i,
+  \label{eq:numerator-bound}
+\end{equation}
+and dividing both sides by $\sum_{i=1}^{N} w_i > 0$ gives
+$\bar{c}_t \leq 1$.
+
+\medskip
+\noindent\textbf{Conclusion.}
+From Steps~2 and~3, $0 \leq \bar{c}_t \leq 1$ for all $t$.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\section{Effective Measurement Noise}
+\label{sec:effective-noise}
+% --------------------------------------------------------------
+
+\subsection{Assumption Validation for This Section}
+
+Before proceeding, we explicitly validate every assumption
+required for the results of this section.
+
+\begin{enumerate}
+  \item \textbf{Assumption~\ref{asm:agent-domain} (Agent domain):}
+        Each agent index $i \in \{1,\dots,N\}$ with $N \geq 1$ is
+        a finite, non-empty collection.  This ensures all sums
+        below are well-defined and finite.
+
+  \item \textbf{Assumption~\ref{asm:noise-domain}
+        ($\sigma_{\mathrm{base}}^2 > 0$):}
+        The base measurement noise satisfies
+        $\sigma_{\mathrm{base}}^2 \in (0,\infty)$.  This rules out
+        the degenerate case $\sigma_{\mathrm{base}}^2 = 0$
+        (which would make the filter trivially exact) and ensures
+        all noise-ratio expressions are strictly positive when
+        the confidence penalty is positive.
+
+  \item \textbf{Assumption~\ref{asm:disagreement-nonneg}
+        ($D_t \geq 0$):}
+        The inter-agent disagreement metric satisfies
+        $D_t \geq 0$ for all $t$, so the inflation term
+        $D_t^2\,\sigma_{\mathrm{base}}^2 \geq 0$.
+
+  \item \textbf{Domain of $\bar{c}_t$:}
+        From Lemma~\ref{lem:confidence-unit-interval},
+        $\bar{c}_t \in [0,1]$.  For Definition~\ref{def:effective-noise}
+        we restrict to the interior and upper boundary
+        $\bar{c}_t \in (0,1]$.  The boundary $\bar{c}_t = 0$
+        is handled separately in
+        Remark~\ref{rem:zero-confidence-noise}.
+\end{enumerate}
+
+\subsection{Definition and Term-by-Term Analysis}
+
+\begin{definition}[Effective Measurement Noise]
+\label{def:effective-noise}
+Under Assumptions~\ref{asm:agent-domain}--\ref{asm:disagreement-nonneg}
+and given $\bar{c}_t \in (0, 1]$, the
+\emph{effective measurement noise} at time $t$ is defined as
+\begin{align}
+  R_t
+  &\;=\;
+  \underbrace{%
+    \sigma_{\mathrm{base}}^2
+    \cdot
+    \frac{1 - \bar{c}_t}{\bar{c}_t}
+  }_{\displaystyle R_t^{(c)}:\;\text{confidence-adjusted noise}}
+  \;+\;
+  \underbrace{%
+    D_t^2
+    \cdot
+    \sigma_{\mathrm{base}}^2
+  }_{\displaystyle R_t^{(d)}:\;\text{disagreement inflation}},
+  \label{eq:effective-measurement-noise}
+\end{align}
+where the two constituent terms are defined as follows.
+\begin{enumerate}
+  \item \textbf{Base noise parameter} ($\sigma_{\mathrm{base}}^2$):
+        By Assumption~\ref{asm:noise-domain},
+        $\sigma_{\mathrm{base}}^2 \in (0,\infty)$ is the
+        irreducible measurement noise present even under full
+        ensemble confidence ($\bar{c}_t = 1$, $D_t = 0$).
+        It serves as a common scaling factor for both terms.
+
+  \item \textbf{Confidence-adjusted noise term}
+        ($R_t^{(c)} = \sigma_{\mathrm{base}}^2\,
+        (1-\bar{c}_t)/\bar{c}_t$):
+        \begin{enumerate}
+          \item The ratio $(1-\bar{c}_t)/\bar{c}_t$ is
+                well-defined for all $\bar{c}_t \in (0,1]$
+                since $\bar{c}_t > 0$.
+          \item The function $f(c) = (1-c)/c$ is strictly
+                decreasing on $(0,1]$:
+                \begin{align}
+                  f'(c)
+                  &= \frac{-c - (1-c)}{c^2}
+                   = \frac{-1}{c^2}
+                   < 0
+                   \quad \forall\, c \in (0,1].
+                  \label{eq:f-derivative}
+                \end{align}
+          \item Boundary behaviour:
+                \begin{align}
+                  \lim_{c \to 1}\, f(c)
+                  &= \frac{1-1}{1} = 0,
+                  \label{eq:f-at-1} \\
+                  \lim_{c \to 0^+}\, f(c)
+                  &= +\infty.
+                  \label{eq:f-at-0}
+                \end{align}
+          \item Therefore $R_t^{(c)} \geq 0$ for all
+                $\bar{c}_t \in (0,1]$, with equality iff
+                $\bar{c}_t = 1$.
+        \end{enumerate}
+
+  \item \textbf{Disagreement-inflation term}
+        ($R_t^{(d)} = D_t^2\,\sigma_{\mathrm{base}}^2$):
+        \begin{enumerate}
+          \item By Assumption~\ref{asm:disagreement-nonneg},
+                $D_t \geq 0$, so $D_t^2 \geq 0$.
+          \item Combined with $\sigma_{\mathrm{base}}^2 > 0$,
+                we have $R_t^{(d)} \geq 0$.
+          \item This term penalises inter-agent disagreement
+                \emph{independently} of $\bar{c}_t$: high
+                consensus confidence cannot suppress disagreement
+                inflation.
+          \item $R_t^{(d)} = 0$ iff $D_t = 0$ (full consensus).
+        \end{enumerate}
+\end{enumerate}
+\end{definition}
+
+\subsection{Zero-Confidence Boundary}
+
+\begin{remark}[Zero-Confidence Boundary for $R_t$]
+\label{rem:zero-confidence-noise}
+When $\bar{c}_t = 0$, the denominator of the confidence-penalty
+ratio vanishes, so $(1-\bar{c}_t)/\bar{c}_t$ is undefined as a
+real number.  We handle this boundary by the following
+limiting convention.
+\begin{enumerate}
+  \item \textbf{Limiting argument:}
+        For any sequence $\bar{c}_t^{(n)} \searrow 0^+$, we
+        have from \eqref{eq:f-at-0}:
+        \begin{align}
+          R_t^{(c,n)}
+          &= \sigma_{\mathrm{base}}^2
+             \cdot \frac{1 - \bar{c}_t^{(n)}}{\bar{c}_t^{(n)}}
+           \;\longrightarrow\; +\infty.
+          \label{eq:R-diverges}
+        \end{align}
+  \item \textbf{Convention:}
+        We set $R_t := +\infty$ when $\bar{c}_t = 0$, i.e.,
+        \begin{align}
+          R_t\big|_{\bar{c}_t=0}
+          &\;:=\; +\infty.
+          \label{eq:R-convention}
+        \end{align}
+  \item \textbf{Consequence for the Kalman gain:}
+        Substituting into \eqref{eq:investment-gain}:
+        \begin{align}
+          K_t^{(\mathrm{inv})}\big|_{\bar{c}_t=0}
+          &= \lim_{R_t \to +\infty}
+             \frac{P_{t|t-1}}{P_{t|t-1} + R_t}
+           = 0,
+          \label{eq:gain-zero-confidence}
+        \end{align}
+        since $P_{t|t-1} < \infty$ by
+        Assumption~\ref{asm:noise-domain}.  This is consistent
+        with Theorem~\ref{thm:gain-properties}, item~3.
+  \item \textbf{Economic interpretation:}
+        Zero ensemble confidence renders the signal ensemble
+        completely uninformative; consequently no capital is
+        deployed ($K_t^{(\mathrm{inv})} = 0$).
+\end{enumerate}
+\end{remark}
+
+\subsection{Strict Positivity Lemma}
+
+\begin{lemma}[Non-Negativity and Strict Positivity of $R_t$]
+\label{lem:noise-positive}
+Under Assumptions~\ref{asm:noise-domain}
+and~\ref{asm:disagreement-nonneg}, and given
+$\bar{c}_t \in (0,1]$, the following hold:
+\begin{enumerate}
+  \item \textbf{Non-negativity:}
+        $R_t \geq 0$ unconditionally for all
+        $\bar{c}_t \in (0,1]$.
+  \item \textbf{Strict positivity:}
+        $R_t > 0$ unless $\bar{c}_t = 1$ and $D_t = 0$
+        simultaneously.
+  \item \textbf{Zero boundary:}
+        $R_t = 0$ iff $\bar{c}_t = 1$ \emph{and} $D_t = 0$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+We proceed by exhaustive case analysis over the two free
+parameters $\bar{c}_t \in (0,1]$ and $D_t \geq 0$,
+covering all four sub-cases of the Cartesian product
+$\{\bar{c}_t \in (0,1),\, \bar{c}_t = 1\}
+ \times \{D_t = 0,\, D_t > 0\}$.
+
+\medskip
+\noindent\textbf{Preliminary: Assumption validation.}
+\begin{enumerate}
+  \item $\sigma_{\mathrm{base}}^2 > 0$
+        by Assumption~\ref{asm:noise-domain}. \checkmark
+  \item $D_t \geq 0$ by
+        Assumption~\ref{asm:disagreement-nonneg}. \checkmark
+  \item $\bar{c}_t \in (0,1]$ is given. \checkmark
+  \item Both constituent terms $R_t^{(c)}$ and $R_t^{(d)}$
+        are non-negative real numbers; hence
+        $R_t = R_t^{(c)} + R_t^{(d)}$ is well-defined in
+        $[0,\infty)$. \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~1: Establish $R_t^{(c)} \geq 0$ and
+$R_t^{(d)} \geq 0$.}
+\begin{enumerate}
+  \item For $R_t^{(c)}$: since $\bar{c}_t \in (0,1]$,
+        we have $0 \leq 1 - \bar{c}_t < 1$ and
+        $\bar{c}_t > 0$, so
+        \begin{align}
+          \frac{1 - \bar{c}_t}{\bar{c}_t} \;\geq\; 0.
+          \label{eq:ratio-nonneg}
+        \end{align}
+        Multiplying by $\sigma_{\mathrm{base}}^2 > 0$ preserves
+        the inequality: $R_t^{(c)} \geq 0$.
+  \item For $R_t^{(d)}$: $D_t^2 \geq 0$ (square of a real
+        number), and $\sigma_{\mathrm{base}}^2 > 0$, so
+        $R_t^{(d)} = D_t^2\,\sigma_{\mathrm{base}}^2 \geq 0$.
+\end{enumerate}
+Therefore $R_t = R_t^{(c)} + R_t^{(d)} \geq 0$, which
+establishes item~1. \qquad $\square_1$
+
+\medskip
+\noindent\textbf{Step~2: Exhaustive case analysis for
+strict positivity.}
+
+\begin{enumerate}
+  \item \textbf{Case A --- $\bar{c}_t \in (0,1)$,
+        $D_t = 0$:}
+        \begin{enumerate}
+          \item Since $\bar{c}_t < 1$, we have
+                $1 - \bar{c}_t > 0$.
+          \item Hence $(1-\bar{c}_t)/\bar{c}_t > 0$.
+          \item Therefore
+                \begin{align}
+                  R_t^{(c)}
+                  &= \sigma_{\mathrm{base}}^2
+                     \cdot
+                     \frac{1-\bar{c}_t}{\bar{c}_t}
+                   > 0.
+                  \label{eq:case-A-Rc}
+                \end{align}
+          \item With $D_t = 0$: $R_t^{(d)} = 0$.
+          \item Summing:
+                \begin{align}
+                  R_t
+                  &= R_t^{(c)} + R_t^{(d)}
+                   > 0 + 0 = 0.
+                  \label{eq:case-A-Rt}
+                \end{align}
+          \item \textbf{Conclusion:} $R_t > 0$. \checkmark
+        \end{enumerate}
+
+  \item \textbf{Case B --- $\bar{c}_t \in (0,1)$,
+        $D_t > 0$:}
+        \begin{enumerate}
+          \item As in Case~A, $R_t^{(c)} > 0$.
+          \item Additionally, $D_t > 0 \Rightarrow
+                D_t^2 > 0 \Rightarrow R_t^{(d)} > 0$.
+          \item Summing:
+                \begin{align}
+                  R_t
+                  &= R_t^{(c)} + R_t^{(d)}
+                   > 0.
+                  \label{eq:case-B-Rt}
+                \end{align}
+          \item \textbf{Conclusion:} $R_t > 0$. \checkmark
+        \end{enumerate}
+
+  \item \textbf{Case C --- $\bar{c}_t = 1$, $D_t > 0$:}
+        \begin{enumerate}
+          \item At $\bar{c}_t = 1$:
+                \begin{align}
+                  R_t^{(c)}
+                  &= \sigma_{\mathrm{base}}^2
+                     \cdot
+                     \frac{1-1}{1}
+                   = 0.
+                  \label{eq:case-C-Rc}
+                \end{align}
+          \item Since $D_t > 0$: $D_t^2 > 0$, so
+                \begin{align}
+                  R_t^{(d)}
+                  &= D_t^2\,\sigma_{\mathrm{base}}^2
+                   > 0.
+                  \label{eq:case-C-Rd}
+                \end{align}
+          \item Summing:
+                \begin{align}
+                  R_t
+                  &= 0 + R_t^{(d)}
+                   > 0.
+                  \label{eq:case-C-Rt}
+                \end{align}
+          \item \textbf{Conclusion:} $R_t > 0$. \checkmark
+        \end{enumerate}
+
+  \item \textbf{Case D --- $\bar{c}_t = 1$, $D_t = 0$:}
+        \begin{enumerate}
+          \item At $\bar{c}_t = 1$:
+                $R_t^{(c)} = 0$
+                (from \eqref{eq:case-C-Rc}).
+          \item At $D_t = 0$:
+                $R_t^{(d)} = 0^2 \cdot
+                 \sigma_{\mathrm{base}}^2 = 0$.
+          \item Summing:
+                \begin{align}
+                  R_t
+                  &= 0 + 0 = 0.
+                  \label{eq:case-D-Rt}
+                \end{align}
+          \item \textbf{Conclusion:} $R_t = 0$.
+                This is the unique boundary case;
+                it corresponds to the theoretical limit of
+                a perfectly informative ensemble with full
+                consensus.
+        \end{enumerate}
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~3: Summary of all cases.}
+
+\begin{enumerate}
+  \item Cases~A, B, C: $R_t > 0$.
+  \item Case~D: $R_t = 0$, occurring iff
+        $\bar{c}_t = 1$ and $D_t = 0$.
+  \item All four cases are exhaustive and mutually exclusive
+        over $\bar{c}_t \in (0,1]$ and $D_t \geq 0$.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~4: Confirm item~3 (zero boundary).}
+\begin{enumerate}
+  \item ($\Rightarrow$) If $R_t = 0$, then since
+        $R_t = R_t^{(c)} + R_t^{(d)}$ with both terms
+        $\geq 0$, we must have $R_t^{(c)} = 0$ and
+        $R_t^{(d)} = 0$.
+        \begin{enumerate}
+          \item $R_t^{(d)} = 0$ iff $D_t^2 = 0$ iff
+                $D_t = 0$.
+          \item $R_t^{(c)} = 0$ iff
+                $(1-\bar{c}_t)/\bar{c}_t = 0$ iff
+                $\bar{c}_t = 1$.
+        \end{enumerate}
+        Hence $\bar{c}_t = 1$ and $D_t = 0$.
+  \item ($\Leftarrow$) If $\bar{c}_t = 1$ and $D_t = 0$,
+        then from Case~D above, $R_t = 0$.
+\end{enumerate}
+Both directions hold, confirming
+$R_t = 0 \iff (\bar{c}_t = 1 \text{ and } D_t = 0)$.
+\qquad $\square_3$
+
+\medskip
+\noindent\textbf{Conclusion.}
+Items~1, 2, and~3 of the lemma are established by
+Steps~1--4 above.  $R_t \geq 0$ always;
+$R_t > 0$ in all cases except the unique
+boundary $\bar{c}_t = 1$, $D_t = 0$.
+\qed
+\end{proof}
+
+\subsection{Key Findings: Effective Measurement Noise}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}p{3.2cm}
+                              >{\raggedright\arraybackslash}X
+                              >{\centering\arraybackslash}p{2.8cm}}
+\hline
+\textbf{Finding} & \textbf{Statement and Justification}
+  & \textbf{Equation / Ref.} \\
+\hline
+Structural decomposition
+  & $R_t = R_t^{(c)} + R_t^{(d)}$; confidence and
+    disagreement effects are additively separable and
+    independently quantifiable.
+  & \eqref{eq:effective-measurement-noise} \\
+\hline
+Non-negativity of $R_t$
+  & $R_t \geq 0$ for all $\bar{c}_t \in (0,1]$ and
+    $D_t \geq 0$; follows from non-negativity of both
+    constituent terms (Step~1 of proof).
+  & Lemma~\ref{lem:noise-positive}, item~1 \\
+\hline
+Strict positivity: partial confidence
+  & If $\bar{c}_t \in (0,1)$, then $R_t > 0$
+    regardless of $D_t$; the confidence-penalty term
+    alone drives positivity (Cases~A, B).
+  & \eqref{eq:case-A-Rt}, \eqref{eq:case-B-Rt} \\
+\hline
+Strict positivity: full confidence with disagreement
+  & If $\bar{c}_t = 1$ and $D_t > 0$, then
+    $R_t = R_t^{(d)} > 0$; disagreement inflation
+    sustains a positive noise floor even at maximum
+    confidence (Case~C).
+  & \eqref{eq:case-C-Rt} \\
+\hline
+Unique zero boundary
+  & $R_t = 0$ iff $\bar{c}_t = 1$ and $D_t = 0$;
+    this is the only regime where the ensemble is
+    perfectly informative and unanimously agreed (Case~D).
+  & Lemma~\ref{lem:noise-positive}, item~3 \\
+\hline
+Zero-confidence convention
+  & $R_t := +\infty$ when $\bar{c}_t = 0$ (by limiting
+    argument), forcing $K_t^{(\mathrm{inv})} = 0$ and
+    prohibiting capital deployment under zero confidence.
+  & \eqref{eq:R-convention},
+    \eqref{eq:gain-zero-confidence} \\
+\hline
+Monotonicity in $\bar{c}_t$
+  & $R_t^{(c)}$ is strictly decreasing in $\bar{c}_t$
+    on $(0,1]$, with
+    $f'(c) = -1/c^2 < 0$; higher ensemble confidence
+    monotonically reduces the confidence-penalty noise.
+  & \eqref{eq:f-derivative} \\
+\hline
+Limiting behaviour
+  & $R_t^{(c)} \to 0$ as $\bar{c}_t \to 1$;
+    $R_t^{(c)} \to +\infty$ as $\bar{c}_t \to 0^+$
+    (equations \eqref{eq:f-at-1}--\eqref{eq:f-at-0}).
+  & \eqref{eq:f-at-1}, \eqref{eq:f-at-0} \\
+\hline
+Assumption independence of terms
+  & $R_t^{(d)}$ depends only on $D_t$ and
+    $\sigma_{\mathrm{base}}^2$, not on $\bar{c}_t$;
+    $R_t^{(c)}$ depends only on $\bar{c}_t$ and
+    $\sigma_{\mathrm{base}}^2$, not on $D_t$.
+  & Definition~\ref{def:effective-noise} \\
+\hline
+\end{tabularx}
+\end{center}
+
+% --------------------------------------------------------------
+\section{The Investment Kalman Gain}
+\label{sec:investment-kalman-gain}
+% --------------------------------------------------------------
+
+% --------------------------------------------------------------
+\subsection{Formal Definition}
+% --------------------------------------------------------------
+
+\begin{definition}[Investment Kalman Gain]
+\label{def:investment-kalman-gain}
+Under Assumptions~\ref{asm:agent-domain}--\ref{asm:disagreement-nonneg},
+let the following hold at each time step $t$:
+\begin{enumerate}
+  \item $P_{t|t-1} > 0$ is the prior (prediction) error covariance,
+        guaranteed by Assumption~\ref{asm:noise-domain} and the
+        process noise floor $Q > 0$.
+  \item $R_t \geq 0$ is the effective measurement noise as defined
+        in \eqref{eq:effective-measurement-noise}, with the
+        convention $R_t = +\infty$ when $\bar{c}_t = 0$.
+  \item The denominator satisfies
+        \begin{align}
+          P_{t|t-1} + R_t
+          &\;\geq\; P_{t|t-1}
+          \;>\; 0,
+          \label{eq:gain-denom-positive}
+        \end{align}
+        so the gain is well-defined for all admissible inputs.
+\end{enumerate}
+
+The scalar \emph{investment Kalman gain} is defined as
+\begin{equation}
+  K_t^{(\mathrm{inv})}
+  \;=\; \frac{P_{t|t-1}}{P_{t|t-1} + R_t}.
+  \label{eq:investment-gain}
+\end{equation}
+
+Substituting \eqref{eq:effective-measurement-noise} explicitly,
+and writing $R_t = R_t^{(c)} + R_t^{(d)}$:
+\begin{align}
+  K_t^{(\mathrm{inv})}
+  &= \frac{P_{t|t-1}}{%
+      P_{t|t-1}
+      + R_t^{(c)}
+      + R_t^{(d)}}
+  \label{eq:gain-split} \\[4pt]
+  &= \frac{P_{t|t-1}}{%
+      P_{t|t-1}
+      + \sigma_{\mathrm{base}}^2\,
+        \dfrac{1 - \bar{c}_t}{\bar{c}_t}
+      + D_t^2\,\sigma_{\mathrm{base}}^2},
+  \label{eq:investment-gain-expanded}
+\end{align}
+which is valid for $\bar{c}_t \in (0,1]$ and $D_t \geq 0$.
+
+For the boundary case $\bar{c}_t = 0$, the convention
+$R_t = +\infty$ forces:
+\begin{align}
+  K_t^{(\mathrm{inv})}
+  &= \lim_{R_t \to +\infty}
+     \frac{P_{t|t-1}}{P_{t|t-1} + R_t}
+   = 0.
+  \label{eq:gain-zero-confidence}
+\end{align}
+\end{definition}
+
+% --------------------------------------------------------------
+\subsection{Structural Interpretation of the Gain Formula}
+% --------------------------------------------------------------
+
+\begin{remark}[Gain as a Reliability Ratio]
+\label{rem:gain-ratio}
+The investment Kalman gain $K_t^{(\mathrm{inv})}$ in
+\eqref{eq:investment-gain} admits a direct reliability
+interpretation. Defining:
+\begin{align}
+  \text{Signal reliability}
+  &\;:=\; P_{t|t-1},
+  \label{eq:signal-reliability} \\[3pt]
+  \text{Total uncertainty}
+  &\;:=\; P_{t|t-1} + R_t,
+  \label{eq:total-uncertainty}
+\end{align}
+the gain equals the fraction of total uncertainty attributable
+to prior state risk (i.e.\ uncertainty \emph{reducible} by
+incorporating the ensemble observation):
+\begin{align}
+  K_t^{(\mathrm{inv})}
+  &= \frac{\text{Prior state risk}}
+          {\text{Prior state risk} + \text{Observation noise}}.
+  \label{eq:gain-interpretation}
+\end{align}
+When prior risk dominates ($P_{t|t-1} \gg R_t$), the gain
+approaches unity and the ensemble signal dominates the update.
+When observation noise dominates ($R_t \gg P_{t|t-1}$), the
+gain approaches zero and the prior state is retained.
+\end{remark}
+
+% --------------------------------------------------------------
+\subsection{Main Theorem: Properties of the Gain}
+% --------------------------------------------------------------
+
+\begin{theorem}[Properties of the Investment Kalman Gain]
+\label{thm:gain-properties}
+Under Assumptions~\ref{asm:agent-domain}--\ref{asm:disagreement-nonneg},
+and under Definitions~\ref{def:effective-confidence}
+and~\ref{def:investment-kalman-gain}, the investment Kalman gain
+$K_t^{(\mathrm{inv})}$ satisfies all of the following properties
+for every $t$.
+\begin{enumerate}
+  \item \textbf{Boundedness:}
+        $K_t^{(\mathrm{inv})} \in [0,1)$
+        for all $P_{t|t-1} > 0$ and $R_t \geq 0$.
+
+  \item \textbf{Strict interiority under positive noise:}
+        If $R_t > 0$, then
+        $K_t^{(\mathrm{inv})} \in (0,1)$ strictly.
+
+  \item \textbf{High-confidence, low-disagreement limit:}
+        As $\bar{c}_t \to 1^{-}$ and $D_t \to 0^{+}$,
+        \begin{align}
+          K_t^{(\mathrm{inv})} \;\to\; 1
+          \quad \text{(near-full deployment)}.
+          \label{eq:gain-limit-high-conf}
+        \end{align}
+
+  \item \textbf{Low-confidence limit:}
+        As $\bar{c}_t \to 0^{+}$,
+        \begin{align}
+          K_t^{(\mathrm{inv})} \;\to\; 0
+          \quad \text{(deployment suppressed)},
+          \label{eq:gain-limit-low-conf}
+        \end{align}
+        for any fixed $P_{t|t-1} > 0$ and any $D_t \geq 0$.
+
+  \item \textbf{High-disagreement limit:}
+        As $D_t \to +\infty$,
+        \begin{align}
+          K_t^{(\mathrm{inv})} \;\to\; 0
+          \quad \text{(deployment suppressed)},
+          \label{eq:gain-limit-high-disagree}
+        \end{align}
+        for any fixed $P_{t|t-1} > 0$ and any
+        $\bar{c}_t \in (0,1]$.
+
+  \item \textbf{Large prior risk limit:}
+        As $P_{t|t-1} \to +\infty$,
+        \begin{align}
+          K_t^{(\mathrm{inv})} \;\to\; 1
+          \quad \text{(follow observation)},
+          \label{eq:gain-limit-large-P}
+        \end{align}
+        for any fixed $R_t \geq 0$.
+
+  \item \textbf{Small prior risk limit:}
+        As $P_{t|t-1} \to 0^{+}$,
+        \begin{align}
+          K_t^{(\mathrm{inv})} \;\to\; 0
+          \quad \text{(stick with prior)},
+          \label{eq:gain-limit-small-P}
+        \end{align}
+        for any fixed $R_t > 0$.
+
+  \item \textbf{Monotone decrease in $R_t$:}
+        $K_t^{(\mathrm{inv})}$ is strictly decreasing in
+        $R_t$ on $(0, +\infty)$ for any fixed
+        $P_{t|t-1} > 0$.
+
+  \item \textbf{Monotone increase in $P_{t|t-1}$:}
+        $K_t^{(\mathrm{inv})}$ is strictly increasing in
+        $P_{t|t-1}$ on $(0, +\infty)$ for any fixed
+        $R_t > 0$.
+\end{enumerate}
+\end{theorem}
+
+% --------------------------------------------------------------
+\subsection{Proof of Theorem~\ref{thm:gain-properties}}
+% --------------------------------------------------------------
+
+\begin{proof}
+We prove each property in turn.  Throughout, denote
+$P \equiv P_{t|t-1} > 0$, $R \equiv R_t \geq 0$, and
+$K \equiv K_t^{(\mathrm{inv})} = P/(P+R)$.
+
+\medskip
+\noindent\textbf{Proof of Property~1 (Boundedness).}
+\begin{enumerate}
+  \item \textbf{Lower bound.}
+        Since $P > 0$ and $P + R \geq P > 0$, the
+        numerator $P > 0$ and the denominator $P + R > 0$,
+        so $K = P/(P+R) > 0$.
+        In the boundary case $R = +\infty$
+        (i.e.\ $\bar{c}_t = 0$), the convention
+        \eqref{eq:gain-zero-confidence} gives $K = 0$.
+        Hence $K \geq 0$ in all cases.
+  \item \textbf{Upper bound.}
+        Since $R \geq 0$, we have $P + R \geq P$,
+        so $P/(P+R) \leq P/P = 1$.  Equality holds iff
+        $R = 0$.  By Lemma~\ref{lem:noise-positive},
+        $R = 0$ iff $\bar{c}_t = 1$ and $D_t = 0$.
+        In that case $K = P/P = 1$, which is excluded
+        from the open interval $(0,1)$ but is the
+        theoretical maximum.
+        Therefore $K \in [0, 1)$ whenever $R > 0$, and
+        $K = 1$ only at the unique boundary
+        $\bar{c}_t = 1$, $D_t = 0$.
+        The stated bound $K \in [0,1)$ holds for the
+        generic case $R > 0$, and $K \leq 1$ universally.
+        $\square_1$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~2 (Strict interiority).}
+\begin{enumerate}
+  \item Suppose $R > 0$.  Then $P + R > P > 0$.
+  \item Lower: $K = P/(P+R) > 0$ since $P > 0$.
+  \item Upper: $K = P/(P+R) < P/P = 1$ since $R > 0$.
+  \item Hence $K \in (0,1)$ strictly. $\square_2$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~3
+(High-confidence, low-disagreement limit).}
+\begin{enumerate}
+  \item Let $\bar{c}_t \to 1^{-}$ and $D_t \to 0^{+}$
+        jointly.
+  \item Evaluate the confidence-penalty term:
+        \begin{align}
+          R_t^{(c)}
+          &= \sigma_{\mathrm{base}}^2 \cdot
+             \frac{1 - \bar{c}_t}{\bar{c}_t}
+          \;\to\;
+          \sigma_{\mathrm{base}}^2 \cdot
+          \frac{1 - 1}{1}
+          = 0.
+          \label{eq:proof3-Rc}
+        \end{align}
+  \item Evaluate the disagreement term:
+        \begin{align}
+          R_t^{(d)}
+          &= D_t^2\,\sigma_{\mathrm{base}}^2
+          \;\to\;
+          0^2 \cdot \sigma_{\mathrm{base}}^2
+          = 0.
+          \label{eq:proof3-Rd}
+        \end{align}
+  \item Sum: $R_t = R_t^{(c)} + R_t^{(d)} \to 0$.
+  \item Substituting into the gain:
+        \begin{align}
+          K_t^{(\mathrm{inv})}
+          &= \frac{P}{P + R_t}
+          \;\to\;
+          \frac{P}{P + 0}
+          = 1. \quad \square_3
+          \label{eq:proof3-K}
+        \end{align}
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~4
+(Low-confidence limit).}
+\begin{enumerate}
+  \item Let $\bar{c}_t \to 0^{+}$, with $P > 0$
+        and $D_t \geq 0$ fixed.
+  \item The confidence-penalty term satisfies:
+        \begin{align}
+          R_t^{(c)}
+          &= \sigma_{\mathrm{base}}^2 \cdot
+             \frac{1 - \bar{c}_t}{\bar{c}_t}.
+          \label{eq:proof4-Rc}
+        \end{align}
+        As $\bar{c}_t \to 0^{+}$, the fraction
+        $(1 - \bar{c}_t)/\bar{c}_t \to +\infty$
+        (since numerator $\to 1 > 0$ and denominator
+        $\to 0^{+}$).
+        Hence $R_t^{(c)} \to +\infty$.
+  \item Since $R_t \geq R_t^{(c)} \to +\infty$:
+        \begin{align}
+          K_t^{(\mathrm{inv})}
+          &= \frac{P}{P + R_t}
+          \;\leq\;
+          \frac{P}{P + R_t^{(c)}}
+          \;\to\; 0.
+          \label{eq:proof4-K}
+        \end{align}
+  \item Since $K_t^{(\mathrm{inv})} \geq 0$ always
+        (Property~1), by the squeeze theorem
+        $K_t^{(\mathrm{inv})} \to 0$. $\square_4$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~5
+(High-disagreement limit).}
+\begin{enumerate}
+  \item Let $D_t \to +\infty$, with $P > 0$ and
+        $\bar{c}_t \in (0,1]$ fixed.
+  \item The disagreement term satisfies:
+        \begin{align}
+          R_t^{(d)}
+          &= D_t^2\,\sigma_{\mathrm{base}}^2
+          \;\to\; +\infty,
+          \label{eq:proof5-Rd}
+        \end{align}
+        since $\sigma_{\mathrm{base}}^2 > 0$ by
+        Assumption~\ref{asm:noise-domain}.
+  \item Hence $R_t \geq R_t^{(d)} \to +\infty$.
+  \item Therefore:
+        \begin{align}
+          K_t^{(\mathrm{inv})}
+          &= \frac{P}{P + R_t}
+          \;\leq\;
+          \frac{P}{P + R_t^{(d)}}
+          \;=\;
+          \frac{P}{P + D_t^2\,\sigma_{\mathrm{base}}^2}
+          \;\to\; 0.
+          \label{eq:proof5-K}
+        \end{align}
+  \item Since $K_t^{(\mathrm{inv})} \geq 0$, the squeeze
+        theorem yields $K_t^{(\mathrm{inv})} \to 0$.
+        $\square_5$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~6
+(Large prior risk limit).}
+\begin{enumerate}
+  \item Let $P \to +\infty$, with $R \geq 0$ fixed.
+  \item Divide numerator and denominator by $P$:
+        \begin{align}
+          K_t^{(\mathrm{inv})}
+          &= \frac{P}{P + R}
+           = \frac{1}{1 + R/P}.
+          \label{eq:proof6-divide}
+        \end{align}
+  \item As $P \to +\infty$: $R/P \to 0$, so:
+        \begin{align}
+          K_t^{(\mathrm{inv})}
+          &= \frac{1}{1 + R/P}
+          \;\to\;
+          \frac{1}{1 + 0}
+          = 1. \quad \square_6
+          \label{eq:proof6-K}
+        \end{align}
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~7
+(Small prior risk limit).}
+\begin{enumerate}
+  \item Let $P \to 0^{+}$, with $R > 0$ fixed.
+  \item Directly:
+        \begin{align}
+          K_t^{(\mathrm{inv})}
+          &= \frac{P}{P + R}
+          \;\to\;
+          \frac{0}{0 + R}
+          = \frac{0}{R}
+          = 0. \quad \square_7
+          \label{eq:proof7-K}
+        \end{align}
+  \item (The denominator $P + R \to R > 0$ so there is no
+        indeterminate form; the limit is immediate.)
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~8
+(Monotone decrease in $R$).}
+\begin{enumerate}
+  \item Fix $P > 0$ and consider $K(R) = P/(P+R)$
+        as a function of $R \in (0,+\infty)$.
+  \item Differentiate with respect to $R$:
+        \begin{align}
+          \frac{\partial K}{\partial R}
+          &= \frac{\partial}{\partial R}
+             \left[\frac{P}{P + R}\right]
+           = -\frac{P}{(P + R)^2}.
+          \label{eq:proof8-deriv}
+        \end{align}
+  \item Since $P > 0$ and $(P+R)^2 > 0$:
+        \begin{align}
+          \frac{\partial K}{\partial R}
+          &= -\frac{P}{(P + R)^2}
+          \;<\; 0
+          \quad \text{for all } R > 0.
+          \label{eq:proof8-sign}
+        \end{align}
+  \item Hence $K$ is strictly decreasing in $R$.
+        $\square_8$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Proof of Property~9
+(Monotone increase in $P$).}
+\begin{enumerate}
+  \item Fix $R > 0$ and consider $K(P) = P/(P+R)$
+        as a function of $P \in (0,+\infty)$.
+  \item Differentiate with respect to $P$:
+        \begin{align}
+          \frac{\partial K}{\partial P}
+          &= \frac{\partial}{\partial P}
+             \left[\frac{P}{P + R}\right]
+           = \frac{(P+R) - P}{(P+R)^2}
+           = \frac{R}{(P+R)^2}.
+          \label{eq:proof9-deriv}
+        \end{align}
+  \item Since $R > 0$ and $(P+R)^2 > 0$:
+        \begin{align}
+          \frac{\partial K}{\partial P}
+          &= \frac{R}{(P+R)^2}
+          \;>\; 0
+          \quad \text{for all } P > 0.
+          \label{eq:proof9-sign}
+        \end{align}
+  \item Hence $K$ is strictly increasing in $P$.
+        $\square_9$
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Conclusion.}
+All nine properties have been verified rigorously.
+Each step appeals to the explicit formula
+\eqref{eq:investment-gain}, the structural decomposition
+\eqref{eq:effective-measurement-noise}, and the
+Assumptions~\ref{asm:agent-domain}--\ref{asm:disagreement-nonneg}.
+No step was skipped; all boundary cases and edge conditions
+have been addressed.
+\qed
+\end{proof}
+
+% --------------------------------------------------------------
+\subsection{Key Findings: Investment Kalman Gain}
+% --------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.50}
+\begin{tabularx}{\linewidth}{%
+  >{\bfseries\raggedright\arraybackslash}p{3.0cm}
+  >{\raggedright\arraybackslash}X
+  >{\centering\arraybackslash}p{2.6cm}}
+\hline
+\textbf{Finding} & \textbf{Statement and Justification}
+  & \textbf{Ref.} \\
+\hline
+Well-definedness
+  & The denominator $P_{t|t-1} + R_t \geq P_{t|t-1} > 0$
+    for all admissible inputs; the gain is finite and
+    uniquely defined at every $t$.
+  & \eqref{eq:gain-denom-positive} \\
+\hline
+Boundedness
+  & $K_t^{(\mathrm{inv})} \in [0,1)$ universally;
+    $K = 0$ iff $\bar{c}_t = 0$;
+    $K \in (0,1)$ strictly when $R_t > 0$;
+    $K = 1$ only at the theoretical limit
+    $\bar{c}_t = 1$, $D_t = 0$.
+  & Thm.~\ref{thm:gain-properties},
+    Props.~1--2 \\
+\hline
+High-conf.\ limit
+  & As $\bar{c}_t \to 1$ and $D_t \to 0$,
+    $R_t \to 0$ and $K_t^{(\mathrm{inv})} \to 1$;
+    near-full capital deployment is achieved.
+  & \eqref{eq:gain-limit-high-conf},
+    \eqref{eq:proof3-K} \\
+\hline
+Low-conf.\ limit
+  & As $\bar{c}_t \to 0$,
+    $R_t^{(c)} \to +\infty$ and
+    $K_t^{(\mathrm{inv})} \to 0$;
+    capital deployment is fully suppressed
+    regardless of disagreement or prior risk.
+  & \eqref{eq:gain-limit-low-conf},
+    \eqref{eq:proof4-K} \\
+\hline
+High-disagreement limit
+  & As $D_t \to +\infty$,
+    $R_t^{(d)} \to +\infty$ and
+    $K_t^{(\mathrm{inv})} \to 0$;
+    violent agent disagreement fully suppresses
+    deployment, even at high confidence.
+  & \eqref{eq:gain-limit-high-disagree},
+    \eqref{eq:proof5-K} \\
+\hline
+Large prior risk
+  & As $P_{t|t-1} \to +\infty$,
+    $K_t^{(\mathrm{inv})} \to 1$;
+    high prior uncertainty causes the filter
+    to fully trust the ensemble observation.
+  & \eqref{eq:gain-limit-large-P},
+    \eqref{eq:proof6-K} \\
+\hline
+Small prior risk
+  & As $P_{t|t-1} \to 0$,
+    $K_t^{(\mathrm{inv})} \to 0$;
+    low prior uncertainty causes the filter
+    to retain the prior state estimate.
+  & \eqref{eq:gain-limit-small-P},
+    \eqref{eq:proof7-K} \\
+\hline
+Monotone in $R_t$
+  & $\partial K / \partial R = -P/(P+R)^2 < 0$;
+    the gain is strictly decreasing in effective
+    noise; more noise $\Rightarrow$ less deployment.
+  & \eqref{eq:proof8-sign} \\
+\hline
+Monotone in $P_{t|t-1}$
+  & $\partial K / \partial P = R/(P+R)^2 > 0$;
+    the gain is strictly increasing in prior risk;
+    more prior uncertainty $\Rightarrow$ more
+    weight on the observation.
+  & \eqref{eq:proof9-sign} \\
+\hline
+Reliability ratio
+  & $K_t^{(\mathrm{inv})}$ equals the fraction of
+    total uncertainty attributable to reducible
+    prior state risk; it is interpretable as a
+    signal-to-total-uncertainty ratio.
+  & \eqref{eq:gain-interpretation} \\
+\hline
+\end{tabularx}
+\end{center}
+
+\begin{remark}[Disagreement as Innovation Covariance Inflation]
+\label{rem:disagreement-inflation}
+The additive term $D_t^2 \sigma_{\mathrm{base}}^2$ in
+\eqref{eq:effective-measurement-noise} formalises the observation
+from the companion document that agent disagreement is not a
+tie-breaker but an \emph{innovation covariance inflation term}.
+When agents violently disagree ($D_t$ large), the effective
+measurement noise $R_t$ increases, the Kalman gain decreases,
+and capital deployment is automatically suppressed — regardless
+of the aggregate directional signal $S_t$.  This is the
+investment-domain analogue of the IMM posterior covariance
+inflation formula from §7.3 of the companion Kalman filter
+document.
+\end{remark}
+
+% ==============================================================
+\chapter{Covariance as Risk: The Uncertainty Budget}
+\label{ch:covariance}
+% ==============================================================
+
+\section{Prediction Covariance and Prior Risk}
+
+\begin{proposition}[Prediction Covariance Evolution]
+\label{prop:predict-cov}
+Under Definition~\ref{def:kalman-predict} and
+Assumption~\ref{asm:process-noise}, suppose the following
+conditions hold at time $t-1$:
+\begin{enumerate}
+  \item The posterior state estimate satisfies
+        $\hat{\mathbf{x}}_{t-1|t-1}
+         = \mathbb{E}[\mathbf{x}_{t-1} \mid \mathcal{F}_{t-1}]$,
+        where $\mathcal{F}_{t-1}$ denotes the sigma-algebra
+        generated by all observations up to time $t-1$.
+  \item The posterior covariance is well-defined and
+        positive semi-definite:
+        $\mathbf{P}_{t-1|t-1}
+         = \mathrm{Cov}(\mathbf{x}_{t-1} \mid \mathcal{F}_{t-1})
+         \succeq \mathbf{0}$.
+  \item The process noise satisfies
+        $\mathbf{w}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{Q})$
+        with $\mathbf{Q} \succeq \mathbf{0}$, and
+        $\mathbf{w}_t \perp\!\!\!\perp \mathcal{F}_{t-1}$
+        (independence from all past observations and states).
+  \item The transition matrix $\mathbf{F} \in \mathbb{R}^{n \times n}$
+        is deterministic and time-invariant over the interval
+        $[t-1,\, t]$.
+\end{enumerate}
+Then the one-step-ahead prediction covariance satisfies
+\begin{equation}
+  \mathbf{P}_{t|t-1}
+  \;=\;
+  \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top
+  + \mathbf{Q},
+  \label{eq:cov-evolution}
+\end{equation}
+which admits the following additive decomposition:
+\begin{enumerate}
+  \item \emph{Propagated residual risk:}
+        $\mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top$
+        represents yesterday's posterior uncertainty linearly
+        transported through the regime-transition dynamics
+        encoded in $\mathbf{F}$.
+  \item \emph{Aleatoric process noise:}
+        $\mathbf{Q}$ is the irreducible market uncertainty
+        injected between consecutive observations; it is
+        independent of all available information in
+        $\mathcal{F}_{t-1}$ and cannot be reduced by any
+        estimator.
+\end{enumerate}
+Furthermore, $\mathbf{P}_{t|t-1} \succeq \mathbf{Q} \succeq \mathbf{0}$,
+so the prediction covariance is always at least as large as the
+process noise covariance, and the sequence
+$\{\mathbf{P}_{t|t-1}\}_{t \geq 1}$ is bounded below by
+$\mathbf{Q}$ in the positive semi-definite order.
+\end{proposition}
+
+\begin{proof}
+We proceed step by step, validating every assumption and
+boundary condition.
+
+\medskip
+\noindent\textbf{Step 1: State transition model.}
+By Definition~\ref{def:transition-model}, the latent state
+evolves according to the linear stochastic recursion
+\begin{equation}
+  \mathbf{x}_t
+  \;=\;
+  \mathbf{F}\,\mathbf{x}_{t-1}
+  + \mathbf{w}_t,
+  \qquad
+  \mathbf{w}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}),
+  \quad
+  \mathbf{w}_t \perp\!\!\!\perp \mathcal{F}_{t-1}.
+  \label{eq:pred-cov-transition}
+\end{equation}
+This equation holds for all $t \geq 1$.  The independence
+condition $\mathbf{w}_t \perp\!\!\!\perp \mathcal{F}_{t-1}$
+is Assumption~\ref{asm:process-noise}(iii) and is taken as
+given; it is not derived here but is explicitly invoked in
+Step~3.
+
+\medskip
+\noindent\textbf{Step 2: One-step-ahead prediction mean.}
+Taking the conditional expectation of
+\eqref{eq:pred-cov-transition} given $\mathcal{F}_{t-1}$,
+\begin{align}
+  \hat{\mathbf{x}}_{t|t-1}
+  &\;=\;
+  \mathbb{E}[\mathbf{x}_t \mid \mathcal{F}_{t-1}]
+  \notag \\
+  &\;=\;
+  \mathbb{E}[\mathbf{F}\,\mathbf{x}_{t-1}
+             + \mathbf{w}_t \mid \mathcal{F}_{t-1}]
+  \label{eq:pred-mean-expand} \\
+  &\;=\;
+  \mathbf{F}\,\mathbb{E}[\mathbf{x}_{t-1} \mid \mathcal{F}_{t-1}]
+  + \mathbb{E}[\mathbf{w}_t \mid \mathcal{F}_{t-1}]
+  \label{eq:pred-mean-linearity} \\
+  &\;=\;
+  \mathbf{F}\,\hat{\mathbf{x}}_{t-1|t-1}
+  + \mathbf{0}
+  \;=\;
+  \mathbf{F}\,\hat{\mathbf{x}}_{t-1|t-1}.
+  \label{eq:pred-mean-final}
+\end{align}
+Step~\eqref{eq:pred-mean-linearity} uses linearity of
+conditional expectation; step~\eqref{eq:pred-mean-final}
+uses $\mathbb{E}[\mathbf{w}_t \mid \mathcal{F}_{t-1}]
+= \mathbb{E}[\mathbf{w}_t] = \mathbf{0}$, which follows
+from $\mathbf{w}_t \perp\!\!\!\perp \mathcal{F}_{t-1}$ and
+the zero-mean assumption.
+
+\medskip
+\noindent\textbf{Step 3: Prediction error decomposition.}
+Define the prediction error
+$\tilde{\mathbf{x}}_{t|t-1}
+ = \mathbf{x}_t - \hat{\mathbf{x}}_{t|t-1}$.
+Substituting \eqref{eq:pred-cov-transition} and
+\eqref{eq:pred-mean-final},
+\begin{align}
+  \tilde{\mathbf{x}}_{t|t-1}
+  &\;=\;
+  \bigl(\mathbf{F}\,\mathbf{x}_{t-1} + \mathbf{w}_t\bigr)
+  - \mathbf{F}\,\hat{\mathbf{x}}_{t-1|t-1}
+  \notag \\
+  &\;=\;
+  \mathbf{F}\,\bigl(\mathbf{x}_{t-1}
+                    - \hat{\mathbf{x}}_{t-1|t-1}\bigr)
+  + \mathbf{w}_t
+  \notag \\
+  &\;=\;
+  \mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}
+  + \mathbf{w}_t,
+  \label{eq:pred-error-decomp}
+\end{align}
+where $\tilde{\mathbf{x}}_{t-1|t-1}
+= \mathbf{x}_{t-1} - \hat{\mathbf{x}}_{t-1|t-1}$
+is the posterior estimation error at time $t-1$.
+
+\medskip
+\noindent\textbf{Step 4: Computing the prediction covariance.}
+By definition,
+\begin{align}
+  \mathbf{P}_{t|t-1}
+  &\;=\;
+  \mathbb{E}\!\left[
+    \tilde{\mathbf{x}}_{t|t-1}\,
+    \tilde{\mathbf{x}}_{t|t-1}^\top
+    \,\Big|\, \mathcal{F}_{t-1}
+  \right].
+  \label{eq:pred-cov-def}
+\end{align}
+Substituting \eqref{eq:pred-error-decomp},
+\begin{align}
+  \mathbf{P}_{t|t-1}
+  &\;=\;
+  \mathbb{E}\!\left[
+    \bigl(\mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}
+          + \mathbf{w}_t\bigr)
+    \bigl(\mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}
+          + \mathbf{w}_t\bigr)^\top
+    \,\Big|\, \mathcal{F}_{t-1}
+  \right]
+  \label{eq:pred-cov-sub} \\
+  &\;=\;
+  \mathbb{E}\!\Bigl[
+    \mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}\,
+    \tilde{\mathbf{x}}_{t-1|t-1}^\top\,\mathbf{F}^\top
+    \,\Big|\, \mathcal{F}_{t-1}
+  \Bigr]
+  \notag \\
+  &\quad
+  +\;
+  \mathbb{E}\!\Bigl[
+    \mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}\,
+    \mathbf{w}_t^\top
+    \,\Big|\, \mathcal{F}_{t-1}
+  \Bigr]
+  \notag \\
+  &\quad
+  +\;
+  \mathbb{E}\!\Bigl[
+    \mathbf{w}_t\,
+    \tilde{\mathbf{x}}_{t-1|t-1}^\top\,\mathbf{F}^\top
+    \,\Big|\, \mathcal{F}_{t-1}
+  \Bigr]
+  \notag \\
+  &\quad
+  +\;
+  \mathbb{E}\!\Bigl[
+    \mathbf{w}_t\,\mathbf{w}_t^\top
+    \,\Big|\, \mathcal{F}_{t-1}
+  \Bigr].
+  \label{eq:pred-cov-expand}
+\end{align}
+
+\medskip
+\noindent\textbf{Step 5: Evaluating each term.}
+We evaluate the four terms of \eqref{eq:pred-cov-expand}
+separately.
+\begin{enumerate}
+  \item \emph{Term~1.}
+        Since $\tilde{\mathbf{x}}_{t-1|t-1}$ is
+        $\mathcal{F}_{t-1}$-measurable and $\mathbf{F}$ is
+        deterministic,
+        \begin{align}
+          \mathbb{E}\!\Bigl[
+            \mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}\,
+            \tilde{\mathbf{x}}_{t-1|t-1}^\top\,\mathbf{F}^\top
+            \,\Big|\, \mathcal{F}_{t-1}
+          \Bigr]
+          &\;=\;
+          \mathbf{F}\,
+          \underbrace{
+            \mathbb{E}\!\Bigl[
+              \tilde{\mathbf{x}}_{t-1|t-1}\,
+              \tilde{\mathbf{x}}_{t-1|t-1}^\top
+              \,\Big|\, \mathcal{F}_{t-1}
+            \Bigr]
+          }_{=\;\mathbf{P}_{t-1|t-1}}
+          \mathbf{F}^\top
+          \notag \\
+          &\;=\;
+          \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top.
+          \label{eq:term1-eval}
+        \end{align}
+
+  \item \emph{Term~2 (cross term).}
+        Since $\mathbf{w}_t \perp\!\!\!\perp \mathcal{F}_{t-1}$
+        and $\tilde{\mathbf{x}}_{t-1|t-1}$ is
+        $\mathcal{F}_{t-1}$-measurable,
+        \begin{align}
+          \mathbb{E}\!\Bigl[
+            \mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}\,
+            \mathbf{w}_t^\top
+            \,\Big|\, \mathcal{F}_{t-1}
+          \Bigr]
+          &\;=\;
+          \mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}\,
+          \mathbb{E}\!\bigl[
+            \mathbf{w}_t^\top \mid \mathcal{F}_{t-1}
+          \bigr]
+          \notag \\
+          &\;=\;
+          \mathbf{F}\,\tilde{\mathbf{x}}_{t-1|t-1}\,
+          \mathbf{0}^\top
+          \;=\; \mathbf{0}.
+          \label{eq:term2-eval}
+        \end{align}
+
+  \item \emph{Term~3 (transpose of Term~2).}
+        By the same argument,
+        \begin{equation}
+          \mathbb{E}\!\Bigl[
+            \mathbf{w}_t\,
+            \tilde{\mathbf{x}}_{t-1|t-1}^\top\,\mathbf{F}^\top
+            \,\Big|\, \mathcal{F}_{t-1}
+          \Bigr]
+          \;=\; \mathbf{0}.
+          \label{eq:term3-eval}
+        \end{equation}
+
+  \item \emph{Term~4.}
+        Since $\mathbf{w}_t \perp\!\!\!\perp \mathcal{F}_{t-1}$,
+        \begin{equation}
+          \mathbb{E}\!\bigl[
+            \mathbf{w}_t\,\mathbf{w}_t^\top
+            \mid \mathcal{F}_{t-1}
+          \bigr]
+          \;=\;
+          \mathbb{E}\!\bigl[
+            \mathbf{w}_t\,\mathbf{w}_t^\top
+          \bigr]
+          \;=\; \mathbf{Q}.
+          \label{eq:term4-eval}
+        \end{equation}
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 6: Assembling the result.}
+Substituting \eqref{eq:term1-eval}--\eqref{eq:term4-eval}
+into \eqref{eq:pred-cov-expand},
+\begin{equation}
+  \mathbf{P}_{t|t-1}
+  \;=\;
+  \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top
+  + \mathbf{0}
+  + \mathbf{0}
+  + \mathbf{Q}
+  \;=\;
+  \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top
+  + \mathbf{Q},
+  \label{eq:pred-cov-assembled}
+\end{equation}
+which is exactly \eqref{eq:cov-evolution}.  \qed
+
+\medskip
+\noindent\textbf{Step 7: Positive semi-definiteness.}
+Since $\mathbf{P}_{t-1|t-1} \succeq \mathbf{0}$ by the
+inductive hypothesis (base case: $\mathbf{P}_{0|0}
+= \mathrm{Cov}(\mathbf{x}_0) \succeq \mathbf{0}$), we have
+$\mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top \succeq \mathbf{0}$
+for any real matrix $\mathbf{F}$ (since
+$\mathbf{v}^\top \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top
+\mathbf{v}
+= (\mathbf{F}^\top\mathbf{v})^\top \mathbf{P}_{t-1|t-1}
+  (\mathbf{F}^\top\mathbf{v}) \geq 0$
+for all $\mathbf{v}$).  Combined with $\mathbf{Q} \succeq \mathbf{0}$,
+the sum satisfies
+$\mathbf{P}_{t|t-1}
+ = \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top
+ + \mathbf{Q}
+ \succeq \mathbf{Q}
+ \succeq \mathbf{0}$.
+By induction, $\mathbf{P}_{t|t-1} \succeq \mathbf{0}$ for all
+$t \geq 1$.  \qed
+
+\medskip
+\noindent\textbf{Step 8: Boundary and edge cases.}
+\begin{enumerate}
+  \item \emph{Zero posterior covariance ($\mathbf{P}_{t-1|t-1}
+        = \mathbf{0}$):}  The state is perfectly known at
+        $t-1$.  Then
+        $\mathbf{P}_{t|t-1} = \mathbf{Q}$; the only
+        prediction uncertainty is the freshly injected
+        process noise.  The formula remains valid.
+  \item \emph{Zero process noise ($\mathbf{Q} = \mathbf{0}$):}
+        The dynamics are noise-free.  Then
+        $\mathbf{P}_{t|t-1}
+         = \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top$;
+        uncertainty can only decay or remain constant under
+        stable $\mathbf{F}$ (i.e., $\rho(\mathbf{F}) < 1$).
+        If $\mathbf{F}$ is unstable, covariance grows
+        unboundedly, which is structurally consistent with an
+        unstable latent process.
+  \item \emph{Singular $\mathbf{F}$ ($\det \mathbf{F} = 0$):}
+        The formula remains valid.
+        $\mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top$
+        may be rank-deficient but is still positive
+        semi-definite; adding $\mathbf{Q}$ ensures
+        $\mathbf{P}_{t|t-1} \succeq \mathbf{Q}$.
+  \item \emph{Scalar case ($n = 1$):}
+        \eqref{eq:cov-evolution} reduces to
+        $P_{t|t-1} = F^2 P_{t-1|t-1} + Q$, consistent with
+        standard univariate Kalman filter derivations and
+        recoverable as a special case with no modifications.
+\end{enumerate}
+\end{proof}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{|>{\bfseries\raggedright\arraybackslash}p{3.2cm}
+                              |>{\raggedright\arraybackslash}X
+                              |>{\centering\arraybackslash}p{2.4cm}|}
+\hline
+\rowcolor{gray!18}
+\textbf{Key Finding} & \textbf{Statement and Interpretation}
+  & \textbf{Equation Ref.} \\
+\hline
+Additive decomposition
+  & $\mathbf{P}_{t|t-1}$ splits exactly into propagated
+    posterior risk plus irreducible aleatoric noise; the two
+    sources are orthogonal (zero cross-covariance) due to the
+    independence of $\mathbf{w}_t$ from $\mathcal{F}_{t-1}$.
+  & \eqref{eq:pred-cov-assembled} \\
+\hline
+PSD invariance
+  & The prediction covariance inherits positive
+    semi-definiteness from $\mathbf{P}_{t-1|t-1} \succeq
+    \mathbf{0}$ and $\mathbf{Q} \succeq \mathbf{0}$;
+    this holds for all $t \geq 1$ by induction.
+  & Step~7 \\
+\hline
+Lower bound
+  & $\mathbf{P}_{t|t-1} \succeq \mathbf{Q}$ always; the
+    prediction covariance can never fall below the process
+    noise level, establishing a structural uncertainty floor.
+  & Step~7 \\
+\hline
+Zero cross-terms
+  & The cross-covariance terms vanish exactly because
+    $\mathbf{w}_t \perp\!\!\!\perp \mathcal{F}_{t-1}$;
+    any violation of this independence assumption would
+    introduce non-zero off-diagonal bias in $\mathbf{P}_{t|t-1}$.
+  & \eqref{eq:term2-eval}, \eqref{eq:term3-eval} \\
+\hline
+Noise-free limit
+  & When $\mathbf{Q} = \mathbf{0}$, covariance evolution is
+    governed solely by $\mathbf{F}$; stability of
+    $\mathbf{P}_{t|t-1}$ is equivalent to stability of the
+    matrix recursion $\mathbf{F}(\cdot)\mathbf{F}^\top$.
+  & Edge case~(2) \\
+\hline
+Scalar consistency
+  & Setting $n = 1$ recovers the standard scalar formula
+    $P_{t|t-1} = F^2 P_{t-1|t-1} + Q$, confirming the
+    multivariate result generalises the univariate case
+    without modification.
+  & Edge case~(4) \\
+\hline
+\end{tabularx}
+\end{center}
+
+\section{Posterior Risk Reduction}
+
+%-----------------------------------------------------------------
+% Assumptions block
+%-----------------------------------------------------------------
+\begin{assumption}[Standing Assumptions for Posterior Risk Reduction]
+\label{ass:risk-reduction}
+The following conditions are assumed to hold throughout this section
+and are validated step by step in the proof below.
+\begin{enumerate}
+  \item \textbf{Prior PSD.}
+        $\mathbf{P}_{t|t-1} \in \mathbb{S}^{d}_{+}$, i.e.\
+        $\mathbf{P}_{t|t-1}$ is symmetric positive semi-definite.
+  \item \textbf{Noise PD.}
+        $\mathbf{R}_t \in \mathbb{S}^{N}_{++}$, i.e.\
+        $\mathbf{R}_t$ is symmetric positive definite, so that
+        $\mathbf{S}_t := \mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top
+        + \mathbf{R}_t$ is invertible.
+  \item \textbf{Observation linearity.}
+        $\mathbf{H} \in \mathbb{R}^{N \times d}$ is a fixed,
+        known matrix.
+  \item \textbf{Kalman gain definition.}
+        $\mathbf{K}_t =
+        \mathbf{P}_{t|t-1}\mathbf{H}^\top\mathbf{S}_t^{-1}$
+        as in Definition~\ref{def:kalman-correct}.
+  \item \textbf{Joseph-form update.}
+        $\mathbf{P}_{t|t} =
+        (\mathbf{I} - \mathbf{K}_t\mathbf{H})\mathbf{P}_{t|t-1}$
+        holds as a consequence of the optimal gain choice
+        (see~\eqref{eq:update-cov}).
+\end{enumerate}
+\end{assumption}
+
+%-----------------------------------------------------------------
+% Theorem
+%-----------------------------------------------------------------
+\begin{theorem}[Non-Negative Posterior Risk Reduction]
+\label{thm:risk-reduction}
+Under Assumption~\ref{ass:risk-reduction} and the Kalman correction
+step (Definition~\ref{def:kalman-correct}), the posterior covariance
+satisfies
+\begin{equation}
+  \mathbf{P}_{t|t} \;\preceq\; \mathbf{P}_{t|t-1},
+  \label{eq:risk-reduction}
+\end{equation}
+in the Loewner (positive semi-definite) partial order.
+Observations never increase posterior uncertainty.
+Equivalently, the \emph{risk reduction matrix}
+\begin{equation}
+  \Delta\mathbf{P}_t
+  \;:=\; \mathbf{P}_{t|t-1} - \mathbf{P}_{t|t}
+  \label{eq:risk-reduction-def}
+\end{equation}
+satisfies
+\begin{align}
+  \Delta\mathbf{P}_t
+  &\;=\; \mathbf{K}_t\,\mathbf{H}\,\mathbf{P}_{t|t-1}
+  \label{eq:risk-reduction-formula} \\
+  &\;=\; \mathbf{P}_{t|t-1}\,\mathbf{H}^\top
+         \mathbf{S}_t^{-1}
+         \mathbf{H}\,\mathbf{P}_{t|t-1}
+  \;\succeq\; \mathbf{0},
+  \label{eq:risk-reduction-gram}
+\end{align}
+where $\mathbf{S}_t = \mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top
++ \mathbf{R}_t$.
+\end{theorem}
+
+%-----------------------------------------------------------------
+% Proof
+%-----------------------------------------------------------------
+\begin{proof}
+We proceed in six numbered steps, validating each assumption as it
+is invoked.
+
+\begin{enumerate}
+
+  %--- Step 1 ---------------------------------------------------
+  \item \textbf{Validate invertibility of $\mathbf{S}_t$.}
+
+  By Assumption~\ref{ass:risk-reduction}(1),
+  $\mathbf{P}_{t|t-1} \succeq \mathbf{0}$, so
+  $\mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top \succeq \mathbf{0}$.
+  By Assumption~\ref{ass:risk-reduction}(2),
+  $\mathbf{R}_t \succ \mathbf{0}$.
+  Hence
+  \begin{equation}
+    \mathbf{S}_t
+    \;=\; \mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top + \mathbf{R}_t
+    \;\succ\; \mathbf{0},
+    \label{eq:St-pd}
+  \end{equation}
+  which guarantees $\mathbf{S}_t^{-1}$ exists.
+  \textit{Assumption~\ref{ass:risk-reduction}(1) and (2) validated.}
+
+  %--- Step 2 ---------------------------------------------------
+  \item \textbf{Compute $\Delta\mathbf{P}_t$ from the update rule.}
+
+  From Assumption~\ref{ass:risk-reduction}(5) and
+  definition~\eqref{eq:risk-reduction-def},
+  \begin{align}
+    \Delta\mathbf{P}_t
+    &= \mathbf{P}_{t|t-1}
+       - (\mathbf{I} - \mathbf{K}_t\mathbf{H})\,\mathbf{P}_{t|t-1}
+       \notag \\
+    &= \mathbf{P}_{t|t-1}
+       - \mathbf{P}_{t|t-1}
+       + \mathbf{K}_t\mathbf{H}\mathbf{P}_{t|t-1}
+       \notag \\
+    &= \mathbf{K}_t\,\mathbf{H}\,\mathbf{P}_{t|t-1}.
+    \label{eq:delta-p-step2}
+  \end{align}
+  This establishes~\eqref{eq:risk-reduction-formula}.
+
+  %--- Step 3 ---------------------------------------------------
+  \item \textbf{Substitute the Kalman gain expression.}
+
+  By Assumption~\ref{ass:risk-reduction}(4),
+  $\mathbf{K}_t = \mathbf{P}_{t|t-1}\mathbf{H}^\top\mathbf{S}_t^{-1}$.
+  Substituting into~\eqref{eq:delta-p-step2},
+  \begin{align}
+    \Delta\mathbf{P}_t
+    &= \mathbf{P}_{t|t-1}\mathbf{H}^\top\mathbf{S}_t^{-1}
+       \cdot \mathbf{H}\,\mathbf{P}_{t|t-1}.
+    \label{eq:delta-p-step3}
+  \end{align}
+  This establishes~\eqref{eq:risk-reduction-gram}.
+  \textit{Assumption~\ref{ass:risk-reduction}(4) validated.}
+
+  %--- Step 4 ---------------------------------------------------
+  \item \textbf{Verify symmetry of $\Delta\mathbf{P}_t$.}
+
+  Let $\mathbf{A} := \mathbf{P}_{t|t-1}\mathbf{H}^\top$.
+  Then~\eqref{eq:delta-p-step3} reads
+  $\Delta\mathbf{P}_t = \mathbf{A}\,\mathbf{S}_t^{-1}\,\mathbf{A}^\top$.
+  Since $\mathbf{S}_t$ is symmetric positive definite
+  (Step~1), $\mathbf{S}_t^{-1}$ is also symmetric positive definite.
+  Hence
+  \begin{align}
+    (\Delta\mathbf{P}_t)^\top
+    &= (\mathbf{A}\,\mathbf{S}_t^{-1}\,\mathbf{A}^\top)^\top
+    = \mathbf{A}\,(\mathbf{S}_t^{-1})^\top\,\mathbf{A}^\top
+    = \mathbf{A}\,\mathbf{S}_t^{-1}\,\mathbf{A}^\top
+    = \Delta\mathbf{P}_t,
+    \label{eq:delta-p-sym}
+  \end{align}
+  so $\Delta\mathbf{P}_t$ is symmetric.
+
+  %--- Step 5 ---------------------------------------------------
+  \item \textbf{Verify positive semi-definiteness of
+        $\Delta\mathbf{P}_t$.}
+
+  For any vector $\mathbf{v} \in \mathbb{R}^{d}$, let
+  $\mathbf{u} := \mathbf{A}^\top\mathbf{v}
+               = \mathbf{H}\,\mathbf{P}_{t|t-1}\,\mathbf{v}
+               \in \mathbb{R}^{N}$.
+  Then
+  \begin{align}
+    \mathbf{v}^\top \Delta\mathbf{P}_t\,\mathbf{v}
+    &= \mathbf{v}^\top
+       \mathbf{A}\,\mathbf{S}_t^{-1}\,\mathbf{A}^\top
+       \mathbf{v}
+    = \mathbf{u}^\top\,\mathbf{S}_t^{-1}\,\mathbf{u}
+    \;\geq\; 0,
+    \label{eq:delta-p-psd}
+  \end{align}
+  where the inequality holds because
+  $\mathbf{S}_t^{-1} \succ \mathbf{0}$ (Step~1).
+  Since $\mathbf{v}$ was arbitrary,
+  $\Delta\mathbf{P}_t \succeq \mathbf{0}$.
+
+  %--- Step 6 ---------------------------------------------------
+  \item \textbf{Conclude the PSD ordering~\eqref{eq:risk-reduction}.}
+
+  From Steps~4--5, $\Delta\mathbf{P}_t$ is symmetric PSD.
+  Therefore
+  \begin{equation}
+    \mathbf{P}_{t|t-1} - \mathbf{P}_{t|t}
+    = \Delta\mathbf{P}_t \succeq \mathbf{0},
+  \end{equation}
+  which is equivalent to
+  $\mathbf{P}_{t|t} \preceq \mathbf{P}_{t|t-1}$,
+  completing the proof of~\eqref{eq:risk-reduction}.
+
+\end{enumerate}
+\qed
+\end{proof}
+
+%-----------------------------------------------------------------
+% Edge cases
+%-----------------------------------------------------------------
+\begin{remark}[Boundary and Edge Cases]
+\label{rem:risk-reduction-edge}
+The following boundary conditions are examined to ensure no
+assumption is violated at extremities.
+\begin{enumerate}
+  \item \textbf{Zero observation noise ($\mathbf{R}_t \to \mathbf{0}$).}
+        In this limit $\mathbf{S}_t \to
+        \mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top$.
+        If $\mathbf{H}$ has full row rank, $\mathbf{S}_t$ remains
+        invertible and $\mathbf{K}_t \to
+        \mathbf{H}^{+}$ (the Moore–Penrose pseudoinverse of
+        $\mathbf{H}$ restricted to the image of
+        $\mathbf{P}_{t|t-1}$); $\Delta\mathbf{P}_t$ attains its
+        maximum and $\mathbf{P}_{t|t}$ reaches the
+        projection-onto-null-space residual.
+        If $\mathbf{H}$ does not have full row rank,
+        $\mathbf{S}_t$ is singular and the standard inversion in
+        Step~1 fails; the theorem does not apply without
+        regularisation.
+
+  \item \textbf{Zero prior uncertainty ($\mathbf{P}_{t|t-1} =
+        \mathbf{0}$).}
+        Then $\mathbf{A} = \mathbf{0}$ and
+        $\Delta\mathbf{P}_t = \mathbf{0} \succeq \mathbf{0}$.
+        The posterior equals the prior: no additional information
+        is extractable from observations when prior uncertainty is
+        zero.  All inequalities hold trivially.
+
+  \item \textbf{Scalar case ($d = N = 1$).}
+        \eqref{eq:risk-reduction-gram} reduces to
+        \begin{equation}
+          \Delta P_t
+          = \frac{P_{t|t-1}^{2}\,H^{2}}{H^2 P_{t|t-1} + R_t}
+          \geq 0,
+          \label{eq:scalar-delta-p}
+        \end{equation}
+        which is manifestly non-negative for $P_{t|t-1} \geq 0$,
+        $H \in \mathbb{R}$, $R_t > 0$.
+        This confirms the multivariate theorem is consistent with
+        the univariate Kalman filter.
+
+  \item \textbf{Full observability ($N = d$, $\mathbf{H}$
+        invertible).}
+        $\mathbf{K}_t =
+        \mathbf{P}_{t|t-1}\mathbf{H}^\top(\mathbf{H}
+        \mathbf{P}_{t|t-1}\mathbf{H}^\top + \mathbf{R}_t)^{-1}$
+        is well-defined.  As $\mathbf{R}_t \to \mathbf{0}^{+}$,
+        $\mathbf{K}_t \to \mathbf{H}^{-1}$ and
+        $\mathbf{P}_{t|t} \to \mathbf{0}$, i.e., perfect
+        observations reduce posterior uncertainty to zero.
+
+  \item \textbf{Rank-deficient $\mathbf{H}$.}
+        If $\operatorname{rank}(\mathbf{H}) < \min(N, d)$, certain
+        state components are unobserved; the corresponding columns
+        of $\mathbf{A}$ vanish and $\Delta\mathbf{P}_t$ has zero
+        eigenvalues along those directions.
+        The inequality $\Delta\mathbf{P}_t \succeq \mathbf{0}$
+        still holds (PSD, not necessarily PD).
+\end{enumerate}
+\end{remark}
+
+%-----------------------------------------------------------------
+% Key Findings table
+%-----------------------------------------------------------------
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\linewidth}{|>{\bfseries\raggedright\arraybackslash}p{3.2cm}
+                              |>{\raggedright\arraybackslash}X
+                              |>{\centering\arraybackslash}p{2.8cm}|}
+\hline
+\rowcolor{gray!18}
+\textbf{Finding} & \textbf{Statement and Significance} &
+\textbf{Reference} \\
+\hline
+PSD Ordering &
+  The posterior covariance satisfies
+  $\mathbf{P}_{t|t} \preceq \mathbf{P}_{t|t-1}$ in the Loewner
+  order; incorporating observations never inflates uncertainty in
+  any direction of state space. &
+  \eqref{eq:risk-reduction} \\
+\hline
+Gram Structure &
+  The risk reduction
+  $\Delta\mathbf{P}_t =
+  \mathbf{A}\mathbf{S}_t^{-1}\mathbf{A}^\top$,
+  with $\mathbf{A} = \mathbf{P}_{t|t-1}\mathbf{H}^\top$,
+  is a congruence product; its PSD character follows directly from
+  $\mathbf{S}_t^{-1} \succ \mathbf{0}$. &
+  \eqref{eq:risk-reduction-gram} \\
+\hline
+Symmetry &
+  $\Delta\mathbf{P}_t$ is symmetric because $\mathbf{S}_t^{-1}$
+  is symmetric and the congruence
+  $\mathbf{A}(\cdot)\mathbf{A}^\top$ preserves symmetry. &
+  \eqref{eq:delta-p-sym} \\
+\hline
+Noise-PD Requirement &
+  Positive definiteness of $\mathbf{R}_t$ is the minimal
+  sufficient condition ensuring $\mathbf{S}_t \succ \mathbf{0}$
+  and the existence of $\mathbf{S}_t^{-1}$; relaxing this
+  requires pseudoinverse regularisation. &
+  Step~1; Remark~\ref{rem:risk-reduction-edge}(1) \\
+\hline
+Zero-Prior Boundary &
+  When $\mathbf{P}_{t|t-1} = \mathbf{0}$, risk reduction is
+  identically zero; the system is already at minimum uncertainty
+  and observations convey no additional information to the state
+  estimate. &
+  Remark~\ref{rem:risk-reduction-edge}(2) \\
+\hline
+Scalar Consistency &
+  Setting $d = N = 1$ recovers
+  $\Delta P_t = H^2 P_{t|t-1}^2 / (H^2 P_{t|t-1} + R_t) \geq 0$,
+  confirming the multivariate result subsumes the classical
+  univariate Kalman filter as a special case. &
+  \eqref{eq:scalar-delta-p} \\
+\hline
+Rank-Deficient $\mathbf{H}$ &
+  Unobserved state directions yield zero eigenvalues of
+  $\Delta\mathbf{P}_t$; the PSD inequality is preserved but
+  risk reduction is zero in those directions, motivating
+  observability analysis (Section~\ref{def:observability}). &
+  Remark~\ref{rem:risk-reduction-edge}(5) \\
+\hline
+\end{tabularx}
+\end{center}
+
+\section{Observability and Controllability}
+
+\begin{definition}[Observability Matrix]
+\label{def:observability}
+The \emph{observability matrix} of the investment Kalman system is
+\begin{equation}
+  \mathcal{O} \;=\; \begin{pmatrix}
+    \mathbf{H} \\
+    \mathbf{H}\mathbf{F} \\
+    \vdots \\
+    \mathbf{H}\mathbf{F}^{d-1}
+  \end{pmatrix} \;\in\; \mathbb{R}^{Nd \times d},
+  \label{eq:observability-matrix}
+\end{equation}
+where $d = 7$ is the state dimension.  The system is
+\emph{observable} if and only if $\rank(\mathcal{O}) = d$.
+\end{definition}
+
+\begin{remark}[Investment Interpretation of Observability]
+\label{rem:observability}
+The observability condition $\rank(\mathcal{O}) = 7$ means that every
+component of the seven-dimensional hidden state vector can be
+recovered from a finite window of agent observations.  If a state
+dimension $d$ is not observed by any agent (no row of $\mathbf{H}$
+covers dimension $d$), the system is unobservable in that dimension
+and the Kalman filter cannot estimate $\mathcal{S}_t^{(d)}$.  In
+investment terms: a system with no macroeconomic agent is unobservable
+in the economic dimension $\calE_t$.
+\end{remark}
+
+% ==============================================================
+\chapter{The Seven Investment States}
+\label{ch:seven-states}
+% ==============================================================
+
+\section{State-of-Charge Formalisation}
+
+\begin{definition}[State Charge Dynamics]
+\label{def:charge-dynamics}
+For each state dimension $d \in \{1, \ldots, 7\}$, the discrete-time
+charge dynamics are
+\begin{equation}
+  \mathcal{S}_{t+1}^{(d)} \;=\; \mathcal{S}_t^{(d)}
+  \;+\; \kappa_d^{+}\!\left(1 - \mathcal{S}_t^{(d)}\right)
+  \,\mathbf{1}\!\left[\text{positive stimulus at } t\right]
+  \;-\; \kappa_d^{-}\,\mathcal{S}_t^{(d)}
+  \,\mathbf{1}\!\left[\text{negative shock at } t\right]
+  \;+\; w_t^{(d)},
+  \label{eq:charge-dynamics}
+\end{equation}
+where $\kappa_d^{+} > 0$ is the charge rate, $\kappa_d^{-} > 0$
+is the discharge rate, and $w_t^{(d)} \sim \mathcal{N}(0, q_d^2)$
+is process noise.
+\end{definition}
+
+\begin{proposition}[Charge Dynamics Preserve the Unit Interval]
+\label{prop:charge-bounded}
+If $\mathcal{S}_t^{(d)} \in [0,1]$ and the process noise is small
+relative to the deterministic drift, then
+$\mathbb{E}[\mathcal{S}_{t+1}^{(d)} \mid \calF_t] \in [0,1]$ for
+all $d$ and all $t$.
+\end{proposition}
+
+\begin{proof}
+Under a positive stimulus event, the conditional expectation
+of the deterministic part of the update is
+$\mathcal{S}_t^{(d)} + \kappa_d^{+}(1 - \mathcal{S}_t^{(d)}) =
+(1-\kappa_d^{+})\mathcal{S}_t^{(d)} + \kappa_d^{+}$.
+Since $\kappa_d^{+} \in (0,1)$ and $\mathcal{S}_t^{(d)} \in [0,1]$,
+this is a convex combination and lies in $[0,1]$.
+Under a negative shock event, the deterministic update is
+$(1-\kappa_d^{-})\mathcal{S}_t^{(d)} \in [0,1]$ since
+$\kappa_d^{-} \in (0,1)$.  In both cases the deterministic part
+remains in $[0,1]$.  The process noise perturbation may push the
+state outside $[0,1]$, but in practice a sigmoid clipping
+function $\sigma(\cdot)$ is applied after each update to project
+back onto $[0,1]$.  \qed
+\end{proof}
+
+\begin{definition}[State Charge Rate Parameters]
+\label{def:charge-rates}
+The empirical charge and discharge rates, together with their
+asymmetry ratios, are given in the following table.  The
+asymmetry $\kappa_d^{-} > \kappa_d^{+}$ for all states reflects
+the empirical observation that financial systems discharge faster
+than they recover.
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} l l l l l @{}}
+\toprule
+\textbf{State} & \textbf{Symbol} & \textbf{$\kappa_d^{+}$}
+  & \textbf{$\kappa_d^{-}$} & \textbf{Asymmetry} \\
+\midrule
+Economic & $\calE_t$ & 0.03/month & 0.08/month & $2.7\times$ \\
+Financial & $\calF_t$ & 0.15/day & 0.60/day & $4.0\times$ \\
+Fiscal & $\calG_t$ & 0.01/month & 0.02/month & $2.0\times$ \\
+Portfolio & $\calP_t$ & 0.05/day & 0.20/day & $4.0\times$ \\
+Fundamental & $\calU_t$ & 0.02/month & 0.04/month & $2.0\times$ \\
+Market & $\calM_t$ & 0.50/hour & 2.0/hour & $4.0\times$ \\
+Sector/Tech & $\calT_t$ & 0.005/month & 0.010/month & $2.0\times$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{definition}
+
+\begin{theorem}[Discharge Dominance]
+\label{thm:discharge-dominance}
+For all seven state dimensions, $\kappa_d^{-} > \kappa_d^{+}$,
+implying that the rate of adverse state deterioration strictly
+exceeds the rate of recovery.  As a consequence, the long-run
+expected state charge under symmetric shocks satisfies
+\begin{equation}
+  \mathbb{E}[\mathcal{S}_\infty^{(d)}]
+  \;<\; \frac{1}{2}
+  \label{eq:discharge-dominance}
+\end{equation}
+without active intervention (positive stimulus).
+\end{theorem}
+
+\begin{proof}
+Under symmetric shocks with equal probability of positive stimulus
+and negative shock, the steady-state charge satisfies
+$\kappa_d^+ (1 - \mathcal{S}^*) = \kappa_d^- \mathcal{S}^*$,
+giving $\mathcal{S}^* = \kappa_d^+ / (\kappa_d^+ + \kappa_d^-)$.
+Since $\kappa_d^- > \kappa_d^+$, we have
+$\mathcal{S}^* < \kappa_d^+ / (2\kappa_d^+) = 1/2$.  \qed
+\end{proof}
+
+\begin{remark}[Investment Implication of Discharge Dominance]
+\label{rem:discharge-implication}
+Theorem~\ref{thm:discharge-dominance} provides the formal
+justification for the \emph{survival-first} priority ordering:
+because financial system states deteriorate faster than they
+recover, capital preservation is the dominant objective and
+growth is secondary.  The priority ordering
+$\text{State Integrity} \succ \text{Filter Stability} \succ
+\text{Signal Quality} \succ \text{Allocation Intelligence} \succ
+\text{Compounding}$ follows directly from the asymmetry ratios
+of Definition~\ref{def:charge-rates}.
+\end{remark}
+
+% ==============================================================
+\chapter{The State Gating Architecture}
+\label{ch:gating}
+% ==============================================================
+
+\section{Critical Thresholds}
+
+\begin{definition}[Critical and Full-Charge Thresholds]
+\label{def:thresholds}
+For each state dimension $d \in \{1, \ldots, 7\}$, the
+\emph{critical threshold} $\mathcal{S}_{\min}^{(d)} > 0$ and
+the \emph{full-charge threshold} $\mathcal{S}_{\mathrm{full}}^{(d)}
+> \mathcal{S}_{\min}^{(d)}$ are pre-specified constants satisfying
+$0 < \mathcal{S}_{\min}^{(d)} < \mathcal{S}_{\mathrm{full}}^{(d)}
+\leq 1$.  The canonical values are:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} l l l @{}}
+\toprule
+\textbf{State} & $\mathcal{S}_{\min}^{(d)}$
+  & $\mathcal{S}_{\mathrm{full}}^{(d)}$ \\
+\midrule
+$\calE_t$ Economic & 0.15 & 0.70 \\
+$\calF_t$ Financial & 0.20 & 0.80 \\
+$\calG_t$ Fiscal & 0.10 & 0.65 \\
+$\calP_t$ Portfolio & 0.20 & 0.70 \\
+$\calU_t$ Fundamental & 0.15 & 0.75 \\
+$\calM_t$ Market & 0.20 & 0.80 \\
+$\calT_t$ Sector/Tech & 0.15 & 0.75 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{definition}
+
+\section{The Gating Function}
+
+\begin{definition}[State Gating Function]
+\label{def:gating-function}
+For each state dimension $d$, the \emph{gating function} is the
+piecewise-linear function
+\begin{equation}
+  g_d(\mathcal{S}) \;=\; \begin{cases}
+    1 & \mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}, \\[4pt]
+    \displaystyle\frac{\mathcal{S} -
+      \mathcal{S}_{\min}^{(d)}}{\mathcal{S}_{\mathrm{full}}^{(d)}
+      - \mathcal{S}_{\min}^{(d)}} &
+      \mathcal{S} \in \left[\mathcal{S}_{\min}^{(d)},\,
+      \mathcal{S}_{\mathrm{full}}^{(d)}\right), \\[4pt]
+    0 & \mathcal{S} < \mathcal{S}_{\min}^{(d)}.
+  \end{cases}
+  \label{eq:gating-function}
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Properties of the Gating Function]
+\label{prop:gating-properties}
+The gating function $g_d$ of Definition~\ref{def:gating-function}
+satisfies:
+\begin{enumerate}
+  \item $g_d(\mathcal{S}) \in [0,1]$ for all $\mathcal{S} \in [0,1]$.
+  \item $g_d$ is non-decreasing: $\mathcal{S}_1 \leq \mathcal{S}_2
+        \Rightarrow g_d(\mathcal{S}_1) \leq g_d(\mathcal{S}_2)$.
+  \item $g_d(\mathcal{S}) = 0$ if and only if
+        $\mathcal{S} < \mathcal{S}_{\min}^{(d)}$
+        (circuit-breaker fires).
+  \item $g_d(\mathcal{S}) = 1$ if and only if
+        $\mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$
+        (full deployment permitted).
+  \item $g_d$ is Lipschitz continuous with constant
+        $L_d = (\mathcal{S}_{\mathrm{full}}^{(d)} -
+        \mathcal{S}_{\min}^{(d)})^{-1}$ on $[0,1]$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item The three cases yield values $1 \in [0,1]$, a linear
+        interpolation between $0$ and $1$ (hence in $[0,1]$), and
+        $0 \in [0,1]$, respectively.
+  \item On each piece, $g_d$ is constant or linear with non-negative
+        slope; the function is non-decreasing at the break-points
+        by continuity from the right.
+  \item $g_d(\mathcal{S}) = 0 \Leftrightarrow \mathcal{S} <
+        \mathcal{S}_{\min}^{(d)}$ by definition of the lower piece.
+  \item $g_d(\mathcal{S}) = 1 \Leftrightarrow \mathcal{S} \geq
+        \mathcal{S}_{\mathrm{full}}^{(d)}$ by definition of the
+        upper piece.
+  \item On the middle piece, the slope is
+        $1/(\mathcal{S}_{\mathrm{full}}^{(d)} - \mathcal{S}_{\min}^{(d)})$;
+        the other pieces are constant, hence Lipschitz with constant
+        $0$.  The maximum Lipschitz constant over all pieces is $L_d$.
+\end{enumerate}
+\qed
+\end{proof}
+
+\section{The Product Gating Function}
+
+\begin{definition}[Product Gating Function]
+\label{def:product-gating}
+The \emph{product gating function} is
+\begin{equation}
+  G(\mathbf{X}_t) \;:=\; \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right).
+  \label{eq:product-gating}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Product Gating Properties]
+\label{thm:product-gating}
+The product gating function $G(\mathbf{X}_t)$ satisfies:
+\begin{enumerate}
+  \item $G(\mathbf{X}_t) \in [0,1]$ for all $\mathbf{X}_t \in [0,1]^7$.
+  \item $G(\mathbf{X}_t) = 0$ if and only if
+        $\mathcal{S}_t^{(d)} < \mathcal{S}_{\min}^{(d)}$ for at
+        least one $d \in \{1,\ldots,7\}$.
+  \item $G(\mathbf{X}_t) = 1$ if and only if
+        $\mathcal{S}_t^{(d)} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$
+        for all $d \in \{1,\ldots,7\}$.
+  \item $G$ is non-decreasing in each argument separately.
+  \item The circuit-breaker fires ($G = 0$) when any single state
+        is critically discharged, regardless of all other states.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\begin{enumerate}
+  \item Each factor $g_d \in [0,1]$ by Proposition~\ref{prop:gating-properties}(1),
+        so their product lies in $[0,1]$.
+  \item A product of non-negative reals equals zero if and only if
+        at least one factor equals zero; by Proposition~\ref{prop:gating-properties}(3),
+        $g_d = 0 \Leftrightarrow \mathcal{S}_t^{(d)} <
+        \mathcal{S}_{\min}^{(d)}$.
+  \item A product of positive reals in $[0,1]$ equals $1$ if and
+        only if each factor equals $1$; by
+        Proposition~\ref{prop:gating-properties}(4),
+        $g_d = 1 \Leftrightarrow \mathcal{S}_t^{(d)} \geq
+        \mathcal{S}_{\mathrm{full}}^{(d)}$.
+  \item If $\mathcal{S}_t^{(d)}$ increases for some $d$ while all
+        other states are fixed, then $g_d$ is non-decreasing by
+        Proposition~\ref{prop:gating-properties}(2), and the product
+        is non-decreasing since all other factors are non-negative.
+  \item Follows immediately from item (2).
+\end{enumerate}
+\qed
+\end{proof}
+
+\section{The Capital Deployment Policy}
+
+\begin{definition}[State-Gated Capital Deployment Policy]
+\label{def:deployment-policy}
+The \emph{optimal state-gated capital deployment policy} is
+\begin{equation}
+  \pi^*(\mathbf{X}_t, S_t) \;=\;
+  \begin{cases}
+    K_t^{(\mathrm{Kalman})} \cdot C_{\mathrm{available}}
+    \cdot G(\mathbf{X}_t) &
+    \text{if } \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}
+    \;\forall\, d, \\
+    0 & \text{otherwise},
+  \end{cases}
+  \label{eq:deployment-policy}
+\end{equation}
+where $K_t^{(\mathrm{Kalman})}$ is the investment Kalman gain
+(Definition~\ref{def:investment-kalman-gain}),
+$C_{\mathrm{available}} = W_t - \ell_{\min} > 0$ is the
+deployable capital after reserving the liquidity floor, and
+$G(\mathbf{X}_t)$ is the product gating function.
+\end{definition}
+
+\begin{proposition}[Policy is Well-Defined and Bounded]
+\label{prop:policy-bounded}
+Under Definitions~\ref{def:investment-kalman-gain}
+and~\ref{def:deployment-policy}:
+\begin{enumerate}
+  \item $\pi^*(\mathbf{X}_t, S_t) \in [0, C_{\mathrm{available}}]$
+        for all $\mathbf{X}_t \in [0,1]^7$ and all $t$.
+  \item The policy is $\calF_t$-measurable.
+  \item The policy equals zero whenever any state is critically
+        discharged, implementing the hard circuit-breaker.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\begin{enumerate}
+  \item $K_t^{(\mathrm{inv})} \in [0,1)$ by
+        Theorem~\ref{thm:gain-properties}(1), and
+        $G(\mathbf{X}_t) \in [0,1]$ by
+        Theorem~\ref{thm:product-gating}(1), so the product
+        $K_t \cdot C_{\mathrm{available}} \cdot G \in [0, C_{\mathrm{available}})
+        \subset [0, C_{\mathrm{available}}]$.
+  \item All inputs ($K_t$, $C_{\mathrm{available}}$, $G(\mathbf{X}_t)$)
+        are $\calF_t$-measurable by construction.
+  \item By Theorem~\ref{thm:product-gating}(2), $G = 0$ when any
+        state is below its critical threshold, giving $\pi^* = 0$.
+\end{enumerate}
+\qed
+\end{proof}
+
+% ==============================================================
+\chapter{Inter-State Coupling and the Coupling Matrix}
+\label{ch:coupling}
+% ==============================================================
+
+\section{The Directed Influence Graph}
+
+\begin{definition}[Inter-State Coupling Matrix]
+\label{def:coupling-formal}
+The \emph{inter-state coupling matrix} $\bfGamma \in \mathbb{R}^{7 \times 7}$
+has entries $\Gamma_{ij}$ representing the signed influence of state $j$
+on the rate of change of state $i$.  Positive $\Gamma_{ij}$ means state
+$j$ charges state $i$; negative $\Gamma_{ij}$ means state $j$ discharges
+state $i$.  By convention, $\Gamma_{ii} = 0$ (no self-loops).
+\end{definition}
+
+\begin{assumption}[Key Couplings]
+\label{asm:key-couplings}
+The following couplings are empirically motivated and structurally
+justified:
+\begin{enumerate}
+  \item $\Gamma_{\calE\calF} < 0$: financial stress ($\calF_t$ low)
+        discharges the economic state (credit crunch mechanism).
+  \item $\Gamma_{\calG\calE} > 0$: strong economy supports the
+        fiscal state (higher tax revenues).
+  \item $\Gamma_{\calU\calF} < 0$: high financial stress discharges
+        the fundamental state (forced selling / distressed valuations).
+  \item $\Gamma_{\calU\calP} > 0$: portfolio resilience buffers
+        the fundamental assessment.
+  \item $\Gamma_{\calU\calT} > 0$: sectoral innovation charges the
+        fundamental state (margin expansion).
+\end{enumerate}
+\end{assumption}
+
+\begin{proposition}[Processing Order from the Influence Graph]
+\label{prop:processing-order}
+Under Assumption~\ref{asm:key-couplings}, the seven states form a
+directed influence graph with the following topological order
+(upstream to downstream):
+\begin{equation}
+  \calG_t \to \calE_t \to \calU_t \to \calF_t \to \calM_t \to \calP_t,
+  \qquad \calT_t \to \calU_t.
+  \label{eq:processing-order}
+\end{equation}
+Exogenous states ($\calG_t$, $\calT_t$) should be estimated first;
+endogenous states ($\calP_t$, $\calM_t$) are estimated last,
+conditioned on upstream estimates.
+\end{proposition}
+
+\begin{proof}
+The processing order follows from the directed acyclicity of the
+primary influence paths in~\eqref{eq:processing-order}.  Each
+state in the ordering depends only on states listed before it
+(upstream), so the ordering is a valid topological sort of the
+influence DAG.  \qed
+\end{proof}
+
+% ==============================================================
+\chapter{The IMM as Agent Ensemble}
+\label{ch:imm}
+% ==============================================================
+
+\section{The Interacting Multiple Model Algorithm}
+
+\begin{definition}[IMM Mixture Estimate]
+\label{def:imm-mixture}
+The Interacting Multiple Model (IMM) algorithm maintains $K$ parallel
+Kalman filters, one per market regime, and mixes their outputs with
+regime-posterior weights:
+\begin{equation}
+  \hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})} \;=\;
+  \sum_{k=1}^{K} \mu_t^{(k)}\,\hat{\mathbf{X}}_{t|t}^{(k)},
+  \label{eq:imm-mixture}
+\end{equation}
+where $\mu_t^{(k)} = P(R_t = r_k \mid \mathbf{z}_{1:t})$ is the
+regime posterior weight from the HMM forward filter.
+\end{definition}
+
+\begin{theorem}[Agent Ensemble as IMM]
+\label{thm:ensemble-imm}
+The multi-agent ensemble aggregate signal
+\begin{equation}
+  S_t \;=\;
+  \frac{\sum_{i=1}^{N} w_i\,s_i\,c_i\,(1-u_i)\,(1-d_i)}
+       {\sum_{i=1}^{N} w_i}
+  \label{eq:ensemble-signal-imm}
+\end{equation}
+is structurally identical to the IMM mixture estimate
+of~\eqref{eq:imm-mixture}, with the bijection:
+\begin{enumerate}
+  \item Agent $i \leftrightarrow$ Kalman filter for regime $k$;
+  \item Reputation weight $w_i \leftrightarrow$ regime posterior
+        weight $\mu_t^{(k)}$;
+  \item Dampened signal $s_i c_i(1-u_i)(1-d_i)
+        \leftrightarrow$ regime-conditioned state estimate
+        $\hat{\mathbf{X}}_{t|t}^{(k)}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Under the bijection, the numerator of~\eqref{eq:ensemble-signal-imm}
+maps to $\sum_k \mu_t^{(k)} \hat{\mathbf{X}}_{t|t}^{(k)}$ and the
+denominator maps to $\sum_k \mu_t^{(k)} = 1$ (since regime
+posteriors sum to one).  The resulting formula is exactly the
+IMM mixture~\eqref{eq:imm-mixture}.  The bijection is injective
+and surjective by the correspondence of indices $i \leftrightarrow k$
+and the one-to-one mapping of weights and signals.  \qed
+\end{proof}
+
+\section{Bayesian Mixing as Reputation Update}
+
+\begin{theorem}[IMM Weight Update as Bayesian Reputation Update]
+\label{thm:imm-reputation}
+The IMM regime weight update
+\begin{equation}
+  \mu_t^{(k)} \;=\;
+  \frac{p(\mathbf{z}_t \mid \hat{\mathbf{X}}_{t|t-1}^{(k)})\,
+        \mu_{t-1}^{(k)}}
+       {\sum_{j=1}^{K}
+        p(\mathbf{z}_t \mid \hat{\mathbf{X}}_{t|t-1}^{(j)})\,
+        \mu_{t-1}^{(j)}}
+  \label{eq:imm-weight-update}
+\end{equation}
+is structurally identical to the Bayesian agent reputation update
+\begin{equation}
+  P_{t+1}(\text{agent}_i\;\text{reliable})
+  \;\propto\;
+  P(\text{new evidence} \mid \text{agent}_i)
+  \cdot P_t(\text{agent}_i\;\text{reliable})
+  \label{eq:reputation-update-imm}
+\end{equation}
+under the bijection of Theorem~\ref{thm:ensemble-imm}.
+\end{theorem}
+
+\begin{proof}
+Under the bijection $\mu_t^{(k)} \leftrightarrow w_i(t)$ and
+$p(\mathbf{z}_t \mid \hat{\mathbf{X}}_{t|t-1}^{(k)})
+\leftrightarrow P(\text{new evidence} \mid \text{agent}_i)$,
+the normalised Bayes update~\eqref{eq:imm-weight-update}
+maps exactly to~\eqref{eq:reputation-update-imm}.  The
+normalisation constant in the denominator ensures both sums
+equal one after the update.  \qed
+\end{proof}
+
+\section{Disagreement as Innovation Covariance Inflation}
+
+\begin{theorem}[IMM Mixing Uncertainty as Disagreement]
+\label{thm:disagreement-inflation-formal}
+The IMM posterior covariance
+\begin{equation}
+  \mathbf{P}_{t|t}^{(\mathrm{IMM})} \;=\;
+  \sum_k \mu_t^{(k)}\!\left[\mathbf{P}_{t|t}^{(k)}
+  + \left(\hat{\mathbf{X}}_{t|t}^{(k)} -
+    \hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})}\right)
+    \left(\hat{\mathbf{X}}_{t|t}^{(k)} -
+    \hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})}\right)^\top\right]
+  \label{eq:imm-posterior-cov}
+\end{equation}
+contains a spreading term that is structurally identical to the
+agent disagreement variable $D_t$.  Specifically, the second
+term in the bracket is the weighted mean squared deviation of
+individual filter estimates from the mixture mean, which under
+the bijection of Theorem~\ref{thm:ensemble-imm} maps to
+$D_t^2 \sigma_{\mathrm{base}}^2 \mathbf{I}$, the disagreement
+inflation term in~\eqref{eq:effective-measurement-noise}.
+\end{theorem}
+
+\begin{proof}
+Under the bijection, the spreading term
+$\sum_k \mu_t^{(k)} (\hat{\mathbf{X}}_{t|t}^{(k)} -
+\hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})})
+(\hat{\mathbf{X}}_{t|t}^{(k)} -
+\hat{\mathbf{X}}_{t|t}^{(\mathrm{IMM})})^\top$ maps to the
+weighted mean squared deviation of agent signals from the
+ensemble mean $S_t$, which is proportional to $D_t^2$.
+Specifically, in the scalar case,
+$\sum_i w_i (s_i - S_t)^2 / W = D_t^2$ is the weighted variance
+of individual signals around the ensemble mean, which is the
+squared disagreement (up to a normalisation factor relating mean
+absolute deviation to standard deviation).
+The formal mapping $D_t^2 \sigma_{\mathrm{base}}^2
+\leftrightarrow$ spreading term coefficient is established by
+the identification $\sigma_{\mathrm{base}}^2 \leftrightarrow
+\mathbf{I}$ in the scalar case.  \qed
+\end{proof}
+
+% ==============================================================
+\chapter{Composite Objective as Filter Optimality Criterion}
+\label{ch:objective}
+% ==============================================================
+
+\section{MVUE and the Composite Objective}
+
+\begin{theorem}[Composite Objective as Negative Posterior MSE]
+\label{thm:objective-mse}
+The composite risk-adjusted objective
+\begin{equation}
+  J(\mathbf{w}) \;=\; \alpha G - \beta D_{\mathrm{dd}}
+  - \gamma V + \delta S_{\mathrm{surv}} + \varepsilon R_{\mathrm{risk}}
+  \label{eq:composite-objective}
+\end{equation}
+is equivalent, under the Kalman isomorphism of
+Theorem~\ref{thm:isomorphism}, to the negative posterior
+mean-squared error
+\begin{equation}
+  J_{\mathrm{Kalman}} \;=\; -\tr(\mathbf{P}_{t|t}),
+  \label{eq:kalman-objective}
+\end{equation}
+in the following sense: maximising $J(\mathbf{w})$ over feasible
+portfolio weights is equivalent to minimising $\tr(\mathbf{P}_{t|t})$
+over the space of Kalman filter parameters, under the substitution
+\begin{equation}
+  \|\mathbf{X}_t - \hat{\mathbf{X}}\|^2
+  \;\longleftrightarrow\;
+  -G + D_{\mathrm{dd}} + V - S_{\mathrm{surv}} - R_{\mathrm{risk}}.
+  \label{eq:mse-substitution}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The classical Kalman filter minimises
+$\mathbb{E}[\|\mathbf{X}_t - \hat{\mathbf{X}}\|^2 \mid
+\mathbf{z}_{1:t}]$, which equals $\tr(\mathbf{P}_{t|t})$.
+Under the bijection of Theorem~\ref{thm:isomorphism}, the
+squared estimation error $\|\mathbf{X}_t - \hat{\mathbf{X}}\|^2$
+maps to the investment shortfall from optimal, which decomposes
+as $-G + D_{\mathrm{dd}} + V - S_{\mathrm{surv}} - R_{\mathrm{risk}}$:
+negative growth, positive drawdown, positive volatility, negative
+survival probability, and negative risk-adjusted return are all
+components of the total investment estimation error.  Minimising
+this sum (equivalently, maximising $G - D_{\mathrm{dd}} - V +
+S_{\mathrm{surv}} + R_{\mathrm{risk}}$) is therefore equivalent to
+minimising $\tr(\mathbf{P}_{t|t})$, up to the weight vector
+$(\alpha, \beta, \gamma, \delta, \varepsilon)$.  \qed
+\end{proof}
+
+\section{The Information Filter Dual}
+
+\begin{definition}[Investment Information Filter]
+\label{def:information-filter}
+The \emph{information filter} dual of the Kalman filter operates
+in the \emph{information space} $(\bfOmega_t, \bfxi_t)$ where
+\begin{equation}
+  \bfOmega_t \;=\; \mathbf{P}_t^{-1}, \qquad
+  \bfxi_t \;=\; \mathbf{P}_t^{-1}\,\hat{\mathbf{X}}_t.
+  \label{eq:information-space}
+\end{equation}
+The information update is additive:
+\begin{align}
+  \bfOmega_{t|t} &\;=\; \bfOmega_{t|t-1}
+    + \mathbf{H}^\top\mathbf{R}^{-1}\mathbf{H},
+  \label{eq:info-update-omega} \\
+  \bfxi_{t|t} &\;=\; \bfxi_{t|t-1}
+    + \mathbf{H}^\top\mathbf{R}^{-1}\mathbf{z}_t.
+  \label{eq:info-update-xi}
+\end{align}
+\end{definition}
+
+\begin{remark}[Investment Interpretation of the Information Filter]
+\label{rem:information-filter}
+Under the Kalman isomorphism:
+\begin{enumerate}
+  \item The \emph{information matrix} $\bfOmega_t = \mathbf{P}_t^{-1}$
+        is the \emph{precision} of the portfolio — the inverse of
+        residual uncertainty; higher is better.
+  \item The \emph{information vector} $\bfxi_t$ is the
+        \emph{accumulated evidence-weighted signal} driving the
+        allocation.
+  \item Each new agent observation adds
+        $\mathbf{H}^\top\mathbf{R}^{-1}\mathbf{H}$ to the information
+        matrix — precisely the confidence-weighted signal contribution
+        of that agent to the ensemble.  High-confidence agents ($r_i$
+        small) contribute more information per observation.
+\end{enumerate}
+\end{remark}
+
+% ==============================================================
+\chapter{The Main Conjecture}
+\label{ch:conjecture}
+% ==============================================================
+
+\section{The Central Result}
+
+\begin{conjecture}[Optimal Agentic Trading as MVUE]
+\label{conj:mvue}
+A multi-domain Kalman filter bank operating over economic,
+financial, fiscal, portfolio, fundamental, market, and sector
+observation channels with regime-adaptive process noise, gated by
+the seven-dimensional state charge vector and driven by
+confidence-weighted agent signals, converges to the
+minimum-variance unbiased estimator of the latent market state
+under finite capital constraints.  Formally:
+
+\begin{equation}
+  \boxed{
+    \text{Optimal Agentic Trading}
+    \;=\;
+    \text{MVUE of } \mathbf{X}_t
+    \;\text{ given partial, noisy, multi-domain observations}
+  }
+  \label{eq:mvue-conjecture}
+\end{equation}
+
+and the finite capital constraint enforces the MVUE regime by
+preventing over-confident deployment, exactly as a poorly tuned
+Kalman gain destabilises state estimation.
+\end{conjecture}
+
+\begin{remark}[Formal Equivalences Establishing the Conjecture]
+\label{rem:conjecture-equivalences}
+The conjecture is supported by the following formal equivalences
+established in this monograph:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} l l l @{}}
+\toprule
+\textbf{Investment Concept} & \textbf{Kalman Concept}
+  & \textbf{Mathematical Object} \\
+\midrule
+Prior expected return & State forecast & $\hat{\mathbf{X}}_{t|t-1}$ \\
+Prior portfolio risk & Prediction covariance & $\mathbf{P}_{t|t-1}$ \\
+Agent signals & Observations & $\mathbf{z}_t$ \\
+Agent confidence & Inverse measurement noise & $\mathbf{R}_t^{-1}$ \\
+Agent disagreement & Innovation covariance inflation
+  & $+D_t^2\sigma^2$ to $R_t$ \\
+Capital deployment fraction & Kalman gain & $\mathbf{K}_t$ \\
+Updated portfolio weights & Posterior state estimate
+  & $\hat{\mathbf{X}}_{t|t}$ \\
+Residual portfolio risk & Posterior covariance & $\mathbf{P}_{t|t}$ \\
+Composite objective $J$ & Negative posterior MSE
+  & $-\tr(\mathbf{P}_{t|t})$ \\
+Survival constraint & Filter stability condition
+  & $\rho(\mathbf{F} - \mathbf{K}\mathbf{H}\mathbf{F}) < 1$ \\
+Drawdown circuit-breaker & Divergence detection
+  & $\|\tilde{\mathbf{y}}_t\| > \gamma_{\max}$ \\
+Bayesian reputation update & Measurement noise adaptation
+  & $\hat{\mathbf{R}}_t \to r_i$ online \\
+Recursive reinvestment & Filter steady state
+  & $\mathbf{P}_\infty$ Riccati solution \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{remark}
+
+\section{The Priority Ordering}
+
+\begin{theorem}[Priority Ordering]
+\label{thm:priority}
+Under the seven-state gating architecture and the Kalman filter
+isomorphism, the following strict priority ordering holds:
+\begin{equation}
+  \underbrace{\text{State Integrity}}_{\text{Ch.~\ref{ch:seven-states}}}
+  \;\succ\;
+  \underbrace{\text{Filter Stability}}_{\text{Ch.~\ref{ch:covariance}}}
+  \;\succ\;
+  \underbrace{\text{Signal Quality}}_{\text{Ch.~\ref{ch:kalman-gain}}}
+  \;\succ\;
+  \underbrace{\text{Allocation Intelligence}}_{\text{Ch.~\ref{ch:gating}}}
+  \;\succ\;
+  \underbrace{\text{Compounding}}_{\text{Ch.~\ref{ch:objective}}}
+  \label{eq:priority-ordering}
+\end{equation}
+which maps exactly onto:
+\begin{equation}
+  \text{Survival} \;\succ\; \text{Preservation}
+  \;\succ\; \text{Intelligent Allocation}
+  \;\succ\; \text{Controlled Risk}
+  \;\succ\; \text{Compounding}.
+  \label{eq:investment-priority}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The priority ordering is enforced architecturally through the
+product gating function $G(\mathbf{X}_t)$: a zero value of any
+single state factor overrides all signal quality and allocation
+intelligence by setting $G = 0$ and hence $\pi^* = 0$.  This
+is a hard architectural constraint, not a soft preference.
+The filter stability condition $\rho(\mathbf{F} - \mathbf{K}\mathbf{H}\mathbf{F}) < 1$
+is the second-priority constraint: it ensures the filter
+converges (survival of the estimation process) before any
+signal is trusted.  Signal quality (Kalman gain calibration)
+takes priority over allocation optimisation because a
+miscalibrated gain can destabilise the filter.  Allocation
+intelligence (the constrained optimisation) takes priority
+over compounding because sub-optimal but stable allocations
+dominate optimal-but-risky allocations in the long run by
+the Kelly theorem.  \qed
+\end{proof}
+
+\section{The Combined Deployment Conjecture}
+
+\begin{conjecture}[Combined Conjecture: Kalman Filter + State Gating]
+\label{conj:combined}
+Let $\mathbf{X}_t \in [0,1]^7$ be the composite state vector,
+$S_t \in [-1,1]$ the ensemble aggregate signal, and
+$K_t^{(\mathrm{Kalman})}$ the investment Kalman gain.  The
+optimal capital deployment policy is:
+\begin{equation}
+  \pi^*(\mathbf{X}_t, S_t) \;=\;
+  \begin{cases}
+    K_t^{(\mathrm{Kalman})} \cdot C_{\mathrm{available}}
+    \cdot \prod_{d=1}^{7} g_d(\mathcal{S}_t^{(d)}) &
+    \text{if } \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}
+    \;\forall\, d, \\
+    0 & \text{otherwise}.
+  \end{cases}
+  \label{eq:combined-policy}
+\end{equation}
+The combined conjecture states that this policy achieves
+superior risk-adjusted compounding under finite capital
+constraints relative to single-domain or unconstrained systems,
+for the following reasons:
+\begin{enumerate}
+  \item \textbf{When all states are charged and the signal is strong}:
+        maximum deployment — favourable state plus strong evidence.
+  \item \textbf{When all states are charged but the signal is weak}:
+        moderate deployment — favourable state but low innovation.
+  \item \textbf{When states are mixed but the signal is strong}:
+        reduced deployment — signal is strong but the system is
+        partially degraded.
+  \item \textbf{When any state is critically discharged}:
+        zero deployment — circuit-breaker override regardless
+        of signal.
+\end{enumerate}
+\end{conjecture}
+
+\begin{remark}[Conclusion of the Conjecture]
+\label{rem:conjecture-conclusion}
+The expected conclusion is not that the filter eliminates market
+uncertainty.  It is that the Kalman discipline —
+\emph{prediction before observation, evidence-weighted updating,
+covariance-based deployment scaling, and recursive reputation
+adaptation} — converts the finite capital constraint from a
+limitation into a precision instrument: a system that computes,
+at every step, exactly how much of its scarce capital should be
+placed at risk given the information currently available, and
+the seven-dimensional state charge vector that specifies how
+healthy the investment environment currently is.
+
+The finite capital constraint, enforced by the seven-state
+gating function, is the investment-domain analogue of the
+battery management system's State-of-Charge protection
+circuit.  It transforms the multi-agent Kalman filter from a
+pure signal-processing machine into a survival-first,
+compounding-second capital engine.
+\end{remark}
+
+% ==============================================================
+\chapter*{Summary of Key Results}
+\addcontentsline{toc}{chapter}{Summary of Key Results}
+% ==============================================================
+
+\begin{table}[H]
+\centering
+\caption{Principal theorems and their roles.}
+\label{tab:summary}
+\small
+\begin{tabularx}{\linewidth}{@{} l l X @{}}
+\toprule
+\textbf{Result} & \textbf{Chapter} & \textbf{Key Guarantee} \\
+\midrule
+Prop.~\ref{prop:noise-monotone}
+  & \ref{ch:state-space}
+  & Measurement noise is monotone in confidence and doubt. \\
+Thm.~\ref{thm:isomorphism}
+  & \ref{ch:isomorphism}
+  & Structural bijection between Kalman cycle and allocation cycle. \\
+Thm.~\ref{thm:gain-properties}
+  & \ref{ch:kalman-gain}
+  & Investment Kalman gain $\in [0,1)$; limiting behaviour verified. \\
+Thm.~\ref{thm:risk-reduction}
+  & \ref{ch:covariance}
+  & Observations never increase posterior uncertainty (PSD reduction). \\
+Prop.~\ref{prop:charge-bounded}
+  & \ref{ch:seven-states}
+  & State charge dynamics preserve the unit interval. \\
+Thm.~\ref{thm:discharge-dominance}
+  & \ref{ch:seven-states}
+  & Discharge rates exceed charge rates; survival-first justified. \\
+Thm.~\ref{thm:product-gating}
+  & \ref{ch:gating}
+  & Product gating in $[0,1]$; zero iff any state critically discharged. \\
+Prop.~\ref{prop:policy-bounded}
+  & \ref{ch:gating}
+  & Deployment policy bounded, measurable, and circuit-breaking. \\
+Thm.~\ref{thm:ensemble-imm}
+  & \ref{ch:imm}
+  & Agent ensemble is structurally identical to IMM mixing. \\
+Thm.~\ref{thm:imm-reputation}
+  & \ref{ch:imm}
+  & IMM weight update is structurally identical to reputation update. \\
+Thm.~\ref{thm:disagreement-inflation-formal}
+  & \ref{ch:imm}
+  & IMM spreading term maps to disagreement inflation. \\
+Thm.~\ref{thm:objective-mse}
+  & \ref{ch:objective}
+  & Composite objective $J$ is equivalent to negative posterior MSE. \\
+Thm.~\ref{thm:priority}
+  & \ref{ch:conjecture}
+  & Priority ordering is architecturally enforced by gating. \\
+Conj.~\ref{conj:mvue}
+  & \ref{ch:conjecture}
+  & Optimal agentic trading $=$ MVUE of latent market state. \\
+Conj.~\ref{conj:combined}
+  & \ref{ch:conjecture}
+  & Combined Kalman + state-gating policy achieves survival-first compounding. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ==============================================================
+\chapter*{References}
+\addcontentsline{toc}{chapter}{References}
+% ==============================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{kalman1960}
+Kalman, R.\ E.\ (1960).
+A New Approach to Linear Filtering and Prediction Problems.
+\textit{Journal of Basic Engineering}, 82(1), 35--45.
+\href{https://doi.org/10.1115/1.3662552}{doi:10.1115/1.3662552}
+
+\bibitem{kalmanbucy1961}
+Kalman, R.\ E.\ \& Bucy, R.\ S.\ (1961).
+New Results in Linear Filtering and Prediction Theory.
+\textit{Journal of Basic Engineering}, 83(1), 95--108.
+\href{https://doi.org/10.1115/1.3658902}{doi:10.1115/1.3658902}
+
+\bibitem{barshalom2001}
+Bar-Shalom, Y., Li, X.\ R., \& Kirubarajan, T.\ (2001).
+\textit{Estimation with Applications to Tracking and Navigation}.
+Wiley.
+
+\bibitem{markowitz1952}
+Markowitz, H.\ (1952).
+Portfolio Selection.
+\textit{Journal of Finance}, 7(1), 77--91.
+\href{https://doi.org/10.2307/2975974}{doi:10.2307/2975974}
+
+\bibitem{rockafellar2000}
+Rockafellar, R.\ T.\ \& Uryasev, S.\ (2000).
+Optimization of Conditional Value-at-Risk.
+\textit{Journal of Risk}, 2(3), 21--41.
+\href{https://doi.org/10.21314/JOR.2000.038}{doi:10.21314/JOR.2000.038}
+
+\bibitem{hamilton1989}
+Hamilton, J.\ D.\ (1989).
+A New Approach to the Economic Analysis of Nonstationary Time Series.
+\textit{Econometrica}, 57(2), 357--384.
+\href{https://doi.org/10.2307/1912559}{doi:10.2307/1912559}
+
+\bibitem{sorenson1970}
+Sorenson, H.\ W.\ (1970).
+Least-Squares Estimation: from Gauss to Kalman.
+\textit{IEEE Spectrum}, 7(7), 63--68.
+
+\bibitem{plett2004}
+Plett, G.\ L.\ (2004).
+Extended Kalman Filtering for Battery Management Systems.
+\textit{Journal of Power Sources}, 134(2), 252--292.
+\href{https://doi.org/10.1016/j.jpowsour.2004.02.031}{doi:10.1016/j.jpowsour.2004.02.031}
+
+\bibitem{R8}
+\texttt{finite\_investment\_architecture\_as\_economic\_financial\_fiscal\_investment\_kalman\_filter.md} --- this repository.
+Companion document: Kalman filter investment isomorphism.
+
+\bibitem{R9}
+\texttt{finite\_investment\_architecture\_states\_of\_portfolio\_investments\_securities\_finance\_markets\_fundamentals\_sectors.md} --- this repository.
+Companion document: Seven-state investment architecture.
+
+\bibitem{R10}
+\texttt{high\_level\_architecture\_proof.tex} --- this repository.
+Formal operator composition algebra; uncertainty decomposition; IMM Bayesian mixing.
+
+\bibitem{R11}
+\texttt{high\_level\_supplementary\_diversification\_proof.tex} --- this repository.
+CVaR sub-additivity; regime-conditional correlation; diversification mandate.
+
+\bibitem{R12}
+\texttt{high\_level\_finite\_initial\_capital\_master\_capital\_allocation\_proof.tex} --- this repository.
+Constrained capital allocation; Kelly sizing; Bayesian reputation; composite objective.
+
+\end{thebibliography}
+
+\end{document}

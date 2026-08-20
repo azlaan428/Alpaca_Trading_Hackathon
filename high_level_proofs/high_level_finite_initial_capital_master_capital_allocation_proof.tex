@@ -18,16 +18,10 @@
 \usepackage{float}
 \usepackage{longtable}
 \usepackage{ragged2e}
-\usepackage{hypcap}
 \usepackage{thmtools}
 \usepackage{chngcntr}
 \counterwithout{table}{chapter}
 \counterwithout{figure}{chapter}
-% Use absolute counter values for hyperref anchors to prevent duplicate destinations
-\makeatletter
-\renewcommand{\theHtable}{\number\value{table}}
-\renewcommand{\theHfigure}{\number\value{figure}}
-\makeatother
 \usepackage{sectionbreak}
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
@@ -608,10 +602,10 @@ checklist.
 \footnotesize
 \centering
 \begin{tabularx}{\linewidth}{%
-  >{\bfseries\centering\arraybackslash}p{0.08\linewidth}%
-  >{\RaggedRight\arraybackslash}p{0.24\linewidth}%
-  >{\RaggedRight\arraybackslash}p{0.43\linewidth}%
-  >{\centering\arraybackslash}p{0.20\linewidth}}
+  >{\bfseries\centering\arraybackslash}p{0.07\linewidth}%
+  >{\RaggedRight\arraybackslash}p{0.23\linewidth}%
+  >{\RaggedRight\arraybackslash}X%
+  >{\centering\arraybackslash}p{0.23\linewidth}}
 \toprule
 \textbf{No.} & \textbf{Finding} & \textbf{Formal Content} & \textbf{Reference} \\
 \midrule
@@ -7094,7 +7088,7 @@ condition in full.
           \notag \\
           \phi(U,\, f^*_{\mathrm{adj}})
           &\;=\; (1-U)\cdot f^*_{\mathrm{adj}},
-          \label{eq:phi-def}
+          \label{eq:phi-bilinear}
         \end{align}
         is a bilinear (hence jointly continuous) function
         of its arguments on the compact domain
@@ -7288,7 +7282,7 @@ The following conditions hold:
           \E\!\left[J\!\left(\pi^{(m)}\right)\right]
           \;>\; \sup_{\pi \in \Pi_F(\tau_m - \varepsilon)}
           \E\!\left[J(\pi)\right].
-          \label{eq:strict-improvement}
+          \label{eq:strict-threshold-improve}
         \end{align}
         That is, crossing threshold $\tau_m$ strictly increases
         the supremum of achievable expected utility.

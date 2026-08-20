@@ -1,12 +1,11 @@
 ---
 title: "Finite Capital, Multi-Agent Allocation: A Mathematical Framework for Constrained Agentic Trading"
-author: "Caius Lysander"
+author: "Hadrian Hu"
 date: "2026-08-20"
 version: "2026.1.0.0"
 keywords: ["multi-agent", "capital-allocation", "constrained-optimization", "uncertainty-quantification", "portfolio-theory", "kelly-criterion", "CVaR", "bear-bull-normalization", "hackathon", "alpaca"]
 status: "Draft"
 ---
-
 # Finite Capital, Multi-Agent Allocation: A Mathematical Framework for Constrained Agentic Trading
 
 ## Table of Contents
@@ -72,11 +71,15 @@ The answer is formulated as a constrained optimization problem in which:
 
 The deepest result is that:
 
-$$\text{Optimal Agentic Trading} \;\neq\; \max(\text{Profit})$$
+$$
+\text{Optimal Agentic Trading} \;\neq\; \max(\text{Profit})
+$$
 
 but rather:
 
-$$\text{Optimal Agentic Trading} = \max\bigl(\text{Risk-Adjusted Capital Utility} \mid \text{Uncertainty},\, \text{Constraints},\, \text{Information}\bigr)$$
+$$
+\text{Optimal Agentic Trading} = \max\bigl(\text{Risk-Adjusted Capital Utility} \mid \text{Uncertainty},\, \text{Constraints},\, \text{Information}\bigr)
+$$
 
 ---
 
@@ -96,14 +99,14 @@ This is considerably more defensible than simply "maximize profit." Maximum raw 
 
 The initial \$100,000 is partitioned into experimental buckets, which are parameters rather than investment advice:
 
-| Bucket | Amount | Purpose |
-|:-------|-------:|:--------|
-| Core / Stable | \$35,000 | Capital preservation; low-volatility instruments |
-| Diversified Growth | \$20,000 | Broad-market or multi-asset growth exposure |
-| Opportunistic / Short-Horizon | \$15,000 | Tactical, shorter time-horizon strategies |
-| Alternative / Higher-Volatility | \$10,000 | Asymmetric or higher-risk instruments |
-| Cash / Liquidity Reserve | \$10,000 | Mandatory floor; not deployed without explicit trigger |
-| Dynamic Agent Allocation | \$10,000 | Autonomously managed; agents justify all movements |
+| Bucket                          |   Amount | Purpose                                                |
+| :------------------------------ | -------: | :----------------------------------------------------- |
+| Core / Stable                   | \$35,000 | Capital preservation; low-volatility instruments       |
+| Diversified Growth              | \$20,000 | Broad-market or multi-asset growth exposure            |
+| Opportunistic / Short-Horizon   | \$15,000 | Tactical, shorter time-horizon strategies              |
+| Alternative / Higher-Volatility | \$10,000 | Asymmetric or higher-risk instruments                  |
+| Cash / Liquidity Reserve        | \$10,000 | Mandatory floor; not deployed without explicit trigger |
+| Dynamic Agent Allocation        | \$10,000 | Autonomously managed; agents justify all movements     |
 
 Each bucket has defined risk limits, drawdown tolerances, and rebalancing triggers. Agents must justify any inter-bucket capital movement through the risk-gate pipeline.
 
@@ -139,22 +142,26 @@ The allocator proposes; risk constrains; execution acts; the auditor evaluates w
 
 The winning condition is a composite risk-adjusted objective:
 
-$$J = \alpha G - \beta D - \gamma V + \delta S + \epsilon R$$
+$$
+J = \alpha G - \beta D - \gamma V + \delta S + \epsilon R
+$$
 
 where:
 
-| Symbol | Meaning |
-|:-------|:--------|
-| $G$ | Portfolio growth (total return over the period) |
-| $D$ | Maximum drawdown experienced |
-| $V$ | Portfolio volatility (annualised standard deviation) |
-| $S$ | Survival / capital preservation metric |
-| $R$ | Risk-adjusted return (e.g., Sharpe or Calmar ratio) |
-| $\alpha, \beta, \gamma, \delta, \epsilon \geq 0$ | Configurable penalty and reward weights |
+| Symbol                                             | Meaning                                              |
+| :------------------------------------------------- | :--------------------------------------------------- |
+| $G$                                              | Portfolio growth (total return over the period)      |
+| $D$                                              | Maximum drawdown experienced                         |
+| $V$                                              | Portfolio volatility (annualised standard deviation) |
+| $S$                                              | Survival / capital preservation metric               |
+| $R$                                              | Risk-adjusted return (e.g., Sharpe or Calmar ratio)  |
+| $\alpha, \beta, \gamma, \delta, \epsilon \geq 0$ | Configurable penalty and reward weights              |
 
 Additional penalty terms may include excessive turnover $T_{\text{cost}}$, concentration $C_{\text{conc}}$, and pathological leverage $L_{\text{excess}}$:
 
-$$J = \alpha G - \beta D - \gamma V + \delta S + \epsilon R - \zeta T_{\text{cost}} - \eta C_{\text{conc}} - \theta L_{\text{excess}}$$
+$$
+J = \alpha G - \beta D - \gamma V + \delta S + \epsilon R - \zeta T_{\text{cost}} - \eta C_{\text{conc}} - \theta L_{\text{excess}}
+$$
 
 This objective produces the counterintuitive but correct result:
 
@@ -192,7 +199,9 @@ flowchart LR
 
 At each reinvestment decision, the allocator solves:
 
-$$\delta^* = \arg\max_{\delta}\; \mathbb{E}\!\left[\, U\!\left(W_{t+1} \mid W_t + \delta,\, \mathcal{I}_t\right)\,\right]$$
+$$
+\delta^* = \arg\max_{\delta}\; \mathbb{E}\!\left[\, U\!\left(W_{t+1} \mid W_t + \delta,\, \mathcal{I}_t\right)\,\right]
+$$
 
 subject to capital and risk constraints, where $\delta$ is the incremental deployment, $W_t$ is current wealth, and $U(\cdot)$ is the utility function encoding the composite objective $J$.
 
@@ -216,7 +225,9 @@ The agentic system is expected to underperform the greedy maximizer in bull-mark
 
 Candlesticks contain genuine information about historical price behaviour and market participation: momentum, reversals, volatility structure, support and resistance dynamics. However, the fundamental epistemological constraint is:
 
-$$P_{t+1} \;\not\equiv\; f\!\left(P_t,\, P_{t-1},\, \ldots\right)$$
+$$
+P_{t+1} \;\not\equiv\; f\!\left(P_t,\, P_{t-1},\, \ldots\right)
+$$
 
 because tomorrow's price is governed by the full information set available to all market participants at $t+1$, not merely the price history. A surprise central-bank announcement, an earnings shock, a geopolitical event, or a regulatory decision can alter the information set almost instantaneously. No pattern in yesterday's candles contains information about an unforeseen event tomorrow.
 
@@ -224,15 +235,21 @@ because tomorrow's price is governed by the full information set available to al
 
 The system estimates returns conditioned on the full observable information set:
 
-$$\mathbf{X}_t \;=\; \bigl\{\, \text{price/volume},\;\; \text{technical structure},\;\; \text{fundamentals},\;\; \text{macroeconomics},\;\; \text{news/events},\;\; \text{volatility},\;\; \text{options},\;\; \text{cross-asset},\;\; \text{portfolio state}\,\bigr\}$$
+$$
+\mathbf{X}_t \;=\; \bigl\{\, \text{price/volume},\;\; \text{technical structure},\;\; \text{fundamentals},\;\; \text{macroeconomics},\;\; \text{news/events},\;\; \text{volatility},\;\; \text{options},\;\; \text{cross-asset},\;\; \text{portfolio state}\,\bigr\}
+$$
 
 This allows the system to approximate:
 
-$$P\!\left(R_{t+h} \;\middle|\; \mathbf{X}_t\right)$$
+$$
+P\!\left(R_{t+h} \;\middle|\; \mathbf{X}_t\right)
+$$
 
 rather than the informationally impoverished:
 
-$$P\!\left(R_{t+h} \;\middle|\; \text{candlesticks alone}\right)$$
+$$
+P\!\left(R_{t+h} \;\middle|\; \text{candlesticks alone}\right)
+$$
 
 The larger information set does not eliminate uncertainty. It provides a better basis for *reasoning about* uncertainty.
 
@@ -258,14 +275,16 @@ flowchart TD
 
 The critical distinction is:
 
-| Mode | Statement |
-|:-----|:----------|
-| **Prediction** | "The stock will rise tomorrow." |
+| Mode                                 | Statement                                                                                                                                                                                                                          |
+| :----------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Prediction**                 | "The stock will rise tomorrow."                                                                                                                                                                                                    |
 | **Decision under uncertainty** | "Current evidence moderately favours appreciation, but event risk and volatility remain elevated; therefore take limited exposure, preserve liquidity, define the loss boundary, and reconsider if the information state changes." |
 
 News, macroeconomic releases, and technical patterns are all *evidence* --- not ground truth. A rate cut is not mechanically bullish: it may already be fully priced in, or the market may interpret it as a signal that economic conditions are deteriorating. Therefore every evidence source must produce:
 
-$$\text{Signal} \;=\; \bigl(\, \text{direction},\;\; \text{confidence},\;\; \text{provenance},\;\; \text{novelty}\,\bigr)$$
+$$
+\text{Signal} \;=\; \bigl(\, \text{direction},\;\; \text{confidence},\;\; \text{provenance},\;\; \text{novelty}\,\bigr)
+$$
 
 rather than a binary `BULLISH / BEARISH` label.
 
@@ -277,7 +296,9 @@ rather than a binary `BULLISH / BEARISH` label.
 
 Every specialized agent --- technical, macroeconomic, news, volatility, options, hedging, risk --- maps its heterogeneous internal analysis into a common normalized directional signal:
 
-$$s_i \in [-1,\, 1]$$
+$$
+s_i \in [-1,\, 1]
+$$
 
 where $-1$ represents maximally bearish evidence, $0$ represents neutral or indeterminate evidence, and $+1$ represents maximally bullish evidence. This normalization allows agents operating through fundamentally different analytical methodologies to share a common decision interface without forcing them to use the same internal model.
 
@@ -285,20 +306,22 @@ where $-1$ represents maximally bearish evidence, $0$ represents neutral or inde
 
 Direction alone is insufficient for capital allocation. Each agent emits a full output tuple:
 
-$$\mathcal{A}_i = \bigl(\, s_i,\;\; c_i,\;\; u_i,\;\; d_i,\;\; p_i^{+},\;\; p_i^{-},\;\; \Delta t_i,\;\; r_i \,\bigr)$$
+$$
+\mathcal{A}_i = \bigl(\, s_i,\;\; c_i,\;\; u_i,\;\; d_i,\;\; p_i^{+},\;\; p_i^{-},\;\; \Delta t_i,\;\; r_i \,\bigr)
+$$
 
 where:
 
-| Symbol | Domain | Meaning |
-|:-------|:------:|:--------|
-| $s_i$ | $[-1, 1]$ | Directional market view |
-| $c_i$ | $(0, 1]$ | Confidence in the directional view |
-| $u_i$ | $[0, 1]$ | Uncertainty (signals may conflict or be sparse) |
-| $d_i$ | $[0, 1]$ | Doubt (agent's historical calibration in the current regime) |
-| $p_i^+$ | $[0, 1]$ | Estimated probability of favourable outcome |
-| $p_i^-$ | $[0, 1]$ | Estimated probability of unfavourable outcome |
-| $\Delta t_i$ | $\mathbb{R}_{>0}$ | Relevant investment time horizon |
-| $r_i$ | $\mathbb{R}_{\geq 0}$ | Estimated risk or loss exposure |
+| Symbol         |         Domain         | Meaning                                                      |
+| :------------- | :---------------------: | :----------------------------------------------------------- |
+| $s_i$        |       $[-1, 1]$       | Directional market view                                      |
+| $c_i$        |       $(0, 1]$       | Confidence in the directional view                           |
+| $u_i$        |       $[0, 1]$       | Uncertainty (signals may conflict or be sparse)              |
+| $d_i$        |       $[0, 1]$       | Doubt (agent's historical calibration in the current regime) |
+| $p_i^+$      |       $[0, 1]$       | Estimated probability of favourable outcome                  |
+| $p_i^-$      |       $[0, 1]$       | Estimated probability of unfavourable outcome                |
+| $\Delta t_i$ |   $\mathbb{R}_{>0}$   | Relevant investment time horizon                             |
+| $r_i$        | $\mathbb{R}_{\geq 0}$ | Estimated risk or loss exposure                              |
 
 ### 4.3 Why Direction Alone Is Insufficient
 
@@ -318,7 +341,9 @@ Furthermore, a bullish signal with $c_i = 0.80$ over $\Delta t_i = 15\,\text{min
 
 The master capital allocator weights agent signals by confidence, uncertainty, doubt, and regime-conditioned historical reliability:
 
-$$S = \frac{\displaystyle\sum_{i=1}^{N} w_i\, s_i\, c_i\, (1 - u_i)\,(1 - d_i)}{\displaystyle\sum_{i=1}^{N} w_i}$$
+$$
+S = \frac{\displaystyle\sum_{i=1}^{N} w_i\, s_i\, c_i\, (1 - u_i)\,(1 - d_i)}{\displaystyle\sum_{i=1}^{N} w_i}
+$$
 
 The weight $w_i$ encodes the historical reliability of agent $i$ in the current regime, its instrument-specific expertise, its recent calibration quality, and the relevance of its time horizon $\Delta t_i$ to the current allocation decision.
 
@@ -326,11 +351,15 @@ The weight $w_i$ encodes the historical reliability of agent $i$ in the current 
 
 The aggregate signal $S = 0$ has two fundamentally different interpretations:
 
-$$\underbrace{(+0.9) + (-0.9) \approx 0}_{\text{violent disagreement}} \qquad \text{vs.} \qquad \underbrace{(+0.05) + (-0.05) \approx 0}_{\text{genuine neutrality}}$$
+$$
+\underbrace{(+0.9) + (-0.9) \approx 0}_{\text{violent disagreement}} \qquad \text{vs.} \qquad \underbrace{(+0.05) + (-0.05) \approx 0}_{\text{genuine neutrality}}
+$$
 
 The allocator must distinguish these cases. Disagreement is therefore computed explicitly as:
 
-$$D = \frac{\displaystyle\sum_{i=1}^{N} w_i\, |s_i - S|}{\displaystyle\sum_{i=1}^{N} w_i}$$
+$$
+D = \frac{\displaystyle\sum_{i=1}^{N} w_i\, |s_i - S|}{\displaystyle\sum_{i=1}^{N} w_i}
+$$
 
 High $D$ should reduce capital deployment even when the aggregate directional score appears favourable, because high disagreement is itself evidence of elevated model risk.
 
@@ -338,45 +367,53 @@ High $D$ should reduce capital deployment even when the aggregate directional sc
 
 The allocator reasons over a multidimensional state:
 
-$$\mathcal{X}_t = \bigl(\, S,\;\; C,\;\; U,\;\; D,\;\; R,\;\; H,\;\; V,\;\; O,\;\; \Delta t \,\bigr)$$
+$$
+\mathcal{X}_t = \bigl(\, S,\;\; C,\;\; U,\;\; D,\;\; R,\;\; H,\;\; V,\;\; O,\;\; \Delta t \,\bigr)
+$$
 
-| Symbol | Meaning |
-|:------:|:--------|
-| $S$ | Ensemble directional score |
-| $C$ | Ensemble confidence |
-| $U$ | Ensemble uncertainty |
-| $D$ | Agent disagreement |
-| $R$ | Current portfolio risk |
-| $H$ | Hedging requirements |
-| $V$ | Volatility / regime information |
-| $O$ | Options-related state (skew, surface, implied vol) |
-| $\Delta t$ | Relevant investment horizon |
+|    Symbol    | Meaning                                            |
+| :----------: | :------------------------------------------------- |
+|    $S$    | Ensemble directional score                         |
+|    $C$    | Ensemble confidence                                |
+|    $U$    | Ensemble uncertainty                               |
+|    $D$    | Agent disagreement                                 |
+|    $R$    | Current portfolio risk                             |
+|    $H$    | Hedging requirements                               |
+|    $V$    | Volatility / regime information                    |
+|    $O$    | Options-related state (skew, surface, implied vol) |
+| $\Delta t$ | Relevant investment horizon                        |
 
 ### 5.4 Continuous Action Space and Capital Deployment
 
 The allocator replaces the discrete `BUY / HOLD / SELL` vocabulary with a continuous action $a \in [-1,\, 1]$:
 
-| Action $a$ | Interpretation |
-|:----------:|:---------------|
-| $-1.0$ | Maximum permitted reduction / short |
-| $-0.4$ | Moderate reduction |
-| $\phantom{-}0.0$ | No change |
-| $+0.3$ | Small allocation increase |
-| $+1.0$ | Maximum permitted long allocation |
+|    Action$a$    | Interpretation                      |
+| :----------------: | :---------------------------------- |
+|      $-1.0$      | Maximum permitted reduction / short |
+|      $-0.4$      | Moderate reduction                  |
+| $\phantom{-}0.0$ | No change                           |
+|      $+0.3$      | Small allocation increase           |
+|      $+1.0$      | Maximum permitted long allocation   |
 
 The allocator converts this continuous action into actual capital subject to the full constraint set:
 
-$$x_j = C_{\text{available}} \cdot f\!\left(S_j,\;\; C_j,\;\; U_j,\;\; D_j,\;\; R_j\right)$$
+$$
+x_j = C_{\text{available}} \cdot f\!\left(S_j,\;\; C_j,\;\; U_j,\;\; D_j,\;\; R_j\right)
+$$
 
 ### 5.5 Constrained Portfolio Optimization
 
 The full capital deployment problem is:
 
-$$\max_{\mathbf{x}}\; \mathbb{E}\!\left[R(\mathbf{x})\right] - \lambda_R R - \lambda_D \,\mathrm{DD} - \lambda_U U - \lambda_C C_{\text{concentration}} - \lambda_T T_{\text{cost}}$$
+$$
+\max_{\mathbf{x}}\; \mathbb{E}\!\left[R(\mathbf{x})\right] - \lambda_R R - \lambda_D \,\mathrm{DD} - \lambda_U U - \lambda_C C_{\text{concentration}} - \lambda_T T_{\text{cost}}
+$$
 
 subject to:
 
-$$\sum_j x_j \leq C_{\text{deployable}}$$
+$$
+\sum_j x_j \leq C_{\text{deployable}}
+$$
 
 and the following additional constraints:
 
@@ -391,7 +428,9 @@ and the following additional constraints:
 
 Agent weights $w_i$ are not static. They are updated via a Bayesian reputation mechanism after every paper-trading episode:
 
-$$P_{t+1}\!\left(\text{agent}_i\;\text{reliable}\right) \;\propto\; P\!\left(\text{new evidence} \;\middle|\; \text{agent}_i\right)\cdot P_t\!\left(\text{agent}_i\;\text{reliable}\right)$$
+$$
+P_{t+1}\!\left(\text{agent}_i\;\text{reliable}\right) \;\propto\; P\!\left(\text{new evidence} \;\middle|\; \text{agent}_i\right)\cdot P_t\!\left(\text{agent}_i\;\text{reliable}\right)
+$$
 
 If the volatility agent performs well during volatility-expansion regimes, its weight $w_i$ increases when the regime classifier detects similar conditions in future. If a candlestick agent repeatedly fails during news-driven markets, its contribution in that regime class is reduced automatically. This produces a regime-conditioned, self-calibrating ensemble rather than a fixed committee of voters.
 
@@ -401,13 +440,19 @@ If the volatility agent performs well during volatility-expansion regimes, its w
 
 The mathematical spine connecting the four hackathon domains --- hedging, volatility, risk, and options --- into one coherent problem is:
 
-$$\boxed{\;\text{Optimal Agentic Trading} \;\neq\; \max\bigl(\text{Profit}\bigr)\;}$$
+$$
+\boxed{\;\text{Optimal Agentic Trading} \;\neq\; \max\bigl(\text{Profit}\bigr)\;}
+$$
 
-$$\boxed{\;\text{Optimal Agentic Trading} = \max\!\left(\text{Risk-Adjusted Capital Utility} \;\middle|\; \text{Uncertainty},\;\; \text{Constraints},\;\; \text{Information}\right)\;}$$
+$$
+\boxed{\;\text{Optimal Agentic Trading} = \max\!\left(\text{Risk-Adjusted Capital Utility} \;\middle|\; \text{Uncertainty},\;\; \text{Constraints},\;\; \text{Information}\right)\;}
+$$
 
 with the priority ordering:
 
-$$\text{Survival} \;\succ\; \text{Preservation} \;\succ\; \text{Intelligent Allocation} \;\succ\; \text{Controlled Risk} \;\succ\; \text{Compounding}$$
+$$
+\text{Survival} \;\succ\; \text{Preservation} \;\succ\; \text{Intelligent Allocation} \;\succ\; \text{Controlled Risk} \;\succ\; \text{Compounding}
+$$
 
 **Formal statement.** A heterogeneous multi-agent system that explicitly models direction, confidence, uncertainty, disagreement, risk, and prior calibration performance can allocate finite capital more robustly across trading, portfolio, hedging, and options strategies than systems optimizing primarily for directional prediction or maximum terminal profit.
 
@@ -443,21 +488,21 @@ flowchart LR
 
 ## References
 
-| ID | Source | Notes |
-|:---|:-------|:------|
-| R1 | Markowitz, H. (1952). Portfolio Selection. *Journal of Finance*, 7(1), 77--91. | Mean-variance optimisation; basis for constrained portfolio operator in §5.5. |
-| R2 | Kelly, J. L. (1956). A New Interpretation of Information Rate. *Bell System Technical Journal*, 35(4), 917--926. | Kelly fraction; basis for position-sizing under $c_i$ and $u_i$ adjustments. |
-| R3 | Rockafellar, R. T., & Uryasev, S. (2000). Optimization of Conditional Value-at-Risk. *Journal of Risk*, 2(3), 21--41. | CVaR formulation; basis for drawdown constraint in §5.5. |
-| R4 | Hamilton, J. D. (1989). A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle. *Econometrica*, 57(2), 357--384. | HMM regime-switching; basis for regime-conditioned agent weights §5.6. |
-| R5 | Lopez de Prado, M. (2018). *Advances in Financial Machine Learning*. Wiley. | Temporal leakage and information hierarchy; basis for §3. |
-| R6 | `prompt_patterns.md` --- this repository | Canonical operator/agent architecture and mathematical foundations. |
-| R7 | `high_level_concept.md` --- this repository | Portfolio diversification philosophy, four-domain model, asset-class universe. |
-| R8 | `high_level_architecture_whitepaper.tex` --- this repository | Formal operator composition algebra and four-domain interaction specification. |
+| ID | Source                                                                                                                                                 | Notes                                                                           |
+| :- | :----------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| R1 | Markowitz, H. (1952). Portfolio Selection.*Journal of Finance*, 7(1), 77--91.                                                                        | Mean-variance optimisation; basis for constrained portfolio operator in §5.5.  |
+| R2 | Kelly, J. L. (1956). A New Interpretation of Information Rate.*Bell System Technical Journal*, 35(4), 917--926.                                      | Kelly fraction; basis for position-sizing under$c_i$ and $u_i$ adjustments. |
+| R3 | Rockafellar, R. T., & Uryasev, S. (2000). Optimization of Conditional Value-at-Risk.*Journal of Risk*, 2(3), 21--41.                                 | CVaR formulation; basis for drawdown constraint in §5.5.                       |
+| R4 | Hamilton, J. D. (1989). A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle.*Econometrica*, 57(2), 357--384. | HMM regime-switching; basis for regime-conditioned agent weights §5.6.         |
+| R5 | Lopez de Prado, M. (2018).*Advances in Financial Machine Learning*. Wiley.                                                                           | Temporal leakage and information hierarchy; basis for §3.                      |
+| R6 | `prompt_patterns.md` --- this repository                                                                                                             | Canonical operator/agent architecture and mathematical foundations.             |
+| R7 | `high_level_concept.md` --- this repository                                                                                                          | Portfolio diversification philosophy, four-domain model, asset-class universe.  |
+| R8 | `high_level_architecture_whitepaper.tex` --- this repository                                                                                         | Formal operator composition algebra and four-domain interaction specification.  |
 
 ---
 
 ## Changelog
 
-| Version | Date | Author | Description |
-|:--------|:-----|:-------|:------------|
-| 2026.1.0.0 | 2026-08-20 | Caius Lysander | Initial professional-grade conversion from raw conversation transcript. Added YAML front matter, full LaTeX math formatting, mermaid diagrams, structured sections with ToC, References, and Changelog. All informal prose restructured into formal mathematical exposition. |
+| Version    | Date       | Author     | Description                                                                                                                                                                                                                                                                  |
+| :--------- | :--------- | :--------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026.1.0.0 | 2026-08-20 | Hadrian Hu | Initial professional-grade conversion from raw conversation transcript. Added YAML front matter, full LaTeX math formatting, mermaid diagrams, structured sections with ToC, References, and Changelog. All informal prose restructured into formal mathematical exposition. |
