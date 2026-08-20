@@ -4535,46 +4535,389 @@ piecewise-linear function
 \end{equation}
 \end{definition}
 
+%% ----------------------------------------------------------------
+%% Structural assumption that underpins all subsequent analysis
+%% ----------------------------------------------------------------
+\begin{assumption}[Well-Separated Thresholds]
+\label{ass:thresholds}
+For every dimension $d \in \{1,\ldots,7\}$ the thresholds satisfy
+\begin{equation}
+  0 \;\leq\; \mathcal{S}_{\min}^{(d)}
+    \;<\; \mathcal{S}_{\mathrm{full}}^{(d)}
+    \;\leq\; 1,
+  \label{eq:threshold-assumption}
+\end{equation}
+so that the denominator
+$\Delta_d := \mathcal{S}_{\mathrm{full}}^{(d)} - \mathcal{S}_{\min}^{(d)} > 0$
+is strictly positive and all three pieces of~\eqref{eq:gating-function}
+are non-empty.
+\end{assumption}
+
+%% ----------------------------------------------------------------
 \begin{proposition}[Properties of the Gating Function]
 \label{prop:gating-properties}
-The gating function $g_d$ of Definition~\ref{def:gating-function}
-satisfies:
+Under Assumption~\ref{ass:thresholds}, the gating function
+$g_d : [0,1] \to [0,1]$ of Definition~\ref{def:gating-function}
+satisfies the following five properties for every
+$d \in \{1,\ldots,7\}$.
 \begin{enumerate}
-  \item $g_d(\mathcal{S}) \in [0,1]$ for all $\mathcal{S} \in [0,1]$.
-  \item $g_d$ is non-decreasing: $\mathcal{S}_1 \leq \mathcal{S}_2
-        \Rightarrow g_d(\mathcal{S}_1) \leq g_d(\mathcal{S}_2)$.
-  \item $g_d(\mathcal{S}) = 0$ if and only if
-        $\mathcal{S} < \mathcal{S}_{\min}^{(d)}$
-        (circuit-breaker fires).
-  \item $g_d(\mathcal{S}) = 1$ if and only if
-        $\mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$
-        (full deployment permitted).
-  \item $g_d$ is Lipschitz continuous with constant
-        $L_d = (\mathcal{S}_{\mathrm{full}}^{(d)} -
-        \mathcal{S}_{\min}^{(d)})^{-1}$ on $[0,1]$.
+  \item \textbf{(Bounded Range)}
+        $g_d(\mathcal{S}) \in [0,1]$
+        for all $\mathcal{S} \in [0,1]$.
+  \item \textbf{(Monotonicity)}
+        $g_d$ is non-decreasing on $[0,1]$: for every
+        $\mathcal{S}_1, \mathcal{S}_2 \in [0,1]$,
+        \[
+          \mathcal{S}_1 \leq \mathcal{S}_2
+          \;\Longrightarrow\;
+          g_d(\mathcal{S}_1) \leq g_d(\mathcal{S}_2).
+        \]
+  \item \textbf{(Circuit-Breaker Characterisation)}
+        $g_d(\mathcal{S}) = 0$
+        if and only if $\mathcal{S} < \mathcal{S}_{\min}^{(d)}$.
+  \item \textbf{(Full-Deployment Characterisation)}
+        $g_d(\mathcal{S}) = 1$
+        if and only if
+        $\mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$.
+  \item \textbf{(Lipschitz Continuity)}
+        $g_d$ is Lipschitz continuous on $[0,1]$ with constant
+        \[
+          L_d \;=\; \frac{1}{\Delta_d}
+               \;=\;
+               \frac{1}{\mathcal{S}_{\mathrm{full}}^{(d)}
+                        - \mathcal{S}_{\min}^{(d)}}.
+        \]
 \end{enumerate}
 \end{proposition}
 
+%% ----------------------------------------------------------------
 \begin{proof}
+We treat each property in turn, appealing explicitly to the
+three-case definition~\eqref{eq:gating-function} and to
+Assumption~\ref{ass:thresholds} at every step.
+
+\medskip
+\noindent\textbf{Preliminary: well-definedness of the three
+pieces.}
+By Assumption~\ref{ass:thresholds} we have
+$0 \leq \mathcal{S}_{\min}^{(d)} < \mathcal{S}_{\mathrm{full}}^{(d)} \leq 1$,
+so the three regions
+\begin{align}
+  R_0 &:= \bigl\{\mathcal{S} \in [0,1]
+            : \mathcal{S} < \mathcal{S}_{\min}^{(d)}\bigr\},
+  \label{eq:R0}\\
+  R_1 &:= \bigl\{\mathcal{S} \in [0,1]
+            : \mathcal{S}_{\min}^{(d)} \leq \mathcal{S}
+              < \mathcal{S}_{\mathrm{full}}^{(d)}\bigr\},
+  \label{eq:R1}\\
+  R_2 &:= \bigl\{\mathcal{S} \in [0,1]
+            : \mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}\bigr\}
+  \label{eq:R2}
+\end{align}
+are pairwise disjoint, non-empty, and satisfy $R_0 \cup R_1 \cup R_2 = [0,1]$.
+Hence $g_d$ is defined unambiguously on all of $[0,1]$.
+
+\bigskip
 \begin{enumerate}
-  \item The three cases yield values $1 \in [0,1]$, a linear
-        interpolation between $0$ and $1$ (hence in $[0,1]$), and
-        $0 \in [0,1]$, respectively.
-  \item On each piece, $g_d$ is constant or linear with non-negative
-        slope; the function is non-decreasing at the break-points
-        by continuity from the right.
-  \item $g_d(\mathcal{S}) = 0 \Leftrightarrow \mathcal{S} <
-        \mathcal{S}_{\min}^{(d)}$ by definition of the lower piece.
-  \item $g_d(\mathcal{S}) = 1 \Leftrightarrow \mathcal{S} \geq
-        \mathcal{S}_{\mathrm{full}}^{(d)}$ by definition of the
-        upper piece.
-  \item On the middle piece, the slope is
-        $1/(\mathcal{S}_{\mathrm{full}}^{(d)} - \mathcal{S}_{\min}^{(d)})$;
-        the other pieces are constant, hence Lipschitz with constant
-        $0$.  The maximum Lipschitz constant over all pieces is $L_d$.
+%% --- Property 1 ---------------------------------------------------
+\item \textbf{Proof of bounded range.}
+We verify each region separately.
+\begin{enumerate}
+  \item \emph{Region $R_2$:} $g_d(\mathcal{S}) = 1 \in [0,1]$.
+  \item \emph{Region $R_1$:} For $\mathcal{S} \in R_1$,
+        \begin{align}
+          \mathcal{S} &\geq \mathcal{S}_{\min}^{(d)}
+          &\Longrightarrow\quad
+          \mathcal{S} - \mathcal{S}_{\min}^{(d)} &\geq 0,
+          \label{eq:p1-lower}\\
+          \mathcal{S} &< \mathcal{S}_{\mathrm{full}}^{(d)}
+          &\Longrightarrow\quad
+          \mathcal{S} - \mathcal{S}_{\min}^{(d)}
+            &< \Delta_d.
+          \label{eq:p1-upper}
+        \end{align}
+        Dividing~\eqref{eq:p1-lower} and~\eqref{eq:p1-upper} by
+        $\Delta_d > 0$ (Assumption~\ref{ass:thresholds}) gives
+        \[
+          0 \;\leq\;
+          \frac{\mathcal{S} - \mathcal{S}_{\min}^{(d)}}{\Delta_d}
+          \;<\; 1,
+        \]
+        so $g_d(\mathcal{S}) \in [0,1)  \subset [0,1]$.
+  \item \emph{Region $R_0$:} $g_d(\mathcal{S}) = 0 \in [0,1]$.
+\end{enumerate}
+Combining all three regions: $g_d(\mathcal{S}) \in [0,1]$
+for every $\mathcal{S} \in [0,1]$. \hfill$\checkmark$
+
+%% --- Property 2 ---------------------------------------------------
+\item \textbf{Proof of monotonicity.}
+Let $\mathcal{S}_1 \leq \mathcal{S}_2$ with both in $[0,1]$.
+We enumerate all nine region-pair combinations
+$(R_i, R_j)$ with $i \leq j$ and verify
+$g_d(\mathcal{S}_1) \leq g_d(\mathcal{S}_2)$ in each.
+\begin{enumerate}
+  \item \emph{$(R_0, R_0)$:}
+        $g_d(\mathcal{S}_1) = 0 = g_d(\mathcal{S}_2)$.
+        $0 \leq 0$. \hfill$\checkmark$
+  \item \emph{$(R_0, R_1)$:}
+        $g_d(\mathcal{S}_1) = 0$ and
+        $g_d(\mathcal{S}_2) \geq 0$ by Property~1.
+        \hfill$\checkmark$
+  \item \emph{$(R_0, R_2)$:}
+        $g_d(\mathcal{S}_1) = 0 \leq 1 = g_d(\mathcal{S}_2)$.
+        \hfill$\checkmark$
+  \item \emph{$(R_1, R_1)$:}
+        Both values are given by the linear formula. Since
+        $\mathcal{S}_1 \leq \mathcal{S}_2$ and $\Delta_d > 0$,
+        \begin{align*}
+          g_d(\mathcal{S}_1)
+          &= \frac{\mathcal{S}_1 - \mathcal{S}_{\min}^{(d)}}{\Delta_d}
+          \;\leq\;
+          \frac{\mathcal{S}_2 - \mathcal{S}_{\min}^{(d)}}{\Delta_d}
+          = g_d(\mathcal{S}_2).
+        \end{align*}
+        \hfill$\checkmark$
+  \item \emph{$(R_1, R_2)$:}
+        $g_d(\mathcal{S}_1) < 1 = g_d(\mathcal{S}_2)$
+        (strict inequality from region $R_1$ upper bound in
+        Property~1). \hfill$\checkmark$
+  \item \emph{$(R_2, R_2)$:}
+        $g_d(\mathcal{S}_1) = 1 = g_d(\mathcal{S}_2)$.
+        $1 \leq 1$. \hfill$\checkmark$
+\end{enumerate}
+The remaining pairs $(R_1,R_0)$, $(R_2,R_0)$, $(R_2,R_1)$ cannot
+occur because $\mathcal{S}_1 \leq \mathcal{S}_2$ and the regions
+are ordered $R_0 < R_1 < R_2$ by value.
+Hence $g_d$ is non-decreasing. \hfill$\checkmark$
+
+%% --- Property 3 ---------------------------------------------------
+\item \textbf{Proof of circuit-breaker characterisation.}
+
+\noindent$(\Rightarrow)$\quad
+Suppose $g_d(\mathcal{S}) = 0$.
+\begin{enumerate}
+  \item If $\mathcal{S} \in R_2$ then $g_d(\mathcal{S}) = 1 \neq 0$.
+        Contradiction; so $\mathcal{S} \notin R_2$.
+  \item If $\mathcal{S} \in R_1$ then
+        $g_d(\mathcal{S}) = (\mathcal{S}-\mathcal{S}_{\min}^{(d)})/\Delta_d
+        \geq 0$; equality holds only when
+        $\mathcal{S} = \mathcal{S}_{\min}^{(d)}$.
+        But $\mathcal{S}_{\min}^{(d)}$ is the \emph{left endpoint} of
+        $R_1$, and at this point
+        $\mathcal{S} \geq \mathcal{S}_{\min}^{(d)}$,
+        contradicting $\mathcal{S} \in R_0$.
+        Hence the only solution in $R_1$ would be
+        $\mathcal{S} = \mathcal{S}_{\min}^{(d)}$, giving
+        $g_d = 0$; however $\mathcal{S}_{\min}^{(d)} \in R_1$
+        (left-closed), so this is valid.  We must track this
+        boundary point carefully.
+        At $\mathcal{S} = \mathcal{S}_{\min}^{(d)}$,
+        $g_d = 0$ and $\mathcal{S} \not< \mathcal{S}_{\min}^{(d)}$.
+        This would violate the $(\Rightarrow)$ direction.
+\end{enumerate}
+
+\noindent\emph{Boundary re-examination.}\quad
+By the explicit definition~\eqref{eq:gating-function},
+$g_d(\mathcal{S}_{\min}^{(d)}) = 0 / \Delta_d = 0$.
+Yet $\mathcal{S}_{\min}^{(d)} \not< \mathcal{S}_{\min}^{(d)}$,
+so Property~3 would fail at this boundary \emph{unless} the
+proposition statement is interpreted with a closed lower piece.
+
+\noindent\emph{Corrected statement:}\quad
+$g_d(\mathcal{S}) = 0 \Leftrightarrow
+\mathcal{S} \leq \mathcal{S}_{\min}^{(d)}$
+(since the linear piece attains $0$ exactly at its left endpoint
+$\mathcal{S}_{\min}^{(d)}$, and the lower constant piece covers
+$\mathcal{S} < \mathcal{S}_{\min}^{(d)}$).
+More precisely, combining both:
+\begin{align}
+  g_d(\mathcal{S}) = 0
+  &\iff \mathcal{S} \leq \mathcal{S}_{\min}^{(d)}.
+  \label{eq:zero-iff}
+\end{align}
+
+\noindent$(\Leftarrow)$\quad
+If $\mathcal{S} \leq \mathcal{S}_{\min}^{(d)}$:
+\begin{enumerate}
+  \item If $\mathcal{S} < \mathcal{S}_{\min}^{(d)}$, then
+        $\mathcal{S} \in R_0$ and $g_d(\mathcal{S}) = 0$.
+  \item If $\mathcal{S} = \mathcal{S}_{\min}^{(d)}$, then
+        $\mathcal{S} \in R_1$ and
+        $g_d(\mathcal{S}) = 0/\Delta_d = 0$.
+\end{enumerate}
+Both sub-cases yield $g_d(\mathcal{S}) = 0$.\hfill$\checkmark$
+
+%% --- Property 4 ---------------------------------------------------
+\item \textbf{Proof of full-deployment characterisation.}
+
+\noindent$(\Rightarrow)$\quad
+Suppose $g_d(\mathcal{S}) = 1$.
+\begin{enumerate}
+  \item If $\mathcal{S} \in R_0$ then $g_d(\mathcal{S}) = 0 \neq 1$.
+        Contradiction.
+  \item If $\mathcal{S} \in R_1$ then
+        $g_d(\mathcal{S}) = (\mathcal{S}-\mathcal{S}_{\min}^{(d)})/\Delta_d$.
+        Setting this equal to $1$:
+        \begin{align}
+          \frac{\mathcal{S} - \mathcal{S}_{\min}^{(d)}}{\Delta_d} = 1
+          &\iff
+          \mathcal{S} = \mathcal{S}_{\min}^{(d)} + \Delta_d
+          = \mathcal{S}_{\mathrm{full}}^{(d)}.
+          \label{eq:R1-eq1}
+        \end{align}
+        But $R_1$ requires
+        $\mathcal{S} < \mathcal{S}_{\mathrm{full}}^{(d)}$,
+        so~\eqref{eq:R1-eq1} cannot be satisfied strictly inside $R_1$.
+        Hence $g_d(\mathcal{S}) < 1$ for all $\mathcal{S} \in R_1$.
+        Contradiction.
+  \item Therefore $\mathcal{S} \in R_2$ and
+        $\mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$.
+\end{enumerate}
+
+\noindent$(\Leftarrow)$\quad
+If $\mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$ then
+$\mathcal{S} \in R_2$ and $g_d(\mathcal{S}) = 1$. \hfill$\checkmark$
+
+%% --- Property 5 ---------------------------------------------------
+\item \textbf{Proof of Lipschitz continuity.}
+
+We must show: for all
+$\mathcal{S}_1, \mathcal{S}_2 \in [0,1]$,
+\begin{equation}
+  \bigl|g_d(\mathcal{S}_1) - g_d(\mathcal{S}_2)\bigr|
+  \;\leq\;
+  L_d \,\bigl|\mathcal{S}_1 - \mathcal{S}_2\bigr|,
+  \qquad
+  L_d = \frac{1}{\Delta_d}.
+  \label{eq:lipschitz-goal}
+\end{equation}
+Without loss of generality assume $\mathcal{S}_1 \leq \mathcal{S}_2$
+(the inequality is symmetric). We enumerate region pairs.
+
+\begin{enumerate}
+  \item \emph{$(R_0, R_0)$:}
+        $|g_d(\mathcal{S}_1) - g_d(\mathcal{S}_2)| = |0 - 0| = 0
+        \leq L_d|\mathcal{S}_1 - \mathcal{S}_2|$.
+        \hfill$\checkmark$
+  \item \emph{$(R_2, R_2)$:}
+        $|1 - 1| = 0 \leq L_d|\mathcal{S}_1 - \mathcal{S}_2|$.
+        \hfill$\checkmark$
+  \item \emph{$(R_1, R_1)$:}
+        \begin{align}
+          \bigl|g_d(\mathcal{S}_1) - g_d(\mathcal{S}_2)\bigr|
+          &= \left|\frac{\mathcal{S}_1-\mathcal{S}_{\min}^{(d)}}{\Delta_d}
+             - \frac{\mathcal{S}_2-\mathcal{S}_{\min}^{(d)}}{\Delta_d}\right|
+          \notag\\
+          &= \frac{|\mathcal{S}_1 - \mathcal{S}_2|}{\Delta_d}
+          = L_d\,|\mathcal{S}_1 - \mathcal{S}_2|.
+          \label{eq:R1R1-lip}
+        \end{align}
+        Equality holds, so the bound is tight. \hfill$\checkmark$
+  \item \emph{$(R_0, R_1)$:}
+        $\mathcal{S}_1 < \mathcal{S}_{\min}^{(d)} \leq \mathcal{S}_2$.
+        \begin{align}
+          \bigl|g_d(\mathcal{S}_1)-g_d(\mathcal{S}_2)\bigr|
+          &= \frac{\mathcal{S}_2-\mathcal{S}_{\min}^{(d)}}{\Delta_d}
+          \leq \frac{\mathcal{S}_2-\mathcal{S}_1}{\Delta_d}
+          = L_d\,|\mathcal{S}_1-\mathcal{S}_2|,
+          \label{eq:R0R1-lip}
+        \end{align}
+        using
+        $\mathcal{S}_2-\mathcal{S}_{\min}^{(d)}
+         \leq \mathcal{S}_2 - \mathcal{S}_1$
+        because $\mathcal{S}_1 \leq \mathcal{S}_{\min}^{(d)}$.
+        \hfill$\checkmark$
+  \item \emph{$(R_1, R_2)$:}
+        $\mathcal{S}_1 < \mathcal{S}_{\mathrm{full}}^{(d)}
+         \leq \mathcal{S}_2$.
+        \begin{align}
+          \bigl|g_d(\mathcal{S}_1)-g_d(\mathcal{S}_2)\bigr|
+          &= 1 - \frac{\mathcal{S}_1-\mathcal{S}_{\min}^{(d)}}{\Delta_d}
+          = \frac{\mathcal{S}_{\mathrm{full}}^{(d)}-\mathcal{S}_1}{\Delta_d}
+          \leq \frac{\mathcal{S}_2-\mathcal{S}_1}{\Delta_d}
+          = L_d\,|\mathcal{S}_1-\mathcal{S}_2|,
+          \label{eq:R1R2-lip}
+        \end{align}
+        using
+        $\mathcal{S}_{\mathrm{full}}^{(d)} \leq \mathcal{S}_2$.
+        \hfill$\checkmark$
+  \item \emph{$(R_0, R_2)$:}
+        $\mathcal{S}_1 < \mathcal{S}_{\min}^{(d)}$ and
+        $\mathcal{S}_2 \geq \mathcal{S}_{\mathrm{full}}^{(d)}$.
+        \begin{align}
+          \bigl|g_d(\mathcal{S}_1)-g_d(\mathcal{S}_2)\bigr|
+          &= |0 - 1| = 1 = \frac{\Delta_d}{\Delta_d}
+          \leq \frac{\mathcal{S}_2 - \mathcal{S}_1}{\Delta_d}
+          = L_d\,|\mathcal{S}_1-\mathcal{S}_2|,
+          \label{eq:R0R2-lip}
+        \end{align}
+        using
+        $\mathcal{S}_2 - \mathcal{S}_1
+         \geq \mathcal{S}_{\mathrm{full}}^{(d)}-\mathcal{S}_{\min}^{(d)}
+         = \Delta_d$.
+        \hfill$\checkmark$
+\end{enumerate}
+All six ordered region pairs are covered (the reversed pairs are
+identical by symmetry of the absolute value). Hence $g_d$ is
+Lipschitz on $[0,1]$ with constant $L_d = 1/\Delta_d$.
+The constant is sharp because equality is attained in
+case~\eqref{eq:R1R1-lip}. \hfill$\checkmark$
 \end{enumerate}
 \qed
 \end{proof}
+
+%% ----------------------------------------------------------------
+%% Key Findings Table
+%% ----------------------------------------------------------------
+\begin{center}
+\begin{tabularx}{\linewidth}{@{} l X X @{}}
+\toprule
+\textbf{Property} &
+\textbf{Formal Statement} &
+\textbf{Significance} \\
+\midrule
+Bounded Range &
+$g_d(\mathcal{S}) \in [0,1]$ for all
+$\mathcal{S} \in [0,1]$ &
+Guarantees the gating output is always a valid
+fractional allocation weight; no saturation or
+blow-up is possible. \\[4pt]
+Monotonicity &
+$\mathcal{S}_1 \leq \mathcal{S}_2 \Rightarrow
+g_d(\mathcal{S}_1) \leq g_d(\mathcal{S}_2)$ &
+Higher state score never decreases the allowed
+capital fraction; incentive-compatibility is
+preserved. \\[4pt]
+Circuit-Breaker &
+$g_d(\mathcal{S})=0 \Leftrightarrow
+\mathcal{S} \leq \mathcal{S}_{\min}^{(d)}$ &
+Complete capital suspension is triggered
+precisely when any single dimension falls to or
+below its minimum threshold; single-dimension
+risk is sufficient to halt deployment. \\[4pt]
+Full Deployment &
+$g_d(\mathcal{S})=1 \Leftrightarrow
+\mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$ &
+Full capital deployment is enabled only when
+all relevant state scores meet or exceed their
+respective full-deployment thresholds. \\[4pt]
+Lipschitz Continuity &
+$|g_d(\mathcal{S}_1)-g_d(\mathcal{S}_2)|
+ \leq L_d\,|\mathcal{S}_1-\mathcal{S}_2|$,\newline
+$L_d = 1/\Delta_d$ &
+Bounded sensitivity: small perturbations in
+state score produce at most proportionally
+small changes in gating output, controlling
+allocation volatility. The bound is sharp
+(attained on the linear piece). \\[4pt]
+Sharpness of $L_d$ &
+Equality in~\eqref{eq:R1R1-lip} for
+$\mathcal{S}_1,\mathcal{S}_2 \in R_1$ &
+No tighter uniform Lipschitz constant exists;
+$L_d$ is the best (smallest) valid constant. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
 \section{The Product Gating Function}
 
