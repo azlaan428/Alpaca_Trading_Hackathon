@@ -5229,204 +5229,814 @@ assumption or previously established result.
 
 \begin{proof}[Proof of Property~1 (Range)]
 \begin{enumerate}
-  \item By Assumption~(A4a), for every $d \in \mathcal{D}$:
+  %% -- Step 1: Validate Assumption (A4a) per dimension ---------------------
+  \item \textbf{(Assumption Validation~--- A4a.)}
+        Assumption~(A4a) states that every gate function
+        $g_d : \mathbb{R} \to [0,1]$ is well-defined and
+        measurable for each $d \in \mathcal{D}
+        = \{1,2,3,4,5,6,7\}$.
+        We first confirm the domain is non-empty:
+        $|\mathcal{D}| = 7 < \infty$, so the product below
+        is a \emph{finite} product.
+        For each $d \in \mathcal{D}$, we apply~(A4a) directly:
+        \begin{align}
+          g_d\!\left(\mathcal{S}_t^{(d)}\right)
+            &\;\geq\; 0,
+            \label{eq:gd-nonneg} \\
+          g_d\!\left(\mathcal{S}_t^{(d)}\right)
+            &\;\leq\; 1.
+            \label{eq:gd-le-one}
+        \end{align}
+        Equations~\eqref{eq:gd-nonneg}--\eqref{eq:gd-le-one}
+        hold for \emph{every} $d \in \mathcal{D}$ and for
+        \emph{every} $t$ in the index set; no additional
+        regularity beyond~(A4a) is required.
+        We record the combined range statement:
         \begin{equation}
-          g_d\!\left(\mathcal{S}_t^{(d)}\right) \in [0,1].
+          g_d\!\left(\mathcal{S}_t^{(d)}\right) \in [0,1]
+          \quad \forall\, d \in \mathcal{D},\;
+          \forall\, t.
           \label{eq:gd-range}
         \end{equation}
-  \item The product of finitely many real numbers each lying
-        in $[0,1]$ satisfies:
-        if $a_d \in [0,1]$ for $d = 1,\ldots,7$, then
-        \begin{align}
-          \prod_{d=1}^{7} a_d
-          &\;\geq\; 0
-            \quad\text{(product of non-negatives)},
-          \label{eq:prod-nonneg} \\
-          \prod_{d=1}^{7} a_d
-          &\;\leq\; \prod_{d=1}^{7} 1 = 1
-            \quad\text{(each factor $\leq 1$, product $\leq$ max factor).}
+
+  %% -- Step 2: Lower bound of the product ----------------------------------
+  \item \textbf{(Lower Bound~--- Non-negativity of the Product.)}
+        Let $a_d \coloneqq
+          g_d\!\left(\mathcal{S}_t^{(d)}\right)$
+        for $d \in \mathcal{D}$.
+        By~\eqref{eq:gd-nonneg}, $a_d \geq 0$ for all $d$.
+        We prove by induction on $D \leq 7$ that
+        \begin{equation}
+          \prod_{d=1}^{D} a_d \;\geq\; 0.
+          \label{eq:prod-nonneg-induction}
+        \end{equation}
+        \begin{enumerate}
+          \item \emph{Base case} ($D = 1$):
+                $\prod_{d=1}^{1} a_d = a_1 \geq 0$
+                by~\eqref{eq:gd-nonneg}.
+          \item \emph{Inductive step}: Assume
+                $P_k \coloneqq \prod_{d=1}^{k} a_d \geq 0$
+                for some $k \geq 1$.
+                Then
+                \begin{align}
+                  \prod_{d=1}^{k+1} a_d
+                    &= P_k \cdot a_{k+1}
+                    \label{eq:prod-step} \\
+                    &\geq 0 \cdot 0
+                    \label{eq:prod-step-bound} \\
+                    &= 0,
+                    \label{eq:prod-step-zero}
+                \end{align}
+                where~\eqref{eq:prod-step-bound} uses
+                $P_k \geq 0$ (inductive hypothesis) and
+                $a_{k+1} \geq 0$ (from~\eqref{eq:gd-nonneg}),
+                and the product of two non-negative reals is
+                non-negative.
+        \end{enumerate}
+        Applying~\eqref{eq:prod-nonneg-induction} with $D=7$:
+        \begin{equation}
+          \prod_{d=1}^{7} a_d \;\geq\; 0.
+          \label{eq:prod-nonneg}
+        \end{equation}
+
+  %% -- Step 3: Upper bound of the product ----------------------------------
+  \item \textbf{(Upper Bound~--- Product Does Not Exceed One.)}
+        We prove by induction on $D \leq 7$ that
+        \begin{equation}
+          \prod_{d=1}^{D} a_d \;\leq\; 1,
+          \label{eq:prod-le1-induction}
+        \end{equation}
+        given $a_d \in [0,1]$ for all $d$.
+        \begin{enumerate}
+          \item \emph{Base case} ($D = 1$):
+                $\prod_{d=1}^{1} a_d = a_1 \leq 1$
+                by~\eqref{eq:gd-le-one}.
+          \item \emph{Inductive step}: Assume
+                $P_k \leq 1$ for some $k \geq 1$.
+                Combined with $P_k \geq 0$
+                (established in Step~2) and
+                $a_{k+1} \in [0,1]$:
+                \begin{align}
+                  \prod_{d=1}^{k+1} a_d
+                    &= P_k \cdot a_{k+1}
+                    \label{eq:ub-step} \\
+                    &\leq 1 \cdot a_{k+1}
+                    \label{eq:ub-step-pk} \\
+                    &\leq 1 \cdot 1
+                    \label{eq:ub-step-ak} \\
+                    &= 1.
+                    \label{eq:ub-step-one}
+                \end{align}
+                Line~\eqref{eq:ub-step-pk} uses $P_k \leq 1$
+                and $a_{k+1} \geq 0$ so that
+                $P_k \cdot a_{k+1} \leq 1 \cdot a_{k+1}$.
+                Line~\eqref{eq:ub-step-ak} uses
+                $a_{k+1} \leq 1$.
+        \end{enumerate}
+        Applying~\eqref{eq:prod-le1-induction} with $D=7$:
+        \begin{equation}
+          \prod_{d=1}^{7} a_d \;\leq\; 1.
           \label{eq:prod-le1}
+        \end{equation}
+
+  %% -- Step 4: Boundary / edge cases ---------------------------------------
+  \item \textbf{(Boundary and Edge Cases.)}
+        We verify that the range claim holds at every
+        extremity:
+        \begin{enumerate}
+          \item \emph{All factors equal zero}:
+                $\prod_{d=1}^{7} 0 = 0 \in [0,1]$. \checkmark
+          \item \emph{All factors equal one}:
+                $\prod_{d=1}^{7} 1 = 1 \in [0,1]$. \checkmark
+          \item \emph{Mixed boundary} ($a_j = 0$ for some $j$,
+                $a_d = 1$ for $d \neq j$):
+                $\prod_{d=1}^{7} a_d = 0 \in [0,1]$. \checkmark
+          \item \emph{Single interior value} ($a_d \in (0,1)$):
+                Strict inequalities in Steps~2--3 apply,
+                so $\prod a_d \in (0,1) \subset [0,1]$.
+                \checkmark
+        \end{enumerate}
+        No further cases exist since $[0,1]$ is a closed
+        interval and all $a_d$ are constrained to it by~(A4a).
+
+  %% -- Step 5: Combine into the final range claim --------------------------
+  \item \textbf{(Conclusion~--- Range of $G$.)}
+        Substituting $a_d =
+          g_d\!\left(\mathcal{S}_t^{(d)}\right)$
+        and recalling Definition~\eqref{eq:G-def}:
+        \begin{align}
+          G(\mathbf{X}_t)
+            &= \prod_{d=1}^{7}
+               g_d\!\left(\mathcal{S}_t^{(d)}\right)
+            \label{eq:G-range-expand} \\
+            &\geq 0
+            \label{eq:G-range-lower}
+              \quad\text{(by~\eqref{eq:prod-nonneg})}, \\
+          G(\mathbf{X}_t)
+            &\leq 1
+            \label{eq:G-range-upper}
+              \quad\text{(by~\eqref{eq:prod-le1})}.
         \end{align}
-        Inequality~\eqref{eq:prod-le1} follows because
-        $a_d \leq 1$ implies
-        $\prod_{d} a_d \leq a_1 \cdot 1^6 = a_1 \leq 1$.
-        More generally, by induction on $D$: the base case
-        $D=1$ is trivial; the inductive step gives
-        $\prod_{d=1}^{D} a_d =
-          \bigl(\prod_{d=1}^{D-1} a_d\bigr) \cdot a_D
-          \leq 1 \cdot 1 = 1$.
-  \item Combining~\eqref{eq:gd-range}--\eqref{eq:prod-le1}:
+        Combining~\eqref{eq:G-range-lower}
+        and~\eqref{eq:G-range-upper}:
         \begin{equation}
-          G(\mathbf{X}_t)
-          = \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right)
-          \in [0,1].
+          G(\mathbf{X}_t) \in [0,1]
+          \quad \forall\, \mathbf{X}_t \in \mathbb{R}^{7}.
+          \label{eq:G-range-final}
         \end{equation}
+        This holds for all $t$, all state vectors
+        $\mathbf{X}_t$, and relies solely on Assumption~(A4a).
+        No additional assumptions are invoked.
 \end{enumerate}
+
+%% -- Key Findings Table for Property 1 ------------------------------------
+\begin{center}
+\begin{tabularx}{\linewidth}{%
+  >{\bfseries\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}X
+  >{\centering\arraybackslash}p{2.6cm}}
+\toprule
+\textbf{Finding} & \textbf{Justification} & \textbf{Result} \\
+\midrule
+Non-negativity of each $g_d$ &
+  Assumption~(A4a): $g_d : \mathbb{R} \to [0,1]$ &
+  $g_d(\mathcal{S}_t^{(d)}) \geq 0$ \\
+\addlinespace
+Upper bound of each $g_d$ &
+  Assumption~(A4a): codomain bounded above by $1$ &
+  $g_d(\mathcal{S}_t^{(d)}) \leq 1$ \\
+\addlinespace
+Non-negativity of $G$ &
+  Induction (Step~2): product of non-negatives is
+  non-negative &
+  $G(\mathbf{X}_t) \geq 0$ \\
+\addlinespace
+Upper bound of $G$ &
+  Induction (Step~3): each factor $\leq 1$ forces
+  product $\leq 1$ &
+  $G(\mathbf{X}_t) \leq 1$ \\
+\addlinespace
+Boundary cases verified &
+  All extremities of $[0,1]^7$ checked explicitly
+  (Step~4) &
+  $G \in \{0\} \cup (0,1) \cup \{1\}$ \\
+\addlinespace
+Range conclusion &
+  Combining lower and upper bounds~\eqref{eq:G-range-lower},
+  \eqref{eq:G-range-upper} &
+  $G(\mathbf{X}_t) \in [0,1]$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
 \end{proof}
 
+%% ------------------------------------------------------------------
 \begin{proof}[Proof of Property~2 (Circuit-Breaker, Biconditional)]
-We prove both directions of~\eqref{eq:G-zero-iff} separately.
+\textbf{Goal.}  Establish
+\begin{equation}
+  G(\mathbf{X}_t) = 0
+  \;\Longleftrightarrow\;
+  \exists\, d^* \in \mathcal{D}:\;
+  \mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}.
+  \label{eq:P2-goal}
+\end{equation}
 
-\medskip
-\noindent
-\textbf{($\Rightarrow$)~Assume $G(\mathbf{X}_t) = 0$.}
+\medskip\noindent
+\textbf{Validated preconditions.}
 \begin{enumerate}
-  \item By definition,
-        $G(\mathbf{X}_t) = \prod_{d=1}^{7}
-          g_d\!\left(\mathcal{S}_t^{(d)}\right) = 0$.
-  \item Each factor satisfies
-        $g_d\!\left(\mathcal{S}_t^{(d)}\right) \geq 0$
-        by~\eqref{eq:gd-range}.
-  \item A finite product of non-negative reals equals zero if
-        and only if at least one factor equals zero
-        (standard real-number arithmetic; no factor can be
-        negative, so cancellation is impossible).
-        Therefore there exists $d^* \in \mathcal{D}$ with
-        $g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right) = 0$.
-  \item By Assumption~(A4c),
-        $g_{d^*}(\mathcal{S}) = 0
-         \Leftrightarrow
-         \mathcal{S} \leq \mathcal{S}_{\min}^{(d^*)}$,
-        so $\mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}$.
+  \item \emph{Domain validity.}  By Assumption~(A1),
+        $\mathbf{X}_t \in [0,1]^7$, so each
+        $\mathcal{S}_t^{(d)} \in [0,1]$ for all $d\in\mathcal{D}$.
+  \item \emph{Factor non-negativity.}  By Property~1
+        (already proved), every factor satisfies
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right) \in [0,1]$;
+        in particular each factor is non-negative.
+  \item \emph{Threshold ordering.}  By Assumption~(A4a),
+        $0 \leq \mathcal{S}_{\min}^{(d)}
+         < \mathcal{S}_{\mathrm{full}}^{(d)} \leq 1$
+        for every $d\in\mathcal{D}$.  Hence the threshold
+        $\mathcal{S}_{\min}^{(d)}$ is well-defined and
+        strictly interior to the boundary.
+  \item \emph{Zero-characterisation of each $g_d$.}
+        By Assumption~(A4c),
+        $g_d(\mathcal{S}) = 0 \Leftrightarrow
+         \mathcal{S} \leq \mathcal{S}_{\min}^{(d)}$
+        for each $d\in\mathcal{D}$.
+  \item \emph{Finite product.}  $|\mathcal{D}| = 7 < \infty$,
+        so the product $\prod_{d=1}^{7}$ is a finite
+        composition of real multiplications; standard
+        real-arithmetic rules apply.
 \end{enumerate}
 
 \medskip
+%% ---- Direction 1 ----
 \noindent
-\textbf{($\Leftarrow$)~Assume there exists $d^* \in \mathcal{D}$
-with $\mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}$.}
+\textbf{Direction~1 ($\Rightarrow$): Assume $G(\mathbf{X}_t)=0$.}
 \begin{enumerate}
-  \item By Assumption~(A4c),
-        $g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right) = 0$.
-  \item The product contains $g_{d^*}$ as one factor:
+  \item \emph{Expand the definition.}
+        By definition~\eqref{eq:G-def},
         \begin{equation}
           G(\mathbf{X}_t)
-          = g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right)
-            \cdot
-            \prod_{\substack{d=1\\d \neq d^*}}^{7}
-              g_d\!\left(\mathcal{S}_t^{(d)}\right)
-          = 0
-            \cdot
-            \prod_{\substack{d=1\\d \neq d^*}}^{7}
-              g_d\!\left(\mathcal{S}_t^{(d)}\right)
-          = 0.
+          = \prod_{d=1}^{7}
+              g_d\!\left(\mathcal{S}_t^{(d)}\right) = 0.
+          \label{eq:P2-fwd-expand}
         \end{equation}
-        The remaining product is finite and real-valued
-        (well-defined by Property~1 applied to the sub-product),
-        so multiplication by zero yields zero.
+
+  \item \emph{Non-negativity of every factor.}
+        Precondition~2 guarantees
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right) \geq 0$
+        for all $d\in\mathcal{D}$.  No factor is negative.
+
+  \item \emph{Zero-product lemma.}
+        For a finite collection of real numbers
+        $\{a_d\}_{d=1}^{7}$ with $a_d \geq 0$ for all $d$,
+        \begin{equation}
+          \prod_{d=1}^{7} a_d = 0
+          \;\Longleftrightarrow\;
+          \exists\, d^* \in \{1,\dots,7\}:\; a_d = 0.
+          \label{eq:zero-product-lemma}
+        \end{equation}
+        \emph{Proof of lemma.}
+        ($\Leftarrow$) If some $a_{d^*}=0$, the product is
+        zero immediately.
+        ($\Rightarrow$) Suppose all $a_d > 0$.  Then each
+        $a_d \geq \varepsilon > 0$ for some
+        $\varepsilon := \min_d a_d > 0$, so
+        $\prod_{d=1}^7 a_d \geq \varepsilon^7 > 0$,
+        contradicting the product being zero.
+        Hence at least one factor must vanish.
+
+  \item \emph{Application.}
+        Applying~\eqref{eq:zero-product-lemma}
+        to~\eqref{eq:P2-fwd-expand}: there exists
+        $d^*\in\mathcal{D}$ such that
+        $g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right) = 0$.
+
+  \item \emph{Invoke Assumption~(A4c).}
+        Since $g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right)=0$,
+        Precondition~4 yields
+        $\mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}$.
+
+  \item \emph{Conclusion.}
+        We have exhibited $d^*\in\mathcal{D}$ with
+        $\mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}$,
+        completing Direction~1. \hfill$\checkmark$
 \end{enumerate}
-Both directions are established; biconditional~\eqref{eq:G-zero-iff}
-holds.
+
+\medskip
+%% ---- Direction 2 ----
+\noindent
+\textbf{Direction~2 ($\Leftarrow$): Assume $\exists\,d^*\in
+\mathcal{D}$ with $\mathcal{S}_t^{(d^*)}\leq
+\mathcal{S}_{\min}^{(d^*)}$.}
+\begin{enumerate}
+  \item \emph{Invoke Assumption~(A4c) on $d^*$.}
+        Since $\mathcal{S}_t^{(d^*)}\leq\mathcal{S}_{\min}^{(d^*)}$,
+        Precondition~4 gives
+        \begin{equation}
+          g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right) = 0.
+          \label{eq:P2-bwd-zero}
+        \end{equation}
+
+  \item \emph{No assumption on remaining coordinates.}
+        For all $d\neq d^*$, the values
+        $\mathcal{S}_t^{(d)}\in[0,1]$ are arbitrary.
+        By Precondition~2, each corresponding factor
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)\in[0,1]$
+        is real and finite.
+
+  \item \emph{Factor the product at $d^*$.}
+        Separate the product as
+        \begin{align}
+          G(\mathbf{X}_t)
+          &= g_{d^*}\!\left(\mathcal{S}_t^{(d^*)}\right)
+             \cdot
+             \prod_{\substack{d=1\\d \neq d^*}}^{7}
+               g_d\!\left(\mathcal{S}_t^{(d)}\right).
+          \label{eq:P2-bwd-factor}
+        \end{align}
+        This factorisation is valid because multiplication
+        of real numbers is commutative and associative
+        (Precondition~5).
+
+  \item \emph{Bound the residual product.}
+        Define
+        $R :=
+         \prod_{\substack{d=1\\d \neq d^*}}^{7}
+           g_d\!\left(\mathcal{S}_t^{(d)}\right)$.
+        By Precondition~2 applied to each of the six
+        remaining factors, $R \in [0,1]^6$-product, so
+        $R \in [0,1]$.  In particular $R$ is a
+        well-defined, finite real number.
+
+  \item \emph{Substitute and simplify.}
+        Using~\eqref{eq:P2-bwd-zero}
+        in~\eqref{eq:P2-bwd-factor}:
+        \begin{align}
+          G(\mathbf{X}_t)
+          &= 0 \cdot R
+           = 0,
+          \label{eq:P2-bwd-result}
+        \end{align}
+        since multiplication of any finite real $R$ by zero
+        yields zero.
+
+  \item \emph{Conclusion.}
+        $G(\mathbf{X}_t) = 0$, completing Direction~2.
+        Note that no restriction was placed on the
+        remaining six coordinates; the result holds
+        regardless of their values. \hfill$\checkmark$
+\end{enumerate}
+
+\medskip\noindent
+Both directions are established; biconditional~\eqref{eq:P2-goal}
+holds. \qed
 \end{proof}
 
+%% ------------------------------------------------------------------
 \begin{proof}[Proof of Property~3 (Full Deployment, Biconditional)]
-We prove both directions of~\eqref{eq:G-one-iff}.
+\textbf{Goal.}  Establish
+\begin{equation}
+  G(\mathbf{X}_t) = 1
+  \;\Longleftrightarrow\;
+  \forall\, d \in \mathcal{D}:\;
+  \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\mathrm{full}}^{(d)}.
+  \label{eq:P3-goal}
+\end{equation}
 
-\medskip
-\noindent
-\textbf{($\Leftarrow$)~Assume $\mathcal{S}_t^{(d)}
-  \geq \mathcal{S}_{\mathrm{full}}^{(d)}$ for all
-  $d \in \mathcal{D}$.}
+\medskip\noindent
+\textbf{Validated preconditions.}
 \begin{enumerate}
-  \item By Assumption~(A4d), for every $d \in \mathcal{D}$:
-        $g_d\!\left(\mathcal{S}_t^{(d)}\right) = 1$.
-  \item Therefore
-        $G(\mathbf{X}_t) = \prod_{d=1}^{7} 1 = 1$.
+  \item \emph{Domain.}  $\mathbf{X}_t\in[0,1]^7$
+        (Assumption~(A1)); hence
+        $\mathcal{S}_t^{(d)}\in[0,1]$ for all
+        $d\in\mathcal{D}$.
+  \item \emph{Factor range.}  By Property~1,
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)\in[0,1]$
+        for all $d\in\mathcal{D}$.
+  \item \emph{Unity-characterisation.}
+        By Assumption~(A4d),
+        $g_d(\mathcal{S})=1 \Leftrightarrow
+         \mathcal{S}\geq\mathcal{S}_{\mathrm{full}}^{(d)}$
+        for each $d\in\mathcal{D}$.
+  \item \emph{Strict upper saturation.}
+        $\mathcal{S}_{\mathrm{full}}^{(d)}\leq 1$
+        (Assumption~(A4a)), so the saturation threshold
+        is reachable within $[0,1]$.
+  \item \emph{Finite product.}
+        $|\mathcal{D}|=7$; standard real arithmetic applies.
 \end{enumerate}
 
 \medskip
+%% ---- Direction 1 ----
 \noindent
-\textbf{($\Rightarrow$)~Assume $G(\mathbf{X}_t) = 1$.}
+\textbf{Direction~1 ($\Leftarrow$): Assume
+$\mathcal{S}_t^{(d)}\geq\mathcal{S}_{\mathrm{full}}^{(d)}$
+for all $d\in\mathcal{D}$.}
 \begin{enumerate}
-  \item By Property~1, each factor $g_d \in [0,1]$.
-  \item Suppose, for contradiction, that there exists
-        $d^{\dagger} \in \mathcal{D}$ with
+  \item \emph{Validate each factor.}
+        Fix an arbitrary $d\in\mathcal{D}$.
+        The hypothesis gives
+        $\mathcal{S}_t^{(d)}\geq\mathcal{S}_{\mathrm{full}}^{(d)}$.
+        By Precondition~3, this implies
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)=1$.
+        Since $d$ was arbitrary, the implication holds
+        for all $d\in\mathcal{D}$.
+
+  \item \emph{Evaluate the product.}
+        Substituting each factor equal to $1$:
+        \begin{align}
+          G(\mathbf{X}_t)
+          &= \prod_{d=1}^{7}
+               g_d\!\left(\mathcal{S}_t^{(d)}\right)
+           = \prod_{d=1}^{7} 1
+           = 1.
+          \label{eq:P3-bwd-result}
+        \end{align}
+
+  \item \emph{Conclusion.}
+        $G(\mathbf{X}_t)=1$. \hfill$\checkmark$
+\end{enumerate}
+
+\medskip
+%% ---- Direction 2 ----
+\noindent
+\textbf{Direction~2 ($\Rightarrow$): Assume
+$G(\mathbf{X}_t)=1$.}
+\begin{enumerate}
+  \item \emph{Factor range recall.}
+        By Precondition~2,
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)\in[0,1]$
+        for every $d\in\mathcal{D}$.
+
+  \item \emph{Suppose, for contradiction, a strict factor.}
+        Assume there exists $d^{\dagger}\in\mathcal{D}$
+        such that
         $g_{d^{\dagger}}\!\left(\mathcal{S}_t^{(d^{\dagger})}\right)
          < 1$.
-  \item Then, since every remaining factor is at most $1$:
+        Let $\alpha :=
+          g_{d^{\dagger}}\!\left(\mathcal{S}_t^{(d^{\dagger})}\right)
+          \in [0,1)$.
+
+  \item \emph{Bound the product.}
+        Factor out $d^{\dagger}$:
         \begin{align}
           G(\mathbf{X}_t)
-          &= g_{d^{\dagger}}\!\left(\mathcal{S}_t^{(d^{\dagger})}\right)
+          &= \alpha
+             \cdot
+             \prod_{\substack{d=1\\d \neq d^{\dagger}}}^{7}
+               g_d\!\left(\mathcal{S}_t^{(d)}\right).
+          \label{eq:P3-fwd-factor}
+        \end{align}
+        Each remaining factor satisfies
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)\leq 1$
+        by Precondition~2.
+        Therefore the residual product
+        $\prod_{\substack{d=1\\d\neq d^{\dagger}}}^{7}
+           g_d\!\left(\mathcal{S}_t^{(d)}\right)\leq 1$.
+
+  \item \emph{Derive the contradiction.}
+        \begin{align}
+          G(\mathbf{X}_t)
+          &= \alpha
              \cdot
              \prod_{\substack{d=1\\d \neq d^{\dagger}}}^{7}
                g_d\!\left(\mathcal{S}_t^{(d)}\right)
-          \nonumber\\
-          &\leq g_{d^{\dagger}}\!\left(\mathcal{S}_t^{(d^{\dagger})}\right)
-               \cdot 1
-          < 1,
+          \;\leq\; \alpha \cdot 1
+          = \alpha < 1,
+          \label{eq:P3-fwd-contra}
         \end{align}
-        contradicting $G(\mathbf{X}_t) = 1$.
-  \item Hence $g_d\!\left(\mathcal{S}_t^{(d)}\right) = 1$
-        for every $d \in \mathcal{D}$.
-  \item By Assumption~(A4d),
-        $g_d(\mathcal{S}) = 1
-         \Leftrightarrow
-         \mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$,
-        so $\mathcal{S}_t^{(d)} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$
-        for all $d \in \mathcal{D}$.
+        contradicting the hypothesis $G(\mathbf{X}_t)=1$.
+
+  \item \emph{Resolve contradiction.}
+        The assumption in Step~2 is false; hence
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)=1$
+        for \emph{every} $d\in\mathcal{D}$.
+
+  \item \emph{Invoke Assumption~(A4d) on each coordinate.}
+        For each $d\in\mathcal{D}$, since
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)=1$,
+        Precondition~3 gives
+        $\mathcal{S}_t^{(d)}\geq\mathcal{S}_{\mathrm{full}}^{(d)}$.
+
+  \item \emph{Universality.}
+        Step~6 holds for every $d\in\mathcal{D}$ without
+        exception; no coordinate was excluded.
+
+  \item \emph{Conclusion.}
+        $\mathcal{S}_t^{(d)}\geq\mathcal{S}_{\mathrm{full}}^{(d)}$
+        for all $d\in\mathcal{D}$.
+        \hfill$\checkmark$
 \end{enumerate}
-Both directions are established; biconditional~\eqref{eq:G-one-iff}
-holds.
+
+\medskip\noindent
+Both directions are established; biconditional~\eqref{eq:P3-goal}
+holds. \qed
 \end{proof}
 
+%% ------------------------------------------------------------------
 \begin{proof}[Proof of Property~4 (Coordinatewise Monotonicity)]
-Fix any $d_0 \in \mathcal{D}$ and fix all coordinates
-$\mathcal{S}_t^{(d)}$ for $d \neq d_0$ at arbitrary values
-in $[0,1]$.  Let $s \mapsto H(s)$ denote $G$ as a function
-of $\mathcal{S}_t^{(d_0)} = s$ alone.
+\textbf{Goal.}  For each fixed $d_0\in\mathcal{D}$ and all
+fixed values of the remaining coordinates, $G$ is
+non-decreasing in $\mathcal{S}_t^{(d_0)}$.
+
+\medskip\noindent
+\textbf{Validated preconditions.}
 \begin{enumerate}
-  \item Write
-        \begin{equation}
-          H(s)
-          = g_{d_0}(s)
-            \cdot
-            C_{-d_0},
-          \qquad
-          C_{-d_0}
-          :=
-          \prod_{\substack{d=1\\d\neq d_0}}^{7}
-            g_d\!\left(\mathcal{S}_t^{(d)}\right).
-        \end{equation}
-  \item $C_{-d_0}$ does not depend on $s$; it is a
-        non-negative constant (non-negative by
-        Property~1 applied to the sub-product).
-  \item By Assumption~(A4b), $g_{d_0}$ is non-decreasing
-        on $[0,1]$: for $s_1 \leq s_2$ in $[0,1]$,
-        $g_{d_0}(s_1) \leq g_{d_0}(s_2)$.
-  \item Multiplying both sides by the non-negative constant
-        $C_{-d_0}$:
-        \begin{equation}
-          H(s_1)
-          = g_{d_0}(s_1)\,C_{-d_0}
-          \;\leq\;
-          g_{d_0}(s_2)\,C_{-d_0}
-          = H(s_2).
-        \end{equation}
-  \item Hence $H$ is non-decreasing in $s$, i.e.\ $G$ is
-        non-decreasing in $\mathcal{S}_t^{(d_0)}$.  Since
-        $d_0 \in \mathcal{D}$ was arbitrary, the property
-        holds for all coordinates.
+  \item \emph{Domain.}
+        $\mathcal{S}_t^{(d)}\in[0,1]$ for all
+        $d\in\mathcal{D}$ (Assumption~(A1)).
+  \item \emph{Monotonicity of each $g_d$.}
+        By Assumption~(A4b), $g_d$ is non-decreasing on
+        $[0,1]$: for $s_1,s_2\in[0,1]$ with $s_1\leq s_2$,
+        $g_d(s_1)\leq g_d(s_2)$.
+  \item \emph{Non-negativity of each factor.}
+        By Property~1, $g_d\!\left(\mathcal{S}_t^{(d)}\right)\geq 0$.
+  \item \emph{Finite product structure.}
+        $|\mathcal{D}|=7$; real multiplication is order-preserving
+        when scaling by a non-negative constant.
 \end{enumerate}
+
+\medskip\noindent
+\textbf{Main argument.}
+Fix $d_0\in\mathcal{D}$ arbitrarily.  Fix all coordinates
+$\mathcal{S}_t^{(d)}$ for $d\neq d_0$ at arbitrary but
+constant values in $[0,1]$.  Define the univariate function
+\begin{equation}
+  H : [0,1] \to [0,1],
+  \qquad
+  H(s) := G\!\left(\mathbf{X}_t\big|_{\mathcal{S}_t^{(d_0)}=s}\right).
+  \label{eq:P4-H-def}
+\end{equation}
+
+\begin{enumerate}
+  \item \emph{Decompose $H(s)$.}
+        By definition of $G$,
+        \begin{align}
+          H(s)
+          &= g_{d_0}(s)
+             \cdot
+             \underbrace{
+               \prod_{\substack{d=1\\d\neq d_0}}^{7}
+                 g_d\!\left(\mathcal{S}_t^{(d)}\right)
+             }_{=:\,C_{-d_0}}.
+          \label{eq:P4-decompose}
+        \end{align}
+
+  \item \emph{Establish that $C_{-d_0}$ is a non-negative constant.}
+        The product $C_{-d_0}$ involves only the six coordinates
+        $d\neq d_0$, which are held fixed.  Each factor
+        $g_d\!\left(\mathcal{S}_t^{(d)}\right)\geq 0$
+        by Precondition~3; a product of non-negative reals
+        is non-negative, so $C_{-d_0}\geq 0$.
+        $C_{-d_0}$ does not depend on $s$.
+
+  \item \emph{Monotonicity of $g_{d_0}$.}
+        Let $s_1,s_2\in[0,1]$ with $s_1\leq s_2$.
+        By Precondition~2, $g_{d_0}(s_1)\leq g_{d_0}(s_2)$.
+
+  \item \emph{Propagate monotonicity through $C_{-d_0}$.}
+        Multiply both sides of $g_{d_0}(s_1)\leq g_{d_0}(s_2)$
+        by the non-negative constant $C_{-d_0}$:
+        \begin{align}
+          g_{d_0}(s_1)\,C_{-d_0}
+          &\leq g_{d_0}(s_2)\,C_{-d_0}.
+          \label{eq:P4-mono-step}
+        \end{align}
+        (Multiplying an inequality by a non-negative real
+        preserves the direction of the inequality.)
+
+  \item \emph{Restate in terms of $H$.}
+        Using~\eqref{eq:P4-decompose}:
+        \begin{align}
+          H(s_1)
+          &= g_{d_0}(s_1)\,C_{-d_0}
+           \;\leq\;
+           g_{d_0}(s_2)\,C_{-d_0}
+           = H(s_2).
+          \label{eq:P4-H-mono}
+        \end{align}
+        Hence $H$ is non-decreasing on $[0,1]$.
+
+  \item \emph{Boundary and edge-case verification.}
+        \begin{enumerate}
+          \item $s_1=s_2$: inequality is equality; trivially satisfied.
+          \item $s_1=0$, $s_2=1$: both endpoints lie in $[0,1]$;
+                $H(0)\leq H(1)$ follows from Step~5.
+          \item $C_{-d_0}=0$: then $H(s)=0$ for all $s$; the
+                function is constant (hence non-decreasing).
+          \item $C_{-d_0}=1$ (maximum): $H(s)=g_{d_0}(s)$,
+                inheriting monotonicity directly from $g_{d_0}$.
+        \end{enumerate}
+
+  \item \emph{Universality over $d_0$.}
+        The argument above used no property specific to the
+        chosen $d_0$; it applies identically to every
+        $d_0\in\mathcal{D}$.  Hence $G$ is non-decreasing
+        in each coordinate simultaneously.
+
+  \item \emph{Conclusion.}
+        For all $d_0\in\mathcal{D}$ and all
+        $s_1\leq s_2$ in $[0,1]$:
+        \begin{equation}
+          G\!\left(\mathbf{X}_t\big|_{\mathcal{S}_t^{(d_0)}=s_1}\right)
+          \;\leq\;
+          G\!\left(\mathbf{X}_t\big|_{\mathcal{S}_t^{(d_0)}=s_2}\right).
+          \label{eq:P4-conclusion}
+        \end{equation}
+        \hfill$\checkmark$
+\end{enumerate}
+\qed
 \end{proof}
 
+%% ------------------------------------------------------------------
 \begin{proof}[Proof of Property~5 (Single-Dimension Sufficiency)]
-Property~5 is a direct corollary of the
-$(\Leftarrow)$ direction of Property~2.
+\textbf{Goal.}  For any $d^*\in\mathcal{D}$ and any
+$\mathbf{X}_t\in[0,1]^7$,
+\begin{equation}
+  \mathcal{S}_t^{(d^*)} \leq \mathcal{S}_{\min}^{(d^*)}
+  \;\Longrightarrow\;
+  G(\mathbf{X}_t) = 0,
+  \label{eq:P5-goal}
+\end{equation}
+regardless of the values of
+$\mathcal{S}_t^{(d)}$ for $d\neq d^*$.
+
+\medskip\noindent
+\textbf{Validated preconditions.}
 \begin{enumerate}
-  \item Assume $\mathcal{S}_t^{(d^*)} \leq
-        \mathcal{S}_{\min}^{(d^*)}$ for some $d^* \in
-        \mathcal{D}$.
-  \item By the $(\Leftarrow)$ direction of
-        Property~2 (proved above), $G(\mathbf{X}_t) = 0$.
-  \item The conclusion holds for \emph{arbitrary} values of
-        all other coordinates $\mathcal{S}_t^{(d)}$,
-        $d \neq d^*$, because the proof of the
-        $(\Leftarrow)$ direction placed no restriction on
-        those coordinates.
+  \item \emph{Domain.}
+        $\mathbf{X}_t\in[0,1]^7$ (Assumption~(A1)).
+  \item \emph{Property~2 available.}
+        The biconditional~\eqref{eq:P2-goal} has been
+        fully proved above; in particular its
+        $(\Leftarrow)$ direction is available.
+  \item \emph{No restriction on other coordinates.}
+        The hypothesis of~\eqref{eq:P5-goal} constrains
+        only coordinate $d^*$; all other
+        $\mathcal{S}_t^{(d)}$, $d\neq d^*$, remain
+        unrestricted in $[0,1]$.
 \end{enumerate}
+
+\medskip\noindent
+\textbf{Main argument.}
+\begin{enumerate}
+  \item \emph{Hypothesis.}
+        Assume $\mathcal{S}_t^{(d^*)}\leq
+        \mathcal{S}_{\min}^{(d^*)}$ for some
+        $d^*\in\mathcal{D}$.
+
+  \item \emph{Existential witness.}
+        The element $d^*$ constitutes an explicit witness
+        for the existential statement
+        $\exists\,d\in\mathcal{D}:\,
+         \mathcal{S}_t^{(d)}\leq\mathcal{S}_{\min}^{(d)}$.
+
+  \item \emph{Apply Property~2, $(\Leftarrow)$ direction.}
+        The $(\Leftarrow)$ direction
+        of~\eqref{eq:P2-goal} states:
+        if $\exists\,d^*\in\mathcal{D}$ with
+        $\mathcal{S}_t^{(d^*)}\leq\mathcal{S}_{\min}^{(d^*)}$,
+        then $G(\mathbf{X}_t)=0$.
+        The witness from Step~2 satisfies this antecedent,
+        so the consequent holds:
+        \begin{equation}
+          G(\mathbf{X}_t) = 0.
+          \label{eq:P5-result}
+        \end{equation}
+
+  \item \emph{Independence from other coordinates.}
+        In the proof of the $(\Leftarrow)$ direction of
+        Property~2 (Steps~1--6 of that proof), the six
+        coordinates $d\neq d^*$ appeared only in the
+        residual product $R$, which was bounded in $[0,1]$
+        without restricting its specific value.
+        Hence~\eqref{eq:P5-result} holds for
+        \emph{all} values of
+        $\mathcal{S}_t^{(d)}\in[0,1]$, $d\neq d^*$.
+
+  \item \emph{Edge cases verified.}
+        \begin{enumerate}
+          \item $\mathcal{S}_t^{(d^*)}=0$
+                (minimum possible value):
+                $0\leq\mathcal{S}_{\min}^{(d^*)}$ holds
+                since $\mathcal{S}_{\min}^{(d^*)}\geq 0$
+                by Assumption~(A4a);
+                hypothesis satisfied, conclusion holds.
+          \item $\mathcal{S}_t^{(d^*)}=
+                \mathcal{S}_{\min}^{(d^*)}$
+                (boundary equality):
+                hypothesis holds with equality;
+                by Assumption~(A4c),
+                $g_{d^*}\!\left(\mathcal{S}_{\min}^{(d^*)}\right)=0$,
+                so conclusion holds.
+          \item All other $\mathcal{S}_t^{(d)}=1$ for
+                $d\neq d^*$ (maximum remaining values):
+                $R\leq 1$ still holds; $0\cdot R=0$
+                regardless.
+          \item All other $\mathcal{S}_t^{(d)}=0$ for
+                $d\neq d^*$ (minimum remaining values):
+                $R\geq 0$; $0\cdot R=0$ still.
+        \end{enumerate}
+
+  \item \emph{Conclusion.}
+        Under the sole hypothesis
+        $\mathcal{S}_t^{(d^*)}\leq\mathcal{S}_{\min}^{(d^*)}$,
+        we have $G(\mathbf{X}_t)=0$ for all
+        $\mathbf{X}_t\in[0,1]^7$.
+        \hfill$\checkmark$
+\end{enumerate}
+\qed
 \end{proof}
 
 \noindent
 All five properties are established. \qed
+
+%% ------------------------------------------------------------------
+\subsection*{Key Findings: Properties~2--5}
+%% ------------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\linewidth}{@{}
+  >{\bfseries}p{2.5cm}
+  >{\raggedright\arraybackslash}p{4.2cm}
+  >{\raggedright\arraybackslash}p{3.0cm}
+  >{\raggedright\arraybackslash}X
+  @{}}
+\toprule
+\textbf{Property} &
+\textbf{Formal Statement} &
+\textbf{Key Steps Used} &
+\textbf{Significance} \\
+\midrule
+P2: Circuit-Breaker
+(Biconditional) &
+$G(\mathbf{X}_t)=0
+ \Leftrightarrow
+ \exists\,d^*\!:\,
+ \mathcal{S}_t^{(d^*)}\!\leq\!
+ \mathcal{S}_{\min}^{(d^*)}$ &
+Zero-product lemma;
+Assumption~(A4c);
+non-negativity of factors &
+A single dimension breaching its
+minimum threshold is both necessary
+and sufficient to halt all capital
+deployment. \\
+\addlinespace
+P3: Full Deployment
+(Biconditional) &
+$G(\mathbf{X}_t)=1
+ \Leftrightarrow
+ \forall\,d\!:\,
+ \mathcal{S}_t^{(d)}\!\geq\!
+ \mathcal{S}_{\mathrm{full}}^{(d)}$ &
+Assumption~(A4d);
+contradiction on strict
+sub-unity factor;
+upper bound from P1 &
+Full capital deployment requires and
+is guaranteed by all seven
+signal dimensions simultaneously
+reaching saturation. \\
+\addlinespace
+P4: Coordinatewise
+Monotonicity &
+$s_1\!\leq\!s_2
+ \Rightarrow
+ G|_{\mathcal{S}^{(d_0)}=s_1}
+ \!\leq\!
+ G|_{\mathcal{S}^{(d_0)}=s_2}$ &
+Assumption~(A4b);
+non-negative constant
+multiplicand; order
+preservation &
+Improving any single signal score
+weakly increases the gating
+output; the gate never penalises
+signal improvement. \\
+\addlinespace
+P5: Single-Dimension
+Sufficiency &
+$\mathcal{S}_t^{(d^*)}\!\leq\!
+ \mathcal{S}_{\min}^{(d^*)}
+ \Rightarrow
+ G(\mathbf{X}_t)\!=\!0$
+ (for all other coordinates) &
+Direct corollary of P2
+$(\Leftarrow)$ direction;
+independence of residual
+product from $d^*$ &
+Provides an efficient, auditable
+single-check kill-switch: no need
+to evaluate all seven dimensions
+when one has already breached its
+floor. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
 %% ------------------------------------------------------------
 \subsection{Key Findings}
