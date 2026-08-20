@@ -1,15 +1,14 @@
-
 \documentclass[12pt,openany]{book}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{mathtools}
-\usepackage[hidelinks]{hyperref}
+\usepackage[hidelinks,hypertexnames=false]{hyperref}
 \usepackage{booktabs}
 \usepackage{geometry}
 \usepackage{fancyhdr}
 \usepackage{setspace}
-\usepackage{microtype}
+\usepackage[nopatch=footnote]{microtype}
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{titlesec}
@@ -18,15 +17,21 @@
 \usepackage{tabularx}
 \usepackage{float}
 \usepackage{longtable}
+% Patch longtable's \LT@output to use \vfil instead of \vss,
+% eliminating "Infinite glue shrinkage" warnings on page breaks.
+\makeatletter
+\patchcmd\LT@output{\copy\LT@foot\vss}{\copy\LT@foot\vfil}{}{}
+\patchcmd\LT@output{\copy\LT@foot\vss}{\copy\LT@foot\vfil}{}{}
+\makeatother
 \usepackage{ragged2e}
-\usepackage[all]{hypcap}
+\usepackage{hypcap}
+\usepackage{bookmark}
 \usepackage{thmtools}
 \usepackage{chngcntr}
 \counterwithout{table}{chapter}
 \counterwithout{figure}{chapter}
 \makeatletter
-\renewcommand{\theHtable}{\number\value{table}}
-\renewcommand{\theHfigure}{\number\value{figure}}
+% theHtable/theHfigure not needed with hypertexnames=false
 \makeatother
 \usepackage{sectionbreak}
 \usepackage{algorithmicx}
@@ -972,7 +977,7 @@ and~\ref{thm:cross-asset-cvar}, Chapters~5--8).
                 where $\sigma_{k,\min}^2 := \min_{i \in \calD_k}
                 \sigma_{k,i}^2$.
           \item The result extends to all nine buckets
-                simultaneously; see Proposition~\ref{prop:bucket-variance-sum}
+                simultaneously; see Theorem~\ref{thm:within-bucket}
                 in Chapter~7.
         \end{enumerate}
 
@@ -8403,7 +8408,7 @@ Regime-conditional CVaR &
 % ==============================================================
 
 {\small
-\begin{longtable}{@{} p{4.2cm} >{\RaggedRight\arraybackslash}p{\dimexpr\linewidth-4.2cm-2\tabcolsep\relax} @{}}
+\begin{longtable}{@{} p{4.2cm} >{\raggedright\arraybackslash}p{\dimexpr\linewidth-4.2cm-2\tabcolsep\relax} @{}}
 \hline
 \textbf{Term} & \textbf{Definition} \\
 \hline
@@ -8412,7 +8417,6 @@ Regime-conditional CVaR &
 \textbf{Term} & \textbf{Definition} \\
 \hline
 \endhead
-\hline
 \endfoot
 Portfolio Weight Vector &
   A vector $\bfw = (w_1,\ldots,w_N)^\top \in \R^N$ where $w_i$ denotes
@@ -8494,22 +8498,27 @@ Maximum Drawdown ($\MaxDD$) &
   $\MaxDD(T) = \sup_{0 \le s \le t \le T}(V_s - V_t)/V_s$; the
   largest peak-to-trough decline in portfolio value $V_t$ over
   horizon $[0,T]$. \\
+\hline
 \end{longtable}
 }
 
-\vspace{1.5em}
-
+\clearpage
 % ==============================================================
 \chapter*{Table F: Notation and Symbol Index --- Part I (Mathematical Symbols)}
 \addcontentsline{toc}{chapter}{Table F: Notation and Symbol Index --- Part I}
 % ==============================================================
 
-\begin{center}
 {\small
-\begin{tabularx}{\textwidth}{@{} p{3.2cm} p{3.8cm} X @{}}
+\begin{longtable}{@{} p{3.2cm} p{3.8cm} p{\dimexpr\textwidth-3.2cm-3.8cm-4\tabcolsep\relax} @{}}
 \hline
 \textbf{Symbol} & \textbf{Name} & \textbf{Description / First Use} \\
 \hline
+\endfirsthead
+\hline
+\textbf{Symbol} & \textbf{Name} & \textbf{Description / First Use (cont.)} \\
+\hline
+\endhead
+\endfoot
 $N$ & Number of assets &
   Total count of investable assets in the universe; $N \ge 2$
   throughout. \\
@@ -8579,23 +8588,26 @@ $\mathrm{DR}$ & Diversification Ratio &
   Ratio of weighted-average volatility to portfolio volatility;
   $\ge 1$. \\
 \hline
-\end{tabularx}
+\end{longtable}
 }
-\end{center}
 
-\vspace{1.5em}
-
+\clearpage
 % ==============================================================
 \chapter*{Table G: Notation and Symbol Index --- Part II (Regime \& Operator Symbols)}
 \addcontentsline{toc}{chapter}{Table G: Notation and Symbol Index --- Part II}
 % ==============================================================
 
-\begin{center}
 {\small
-\begin{tabularx}{\textwidth}{@{} p{3.2cm} p{3.8cm} X @{}}
+\begin{longtable}{@{} p{3.2cm} p{3.8cm} p{\dimexpr\textwidth-3.2cm-3.8cm-4\tabcolsep\relax} @{}}
 \hline
 \textbf{Symbol} & \textbf{Name} & \textbf{Description / First Use} \\
 \hline
+\endfirsthead
+\hline
+\textbf{Symbol} & \textbf{Name} & \textbf{Description / First Use (cont.)} \\
+\hline
+\endhead
+\endfoot
 $K$ & Number of regimes &
   Cardinality of the hidden Markov regime set; $K \ge 2$. \\
 \addlinespace
@@ -8683,23 +8695,26 @@ $r_i$ & Return of asset $i$ &
 $R_p(\bfw)$ & Portfolio return &
   $R_p = \bfw^\top \mathbf{r} = \sum_i w_i r_i$. \\
 \hline
-\end{tabularx}
+\end{longtable}
 }
-\end{center}
 
-\vspace{1.5em}
-
+\clearpage
 % ==============================================================
 \chapter*{Table H: Index of Definitions, Axioms, Propositions, and Theorems}
 \addcontentsline{toc}{chapter}{Table H: Index of Definitions, Axioms, Propositions, and Theorems}
 % ==============================================================
 
-\begin{center}
 {\small
-\begin{tabularx}{\textwidth}{@{} p{2.4cm} p{5.2cm} X @{}}
+\begin{longtable}{@{} p{2.4cm} p{5.2cm} p{\dimexpr\textwidth-2.4cm-5.2cm-4\tabcolsep\relax} @{}}
 \hline
 \textbf{Label} & \textbf{Name} & \textbf{Brief Statement / Purpose} \\
 \hline
+\endfirsthead
+\hline
+\textbf{Label} & \textbf{Name} & \textbf{Brief Statement / Purpose (cont.)} \\
+\hline
+\endhead
+\endfoot
 \multicolumn{3}{@{}l}{\textit{Axioms}} \\[2pt]
 Ax.~\ref{ax:hard-concentration} & Hard Concentration Axiom &
   No portfolio weight vector may exceed hard concentration limits at
@@ -8744,23 +8759,26 @@ Eq.~\eqref{eq:regime-target} & Regime target optimisation &
   Regime-conditional mean--variance problem solved by
   \texttt{DiversificationRebalanceOperator} subject to $\Pi_H$. \\
 \hline
-\end{tabularx}
+\end{longtable}
 }
-\end{center}
 
-\vspace{1.5em}
-
+\clearpage
 % ==============================================================
 \chapter*{Table I: Abbreviations and Acronyms}
 \addcontentsline{toc}{chapter}{Table I: Abbreviations and Acronyms}
 % ==============================================================
 
-\begin{center}
 {\small
-\begin{tabularx}{\textwidth}{@{} p{3.0cm} X @{}}
+\begin{longtable}{@{} p{3.0cm} p{\dimexpr\textwidth-3.0cm-2\tabcolsep\relax} @{}}
 \hline
 \textbf{Abbreviation} & \textbf{Expansion and Context} \\
 \hline
+\endfirsthead
+\hline
+\textbf{Abbreviation} & \textbf{Expansion and Context (cont.)} \\
+\hline
+\endhead
+\endfoot
 HHI & Herfindahl--Hirschman Index; scalar portfolio concentration
   measure $\sum_i w_i^2 \in [1/N, 1]$. \\
 \addlinespace
@@ -8806,9 +8824,8 @@ LP & Linear Programme; optimisation with linear objective and
 MaxDD & Maximum Drawdown; largest peak-to-trough decline in portfolio
   value over a specified horizon. \\
 \hline
-\end{tabularx}
+\end{longtable}
 }
-\end{center}
 
 
 % ==============================================================
