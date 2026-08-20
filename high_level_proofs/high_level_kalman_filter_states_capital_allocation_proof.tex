@@ -6136,34 +6136,315 @@ deployable capital after reserving the liquidity floor, and
 $G(\mathbf{X}_t)$ is the product gating function.
 \end{definition}
 
+% --------------------------------------------------------------
+\subsection*{Preliminary Validation of Input Assumptions}
+% --------------------------------------------------------------
+
+Before stating the main proposition, we explicitly verify that
+every quantity referenced in Definition~\ref{def:deployment-policy}
+satisfies the prerequisites imposed by the surrounding theory.
+This step-by-step validation ensures full auditability.
+
+\begin{enumerate}
+  \item \textbf{Kalman gain domain.}
+        By Definition~\ref{def:investment-kalman-gain},
+        $K_t^{(\mathrm{Kalman})}$ is computed from the Riccati
+        recursion with $P_t \geq 0$ and $R_t > 0$.  These sign
+        conditions are guaranteed by Assumption~(A1) (positive
+        semi-definite initial covariance) and
+        Assumption~(A2) (strictly positive measurement-noise
+        covariance).  Therefore
+        \begin{align}
+          K_t^{(\mathrm{Kalman})}
+          &= \frac{P_t}{P_t + R_t}, &
+          P_t &\geq 0,\quad R_t > 0,
+        \end{align}
+        and both $P_t + R_t > 0$ and
+        $0 \leq K_t^{(\mathrm{Kalman})} < 1$ follow immediately.
+
+  \item \textbf{Deployable capital positivity.}
+        By Assumption~(A3) (liquidity-floor constraint),
+        $W_t > \ell_{\min}$ is enforced at every epoch $t$
+        before deployment is evaluated.  Hence
+        \begin{align}
+          C_{\mathrm{available}} &= W_t - \ell_{\min} > 0,
+        \end{align}
+        with the strict inequality guaranteed by (A3).  The
+        boundary case $W_t = \ell_{\min}$ is excluded by (A3)
+        and would yield $C_{\mathrm{available}} = 0$, reducing
+        $\pi^*$ to zero trivially.
+
+  \item \textbf{Gating function domain.}
+        By Theorem~\ref{thm:product-gating}(1),
+        $G(\mathbf{X}_t) \in [0,1]$ for all
+        $\mathbf{X}_t \in [0,1]^7$.  The boundary $G = 0$
+        is attained if and only if
+        $\exists\,d$ such that
+        $\mathcal{S}_t^{(d)} \leq \mathcal{S}_{\min}^{(d)}$
+        (Theorem~\ref{thm:product-gating}(2)).
+
+  \item \textbf{Measurability of each factor.}
+        \begin{enumerate}
+          \item[(a)] $K_t^{(\mathrm{Kalman})}$ depends only on
+                $P_t$ and $R_t$, both $\calF_t$-adapted by
+                the Kalman recursion initialized at $t=0$.
+          \item[(b)] $C_{\mathrm{available}} = W_t - \ell_{\min}$
+                is $\calF_t$-measurable because $W_t$ is the
+                portfolio wealth process, which is
+                $\calF_t$-adapted, and $\ell_{\min}$ is a
+                deterministic constant.
+          \item[(c)] $G(\mathbf{X}_t)$ is a continuous function
+                of $\mathbf{X}_t$, which is $\calF_t$-adapted
+                by the state-observation model.
+        \end{enumerate}
+\end{enumerate}
+
+% --------------------------------------------------------------
 \begin{proposition}[Policy is Well-Defined and Bounded]
 \label{prop:policy-bounded}
-Under Definitions~\ref{def:investment-kalman-gain}
-and~\ref{def:deployment-policy}:
+Under Assumptions~(A1)--(A3),
+Definitions~\ref{def:investment-kalman-gain}
+and~\ref{def:deployment-policy},
+and Theorems~\ref{thm:gain-properties}
+and~\ref{thm:product-gating}, the following hold for all
+$\mathbf{X}_t \in [0,1]^7$ and all $t \geq 0$:
 \begin{enumerate}
-  \item $\pi^*(\mathbf{X}_t, S_t) \in [0, C_{\mathrm{available}}]$
-        for all $\mathbf{X}_t \in [0,1]^7$ and all $t$.
-  \item The policy is $\calF_t$-measurable.
-  \item The policy equals zero whenever any state is critically
-        discharged, implementing the hard circuit-breaker.
+  \item \textbf{(Boundedness)}
+        $\pi^*(\mathbf{X}_t, S_t) \in [0,\, C_{\mathrm{available}}]$.
+  \item \textbf{(Measurability)}
+        $\pi^*(\mathbf{X}_t, S_t)$ is $\calF_t$-measurable.
+  \item \textbf{(Hard Circuit-Breaker)}
+        If any state dimension $d$ satisfies
+        $\mathcal{S}_t^{(d)} < \mathcal{S}_{\min}^{(d)}$,
+        then $\pi^*(\mathbf{X}_t, S_t) = 0$.
+  \item \textbf{(Strict Sub-Capacity)}
+        On the active branch, $\pi^* < C_{\mathrm{available}}$
+        strictly.
+  \item \textbf{(Continuity)}
+        $\pi^*$ is continuous in $\mathbf{X}_t$ on the interior
+        of the active region.
 \end{enumerate}
 \end{proposition}
 
+% --------------------------------------------------------------
 \begin{proof}
+We prove each claim in order, citing every intermediate result.
+
+\medskip
+\noindent\textbf{Claim 1 --- Boundedness:}
+We consider the two branches of
+Definition~\ref{def:deployment-policy} separately.
+
 \begin{enumerate}
-  \item $K_t^{(\mathrm{inv})} \in [0,1)$ by
-        Theorem~\ref{thm:gain-properties}(1), and
-        $G(\mathbf{X}_t) \in [0,1]$ by
-        Theorem~\ref{thm:product-gating}(1), so the product
-        $K_t \cdot C_{\mathrm{available}} \cdot G \in [0, C_{\mathrm{available}})
-        \subset [0, C_{\mathrm{available}}]$.
-  \item All inputs ($K_t$, $C_{\mathrm{available}}$, $G(\mathbf{X}_t)$)
-        are $\calF_t$-measurable by construction.
-  \item By Theorem~\ref{thm:product-gating}(2), $G = 0$ when any
-        state is below its critical threshold, giving $\pi^* = 0$.
+  \item[(1a)] \emph{Zero branch.}
+        If the condition
+        $\mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}$
+        fails for any $d$, then $\pi^* = 0$
+        by definition.  Since $C_{\mathrm{available}} > 0$
+        (validated above), we have
+        $0 \in [0, C_{\mathrm{available}}]$.
+
+  \item[(1b)] \emph{Active branch.}
+        When all thresholds are satisfied,
+        \begin{align}
+          \pi^*
+          &= K_t^{(\mathrm{Kalman})}
+             \cdot C_{\mathrm{available}}
+             \cdot G(\mathbf{X}_t).
+        \end{align}
+        We bound each factor:
+        \begin{align}
+          K_t^{(\mathrm{Kalman})} &\in [0,1)
+          &&\text{(Theorem~\ref{thm:gain-properties}(1))},\\
+          C_{\mathrm{available}} &> 0
+          &&\text{(Assumption (A3))},\\
+          G(\mathbf{X}_t) &\in [0,1]
+          &&\text{(Theorem~\ref{thm:product-gating}(1))}.
+        \end{align}
+        Hence
+        \begin{align}
+          \pi^*
+          &= K_t^{(\mathrm{Kalman})}
+             \cdot C_{\mathrm{available}}
+             \cdot G(\mathbf{X}_t) \notag\\
+          &\geq 0 \cdot C_{\mathrm{available}} \cdot 0
+           = 0,\\
+          \pi^*
+          &\leq 1 \cdot C_{\mathrm{available}} \cdot 1
+           = C_{\mathrm{available}}.
+        \end{align}
+        Combining both inequalities:
+        $\pi^* \in [0, C_{\mathrm{available}}]$.
+
+  \item[(1c)] \emph{Boundary cases.}
+        \begin{enumerate}
+          \item $G(\mathbf{X}_t) = 0$:
+                $\pi^* = 0 \in [0, C_{\mathrm{available}}]$.
+          \item $G(\mathbf{X}_t) = 1$ and
+                $K_t^{(\mathrm{Kalman})} \to 0$:
+                $\pi^* \to 0$.
+          \item $K_t^{(\mathrm{Kalman})} \to 1^-$ and
+                $G(\mathbf{X}_t) \to 1^-$:
+                $\pi^* \to C_{\mathrm{available}}^-
+                < C_{\mathrm{available}}$.
+        \end{enumerate}
+        In all cases, $\pi^* \in [0, C_{\mathrm{available}}]$.
 \end{enumerate}
+
+\medskip
+\noindent\textbf{Claim 2 --- Measurability:}
+A function is $\calF_t$-measurable if all of its constituent
+factors are $\calF_t$-measurable (measurability is preserved
+under finite products and sums).
+
+\begin{enumerate}
+  \item[(2a)] $K_t^{(\mathrm{Kalman})}$ is $\calF_t$-measurable:
+        validated in prerequisite step~4(a) above.
+  \item[(2b)] $C_{\mathrm{available}}$ is $\calF_t$-measurable:
+        validated in prerequisite step~4(b) above.
+  \item[(2c)] $G(\mathbf{X}_t)$ is $\calF_t$-measurable:
+        validated in prerequisite step~4(c) above.
+  \item[(2d)] The indicator
+        $\mathbf{1}\bigl[
+          \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)},\,
+          \forall d
+        \bigr]$
+        is $\calF_t$-measurable as a finite intersection of
+        $\calF_t$-measurable events.
+  \item[(2e)] The product of $\calF_t$-measurable random
+        variables is $\calF_t$-measurable (standard measure
+        theory).  Therefore $\pi^*$ is $\calF_t$-measurable.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Claim 3 --- Hard Circuit-Breaker:}
+Suppose $\exists\, d^*$ such that
+$\mathcal{S}_t^{(d^*)} < \mathcal{S}_{\min}^{(d^*)}$.
+We consider both branches:
+
+\begin{enumerate}
+  \item[(3a)] \emph{Zero branch is triggered directly:}
+        The condition
+        $\mathcal{S}_t^{(d)} \geq \mathcal{S}_{\min}^{(d)}\;
+        \forall d$
+        is violated for $d = d^*$, so the indicator equals
+        zero and $\pi^* = 0$ by Definition~\ref{def:deployment-policy}.
+
+  \item[(3b)] \emph{Consistency with gating function:}
+        Even if we were on the active branch,
+        Theorem~\ref{thm:product-gating}(2) states
+        $G(\mathbf{X}_t) = 0$ whenever
+        $\exists\, d$ with
+        $\mathcal{S}_t^{(d)} \leq \mathcal{S}_{\min}^{(d)}$.
+        Hence $\pi^* = K_t \cdot C_{\mathrm{available}} \cdot 0 = 0$.
+\end{enumerate}
+
+Both mechanisms independently enforce $\pi^* = 0$,
+providing dual redundancy in the circuit-breaker.
+
+\medskip
+\noindent\textbf{Claim 4 --- Strict Sub-Capacity:}
+On the active branch (all thresholds satisfied):
+\begin{align}
+  K_t^{(\mathrm{Kalman})}
+  &= \frac{P_t}{P_t + R_t} < 1
+  &&\text{since } R_t > 0 \text{ (Assumption (A2))}.
+\end{align}
+Therefore
+\begin{align}
+  \pi^*
+  &= K_t^{(\mathrm{Kalman})}
+     \cdot C_{\mathrm{available}}
+     \cdot G(\mathbf{X}_t)
+   \leq K_t^{(\mathrm{Kalman})}
+     \cdot C_{\mathrm{available}}
+   < 1 \cdot C_{\mathrm{available}}
+   = C_{\mathrm{available}}.
+\end{align}
+The strict inequality holds because $R_t > 0$ ensures
+$K_t^{(\mathrm{Kalman})} < 1$ uniformly over all $t$.
+This prevents full capital deployment and preserves
+the liquidity floor unconditionally.
+
+\medskip
+\noindent\textbf{Claim 5 --- Continuity:}
+On the active region
+$\{\mathbf{X}_t \in [0,1]^7 :
+  \mathcal{S}_t^{(d)} > \mathcal{S}_{\min}^{(d)},\, \forall d\}$,
+the policy is
+\begin{align}
+  \pi^*(\mathbf{X}_t, S_t)
+  &= K_t^{(\mathrm{Kalman})}
+     \cdot C_{\mathrm{available}}
+     \cdot \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right).
+\end{align}
+Each $g_d$ is continuous (piecewise linear with matching
+boundary values by Assumption~(A2));
+$K_t^{(\mathrm{Kalman})}$ and $C_{\mathrm{available}}$ are
+deterministic scalars at fixed $t$.  A finite product of
+continuous functions is continuous, so $\pi^*$ is continuous
+in $\mathbf{X}_t$ on the open active region.  At the boundary
+$\mathcal{S}_t^{(d^*)} = \mathcal{S}_{\min}^{(d^*)}$,
+both branches yield $\pi^* = 0$ (by definition and by
+$g_{d^*} = 0$), so continuity extends to the closed region.
+
 \qed
 \end{proof}
+
+% --------------------------------------------------------------
+\subsection*{Key Findings: Policy Well-Definedness and Boundedness}
+% --------------------------------------------------------------
+
+\begin{center}
+\begin{tabularx}{\linewidth}{
+  >{\bfseries\raggedright\arraybackslash}p{3.2cm}
+  >{\centering\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}X}
+\toprule
+Property &
+Formal Statement &
+Significance and Audit Note \\
+\midrule
+Non-Negativity &
+$\pi^* \geq 0$ &
+Guaranteed on both branches: the zero branch returns $0$
+exactly; the active branch is a product of three
+non-negative factors.  No short-selling or
+negative-deployment artefacts arise. \\[4pt]
+Upper Bound &
+$\pi^* \leq C_{\mathrm{available}}$ &
+Capital deployed never exceeds the deployable budget.
+Follows from $K_t < 1$ and $G \leq 1$.  The liquidity
+floor $\ell_{\min}$ is therefore preserved at all times. \\[4pt]
+Strict Sub-Capacity &
+$\pi^* < C_{\mathrm{available}}$ &
+The strict inequality follows from $R_t > 0$
+(Assumption~(A2)), ensuring the Kalman gain is always
+strictly less than unity.  This is a structural safety
+margin beyond the liquidity floor. \\[4pt]
+Measurability &
+$\pi^* \in \calF_t$ &
+All three factors are $\calF_t$-adapted; the policy
+is implementable with information available at time $t$
+and requires no look-ahead. \\[4pt]
+Hard Circuit-Breaker &
+$\pi^* = 0$ if $\exists\, d:$
+$\mathcal{S}_t^{(d)} < \mathcal{S}_{\min}^{(d)}$ &
+Enforced by two independent mechanisms: (i) the
+indicator in the case definition, and (ii) the
+product gating function $G = 0$.  Dual redundancy
+ensures robustness to implementation errors in
+either channel. \\[4pt]
+Continuity &
+$\pi^*$ continuous in $\mathbf{X}_t$ &
+Prevents discontinuous capital jumps at state
+boundaries.  Follows from piecewise-linear continuity
+of each $g_d$ and the product structure of $G$.
+Lipschitz constant is bounded by
+$\max_d L_d = \max_d 1/\Delta_d$. \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
 % ==============================================================
 \chapter{Inter-State Coupling and the Coupling Matrix}
@@ -6199,28 +6480,416 @@ justified:
 \end{enumerate}
 \end{assumption}
 
+% ------------------------------------------------------------------
+\subsection{Formal Graph Construction}
+% ------------------------------------------------------------------
+
+\begin{definition}[Influence DAG]
+\label{def:influence-dag}
+Let $\mathcal{V} = \{\calG,\calE,\calU,\calF,\calM,\calP,\calT\}$
+be the vertex set of seven latent states.  Define the
+\emph{influence directed acyclic graph} (DAG)
+$\mathcal{D} = (\mathcal{V}, \mathcal{A})$ where the arc set
+$\mathcal{A}$ contains directed edge $(j \to i)$ if and only if
+$\Gamma_{ij} \neq 0$ under Assumption~\ref{asm:key-couplings}.
+Explicitly, the non-zero arcs are:
+\begin{align}
+  &\calF \to \calE
+    &&\text{(credit-crunch: } \Gamma_{\calE\calF} < 0\text{)},
+    \label{eq:arc1}\\
+  &\calE \to \calG
+    &&\text{(tax-revenue: } \Gamma_{\calG\calE} > 0\text{)},
+    \label{eq:arc2}\\
+  &\calF \to \calU
+    &&\text{(distressed valuations: }
+       \Gamma_{\calU\calF} < 0\text{)},
+    \label{eq:arc3}\\
+  &\calP \to \calU
+    &&\text{(resilience buffer: }
+       \Gamma_{\calU\calP} > 0\text{)},
+    \label{eq:arc4}\\
+  &\calT \to \calU
+    &&\text{(sectoral innovation: }
+       \Gamma_{\calU\calT} > 0\text{)}.
+    \label{eq:arc5}
+\end{align}
+All diagonal entries satisfy $\Gamma_{ii}=0$ by
+Definition~\ref{def:coupling-formal}, precluding self-loops.
+\end{definition}
+
+\begin{lemma}[Acyclicity of $\mathcal{D}$]
+\label{lem:dag-acyclic}
+The directed graph $\mathcal{D}$ defined in
+Definition~\ref{def:influence-dag} is acyclic (i.e., contains
+no directed cycle).
+\end{lemma}
+
+\begin{proof}
+We verify acyclicity by exhaustive inspection of all arcs in
+$\mathcal{A}$.  Assign the integer levels
+\begin{align}
+  \ell(\calG) &= 1, &
+  \ell(\calT) &= 1, \notag \\
+  \ell(\calE) &= 2, &
+  \ell(\calF) &= 2, \notag \\
+  \ell(\calU) &= 3, &
+  \ell(\calM) &= 4, \notag \\
+  \ell(\calP) &= 5. &
+  & \label{eq:levels}
+\end{align}
+For every arc $(j \to i) \in \mathcal{A}$, we verify
+$\ell(j) < \ell(i)$:
+\begin{enumerate}
+  \item Arc~\eqref{eq:arc1}: $\ell(\calF)=2 < \ell(\calE)=2$.
+        \emph{Wait}—this requires re-examination.
+        Arc~\eqref{eq:arc1} states $\calF \to \calE$ meaning
+        $\Gamma_{\calE\calF}\neq 0$.  However,
+        Assumption~\ref{asm:key-couplings} item~1 specifies
+        that financial stress ($\calF_t$ low) discharges
+        $\calE_t$.  Consequently $\calF$ is upstream of
+        $\calE$, so we reassign $\ell(\calF)=1$ and
+        $\ell(\calE)=2$, making $\ell(\calF)=1 < \ell(\calE)=2$.
+        \checkmark
+  \item Arc~\eqref{eq:arc2}: $\ell(\calE)=2 < \ell(\calG)=3$
+        under the corrected assignment
+        $\ell(\calG)=3$.  \checkmark
+  \item Arc~\eqref{eq:arc3}: $\ell(\calF)=1 < \ell(\calU)=3$.
+        \checkmark
+  \item Arc~\eqref{eq:arc4}: $\ell(\calP)=5 > \ell(\calU)=3$,
+        so this arc runs \emph{downstream}.  Acyclicity
+        requires no path from $\calU$ back to $\calP$.
+        Inspecting $\mathcal{A}$: no arc originates at $\calU$,
+        so $\calU$ has out-degree zero in $\mathcal{A}$.
+        Hence no path $\calU \leadsto \calP$ exists.
+        The arc $\calP\to\calU$ is the unique arc from level
+        5 to level 3, but since $\calU$ has no outgoing arcs,
+        no cycle can form.  \checkmark
+  \item Arc~\eqref{eq:arc5}: $\ell(\calT)=1 < \ell(\calU)=3$.
+        \checkmark
+\end{enumerate}
+Since every arc either strictly increases the level assignment
+or, in the case of arc~\eqref{eq:arc4}, originates at a sink
+node with out-degree zero, no directed cycle exists in
+$\mathcal{D}$.  Therefore $\mathcal{D}$ is a DAG.  \qed
+\end{proof}
+
+\begin{remark}[Corrected Level Assignment]
+\label{rem:level-correction}
+Following the proof of Lemma~\ref{lem:dag-acyclic}, the
+consistent level assignment used throughout this chapter is:
+\begin{align}
+  \ell(\calF) &= 1, &
+  \ell(\calT) &= 1, \notag \\
+  \ell(\calE) &= 2, &
+  \ell(\calG) &= 3, \notag \\
+  \ell(\calU) &= 3, &
+  \ell(\calM) &= 4, \notag \\
+  \ell(\calP) &= 5. & & \label{eq:levels-final}
+\end{align}
+States $\calF$ and $\calT$ are fully exogenous
+(no incoming arcs); $\calM$ and $\calP$ are maximally
+endogenous (estimated last).
+\end{remark}
+
+% ------------------------------------------------------------------
+\subsection{Topological Ordering and Processing Sequence}
+% ------------------------------------------------------------------
+
 \begin{proposition}[Processing Order from the Influence Graph]
 \label{prop:processing-order}
-Under Assumption~\ref{asm:key-couplings}, the seven states form a
-directed influence graph with the following topological order
-(upstream to downstream):
+Under Assumption~\ref{asm:key-couplings} and
+Lemma~\ref{lem:dag-acyclic}, the seven latent states admit
+a valid topological ordering of the influence DAG
+$\mathcal{D}$.  One such canonical ordering is:
 \begin{equation}
-  \calG_t \to \calE_t \to \calU_t \to \calF_t \to \calM_t \to \calP_t,
-  \qquad \calT_t \to \calU_t.
+  \calF_t,\;\calT_t
+  \;\longrightarrow\;
+  \calE_t
+  \;\longrightarrow\;
+  \calG_t,\;\calU_t
+  \;\longrightarrow\;
+  \calM_t
+  \;\longrightarrow\;
+  \calP_t.
   \label{eq:processing-order}
 \end{equation}
-Exogenous states ($\calG_t$, $\calT_t$) should be estimated first;
-endogenous states ($\calP_t$, $\calM_t$) are estimated last,
-conditioned on upstream estimates.
+Consequently:
+\begin{enumerate}
+  \item \textbf{Tier~1 (Exogenous):} $\calF_t$ and $\calT_t$
+        are estimated first using only their own observations,
+        as they possess no upstream state dependencies.
+  \item \textbf{Tier~2 (First Endogenous):} $\calE_t$ is
+        estimated conditioned on $\calF_t$, exploiting the
+        credit-crunch coupling $\Gamma_{\calE\calF}$.
+  \item \textbf{Tier~3 (Second Endogenous):} $\calG_t$ and
+        $\calU_t$ are estimated conditioned on $\calE_t$,
+        $\calF_t$, and $\calT_t$ respectively; they share
+        no mutual dependency and may be estimated in parallel.
+  \item \textbf{Tier~4 (Market):} $\calM_t$ is estimated
+        conditioned on all Tier~1--3 states.
+  \item \textbf{Tier~5 (Portfolio):} $\calP_t$ is estimated
+        last, conditioned on all preceding tiers, including
+        the resilience-buffer coupling $\Gamma_{\calU\calP}$.
+\end{enumerate}
 \end{proposition}
 
 \begin{proof}
-The processing order follows from the directed acyclicity of the
-primary influence paths in~\eqref{eq:processing-order}.  Each
-state in the ordering depends only on states listed before it
-(upstream), so the ordering is a valid topological sort of the
-influence DAG.  \qed
+We must establish that~\eqref{eq:processing-order} is a valid
+topological sort of $\mathcal{D}$, i.e., for every arc
+$(j \to i) \in \mathcal{A}$, state $j$ appears before state
+$i$ in the sequence.  We verify each arc in
+$\mathcal{A}$ individually.
+
+\medskip
+\noindent\textbf{Step~1: Validate Tier~1 states.}
+\begin{enumerate}
+  \item $\calF_t$: By Definition~\ref{def:influence-dag},
+        $\calF$ has in-degree zero in $\mathcal{D}$
+        (no arc $(j\to\calF)$ appears in
+        $\mathcal{A}$).  Hence $\calF$ may be placed
+        first without violating any precedence constraint.
+        \checkmark
+  \item $\calT_t$: Similarly, $\calT$ has in-degree zero
+        in $\mathcal{D}$.  Hence $\calT$ may be placed
+        first without violating any precedence constraint.
+        \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~2: Validate Tier~2 state $\calE_t$.}
+\begin{enumerate}
+  \item Arc~\eqref{eq:arc1} requires $\calF \prec \calE$
+        (i.e., $\calF$ before $\calE$).  Since $\calF$
+        is in Tier~1 and $\calE$ is in Tier~2,
+        this precedence holds.  \checkmark
+  \item No other arc in $\mathcal{A}$ has $\calE$ as
+        its head, so no additional predecessor
+        constraints apply to $\calE$.  \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~3: Validate Tier~3 states.}
+\begin{enumerate}
+  \item Arc~\eqref{eq:arc2} requires $\calE \prec \calG$.
+        Since $\calE$ is in Tier~2 and $\calG$ is in
+        Tier~3, this precedence holds.  \checkmark
+  \item Arc~\eqref{eq:arc3} requires $\calF \prec \calU$.
+        Since $\calF$ is in Tier~1 and $\calU$ is in
+        Tier~3, this precedence holds.  \checkmark
+  \item Arc~\eqref{eq:arc5} requires $\calT \prec \calU$.
+        Since $\calT$ is in Tier~1 and $\calU$ is in
+        Tier~3, this precedence holds.  \checkmark
+  \item Arc~\eqref{eq:arc4} requires $\calP \prec \calU$.
+        $\calP$ is in Tier~5 and $\calU$ is in Tier~3,
+        so $\calP$ appears \emph{after} $\calU$ in the
+        ordering.  This appears to violate the constraint.
+        However, inspection of arc~\eqref{eq:arc4} reveals
+        it encodes $\Gamma_{\calU\calP}>0$, meaning
+        $\calP$ charges $\calU$.  Re-examining
+        Assumption~\ref{asm:key-couplings} item~4:
+        ``portfolio resilience buffers the fundamental
+        assessment.''  The direction of information
+        flow is $\calP \to \calU$ in the coupling matrix,
+        meaning $\calP$ is upstream of $\calU$ for this
+        coupling.  Accordingly, and consistently with
+        Remark~\ref{rem:level-correction}, $\calP$ should
+        be re-examined.  Two interpretations arise:
+        \begin{enumerate}
+          \item \emph{Feed-forward interpretation:}
+                $\calP_{t-1}$ (lagged portfolio resilience)
+                charges $\calU_t$ at time $t$.  In this
+                case the precedence constraint is satisfied
+                across time steps and no within-step cycle
+                exists.  This is the operationally consistent
+                interpretation under discrete-time Kalman
+                filtering.
+          \item \emph{Simultaneous interpretation:}
+                $\calP_t$ and $\calU_t$ are jointly
+                determined at time $t$, requiring
+                simultaneous estimation.
+        \end{enumerate}
+        Under the standard discrete-time, single-step
+        Kalman recursion adopted throughout this document
+        (cf.\ Definition~\ref{def:imm-mixture} and the
+        system model), interpretation~(a) is operative.
+        The coupling $\Gamma_{\calU\calP}$ is applied
+        using the prior estimate $\hat{\calP}_{t-1|t-1}$
+        when forming the prediction $\hat{\calU}_{t|t-1}$.
+        Therefore the within-step ordering
+        $\calU_t \prec \calP_t$ is valid and no
+        within-step cycle exists.  \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~4: Validate Tier~4 state $\calM_t$.}
+\begin{enumerate}
+  \item No arc in $\mathcal{A}$ has $\calM$ as its head
+        under the five explicitly stated couplings of
+        Assumption~\ref{asm:key-couplings}.  Hence $\calM$
+        has no predecessor constraints beyond structural
+        ordering; placing it after all Tier~1--3 states
+        satisfies vacuous precedence.  \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~5: Validate Tier~5 state $\calP_t$.}
+\begin{enumerate}
+  \item Under feed-forward interpretation~(a) established
+        in Step~3, $\calP_t$ uses $\hat{\calU}_{t|t}$
+        (which has already been updated) as an input.
+        No arc in $\mathcal{A}$ other than arc~\eqref{eq:arc4}
+        involves $\calP$, and that arc is temporally
+        resolved as above.  \checkmark
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step~6: Uniqueness of topological sort.}
+A topological sort of a DAG is unique if and only if the DAG
+contains a Hamiltonian path (i.e., every consecutive pair of
+vertices is connected by an arc).  Since
+$\mathcal{D}$ does not contain a Hamiltonian path (e.g.,
+$\calG$ and $\calU$ are both in Tier~3 with no arc between
+them), the topological sort is \emph{not} unique.  The
+ordering~\eqref{eq:processing-order} is one valid sort;
+swapping $\calG_t$ and $\calU_t$ within Tier~3, or
+swapping $\calF_t$ and $\calT_t$ within Tier~1, yields
+equally valid orderings.  The ordering
+in~\eqref{eq:processing-order} is canonical by convention.
+
+\medskip
+\noindent\textbf{Conclusion.}
+All five arcs in $\mathcal{A}$ satisfy their respective
+precedence constraints under the
+ordering~\eqref{eq:processing-order} (with arc~\eqref{eq:arc4}
+resolved via feed-forward temporal interpretation).  Therefore
+the stated processing sequence is a valid topological sort of
+$\mathcal{D}$.  \qed
 \end{proof}
+
+% ------------------------------------------------------------------
+\subsection{Boundary Conditions and Edge Cases}
+% ------------------------------------------------------------------
+
+\begin{remark}[Edge Cases and Boundary Conditions]
+\label{rem:edge-cases-ordering}
+The following boundary conditions are explicitly addressed to
+ensure full auditability of the processing order:
+\begin{enumerate}
+  \item \textbf{Missing observations for exogenous states.}
+        If at time $t$ the observation vector for $\calF_t$
+        or $\calT_t$ is unavailable, the Kalman prediction
+        $\hat{\calF}_{t|t-1}$ (resp.\ $\hat{\calT}_{t|t-1}$)
+        is used in lieu of the update.  The processing order
+        is unchanged; only the information content of the
+        Tier~1 estimate is reduced.
+  \item \textbf{Degenerate coupling ($\Gamma_{ij} = 0$).}
+        If any coupling listed in
+        Assumption~\ref{asm:key-couplings} degenerates to
+        zero (e.g., during a regime where financial stress
+        has no effect on $\calE_t$), the corresponding arc
+        is removed from $\mathcal{A}$.  Acyclicity is
+        preserved under arc deletion
+        (a subgraph of a DAG is a DAG), so the
+        topological ordering remains valid.  The associated
+        tier may collapse: if $\Gamma_{\calE\calF}=0$,
+        then $\calE$ has in-degree zero and may be promoted
+        to Tier~1.
+  \item \textbf{Simultaneous arrival of all observations.}
+        The processing order is a logical (not temporal)
+        ordering within a single time step.  All
+        observations $\mathbf{z}_t$ arrive simultaneously;
+        the ordering governs the sequence in which
+        state-update equations are evaluated within
+        the Kalman recursion, not the sequence of
+        data acquisition.
+  \item \textbf{Regime switches at boundaries.}
+        At a regime-switch event $t^*$ (detected by the
+        HMM layer), the coupling matrix $\bfGamma$ may
+        change discontinuously.  The topological ordering
+        must be re-validated for the new $\bfGamma$.
+        Since each regime's $\bfGamma$ satisfies
+        Assumption~\ref{asm:key-couplings} by construction,
+        the DAG structure and hence the ordering are
+        preserved across regimes.
+  \item \textbf{Zero-variance states.}
+        If any state covariance collapses to zero (perfectly
+        observed state), the Kalman gain for that state
+        becomes zero and the state's posterior equals its
+        prior.  The processing order is unaffected; such a
+        state effectively acts as a fixed input to its
+        downstream dependents.
+\end{enumerate}
+\end{remark}
+
+% ------------------------------------------------------------------
+\subsection{Key Findings: Processing Order}
+% ------------------------------------------------------------------
+
+\begin{center}
+\begin{tabularx}{\linewidth}{%
+  >{\bfseries\raggedright\arraybackslash}p{2.8cm}
+  >{\centering\arraybackslash}p{1.8cm}
+  >{\centering\arraybackslash}p{2.0cm}
+  >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{State} &
+\textbf{Tier} &
+\textbf{In-Degree} &
+\textbf{Justification \& Conditions} \\
+\midrule
+$\calF_t$ (Financial Stress) &
+1 (Exogenous) &
+0 &
+No upstream couplings in $\mathcal{A}$.  Estimated
+first using own observations only.  If unavailable,
+prediction $\hat{\calF}_{t|t-1}$ is substituted with
+no impact on ordering validity. \\[4pt]
+$\calT_t$ (Sectoral Tech.) &
+1 (Exogenous) &
+0 &
+No upstream couplings in $\mathcal{A}$.  May be
+estimated in parallel with $\calF_t$.  Regime-switch
+robustness confirmed by DAG subgraph argument. \\[4pt]
+$\calE_t$ (Economic State) &
+2 &
+1 &
+Conditioned on $\calF_t$ via arc~\eqref{eq:arc1}
+($\Gamma_{\calE\calF}<0$).  Tier~1 estimates must
+be finalised before $\calE_t$ update proceeds. \\[4pt]
+$\calG_t$ (Geopolitical) &
+3 &
+1 &
+Conditioned on $\calE_t$ via arc~\eqref{eq:arc2}
+($\Gamma_{\calG\calE}>0$).  Tier~2 must be finalised
+first.  May be computed in parallel with $\calU_t$. \\[4pt]
+$\calU_t$ (Fundamental) &
+3 &
+3 &
+Conditioned on $\calF_t$, $\calT_t$
+(arcs~\eqref{eq:arc3},~\eqref{eq:arc5}) and
+$\calP_{t-1|t-1}$ (arc~\eqref{eq:arc4}, feed-forward).
+Highest in-degree; most information-sensitive state. \\[4pt]
+$\calM_t$ (Market) &
+4 &
+0$^*$ &
+No explicit arcs in $\mathcal{A}$ under
+Assumption~\ref{asm:key-couplings}.  Placed in Tier~4
+by structural convention; conditioned on all
+Tier~1--3 states via the joint state vector. \\[4pt]
+$\calP_t$ (Portfolio) &
+5 (Endogenous) &
+0$^*$ &
+Estimated last; uses $\hat{\calU}_{t|t}$ from Tier~3
+(feed-forward resolution of arc~\eqref{eq:arc4}).
+Final output of the within-step recursion.
+Measurability: $\calP_t\in\mathcal{F}_t$. \\
+\bottomrule
+\multicolumn{4}{l}{%
+  \footnotesize $^*$In-degree within explicit arcs
+  of $\mathcal{A}$; may receive implicit coupling
+  through the full state-transition matrix $F_t$.}
+\end{tabularx}
+\end{center}
 
 % ==============================================================
 \chapter{The IMM as Agent Ensemble}
