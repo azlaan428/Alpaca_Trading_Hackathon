@@ -287,7 +287,7 @@ Frontier-Model Evaluation: A Formal Proof Framework\\[0.6em]
 {\large Mathematical Foundations of the Multi-Agent\\
 Quantitative-Finance Platform}}
 \author{Hadrian Hu}
-\date{}
+\date{\today}
 
 \begin{document}
 
@@ -3657,39 +3657,394 @@ The following boundary conditions are handled explicitly.
 \section{CVaR Halt Gate Axiom and Enforcement}
 % --------------------------------------------------------------
 
+%-----------------------------------------------------------------
+\subsection{Standing Preconditions for Gate Evaluation}
+\label{ssec:gate-preconditions}
+%-----------------------------------------------------------------
+
+Before the gate condition may be evaluated at any time $t$, the
+following preconditions must each be verified explicitly and
+recorded in the audit log.  A failure of any precondition
+constitutes a \emph{gate error}; in that event no new position-opening
+order shall be submitted until all preconditions are re-established.
+
+\begin{enumerate}
+  \item \textbf{(P1 --- Loss-window availability.)}
+        A sliding window of $T \geq 2$ loss observations
+        $\boldsymbol{\ell}_t := (\ell_{t-T+1}, \ldots, \ell_t)$
+        must be available in full, with no missing or \texttt{NaN}
+        entries.  Formally,
+        \begin{align}
+          \forall\, k \in \{t-T+1,\ldots,t\}:
+            \quad \ell_k \;&\in\; \mathbb{R},
+            \label{eq:p1-window}
+        \end{align}
+        i.e.\ every observation is a finite real number.
+
+  \item \textbf{(P2 --- Finite first moment.)}
+        The empirical distribution induced by
+        $\boldsymbol{\ell}_t$ must satisfy
+        \begin{align}
+          \frac{1}{T}\sum_{k=t-T+1}^{t} |\ell_k|
+            \;&<\; \infty,
+            \label{eq:p2-l1}
+        \end{align}
+        which holds trivially when~\eqref{eq:p1-window} holds and
+        $T < \infty$, but must be checked explicitly to guard against
+        overflow or infinity-valued entries passed from upstream data
+        pipelines.
+
+  \item \textbf{(P3 --- Confidence level validity.)}
+        The confidence level $\alpha$ must satisfy
+        \begin{align}
+          \alpha \;&\in\; (0,1),
+            \label{eq:p3-alpha}
+        \end{align}
+        and must not have been altered since the last authorised
+        parameter-change event recorded in the audit log
+        (see Remark~\ref{rem:cvar-audit}).
+
+  \item \textbf{(P4 --- Limit positivity.)}
+        The operator-configured CVaR limit must satisfy
+        \begin{align}
+          \bar{C} \;&>\; 0,
+            \label{eq:p4-limit}
+        \end{align}
+        and must not have been altered since the last authorised
+        parameter-change event recorded in the audit log.
+
+  \item \textbf{(P5 --- Monotone sort integrity.)}
+        Let $\ell_{(1)} \leq \ell_{(2)} \leq \cdots \leq \ell_{(T)}$
+        denote the order statistics of $\boldsymbol{\ell}_t$.  The
+        sorting procedure must produce a permutation
+        $\pi \in S_T$ such that
+        \begin{align}
+          \ell_{(\pi(1))} \;\leq\; \ell_{(\pi(2))}
+            \;\leq\; \cdots \;\leq\; \ell_{(\pi(T))},
+            \label{eq:p5-sort}
+        \end{align}
+        verified by the post-sort check
+        $\ell_{(\pi(k))} \leq \ell_{(\pi(k+1))}$
+        for all $k = 1,\ldots,T-1$.
+\end{enumerate}
+
+%-----------------------------------------------------------------
+\subsection{Formal Axiom Statement}
+\label{ssec:gate-axiom}
+%-----------------------------------------------------------------
+
 \begin{axiom}[CVaR Halt Gate]
 \label{ax:cvar-gate}
-Let $\bar{C} > 0$ be the operator-configured CVaR limit and let
-$\hat{C}_t := \CVaR_\alpha^{(t)}$ denote the CVaR estimated at time
-$t$ using the most recent $T$ loss observations.  The system must
-enforce the following rule without exception:
+Let Preconditions~(P1)--(P5) of Section~\ref{ssec:gate-preconditions}
+hold at time $t \in \mathcal{T}$.  Let $\bar{C} > 0$ be the
+operator-configured CVaR limit satisfying~\eqref{eq:p4-limit}, and
+let
 \begin{align}
-  \hat{C}_t \;>\; \bar{C}
-    \quad&\Longrightarrow\quad
-    \text{no new position-opening orders are submitted at time } t.
-    \label{eq:cvar-gate-rule}
+  \hat{C}_t \;&:=\; \CVaR_\alpha^{(t)}
+    \;=\; \min_{z\in\mathbb{R}}\,\Phi_\alpha(z;\boldsymbol{\ell}_t),
+    \label{eq:gate-cvar-def}
 \end{align}
-Position-opening resumes only when $\hat{C}_{t'} \leq \bar{C}$ for
-some $t' > t$.  Existing positions may be reduced or closed at any
-time; the gate applies exclusively to initiating new long or short
-exposure.
+where $\Phi_\alpha$ is the Rockafellar--Uryasev auxiliary function
+of~\eqref{eq:phi-alpha}, evaluated on the window
+$\boldsymbol{\ell}_t$.  The system must enforce, without exception
+and prior to submitting any order at time $t$:
+\begin{enumerate}
+  \item \textbf{(Gate Rule --- Halt condition.)}
+        \begin{align}
+          \hat{C}_t \;>\; \bar{C}
+            \quad&\Longrightarrow\quad
+            \text{no new position-opening orders at time } t.
+            \label{eq:cvar-gate-rule}
+        \end{align}
+
+  \item \textbf{(Gate Rule --- Resume condition.)}
+        Position-opening resumes at the earliest time $t' > t$ such
+        that
+        \begin{align}
+          \hat{C}_{t'} \;\leq\; \bar{C}
+            \quad&\text{and}\quad
+            \text{Preconditions~(P1)--(P5) hold at } t'.
+            \label{eq:cvar-gate-resume}
+        \end{align}
+        Each candidate $t'$ must be evaluated independently;
+        no carry-forward of a stale gate decision is permitted.
+
+  \item \textbf{(Gate Rule --- Scope.)}
+        The gate applies exclusively to the initiation of new long or
+        short exposure.  Reduction or full closure of existing
+        positions is permitted at any time $t$, regardless of the
+        gate state, subject to exchange connectivity constraints.
+
+  \item \textbf{(Gate Rule --- Precondition failure.)}
+        If any of (P1)--(P5) fails at time $t$, the gate is treated
+        as \textsc{halted} by default; no new position-opening order
+        shall be submitted until all preconditions are re-established
+        and verified.
+\end{enumerate}
 \end{axiom}
+
+%-----------------------------------------------------------------
+\subsection{Step-by-Step Gate Evaluation Procedure}
+\label{ssec:gate-procedure}
+%-----------------------------------------------------------------
+
+The following procedure must be executed in full, in the order
+stated, at every time $t$ at which an order-submission decision is
+required.  Each step produces a named output that feeds into
+subsequent steps and must be persisted to the audit log before
+proceeding.
+
+\begin{enumerate}
+  \item \textbf{(Step G1 --- Precondition validation.)}
+        Evaluate Preconditions~(P1)--(P5) in sequence.
+        \begin{enumerate}
+          \item Check~\eqref{eq:p1-window}: load
+                $\boldsymbol{\ell}_t = (\ell_{t-T+1},\ldots,\ell_t)$
+                and assert finiteness of each entry.
+          \item Check~\eqref{eq:p2-l1}: compute and assert
+                $\bar{\ell} := T^{-1}\sum_{k}|\ell_k| < \infty$.
+          \item Check~\eqref{eq:p3-alpha}: assert
+                $\alpha \in (0,1)$ and match against the
+                last authorised value in the audit log.
+          \item Check~\eqref{eq:p4-limit}: assert
+                $\bar{C} > 0$ and match against the
+                last authorised value in the audit log.
+          \item Check~\eqref{eq:p5-sort}: sort
+                $\boldsymbol{\ell}_t$ to obtain
+                $\ell_{(1)}\leq\cdots\leq\ell_{(T)}$
+                and verify the adjacent-pair inequalities.
+        \end{enumerate}
+        If any sub-check fails, log \textsc{precondition-error}
+        with the failing check identifier and set gate state to
+        \textsc{halted}; terminate this procedure.
+
+  \item \textbf{(Step G2 --- VaR computation.)}
+        Using the sorted order statistics from Step~G1(e),
+        compute the empirical VaR:
+        \begin{align}
+          k^* \;&:=\; \lceil \alpha T \rceil,
+            \label{eq:gate-kstar}\\
+          z^*_t \;&:=\; \ell_{(k^*)}.
+            \label{eq:gate-var}
+        \end{align}
+        Assert $k^* \in \{1,\ldots,T\}$.
+        Log the pair $(k^*, z^*_t)$.
+
+  \item \textbf{(Step G3 --- Tail-sum computation.)}
+        Identify the tail index set
+        \begin{align}
+          \mathcal{I}_t \;&:=\;
+            \bigl\{\, k \in \{1,\ldots,T\}
+              : \ell_{(k)} \geq z^*_t \,\bigr\},
+            \label{eq:gate-tail-set}
+        \end{align}
+        and compute the tail cardinality
+        $n_t := |\mathcal{I}_t| \geq 1$
+        (guaranteed since $\ell_{(k^*)} \in \mathcal{I}_t$).
+        Compute the tail sum
+        \begin{align}
+          S_t \;&:=\; \sum_{k \in \mathcal{I}_t} \ell_{(k)}.
+            \label{eq:gate-tail-sum}
+        \end{align}
+        Log $(\mathcal{I}_t, n_t, S_t)$.
+
+  \item \textbf{(Step G4 --- CVaR computation.)}
+        Compute the estimated CVaR via the Rockafellar--Uryasev
+        formula:
+        \begin{align}
+          \hat{C}_t
+            \;&=\; z^*_t
+              + \frac{1}{(1-\alpha)\,T}
+                \sum_{k=1}^{T}
+                  \bigl(\ell_k - z^*_t\bigr)^+,
+            \label{eq:gate-cvar-formula}
+        \end{align}
+        where $(x)^+ := \max(x,0)$.  Equivalently, using the
+        tail set from Step~G3:
+        \begin{align}
+          \hat{C}_t
+            \;&=\; \frac{1}{n_t}
+              \Bigl(
+                S_t - (n_t - (1-\alpha)T)\,z^*_t
+              \Bigr).
+            \label{eq:gate-cvar-equiv}
+        \end{align}
+        Both forms~\eqref{eq:gate-cvar-formula}
+        and~\eqref{eq:gate-cvar-equiv} must yield identical values
+        to within machine epsilon $\varepsilon_{\mathrm{mach}}$;
+        if they differ by more than $10^{3}\varepsilon_{\mathrm{mach}}$,
+        log \textsc{numerical-inconsistency} and set gate state to
+        \textsc{halted}.
+        Log $\hat{C}_t$.
+
+  \item \textbf{(Step G5 --- Gate decision.)}
+        Evaluate the binary gate condition:
+        \begin{align}
+          \text{GateState}_t
+            \;&:=\;
+            \begin{cases}
+              \textsc{open}
+                & \text{if } \hat{C}_t \leq \bar{C},\\
+              \textsc{halted}
+                & \text{if } \hat{C}_t > \bar{C}.
+            \end{cases}
+            \label{eq:gate-state}
+        \end{align}
+        Log \textsc{GateState}$_t$ together with the signed
+        margin $\bar{C} - \hat{C}_t$.
+
+  \item \textbf{(Step G6 --- Order-submission enforcement.)}
+        \begin{enumerate}
+          \item If \textsc{GateState}$_t = \textsc{halted}$,
+                the order-management layer must reject all
+                new position-opening instructions at time $t$.
+                Log each rejected instruction with reason
+                \textsc{cvar-gate-halted}.
+          \item If \textsc{GateState}$_t = \textsc{open}$,
+                new position-opening instructions may proceed
+                subject to all other risk controls.
+          \item In either gate state, reduction and closure of
+                existing positions must not be impeded by this gate.
+        \end{enumerate}
+\end{enumerate}
+
+%-----------------------------------------------------------------
+\subsection{Boundary and Edge-Case Analysis}
+\label{ssec:gate-edge-cases}
+%-----------------------------------------------------------------
+
+The following cases must each be handled explicitly by the
+implementation and verified in the test suite.
+
+\begin{enumerate}
+  \item \textbf{(E1 --- Exact equality $\hat{C}_t = \bar{C}$.)}
+        By~\eqref{eq:gate-state}, the gate is \textsc{open} when
+        $\hat{C}_t = \bar{C}$.  This is a strict inequality test;
+        equality is in the \textsc{open} branch.  The test suite
+        must include a case in which $\hat{C}_t$ is constructed to
+        equal $\bar{C}$ exactly and must confirm
+        \textsc{GateState}$_t = \textsc{open}$.
+
+  \item \textbf{(E2 --- All losses equal ($L = c$ a.s.).)}
+        If $\ell_k = c$ for all $k$, then
+        $z^*_t = c$ and $({\ell_k - z^*_t})^+ = 0$ for all $k$,
+        so $\hat{C}_t = c$ by~\eqref{eq:gate-cvar-formula}.
+        The gate evaluates to \textsc{open} iff $c \leq \bar{C}$.
+
+  \item \textbf{(E3 --- Minimum window $T = 2$.)}
+        With $T = 2$ and confidence level $\alpha$, we have
+        $k^* = \lceil 2\alpha \rceil$.  For $\alpha \in (0, \tfrac{1}{2}]$,
+        $k^* = 1$; for $\alpha \in (\tfrac{1}{2}, 1)$, $k^* = 2$.
+        Both sub-cases must be exercised in the test suite.
+
+  \item \textbf{(E4 --- $\alpha \to 0^+$.)}
+        As $\alpha \to 0^+$, $k^* \to 1$ and
+        $\hat{C}_t \to T^{-1}\sum_{k=1}^{T}\ell_k$,
+        the sample mean of all losses.
+        The gate degenerates to a mean-loss threshold.
+
+  \item \textbf{(E5 --- $\alpha \to 1^-$.)}
+        As $\alpha \to 1^-$, $k^* \to T$ and
+        $\hat{C}_t \to \ell_{(T)} = \max_k \ell_k$,
+        the worst observed loss.
+        The gate degenerates to a maximum-loss threshold.
+
+  \item \textbf{(E6 --- Non-stationary window.)}
+        If the loss distribution shifts between windows,
+        $\hat{C}_t$ may oscillate across $\bar{C}$, producing
+        rapid gate toggling.  The implementation must log every
+        toggle event and must not apply hysteresis without
+        explicit operator authorisation and audit-log entry.
+
+  \item \textbf{(E7 --- Overflow / underflow in tail sum.)}
+        If any $\ell_k$ is very large in magnitude, the tail
+        sum $S_t$ in~\eqref{eq:gate-tail-sum} may overflow
+        double-precision floating point.  The implementation must
+        use a compensated summation algorithm (e.g.\
+        Kahan summation) and must assert
+        $S_t \in \mathbb{R}$ (finite) after accumulation.
+        Overflow must be treated as a \textsc{precondition-error}
+        and the gate set to \textsc{halted}.
+\end{enumerate}
+
+%-----------------------------------------------------------------
+\subsection{Auditability Requirements}
+\label{ssec:gate-audit}
+%-----------------------------------------------------------------
 
 \begin{remark}[Auditability of the CVaR Gate]
 \label{rem:cvar-audit}
-Every evaluation of the gate condition~\eqref{eq:cvar-gate-rule} must
-be logged with the following fields to support third-party audit.
+Every evaluation of the gate procedure of
+Section~\ref{ssec:gate-procedure} must produce an immutable,
+append-only audit record containing all of the following fields.
+No field may be omitted; a record with any missing field is
+considered incomplete and must trigger an \textsc{audit-error}
+alert.
+
 \begin{enumerate}
-  \item Timestamp $t$ and the full vector of loss scenarios
-        $(\ell_1,\ldots,\ell_T)$ used in the estimation.
-  \item Confidence level $\alpha$ and limit $\bar{C}$ in effect
-        at time $t$.
-  \item Computed auxiliary variable $z^*_t = \VaR_\alpha^{(t)}$ and
-        the resulting $\hat{C}_t$.
-  \item Gate decision: \textsc{open} if $\hat{C}_t \leq \bar{C}$,
-        \textsc{halted} otherwise.
-  \item Any parameter changes to $\alpha$ or $\bar{C}$ since the
-        previous evaluation, with authorisation reference.
+  \item \textbf{(F1 --- Evaluation identity.)}
+        A globally unique evaluation identifier (UUID v4 or
+        equivalent), the wall-clock timestamp $t$ in
+        ISO~8601 format with millisecond resolution, and the
+        identifier of the system process or thread performing the
+        evaluation.
+
+  \item \textbf{(F2 --- Input snapshot.)}
+        The full loss vector
+        $\boldsymbol{\ell}_t = (\ell_{t-T+1},\ldots,\ell_t)$
+        serialised to full double-precision floating-point
+        representation (IEEE~754 binary64), together with the
+        window length $T$ and the indices of the observations
+        used.
+
+  \item \textbf{(F3 --- Parameter snapshot.)}
+        The confidence level $\alpha$ and the limit $\bar{C}$ in
+        effect at time $t$, each stored as IEEE~754 binary64, along
+        with the authorisation reference and timestamp of the
+        most recent parameter-change event for each.
+
+  \item \textbf{(F4 --- Intermediate quantities.)}
+        The sorted order statistics
+        $\ell_{(1)}\leq\cdots\leq\ell_{(T)}$,
+        the tail index $k^*$, the VaR estimate $z^*_t$,
+        the tail set $\mathcal{I}_t$ (stored as a sorted list of
+        indices), the tail cardinality $n_t$, the tail sum $S_t$,
+        and both numerical forms of $\hat{C}_t$
+        from~\eqref{eq:gate-cvar-formula}
+        and~\eqref{eq:gate-cvar-equiv} with their difference
+        $|\hat{C}_t^{(1)} - \hat{C}_t^{(2)}|$.
+
+  \item \textbf{(F5 --- Gate decision record.)}
+        The gate state \textsc{GateState}$_t \in
+        \{\textsc{open},\textsc{halted},\textsc{precondition-error},
+        \textsc{numerical-inconsistency}\}$,
+        the signed margin $\bar{C} - \hat{C}_t$,
+        and, if the state is not \textsc{open}, the specific
+        reason code and a human-readable description.
+
+  \item \textbf{(F6 --- Order enforcement log.)}
+        For each order instruction evaluated at time $t$: the
+        order identifier, whether it was a position-opening or
+        position-closing instruction, and the action taken
+        (\textsc{permitted} or \textsc{rejected}) with the
+        reason code if rejected.
+
+  \item \textbf{(F7 --- Parameter change events.)}
+        Any change to $\alpha$ or $\bar{C}$ taking effect at or
+        before time $t$ since the previous evaluation must be
+        recorded with: the old value, the new value, the
+        authorising operator identifier, and the authorisation
+        timestamp.  A change without a recorded authorisation
+        reference must be flagged as \textsc{unauthorised-change}
+        and must trigger an immediate \textsc{halted} gate state.
+
+  \item \textbf{(F8 --- Cryptographic integrity.)}
+        Each audit record must include a SHA-256 hash of the
+        concatenation of fields~(F1)--(F7) to enable tamper
+        detection by third-party auditors.  The hash must be
+        computed over the canonical serialisation defined in
+        the system's audit specification document, version
+        reference of which must itself appear in the record.
 \end{enumerate}
 \end{remark}
 
