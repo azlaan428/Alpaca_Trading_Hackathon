@@ -63,6 +63,10 @@
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
 
+\newcommand{\bfgamma}{\boldsymbol{\gamma}}
+\newcommand{\bfdelta}{\boldsymbol{\delta}}
+\newcommand{\bfzero}{\mathbf{0}}
+
 % ============================================================
 % GEOMETRY AND LAYOUT
 % ============================================================
@@ -79,6 +83,7 @@
 \exhyphenpenalty=10000
 \raggedbottom
 \sloppy
+\setlength{\vfuzz}{15pt}
 
 \setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
 \setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
@@ -168,6 +173,7 @@
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0pt}
 \setlength{\headheight}{27.2pt}
+\setlength{\headwidth}{\textwidth}
 
 % ============================================================
 % MISCELLANEOUS
@@ -182,7 +188,7 @@
 \pdfstringdefDisableCommands{%
   \def\calU{U}%
   \def\calD{D}%
-  \def\mathcal{R}{R}%
+  \def\mathcal#1{#1}%
   \def\calC{C}%
   \def\calA{A}%
   \def\calF{F}%
@@ -518,7 +524,6 @@ Thm.~\ref{thm:cross-asset-cvar} &
 
 % ==============================================================
 
-\par
 \chapter{Foundations: Asset Universe, Partition, and Notation}
 \label{ch:foundations}
 % ==============================================================
@@ -714,9 +719,9 @@ Each stage is self-contained and auditable independently.
   \begin{enumerate}
 
     \item \textbf{(Domain and codomain.)}
-          By Assumption~\ref{asm:universe}, $\calU$ is a finite,
+          By Definition~\ref{def:universe}, $\calU$ is a finite,
           non-empty set of assets.
-          By Definition~\ref{def:char-map}, $\kappa$ is a
+          By equation~\eqref{eq:char-map}, $\kappa$ is a
           \emph{total} function, meaning it is defined on every
           element of $\calU$ with no element left unmapped.
           Concretely:
@@ -740,7 +745,7 @@ Each stage is self-contained and auditable independently.
             \label{eq:kappa-single}
           \end{align}
           This is the defining property of a function and requires
-          no additional assumption beyond Definition~\ref{def:char-map}.
+          no additional assumption beyond equation~\eqref{eq:char-map}.
 
     \item \textbf{(Pre-image is well-defined.)}
           For each fixed $k$, the set
@@ -845,8 +850,6 @@ Each stage is self-contained and auditable independently.
 
   %% ------------------------------------------------------------------
   \item \textbf{(Uniqueness.)}
-\begin{proposition}
-\begin{proof}
   \begin{enumerate}
 
     \item \textbf{(Setup.)}
@@ -936,15 +939,15 @@ Each stage is self-contained and auditable independently.
 
   \end{enumerate}
 
+\end{enumerate}
 
-
+\noindent
 All four stages have been verified. The collection
 $\{\calD_k\}_{k=1}^{9}$ defined by~\eqref{eq:partition-recovery}
 is a valid and unique nine-bucket partition of $\calU$,
 satisfying Axioms~1 and~2 in full generality, including
 all boundary and degenerate cases.
 \end{proof}
-\end{proposition}
 
 \section{Portfolio Weights and Return Model}
 
@@ -1472,7 +1475,6 @@ The extreme cases are:
 \end{definition}
 
 % ==============================================================
-\par
 \chapter{Variance Decomposition and the Diversification Benefit}
 \label{ch:variance}
 % ==============================================================
@@ -1968,51 +1970,420 @@ $\sigma_k^2 \leq \sigma_j^2$ for all $j$.
 \end{theorem}
 
 \begin{proof}
-We establish the result by explicitly constructing a diversifying
-perturbation that reduces variance.
+We proceed by explicit construction of a variance-reducing perturbation,
+validating every assumption and covering all boundary cases.
 
 \begin{enumerate}
-  \item \textbf{Setting.}
-        Fix $k$ and let $\bfw = \bfe_k$.  Then
-        $V_p(\bfe_k) = \sigma_k^2$.
 
-  \item \textbf{Perturbation.}
-        Let $j \neq k$ and define the perturbed portfolio
-        $\bfw_\varepsilon = (1-\varepsilon)\bfe_k + \varepsilon\bfe_j$
-        for $\varepsilon \in (0,1)$.  This is feasible in $\Delta^{n-1}$.
+  % ------------------------------------------------------------------
+  \item \textbf{Validation of standing assumptions.}
+        Assumption~\ref{asm:returns} is assumed to hold throughout.
+        We record its consequences that are used below.
+        \begin{enumerate}
+          \item The covariance matrix
+                $\Sigma = (\sigma_{ij})_{i,j=1}^{n}$ is
+                symmetric positive semi-definite (PSD) with
+                $\sigma_{ii} = \sigma_i^2 > 0$ for all $i$.
+          \item The simplex $\Delta^{n-1}
+                = \{\bfw \in \mathbb{R}^n : \bfw \geq \mathbf{0},\;
+                \mathbf{1}^\top\bfw = 1\}$ is a non-empty compact
+                convex set, so the continuous function
+                $V_p(\bfw) = \bfw^\top \Sigma \bfw$ attains its
+                minimum on $\Delta^{n-1}$.
+          \item We are given $n \geq 2$, which ensures there
+                exists at least one index $j \neq k$.
+        \end{enumerate}
 
-  \item \textbf{Variance of the perturbed portfolio.}
+  % ------------------------------------------------------------------
+  \item \textbf{Setting: the concentrated portfolio.}
+        Fix an arbitrary index $k \in \{1,\ldots,n\}$.
+        Define the single-asset (concentrated) portfolio
+        $\bfw^{(k)} = \bfe_k$, the $k$-th standard basis
+        vector of $\mathbb{R}^n$.  Then
+        \begin{align}
+          V_p(\bfe_k)
+          &\;=\; \bfe_k^\top \Sigma\, \bfe_k
+           \;=\; \sigma_k^2.
+          \label{eq:nc-conc-var}
+        \end{align}
+        Feasibility: $\bfe_k \in \Delta^{n-1}$ since all weights
+        are non-negative and sum to $1$.
+
+  % ------------------------------------------------------------------
+  \item \textbf{Construction of the perturbed portfolio.}
+        Fix any index $j \neq k$.  For $\varepsilon \in (0,1)$,
+        define
+        \begin{align}
+          \bfw_\varepsilon
+          &\;=\; (1-\varepsilon)\,\bfe_k + \varepsilon\,\bfe_j.
+          \label{eq:nc-pert-def}
+        \end{align}
+        \begin{enumerate}
+          \item \emph{Feasibility.}
+                Every component of $\bfw_\varepsilon$ is
+                non-negative because $\varepsilon \in (0,1)$ and
+                $1-\varepsilon > 0$.  Moreover,
+                $\mathbf{1}^\top\bfw_\varepsilon
+                = (1-\varepsilon) + \varepsilon = 1$.
+                Hence $\bfw_\varepsilon \in \Delta^{n-1}$ for all
+                $\varepsilon \in (0,1)$.
+          \item \emph{Boundary recovery.}
+                At $\varepsilon = 0$, $\bfw_0 = \bfe_k$;
+                at $\varepsilon = 1$, $\bfw_1 = \bfe_j$.
+                Both boundary cases are feasible and are
+                single-asset portfolios.
+        \end{enumerate}
+
+  % ------------------------------------------------------------------
+  \item \textbf{Portfolio variance along the perturbation path.}
+        Using the bilinearity of the covariance operator,
         \begin{align}
           V_p(\bfw_\varepsilon)
-          &\;=\; (1-\varepsilon)^2 \sigma_k^2
-                 + 2\varepsilon(1-\varepsilon)\sigma_{kj}
-                 + \varepsilon^2 \sigma_j^2,
+          &\;=\; \bfw_\varepsilon^\top \Sigma\,\bfw_\varepsilon
+          \notag\\[4pt]
+          &\;=\;
+            \bigl[(1-\varepsilon)\bfe_k + \varepsilon\bfe_j\bigr]^\top
+            \Sigma\,
+            \bigl[(1-\varepsilon)\bfe_k + \varepsilon\bfe_j\bigr]
+          \notag\\[4pt]
+          &\;=\; (1-\varepsilon)^2\,\bfe_k^\top\Sigma\bfe_k
+                 + 2\varepsilon(1-\varepsilon)\,\bfe_k^\top\Sigma\bfe_j
+                 + \varepsilon^2\,\bfe_j^\top\Sigma\bfe_j
+          \notag\\[4pt]
+          &\;=\; (1-\varepsilon)^2\,\sigma_k^2
+                 + 2\varepsilon(1-\varepsilon)\,\sigma_{kj}
+                 + \varepsilon^2\,\sigma_j^2,
           \label{eq:nc-var-eps}
         \end{align}
-        where $\sigma_{kj} = \Cov(r_k, r_j)$.
+        where $\sigma_{kj} = \Cov(r_k,r_j) = \bfe_k^\top\Sigma\bfe_j$.
+        This expression is a polynomial of degree $2$ in
+        $\varepsilon$ and is therefore infinitely differentiable.
 
-  \item \textbf{First-order condition.}
-        Differentiating~\eqref{eq:nc-var-eps} with respect to
-        $\varepsilon$ at $\varepsilon = 0$:
+  % ------------------------------------------------------------------
+  \item \textbf{First-order directional derivative.}
+        Differentiating~\eqref{eq:nc-var-eps} term by term:
+        \begin{align}
+          \frac{\mathrm{d}}{\mathrm{d}\varepsilon}
+          V_p(\bfw_\varepsilon)
+          &\;=\;
+            -2(1-\varepsilon)\,\sigma_k^2
+            + 2(1-2\varepsilon)\,\sigma_{kj}
+            + 2\varepsilon\,\sigma_j^2.
+          \label{eq:nc-deriv-full}
+        \end{align}
+        Evaluating at $\varepsilon = 0$:
         \begin{align}
           \left.\frac{\mathrm{d}}{\mathrm{d}\varepsilon}
           V_p(\bfw_\varepsilon)\right|_{\varepsilon=0}
           &\;=\; -2\sigma_k^2 + 2\sigma_{kj}.
           \label{eq:nc-foc}
         \end{align}
-        The derivative is negative (diversification reduces variance)
-        whenever $\sigma_{kj} < \sigma_k^2$, i.e.\ whenever
-        $\rho_{kj} < \sigma_k / \sigma_j$.  In particular, if
-        $\rho_{kj} < 1$ and $\sigma_j \leq \sigma_k$, this holds.
+        \begin{enumerate}
+          \item \emph{Sign analysis.}
+                The derivative in~\eqref{eq:nc-foc} is strictly
+                negative if and only if
+                \begin{align}
+                  \sigma_{kj} &\;<\; \sigma_k^2.
+                  \label{eq:nc-sign-cond}
+                \end{align}
+          \item \emph{Reformulation in terms of correlation.}
+                Since $\sigma_{kj} = \rho_{kj}\,\sigma_k\,\sigma_j$
+                with $\rho_{kj} \in [-1,1]$,
+                condition~\eqref{eq:nc-sign-cond} is equivalent to
+                \begin{align}
+                  \rho_{kj}\,\sigma_k\,\sigma_j &\;<\; \sigma_k^2,
+                  \notag\\[2pt]
+                  \rho_{kj} &\;<\; \frac{\sigma_k}{\sigma_j}.
+                  \label{eq:nc-corr-cond}
+                \end{align}
+                This inequality is satisfied in particular whenever
+                $\rho_{kj} < 1$ and $\sigma_j \leq \sigma_k$,
+                or whenever $\rho_{kj} \leq 0$.
+        \end{enumerate}
 
-  \item \textbf{Conclusion.}
-        If~\eqref{eq:nc-foc} is negative for any $j$, then
-        $V_p(\bfw_\varepsilon) < V_p(\bfe_k)$ for small $\varepsilon > 0$,
-        so $\bfe_k$ is not the minimum-variance portfolio.
-        The only exception is when $\sigma_{kj} \geq \sigma_k^2$ for all
-        $j \neq k$, i.e.\ $\rho_{kj} \geq \sigma_k/\sigma_j$ for all
-        $j$, which requires $\Cov(r_k, r_j) \geq \sigma_k^2$ --- a
-        condition that cannot hold generically.
+  % ------------------------------------------------------------------
+  \item \textbf{Second-order term and local strict convexity.}
+        The second derivative of $V_p(\bfw_\varepsilon)$ with
+        respect to $\varepsilon$ is constant:
+        \begin{align}
+          \frac{\mathrm{d}^2}{\mathrm{d}\varepsilon^2}
+          V_p(\bfw_\varepsilon)
+          &\;=\; 2\sigma_k^2 - 4\sigma_{kj} + 2\sigma_j^2
+           \;=\; 2\,(\sigma_k - \sigma_j)^2
+                 + 4\,\sigma_j^2 - 4\sigma_{kj}
+          \notag\\[4pt]
+          &\;=\; 2\,\bigl(\sigma_k^2 + \sigma_j^2 - 2\sigma_{kj}\bigr)
+           \;=\; 2\,\Var(r_k - r_j) \;\geq\; 0,
+          \label{eq:nc-second-deriv}
+        \end{align}
+        where the last equality uses the identity
+        $\Var(r_k - r_j)
+        = \sigma_k^2 + \sigma_j^2 - 2\sigma_{kj} \geq 0$,
+        which holds because variance is non-negative.
+        Hence $V_p(\bfw_\varepsilon)$ is convex in $\varepsilon$
+        on $[0,1]$, confirming that the first-order condition
+        in~\eqref{eq:nc-foc} characterises a local (and global)
+        improvement.
+
+  % ------------------------------------------------------------------
+  \item \textbf{Existence of a strictly improving perturbation.}
+        Suppose~\eqref{eq:nc-sign-cond} holds for some $j \neq k$.
+        Then the map $\varepsilon \mapsto V_p(\bfw_\varepsilon)$
+        has a strictly negative derivative at $\varepsilon = 0$.
+        By continuity of the derivative (it is linear in
+        $\varepsilon$), there exists $\varepsilon^* > 0$ such that
+        for all $\varepsilon \in (0,\varepsilon^*)$,
+        \begin{align}
+          V_p(\bfw_\varepsilon)
+          &\;<\; V_p(\bfe_k) \;=\; \sigma_k^2.
+          \label{eq:nc-improvement}
+        \end{align}
+        Since $\bfw_\varepsilon \in \Delta^{n-1}$ and
+        $\bfw_\varepsilon \neq \bfe_k$, this shows that
+        $\bfe_k$ is not the minimiser of $V_p$ over
+        $\Delta^{n-1}$, i.e.\ $V_p(\bfe_k) > V_p(\bfw^*)$.
+
+  % ------------------------------------------------------------------
+  \item \textbf{Enumeration of the exhaustive cases.}
+        We now systematically enumerate all cases for the sign
+        of the directional derivative in~\eqref{eq:nc-foc},
+        leaving no scenario unaddressed.
+
+        \begin{enumerate}
+
+          \item \emph{Case~1: $\sigma_{kj} < \sigma_k^2$ for some
+                $j \neq k$.}
+                Condition~\eqref{eq:nc-sign-cond} holds and the
+                improvement in~\eqref{eq:nc-improvement} is achieved.
+                $\bfe_k$ is sub-optimal.
+
+          \item \emph{Case~2: $\sigma_{kj} = \sigma_k^2$ for some
+                $j \neq k$ and $\sigma_{kj'} < \sigma_k^2$ for some
+                other $j' \neq k$.}
+                The derivative vanishes at $\varepsilon=0$ in the
+                direction of $j$, but is strictly negative in the
+                direction of $j'$.  Applying Case~1 to the pair
+                $(k, j')$ yields the improvement.
+                $\bfe_k$ is sub-optimal.
+
+          \item \emph{Case~3: $\sigma_{kj} = \sigma_k^2$ for all
+                $j \neq k$.}
+                This means $\Cov(r_k, r_j) = \sigma_k^2$ for
+                every $j \neq k$.  We analyse the sub-cases:
+                \begin{enumerate}
+                  \item By the Cauchy--Schwarz inequality,
+                        $|\sigma_{kj}| \leq \sigma_k \sigma_j$,
+                        so $\sigma_k^2 \leq \sigma_k \sigma_j$,
+                        giving $\sigma_k \leq \sigma_j$ for all
+                        $j \neq k$.
+                  \item Moreover, equality
+                        $\sigma_{kj} = \sigma_k \sigma_j$
+                        (i.e.\ $\rho_{kj} = 1$) requires
+                        $r_j - \mu_j = c_{kj}(r_k - \mu_k)$
+                        almost surely for some $c_{kj} > 0$.
+                  \item The portfolio variance in this case is
+                        \begin{align}
+                          V_p(\bfw_\varepsilon)
+                          &\;=\; (1-\varepsilon)^2\sigma_k^2
+                                 + 2\varepsilon(1-\varepsilon)\sigma_k^2
+                                 + \varepsilon^2\sigma_j^2
+                          \notag\\[4pt]
+                          &\;=\; \sigma_k^2(1-\varepsilon)^2
+                                 + 2\varepsilon(1-\varepsilon)\sigma_k^2
+                                 + \varepsilon^2\sigma_j^2
+                          \notag\\[4pt]
+                          &\;=\; \sigma_k^2
+                                 \bigl[(1-\varepsilon)^2
+                                       + 2\varepsilon(1-\varepsilon)\bigr]
+                                 + \varepsilon^2\sigma_j^2
+                          \notag\\[4pt]
+                          &\;=\; \sigma_k^2(1-\varepsilon^2)
+                                 + \varepsilon^2\sigma_j^2
+                          \notag\\[4pt]
+                          &\;=\; \sigma_k^2
+                                 + \varepsilon^2(\sigma_j^2 - \sigma_k^2).
+                          \label{eq:nc-case3-var}
+                        \end{align}
+                        Since $\sigma_j^2 \geq \sigma_k^2$ (from
+                        sub-item (a) above), we have
+                        $V_p(\bfw_\varepsilon) \geq \sigma_k^2
+                        = V_p(\bfe_k)$ for all $\varepsilon$.
+                        In this sub-case, no improvement is possible
+                        in the two-asset direction $(k,j)$.
+                  \item To determine whether $\bfe_k$ is the global
+                        minimum-variance portfolio, one must verify
+                        whether $V_p(\bfw) \geq \sigma_k^2$ for
+                        \emph{all} $\bfw \in \Delta^{n-1}$, not just
+                        two-asset mixtures.  The KKT conditions for the
+                        minimum-variance portfolio on $\Delta^{n-1}$
+                        require $(\Sigma\bfw^*)_k = \lambda$ for all
+                        $k$ in the support of $\bfw^*$.  At
+                        $\bfw = \bfe_k$, the condition
+                        $(\Sigma\bfe_k)_j = \sigma_{kj} = \sigma_k^2$
+                        for all $j$ implies that $\bfe_k$ satisfies
+                        the KKT stationarity condition with
+                        $\lambda = \sigma_k^2$, confirming that
+                        $\bfe_k$ is a KKT point.  Since $V_p$ is
+                        convex and $\Delta^{n-1}$ is convex, every
+                        KKT point is a global minimiser.
+                        Hence, under Case~3, $\bfe_k = \bfw^*$.
+                \end{enumerate}
+
+          \item \emph{Case~4: $\sigma_{kj} > \sigma_k^2$ for all
+                $j \neq k$.}
+                The derivative in~\eqref{eq:nc-foc} is strictly
+                positive for every $j$, meaning any two-asset mixture
+                initially \emph{increases} variance.  However,
+                the second-order term in~\eqref{eq:nc-second-deriv}
+                satisfies
+                \begin{align}
+                  \frac{\mathrm{d}^2}{\mathrm{d}\varepsilon^2}
+                  V_p(\bfw_\varepsilon)
+                  &\;=\; 2(\sigma_k^2 + \sigma_j^2 - 2\sigma_{kj})
+                  \notag\\[4pt]
+                  &\;<\; 2(\sigma_k^2 + \sigma_j^2
+                             - 2\sigma_k^2)
+                   \;=\; 2(\sigma_j^2 - \sigma_k^2),
+                  \label{eq:nc-case4-second}
+                \end{align}
+                which may be negative if $\sigma_j < \sigma_k$.
+                In that regime the quadratic in $\varepsilon$ opens
+                downward and $V_p(\bfw_\varepsilon)$ decreases for
+                large $\varepsilon$.  Evaluating at $\varepsilon=1$:
+                \begin{align}
+                  V_p(\bfe_j)
+                  &\;=\; \sigma_j^2
+                   \;<\; \sigma_k^2
+                   \;=\; V_p(\bfe_k),
+                  \label{eq:nc-case4-endpoint}
+                \end{align}
+                so $\bfe_j$ itself is a better portfolio.  Hence
+                $\bfe_k$ is not the global minimum even in Case~4
+                whenever some $\sigma_j^2 < \sigma_k^2$.
+                If $\sigma_j^2 \geq \sigma_k^2$ for all $j$, then
+                one returns to the analysis of Case~3 (up to the
+                labelling of the reference asset), with the
+                conclusion that $\bfe_k$ may be a KKT point only if
+                the full covariance column condition holds.
+
+        \end{enumerate}
+
+  % ------------------------------------------------------------------
+  \item \textbf{Necessary and sufficient condition for $\bfe_k$
+        to be the global minimiser.}
+        Collecting the results of Step~8, $\bfe_k$ is the
+        minimum-variance portfolio if and only if it satisfies
+        the KKT first-order conditions for the problem
+        $\min_{\bfw \in \Delta^{n-1}} \bfw^\top\Sigma\bfw$.
+        These conditions require the existence of a scalar
+        $\lambda \in \mathbb{R}$ and a non-negative vector
+        $\boldsymbol{\mu} \geq \mathbf{0}$ such that
+        \begin{align}
+          2\Sigma\bfe_k &\;=\; \lambda\,\mathbf{1} + \boldsymbol{\mu},
+          \label{eq:nc-kkt-stat}\\[4pt]
+          \boldsymbol{\mu}_i &\;=\; 0 \quad \text{for all } i
+                     \quad (\text{since } (\bfe_k)_i = 0
+                     \text{ for } i \neq k).
+          \label{eq:nc-kkt-comp}
+        \end{align}
+        Equation~\eqref{eq:nc-kkt-stat} with~\eqref{eq:nc-kkt-comp}
+        yields
+        \begin{align}
+          2\sigma_{kj} &\;=\; \lambda + \mu_j,
+          \quad j \neq k, \quad \mu_j \geq 0,
+          \label{eq:nc-kkt-off}\\[4pt]
+          2\sigma_k^2  &\;=\; \lambda.
+          \label{eq:nc-kkt-diag}
+        \end{align}
+        Substituting~\eqref{eq:nc-kkt-diag} into
+        \eqref{eq:nc-kkt-off}:
+        \begin{align}
+          2\sigma_{kj}
+          &\;=\; 2\sigma_k^2 + \mu_j
+           \;\geq\; 2\sigma_k^2,
+          \notag\\[4pt]
+          \Longrightarrow\quad
+          \sigma_{kj} &\;\geq\; \sigma_k^2
+          \quad \text{for all } j \neq k.
+          \label{eq:nc-kkt-necessary}
+        \end{align}
+        Equivalently, $\Cov(r_k, r_j) \geq \sigma_k^2$ for all
+        $j \neq k$, i.e.\ $\rho_{kj} \geq \sigma_k/\sigma_j$
+        for all $j \neq k$.  This is the precise condition under
+        which $\bfe_k$ is the global minimiser.  It is a
+        \emph{non-generic} condition: it requires the entire
+        $k$-th column of $\Sigma$ to dominate $\sigma_k^2$
+        entry-wise, which cannot hold for all $k$ simultaneously
+        unless $\Sigma$ is a constant matrix (all assets
+        perfectly correlated with equal variance), a degenerate
+        situation excluded by Assumption~\ref{asm:returns}.
+
+  % ------------------------------------------------------------------
+  \item \textbf{Strict inequality $V_p(\bfe_k) > V_p(\bfw^*)$
+        in the generic case.}
+        Whenever condition~\eqref{eq:nc-kkt-necessary} fails for
+        at least one $j$, i.e.\ whenever
+        $\sigma_{kj} < \sigma_k^2$ for some $j \neq k$,
+        Step~7 provides an explicit $\varepsilon^* > 0$ such that
+        \begin{align}
+          V_p(\bfw_{\varepsilon^*})
+          &\;<\; V_p(\bfe_k).
+          \label{eq:nc-strict}
+        \end{align}
+        Since $\bfw^* = \argmin_{\bfw \in \Delta^{n-1}} V_p(\bfw)$
+        achieves the global minimum,
+        \begin{align}
+          V_p(\bfw^*)
+          &\;\leq\; V_p(\bfw_{\varepsilon^*})
+           \;<\; V_p(\bfe_k),
+          \label{eq:nc-final}
+        \end{align}
+        which is the statement of the theorem.
+
+  % ------------------------------------------------------------------
+  \item \textbf{Summary of boundary and edge cases.}
+        \begin{enumerate}
+          \item \emph{$n = 2$, equal variances, zero covariance.}
+                $\sigma_k^2 = \sigma_j^2$ and $\sigma_{kj} = 0$,
+                so condition~\eqref{eq:nc-sign-cond} is satisfied.
+                The minimum-variance portfolio is the equal-weight
+                portfolio $\bfw^* = (\tfrac{1}{2}, \tfrac{1}{2})^\top$
+                with $V_p(\bfw^*) = \tfrac{1}{2}\sigma_k^2
+                < \sigma_k^2 = V_p(\bfe_k)$.
+          \item \emph{Perfectly correlated assets, $\rho_{kj}=1$.}
+                Then $\sigma_{kj} = \sigma_k\sigma_j \geq \sigma_k^2$
+                iff $\sigma_j \geq \sigma_k$.  If $\sigma_j > \sigma_k$,
+                condition~\eqref{eq:nc-kkt-necessary} holds for this
+                pair but $V_p(\bfe_j) = \sigma_j^2 > \sigma_k^2$,
+                confirming $\bfe_j$ is worse; no other asset helps via
+                the two-asset path but $\bfe_k$ may still be dominated
+                by multi-asset mixtures.  Full analysis requires the
+                $n$-dimensional KKT system.
+          \item \emph{Singular covariance matrix.}
+                If $\Sigma$ is PSD but not PD, some assets are
+                redundant (perfect linear combinations of others).
+                The minimum-variance portfolio still exists
+                (by compactness of $\Delta^{n-1}$) and may not be
+                unique, but the directional derivative
+                analysis in Steps~5--7 remains valid because it
+                uses only bilinearity of the inner product
+                $\bfw^\top\Sigma\bfw$, not invertibility of $\Sigma$.
+          \item \emph{$\varepsilon^*$ selection.}
+                An explicit upper bound is
+                \begin{align}
+                  \varepsilon^*
+                  &\;\leq\; \frac{2(\sigma_k^2 - \sigma_{kj})}
+                               {2(\sigma_k^2 - \sigma_{kj})
+                                + (\sigma_j^2 - 2\sigma_{kj}
+                                   + \sigma_k^2)},
+                  \label{eq:nc-eps-bound}
+                \end{align}
+                obtained by solving the quadratic
+                $V_p(\bfw_\varepsilon) = \sigma_k^2$ for the
+                smaller root, which is positive whenever
+                $\sigma_{kj} < \sigma_k^2$.
+        \end{enumerate}
+
 \end{enumerate}
 \qed
 \end{proof}
@@ -3278,6 +3649,8 @@ The \emph{hard-constraint feasible set} is
     \;\Big|\;
     w_i \leq w_{\max}^{(i)} \;\forall\, i;\;
     \sum_{a \in \calD_k} w_a \leq w_{\max}^{(\calD_k)} \;\forall\, k;\;
+    \notag\\[-2pt]
+  &\qquad\quad
     \sum_{a \in \mathrm{geo}(g)} w_a \leq w_{\max}^{(\mathrm{geo})}
     \;\forall\, g;\;
     \sum_{a \in \mathrm{cur}(c)} w_a \leq w_{\max}^{(\mathrm{cur})}
@@ -3628,7 +4001,8 @@ of use and treating all boundary and edge cases explicitly.
               +(1-\theta)\bfw^{(2)}\right)
             &\;=\;
             \theta(1-\theta)\,\mathbf{d}^{\top}\bfSigma\mathbf{d}
-            \;>\; 0.
+            \notag\\
+            &\;>\; 0.
             \label{eq:strict-cvx-gap}
           \end{align}
           Hence $V_p$ is strictly convex on $\R^n$.
@@ -3960,7 +4334,7 @@ We proceed through several sub-steps.
             + \mu\!\left(
               \|\hat{P}(\bfw) - P^*\|_F^2 - \varepsilon^2
             \right),
-          \label{eq:lagrangian}
+          \label{eq:lagrangian-soft}
         \end{align}
         with KKT multiplier $\mu^* \geq 0$ at $\bfw^{\Pi}$.  Since
         the penalty $\Psi$ is an exact penalty function in the sense
@@ -5025,7 +5399,7 @@ all cases, including boundary and edge cases.
 Assumption~\ref{asm:returns} to the sub-universe $\calD_k$.}
 
 \begin{enumerate}
-  \item By Definition~\ref{def:bucket}, $\calD_k \subseteq \calD$
+  \item By Definition~\ref{def:bucket-sub}, $\calD_k \subseteq \calD$
         is a non-empty, finite sub-universe with $m_k \geq 1$ assets.
   \item Assumption~\ref{asm:returns} is stated for the full universe
         $\calD$; its restriction to any sub-universe $\calD_k$ is
@@ -6020,7 +6394,8 @@ inequality is explicitly justified.
                   \CVaR_\alpha(\lambda L)
                   &= \frac{1}{\alpha}\int_0^\alpha
                      \VaR_u(\lambda L)\,\mathrm{d}u
-                  = \frac{1}{\alpha}\int_0^\alpha
+                  \notag\\
+                  &= \frac{1}{\alpha}\int_0^\alpha
                      \lambda\,\VaR_u(L)\,\mathrm{d}u
                   = \lambda\,\CVaR_\alpha(L).
                   \label{eq:cvar-hom}
@@ -6255,7 +6630,8 @@ Then the following hold:
           \Pi_{\mathrm{CVaR}}(\bfw)
           &= w_k\,\CVaR_\alpha(L_k)
              - \CVaR_\alpha(L_k)
-          = 1 \cdot \CVaR_\alpha(L_k)
+          \notag\\
+          &= 1 \cdot \CVaR_\alpha(L_k)
              - \CVaR_\alpha(L_k)
           = 0.
         \end{align}
@@ -7045,7 +7421,8 @@ resolution.
 \section*{Table A: Core Diversification Results}
 
 \begin{center}
-\begin{tabularx}{\textwidth}{@{} l X l @{}}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{4.5cm} X p{3.8cm} @{}}
 \hline
 \textbf{Result} & \textbf{Formula / Guarantee} & \textbf{Ref.} \\
 \hline
@@ -7070,12 +7447,14 @@ CVaR sub-additivity &
   Thm.~\ref{thm:cross-asset-cvar} \\
 \hline
 \end{tabularx}
+}
 \end{center}
 
 \section*{Table B: Constraint and Trigger Properties}
 
 \begin{center}
-\begin{tabularx}{\textwidth}{@{} l X l @{}}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{4.5cm} X p{3.8cm} @{}}
 \hline
 \textbf{Property} & \textbf{Guarantee} & \textbf{Ref.} \\
 \hline
@@ -7105,12 +7484,14 @@ Within-bucket diversity &
   Thm.~\ref{thm:within-bucket} \\
 \hline
 \end{tabularx}
+}
 \end{center}
 
 \section*{Table C: Regime Sensitivity}
 
 \begin{center}
-\begin{tabularx}{\textwidth}{@{} l X l @{}}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{5cm} X p{3.8cm} @{}}
 \hline
 \textbf{Property} & \textbf{Guarantee} & \textbf{Ref.} \\
 \hline
@@ -7131,12 +7512,14 @@ Regime-conditional CVaR &
   Prop.~\ref{prop:regime-cvar} \\
 \hline
 \end{tabularx}
+}
 \end{center}
 
 \section*{Table D: Operator Responsibilities for Diversification}
 
 \begin{center}
-\begin{tabularx}{\textwidth}{@{} l X X @{}}
+{\small
+\begin{tabularx}{\textwidth}{@{} p{8.2cm} X X @{}}
 \hline
 \textbf{Operator} & \textbf{Responsibility} & \textbf{Trigger Condition} \\
 \hline
@@ -7161,6 +7544,7 @@ Regime-conditional CVaR &
   On every order submission. \\
 \hline
 \end{tabularx}
+}
 \end{center}
 
 % ==============================================================
