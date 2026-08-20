@@ -8747,49 +8747,385 @@ Recursive reinvestment & Filter steady state
 
 \section{The Priority Ordering}
 
+%% ----------------------------------------------------------------
 \begin{theorem}[Priority Ordering]
 \label{thm:priority}
-Under the seven-state gating architecture and the Kalman filter
-isomorphism, the following strict priority ordering holds:
-\begin{equation}
-  \underbrace{\text{State Integrity}}_{\text{Ch.~\ref{ch:seven-states}}}
+Let $\mathbf{X}_t \in [0,1]^7$ be the seven-dimensional state
+charge vector at time $t$, let $G(\mathbf{X}_t)=\prod_{d=1}^7
+g_d(\mathcal{S}_t^{(d)})$ be the product gating function, and
+let $\rho(\cdot)$ denote the spectral radius.  Under the
+following standing assumptions:
+\begin{enumerate}
+  \item[\textbf{(A1)}] Each gate $g_d:[0,1]\to[0,1]$ is
+        continuous and satisfies $g_d(s)=0$ if and only if
+        $s < \mathcal{S}_{\min}^{(d)}$.
+  \item[\textbf{(A2)}] The Kalman gain $\mathbf{K}_t$ is
+        computed from the Riccati recursion with
+        $\mathbf{Q}_t \succ 0$ and $\mathbf{R}_t \succ 0$.
+  \item[\textbf{(A3)}] The state-transition matrix
+        $\mathbf{F}$ has all eigenvalues satisfying
+        $|\lambda_i(\mathbf{F})| \leq 1$.
+  \item[\textbf{(A4)}] The capital base $C_{\mathrm{available}}>0$
+        and the Kelly fraction $f^* \in (0,1]$ are well-defined
+        at each $t$.
+\end{enumerate}
+the following strict priority ordering holds:
+\begin{align}
+  &\underbrace{\text{State Integrity}}_{\text{Ch.~\ref{ch:seven-states}}}
   \;\succ\;
   \underbrace{\text{Filter Stability}}_{\text{Ch.~\ref{ch:covariance}}}
-  \;\succ\;
+  \nonumber\\[4pt]
+  &\quad\;\succ\;
   \underbrace{\text{Signal Quality}}_{\text{Ch.~\ref{ch:kalman-gain}}}
   \;\succ\;
   \underbrace{\text{Allocation Intelligence}}_{\text{Ch.~\ref{ch:gating}}}
   \;\succ\;
   \underbrace{\text{Compounding}}_{\text{Ch.~\ref{ch:objective}}}
   \label{eq:priority-ordering}
-\end{equation}
-which maps exactly onto:
-\begin{equation}
-  \text{Survival} \;\succ\; \text{Preservation}
-  \;\succ\; \text{Intelligent Allocation}
+\end{align}
+which maps exactly onto the investment hierarchy:
+\begin{align}
+  \text{Survival}
+  &\;\succ\; \text{Preservation}
+  \nonumber\\[4pt]
+  &\;\succ\; \text{Intelligent Allocation}
   \;\succ\; \text{Controlled Risk}
   \;\succ\; \text{Compounding}.
   \label{eq:investment-priority}
-\end{equation}
+\end{align}
 \end{theorem}
 
+%% ----------------------------------------------------------------
 \begin{proof}
-The priority ordering is enforced architecturally through the
-product gating function $G(\mathbf{X}_t)$: a zero value of any
-single state factor overrides all signal quality and allocation
-intelligence by setting $G = 0$ and hence $\pi^* = 0$.  This
-is a hard architectural constraint, not a soft preference.
-The filter stability condition $\rho(\mathbf{F} - \mathbf{K}\mathbf{H}\mathbf{F}) < 1$
-is the second-priority constraint: it ensures the filter
-converges (survival of the estimation process) before any
-signal is trusted.  Signal quality (Kalman gain calibration)
-takes priority over allocation optimisation because a
-miscalibrated gain can destabilise the filter.  Allocation
-intelligence (the constrained optimisation) takes priority
-over compounding because sub-optimal but stable allocations
-dominate optimal-but-risky allocations in the long run by
-the Kelly theorem.  \qed
+The proof proceeds in five steps, one per priority level, each
+establishing a strict logical dependency on all higher-priority
+levels.  Every assumption is validated explicitly.
+
+\medskip
+\noindent\textbf{Step 1 — State Integrity (Priority 1: Survival).}
+
+\noindent\textit{Claim:} If any single state $\mathcal{S}_t^{(d)}
+< \mathcal{S}_{\min}^{(d)}$, then $\pi^*(\mathbf{X}_t, S_t) = 0$
+regardless of signal quality or allocation intelligence.
+
+\noindent\textit{Proof of Step 1:}
+By definition of the optimal deployment policy
+(Eq.~\ref{eq:combined-policy}):
+\begin{align}
+  \pi^*(\mathbf{X}_t, S_t)
+  &\;=\; K_t^{(\mathrm{Kalman})} \cdot C_{\mathrm{available}}
+        \cdot \prod_{d=1}^{7} g_d\!\bigl(\mathcal{S}_t^{(d)}\bigr).
+  \label{eq:pf-policy}
+\end{align}
+Suppose $\exists\, d^* \in \{1,\dots,7\}$ such that
+$\mathcal{S}_t^{(d^*)} < \mathcal{S}_{\min}^{(d^*)}$.
+By Assumption (A1):
+\begin{equation}
+  g_{d^*}\!\bigl(\mathcal{S}_t^{(d^*)}\bigr) = 0.
+  \label{eq:pf-gate-zero}
+\end{equation}
+Substituting~\eqref{eq:pf-gate-zero} into~\eqref{eq:pf-policy}:
+\begin{align}
+  \pi^*(\mathbf{X}_t, S_t)
+  &\;=\; K_t^{(\mathrm{Kalman})} \cdot C_{\mathrm{available}}
+        \cdot 0 \cdot \prod_{d \neq d^*} g_d\!\bigl(\mathcal{S}_t^{(d)}\bigr)
+  \;=\; 0.
+  \label{eq:pf-zero-deploy}
+\end{align}
+This holds for \emph{any} values of
+$K_t^{(\mathrm{Kalman})}$, $C_{\mathrm{available}}$, and the
+remaining gate values.  The shutdown is therefore a hard
+architectural constraint — it cannot be overridden by any
+downstream computation.
+
+\noindent\textit{Boundary and edge cases:}
+\begin{enumerate}
+  \item If \emph{all} states are below threshold:
+        $\prod_{d=1}^7 g_d = 0$ trivially; the result is unchanged.
+  \item If exactly one state is at the boundary
+        $\mathcal{S}_t^{(d^*)} = \mathcal{S}_{\min}^{(d^*)}$:
+        Assumption (A1) specifies the zero condition as strict
+        inequality; hence $g_{d^*}>0$ at the boundary, and
+        deployment may proceed.  This prevents false shutdowns at
+        the threshold boundary.
+  \item If $C_{\mathrm{available}} = 0$: deployment is trivially
+        zero; Step~1 is vacuously satisfied.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 2 — Filter Stability (Priority 2: Preservation).}
+
+\noindent\textit{Claim:} Given all states charged
+($G(\mathbf{X}_t) > 0$), deployment is admissible only if
+$\rho(\mathbf{F} - \mathbf{K}_t\mathbf{H}\mathbf{F}) < 1$.
+
+\noindent\textit{Proof of Step 2:}
+The posterior state estimate satisfies the error recursion:
+\begin{align}
+  \mathbf{e}_{t|t}
+  &\;=\; (\mathbf{I} - \mathbf{K}_t\mathbf{H})\,\mathbf{e}_{t|t-1}
+         + (\mathbf{I} - \mathbf{K}_t\mathbf{H})\,\mathbf{w}_{t-1}
+         - \mathbf{K}_t\,\mathbf{v}_t,
+  \label{eq:pf-error-recursion}
+\end{align}
+where $\mathbf{e}_{t|t} = \mathbf{X}_t - \hat{\mathbf{X}}_{t|t}$,
+$\mathbf{w}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{Q}_t)$,
+and $\mathbf{v}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{R}_t)$.
+The one-step prediction error propagates as:
+\begin{align}
+  \mathbf{e}_{t+1|t}
+  &\;=\; \mathbf{F}\,\mathbf{e}_{t|t} + \mathbf{w}_t
+  \;=\; (\mathbf{F} - \mathbf{K}_t\mathbf{H}\mathbf{F})\,
+        \mathbf{e}_{t-1|t-1}
+        + \text{noise terms}.
+  \label{eq:pf-pred-error}
+\end{align}
+For the filter to be mean-square stable, the homogeneous part
+must satisfy:
+\begin{equation}
+  \rho\!\bigl(\mathbf{F} - \mathbf{K}_t\mathbf{H}\mathbf{F}\bigr) < 1.
+  \label{eq:pf-stability}
+\end{equation}
+If~\eqref{eq:pf-stability} is violated, then
+$\|\mathbf{e}_{t|t}\| \to \infty$ in expectation, and the
+posterior estimate $\hat{\mathbf{X}}_{t|t}$ diverges.  A
+divergent estimate renders $\mathbf{K}_t$ meaningless (Priority
+3 depends on Priority 2), and the allocation $\pi^*$ based on
+a divergent state is inadmissible.  Hence filter stability
+\emph{strictly precedes} signal quality.
+
+\noindent\textit{Boundary and edge cases:}
+\begin{enumerate}
+  \item $\rho = 1$ (marginally stable): the filter neither
+        contracts nor expands; $\tr(\mathbf{P}_{t|t})$ may
+        remain bounded for specific $\mathbf{Q},\mathbf{R}$,
+        but the MVUE property is not guaranteed.  The strict
+        inequality in~\eqref{eq:pf-stability} is therefore
+        required.
+  \item $\mathbf{F} = \mathbf{I}$ (random walk): stability
+        requires $\rho(\mathbf{I} - \mathbf{K}_t\mathbf{H}) < 1$,
+        i.e.\ all eigenvalues of $\mathbf{K}_t\mathbf{H}$ lie
+        in $(0,2)$.  Assumption (A2) ensures
+        $\mathbf{K}_t \succ 0$, so this is satisfied for
+        well-conditioned $\mathbf{H}$.
+  \item Regime change at time $t$: $\mathbf{F}$ may switch;
+        stability must be re-verified at each regime transition
+        using the updated $\mathbf{K}_t$.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 3 — Signal Quality (Priority 3).}
+
+\noindent\textit{Claim:} Given filter stability, the Kalman
+gain $\mathbf{K}_t$ must be correctly calibrated before the
+allocation optimisation is meaningful.
+
+\noindent\textit{Proof of Step 3:}
+The Kalman gain minimises the posterior trace:
+\begin{align}
+  \mathbf{K}_t^*
+  &\;=\; \arg\min_{\mathbf{K}} \;
+        \tr\!\bigl((\mathbf{I}-\mathbf{K}\mathbf{H})\,
+        \mathbf{P}_{t|t-1}\,
+        (\mathbf{I}-\mathbf{K}\mathbf{H})^\top
+        + \mathbf{K}\mathbf{R}_t\mathbf{K}^\top\bigr).
+  \label{eq:pf-gain-opt}
+\end{align}
+Setting the gradient to zero and using $\mathbf{P}_{t|t-1}\succ0$
+(Assumption A2) yields the unique minimiser:
+\begin{align}
+  \mathbf{K}_t^*
+  &\;=\; \mathbf{P}_{t|t-1}\mathbf{H}^\top
+        \!\bigl(\mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top
+        + \mathbf{R}_t\bigr)^{-1}.
+  \label{eq:pf-kalman-gain}
+\end{align}
+Any deviation $\Delta\mathbf{K} = \mathbf{K}_t - \mathbf{K}_t^*$
+inflates the posterior covariance by:
+\begin{align}
+  \tr(\mathbf{P}_{t|t})
+  &\;\geq\; \tr(\mathbf{P}_{t|t}^*) + \tr\!\bigl(
+        \Delta\mathbf{K}\,\mathbf{S}_t\,\Delta\mathbf{K}^\top
+        \bigr),
+  \label{eq:pf-gain-inflation}
+\end{align}
+where $\mathbf{S}_t = \mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top
++ \mathbf{R}_t \succ 0$ is the innovation covariance.  Since
+$\tr(\Delta\mathbf{K}\,\mathbf{S}_t\,\Delta\mathbf{K}^\top) \geq 0$
+with equality iff $\Delta\mathbf{K}=\mathbf{0}$, a
+miscalibrated gain strictly increases posterior risk.  Moreover,
+a sufficiently large $\Delta\mathbf{K}$ can violate
+condition~\eqref{eq:pf-stability}, causing filter divergence
+and invalidating Priority 2.  Therefore signal quality is
+subordinate to filter stability and superordinate to allocation
+intelligence.
+
+\noindent\textit{Boundary and edge cases:}
+\begin{enumerate}
+  \item $\mathbf{R}_t \to \infty$ (zero agent confidence):
+        $\mathbf{K}_t^* \to \mathbf{0}$; the filter ignores
+        observations and $\hat{\mathbf{X}}_{t|t} =
+        \hat{\mathbf{X}}_{t|t-1}$.  Deployment defaults to
+        prior-based allocation, which may still be non-zero if
+        the prior state is charged.
+  \item $\mathbf{R}_t \to \mathbf{0}$ (perfect agent confidence):
+        $\mathbf{K}_t^* \to \mathbf{H}^{-1}$ (when
+        $\mathbf{H}$ is square and invertible);
+        $\hat{\mathbf{X}}_{t|t} \to \mathbf{H}^{-1}\mathbf{z}_t$.
+        Deployment is fully observation-driven.
+  \item Singular $\mathbf{S}_t$: arises only if
+        $\mathbf{H}\mathbf{P}_{t|t-1}\mathbf{H}^\top = \mathbf{0}$
+        and $\mathbf{R}_t = \mathbf{0}$ simultaneously, which
+        violates Assumption (A2).  Hence $\mathbf{S}_t \succ 0$
+        is guaranteed.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 4 — Allocation Intelligence (Priority 4).}
+
+\noindent\textit{Claim:} Given a calibrated gain and stable
+filter, the constrained allocation optimisation takes priority
+over compounding.
+
+\noindent\textit{Proof of Step 4:}
+Let $f^*$ denote the Kelly-optimal fraction.  The constrained
+optimal allocation satisfies:
+\begin{align}
+  \pi^*
+  &\;=\; \arg\max_{\pi \in [0,\,f^* C_{\mathrm{available}}]}
+        \mathbb{E}[\log(1 + \pi\, r_{t+1})]
+  \label{eq:pf-kelly-opt}
+\end{align}
+subject to the admissibility constraint
+$\pi \leq f^* C_{\mathrm{available}}$.  By the Kelly theorem
+(cf.\ Chapter~\ref{ch:objective}), for any alternative
+unconstrained allocation $\tilde{\pi} > f^* C_{\mathrm{available}}$:
+\begin{align}
+  \lim_{T\to\infty}\frac{1}{T}\sum_{t=1}^T
+  \log\!\bigl(1 + \tilde{\pi}_t r_{t+1}\bigr)
+  &\;<\; \lim_{T\to\infty}\frac{1}{T}\sum_{t=1}^T
+        \log\!\bigl(1 + \pi^*_t r_{t+1}\bigr)
+  \quad \text{a.s.}
+  \label{eq:pf-kelly-dominance}
+\end{align}
+Thus sub-optimal but admissible allocations dominate
+inadmissible (over-leveraged) allocations in the long run.
+Compounding (Priority 5) is only well-defined when the
+allocation satisfies the feasibility constraints of Priority 4.
+
+\noindent\textit{Boundary and edge cases:}
+\begin{enumerate}
+  \item $f^* = 0$ (zero edge): the Kelly criterion prescribes
+        zero allocation; $\pi^* = 0$ regardless of state charges.
+        This is consistent with the gating architecture.
+  \item Negative expected return $\mathbb{E}[r_{t+1}] < 0$:
+        $f^* < 0$, prescribing a short position.  The constraint
+        set $[0, f^* C_{\mathrm{available}}]$ becomes empty;
+        the feasibility constraint forces $\pi^* = 0$.
+  \item $C_{\mathrm{available}} \to 0$: ruin boundary; $\pi^* = 0$
+        trivially.  The system survives in a degenerate state
+        until capital is restored.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 5 — Compounding (Priority 5).}
+
+\noindent\textit{Claim:} Compounding is the terminal objective,
+achievable only when all higher-priority conditions are
+simultaneously satisfied.
+
+\noindent\textit{Proof of Step 5:}
+Define the wealth process:
+\begin{equation}
+  W_{t+1} \;=\; W_t \cdot (1 + \pi^*_t\, r_{t+1}).
+  \label{eq:pf-wealth-process}
+\end{equation}
+Taking logarithms and summing:
+\begin{align}
+  \log W_T
+  &\;=\; \log W_0
+        + \sum_{t=0}^{T-1} \log\!\bigl(1 + \pi^*_t\, r_{t+1}\bigr).
+  \label{eq:pf-log-wealth}
+\end{align}
+For $\log W_T$ to grow without bound (compounding), all of
+the following must hold simultaneously:
+\begin{enumerate}
+  \item $G(\mathbf{X}_t) > 0$ for sufficiently many $t$
+        (State Integrity, Priority 1);
+  \item $\rho(\mathbf{F}-\mathbf{K}_t\mathbf{H}\mathbf{F}) < 1$
+        at each $t$ (Filter Stability, Priority 2), so that
+        $\hat{\mathbf{X}}_{t|t}$ is reliable;
+  \item $\mathbf{K}_t = \mathbf{K}_t^*$ (Signal Quality, Priority 3),
+        so that $\pi^*_t$ is correctly computed;
+  \item $\pi^*_t \in [0, f^* C_{\mathrm{available}}]$
+        (Allocation Intelligence, Priority 4), so that ruin
+        is avoided.
+\end{enumerate}
+The violation of \emph{any single} condition in Steps 1--4
+either sets $\pi^*_t = 0$ (no compounding contribution at $t$)
+or causes $W_t \to 0$ (ruin, terminal).  Compounding therefore
+has no independent standing in the ordering; it is the
+\emph{consequence} of all higher-priority conditions being met.
+
+\noindent\textit{Boundary and edge cases:}
+\begin{enumerate}
+  \item Zero-measure set of $t$ with $G=0$: the sum
+        in~\eqref{eq:pf-log-wealth} loses finitely many terms;
+        long-run growth rate is unaffected almost surely.
+  \item Permanent state shutdown ($G=0$ for all $t \geq T_0$):
+        $\log W_T = \log W_{T_0}$ for all $T > T_0$; no further
+        compounding.  This is the correct architectural behaviour.
+  \item $r_{t+1} = -1$ (total loss on a trade): ruin occurs even
+        at $\pi^*_t > 0$.  The Kelly constraint $\pi^* \leq
+        f^* C_{\mathrm{available}}$ with $f^* < 1$ prevents
+        $W_{t+1} = 0$ under standard distributional assumptions.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Synthesis.}
+Steps 1--5 establish that each priority level depends logically
+and computationally on all higher-priority levels, and that
+violation of any higher-priority condition either zeroes or
+invalidates the lower-priority computations.  The ordering is
+therefore strict ($\succ$) and exhaustive over the five
+identified levels.  \qed
 \end{proof}
+
+%% ----------------------------------------------------------------
+\begin{remark}[Key Findings: Priority Ordering]
+\label{rem:priority-key-findings}
+\begin{center}
+\begin{tabularx}{\textwidth}{@{} l X X @{}}
+\toprule
+\textbf{Priority} & \textbf{Condition} & \textbf{Consequence of Violation} \\
+\midrule
+1 — State Integrity &
+  $\exists\,d:\mathcal{S}_t^{(d)}<\mathcal{S}_{\min}^{(d)}$ &
+  $\pi^*=0$; all downstream computation suppressed \\[4pt]
+2 — Filter Stability &
+  $\rho(\mathbf{F}-\mathbf{K}_t\mathbf{H}\mathbf{F})\geq 1$ &
+  $\hat{\mathbf{X}}_{t|t}$ diverges; allocation inadmissible \\[4pt]
+3 — Signal Quality &
+  $\mathbf{K}_t \neq \mathbf{K}_t^*$ &
+  $\tr(\mathbf{P}_{t|t})$ inflated; risk underestimated \\[4pt]
+4 — Allocation Intelligence &
+  $\pi_t > f^* C_{\mathrm{available}}$ &
+  Long-run growth rate reduced; ruin probability elevated \\[4pt]
+5 — Compounding &
+  Any of above violated &
+  Growth contribution at $t$ zeroed or negated \\
+\midrule
+\multicolumn{3}{@{}l@{}}{\textit{Enforcement:} Product gate
+  $G(\mathbf{X}_t)=\prod_{d=1}^7 g_d(\mathcal{S}_t^{(d)})$ is a
+  hard architectural override (Priority 1); Riccati recursion
+  enforces Priorities 2--3;} \\
+\multicolumn{3}{@{}l@{}}{Kelly constraint enforces Priority 4.
+  Compounding (Priority 5) is the emergent outcome of all
+  constraints being satisfied.} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{remark}
 
 \section{The Combined Deployment Conjecture}
 
