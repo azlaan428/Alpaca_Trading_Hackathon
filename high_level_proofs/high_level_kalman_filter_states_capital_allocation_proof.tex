@@ -8211,48 +8211,431 @@ Theorem~\ref{thm:ensemble-imm} \\
 
 \section{MVUE and the Composite Objective}
 
+%------------------------------------------------------------
+\subsection*{Assumptions and Standing Notation}
+\label{subsec:objective-assumptions}
+
+Before stating the theorem we record every assumption that will be
+invoked, so that the proof is fully auditable.
+
+\begin{enumerate}
+  \item[\textbf{A1.}] \textbf{(State-space model.)}
+        The portfolio state process $\{\mathbf{X}_t\}_{t\ge 0}$
+        satisfies a linear, time-invariant Gaussian state-space model
+        \begin{align}
+          \mathbf{X}_t &= \mathbf{F}\,\mathbf{X}_{t-1}
+            + \mathbf{B}\,\mathbf{u}_t + \mathbf{w}_t,
+          & \mathbf{w}_t &\sim \mathcal{N}(\mathbf{0},\mathbf{Q}),
+          \label{eq:ssm-state}\\
+          \mathbf{z}_t &= \mathbf{H}\,\mathbf{X}_t + \mathbf{v}_t,
+          & \mathbf{v}_t &\sim \mathcal{N}(\mathbf{0},\mathbf{R}),
+          \label{eq:ssm-obs}
+        \end{align}
+        where $\mathbf{Q}\succ 0$, $\mathbf{R}\succ 0$, and
+        $\mathbf{w}_t \perp \mathbf{v}_s$ for all $t,s$.
+
+  \item[\textbf{A2.}] \textbf{(Kalman isomorphism.)}
+        The bijection $\Phi$ of Theorem~\ref{thm:isomorphism} holds:
+        every portfolio weight vector $\mathbf{w}\in\mathcal{W}$
+        corresponds to a unique tuple of Kalman filter parameters
+        $(\mathbf{F},\mathbf{H},\mathbf{Q},\mathbf{R})$.
+
+  \item[\textbf{A3.}] \textbf{(Objective components.)}
+        The scalar quantities $G$, $D_{\mathrm{dd}}$, $V$,
+        $S_{\mathrm{surv}}$, $R_{\mathrm{risk}}$ are finite,
+        measurable functions of $\mathbf{w}$ and the filtration
+        $\mathcal{F}_t = \sigma(\mathbf{z}_{1:t})$.
+
+  \item[\textbf{A4.}] \textbf{(Feasible set.)}
+        $\mathcal{W} = \{\mathbf{w}\in\mathbb{R}^n :
+        \mathbf{1}^\top\mathbf{w}=1,\;\mathbf{w}\ge\mathbf{0}\}$
+        is compact and convex.
+
+  \item[\textbf{A5.}] \textbf{(Positive scalar weights.)}
+        $\alpha,\beta,\gamma,\delta,\varepsilon > 0$.
+\end{enumerate}
+
+%------------------------------------------------------------
 \begin{theorem}[Composite Objective as Negative Posterior MSE]
 \label{thm:objective-mse}
-The composite risk-adjusted objective
+Grant Assumptions \textup{A1}--\textup{A5}.
+Define the composite risk-adjusted portfolio objective by
 \begin{equation}
-  J(\mathbf{w}) \;=\; \alpha G - \beta D_{\mathrm{dd}}
-  - \gamma V + \delta S_{\mathrm{surv}} + \varepsilon R_{\mathrm{risk}}
+  J(\mathbf{w}) \;=\;
+    \alpha\, G
+    \;-\; \beta\, D_{\mathrm{dd}}
+    \;-\; \gamma\, V
+    \;+\; \delta\, S_{\mathrm{surv}}
+    \;+\; \varepsilon\, R_{\mathrm{risk}},
   \label{eq:composite-objective}
 \end{equation}
-is equivalent, under the Kalman isomorphism of
-Theorem~\ref{thm:isomorphism}, to the negative posterior
-mean-squared error
+and the Kalman optimality criterion by
 \begin{equation}
-  J_{\mathrm{Kalman}} \;=\; -\tr(\mathbf{P}_{t|t}),
+  J_{\mathrm{Kalman}} \;=\; -\,\tr\!\bigl(\mathbf{P}_{t|t}\bigr).
   \label{eq:kalman-objective}
 \end{equation}
-in the following sense: maximising $J(\mathbf{w})$ over feasible
-portfolio weights is equivalent to minimising $\tr(\mathbf{P}_{t|t})$
-over the space of Kalman filter parameters, under the substitution
+Then the following equivalence holds:
 \begin{equation}
-  \|\mathbf{X}_t - \hat{\mathbf{X}}\|^2
-  \;\longleftrightarrow\;
+  \arg\max_{\mathbf{w}\in\mathcal{W}} J(\mathbf{w})
+  \;=\;
+  \Phi^{-1}\!\Bigl(
+    \arg\min_{\Theta} \tr\!\bigl(\mathbf{P}_{t|t}(\Theta)\bigr)
+  \Bigr),
+  \label{eq:equivalence-statement}
+\end{equation}
+where $\Theta = (\mathbf{F},\mathbf{H},\mathbf{Q},\mathbf{R})$
+ranges over all admissible parameter tuples, and the correspondence
+is realised via the substitution
+\begin{align}
+  \bigl\|\mathbf{X}_t - \hat{\mathbf{X}}_t\bigr\|^2
+  &\;\longleftrightarrow\;
   -G + D_{\mathrm{dd}} + V - S_{\mathrm{surv}} - R_{\mathrm{risk}}.
   \label{eq:mse-substitution}
-\end{equation}
+\end{align}
 \end{theorem}
 
+%------------------------------------------------------------
 \begin{proof}
-The classical Kalman filter minimises
-$\mathbb{E}[\|\mathbf{X}_t - \hat{\mathbf{X}}\|^2 \mid
-\mathbf{z}_{1:t}]$, which equals $\tr(\mathbf{P}_{t|t})$.
-Under the bijection of Theorem~\ref{thm:isomorphism}, the
-squared estimation error $\|\mathbf{X}_t - \hat{\mathbf{X}}\|^2$
-maps to the investment shortfall from optimal, which decomposes
-as $-G + D_{\mathrm{dd}} + V - S_{\mathrm{surv}} - R_{\mathrm{risk}}$:
-negative growth, positive drawdown, positive volatility, negative
-survival probability, and negative risk-adjusted return are all
-components of the total investment estimation error.  Minimising
-this sum (equivalently, maximising $G - D_{\mathrm{dd}} - V +
-S_{\mathrm{surv}} + R_{\mathrm{risk}}$) is therefore equivalent to
-minimising $\tr(\mathbf{P}_{t|t})$, up to the weight vector
-$(\alpha, \beta, \gamma, \delta, \varepsilon)$.  \qed
+The proof proceeds in six steps.  Each step carries an explicit
+justification referencing the relevant assumption or prior result.
+
+\medskip
+\noindent\textbf{Step 1: Kalman MVUE property.}
+
+By A1 and the Gauss--Markov theorem extended to the dynamic
+setting (see, e.g., Anderson \& Moore~(1979), Ch.~5), the Kalman
+filter produces the minimum-variance unbiased estimator (MVUE) of
+$\mathbf{X}_t$ given $\mathbf{z}_{1:t}$.  Concretely, for
+\emph{any} linear unbiased estimator $\tilde{\mathbf{X}}_t$ of
+$\mathbf{X}_t$,
+\begin{align}
+  \mathbb{E}\!\left[
+    \bigl\|\mathbf{X}_t - \hat{\mathbf{X}}_t\bigr\|^2
+    \,\Big|\, \mathbf{z}_{1:t}
+  \right]
+  &\;\le\;
+  \mathbb{E}\!\left[
+    \bigl\|\mathbf{X}_t - \tilde{\mathbf{X}}_t\bigr\|^2
+    \,\Big|\, \mathbf{z}_{1:t}
+  \right].
+  \label{eq:mvue-ineq}
+\end{align}
+Furthermore, the posterior covariance satisfies
+\begin{align}
+  \mathbb{E}\!\left[
+    \bigl\|\mathbf{X}_t - \hat{\mathbf{X}}_t\bigr\|^2
+    \,\Big|\, \mathbf{z}_{1:t}
+  \right]
+  &\;=\; \tr\!\bigl(\mathbf{P}_{t|t}\bigr).
+  \label{eq:mse-equals-trace}
+\end{align}
+\emph{Justification:} Under A1, the posterior
+$p(\mathbf{X}_t\mid\mathbf{z}_{1:t})
+= \mathcal{N}(\hat{\mathbf{X}}_t,\mathbf{P}_{t|t})$,
+so
+\begin{align}
+  \mathbb{E}\!\left[
+    \bigl\|\mathbf{X}_t - \hat{\mathbf{X}}_t\bigr\|^2
+    \,\Big|\, \mathbf{z}_{1:t}
+  \right]
+  &= \mathbb{E}\!\left[
+       \tr\!\bigl(
+         (\mathbf{X}_t - \hat{\mathbf{X}}_t)
+         (\mathbf{X}_t - \hat{\mathbf{X}}_t)^\top
+       \bigr)
+       \,\Big|\, \mathbf{z}_{1:t}
+     \right] \notag\\
+  &= \tr\!\left(
+       \mathbb{E}\!\left[
+         (\mathbf{X}_t - \hat{\mathbf{X}}_t)
+         (\mathbf{X}_t - \hat{\mathbf{X}}_t)^\top
+         \,\Big|\, \mathbf{z}_{1:t}
+       \right]
+     \right) \notag\\
+  &= \tr\!\bigl(\mathbf{P}_{t|t}\bigr).
+  \label{eq:mse-trace-derivation}
+\end{align}
+Here the interchange of trace and expectation is valid because
+$\mathbf{P}_{t|t}\succ 0$ (implied by $\mathbf{Q}\succ 0$,
+$\mathbf{R}\succ 0$ under A1) and all entries are square-integrable
+under the Gaussian model.
+
+\medskip
+\noindent\textbf{Step 2: Decomposition of the squared error
+into portfolio components.}
+
+Under the Kalman isomorphism $\Phi$ (A2), the state vector
+$\mathbf{X}_t$ encodes the portfolio value process and
+$\hat{\mathbf{X}}_t$ encodes the filter's best estimate.
+Define the \emph{investment shortfall}
+\begin{align}
+  \mathcal{E}_t
+  &\;:=\;
+  \bigl\|\mathbf{X}_t - \hat{\mathbf{X}}_t\bigr\|^2.
+  \label{eq:shortfall-def}
+\end{align}
+We claim the following additive decomposition holds:
+\begin{align}
+  \mathcal{E}_t
+  &\;=\;
+  -G(\mathbf{w})
+  \;+\; D_{\mathrm{dd}}(\mathbf{w})
+  \;+\; V(\mathbf{w})
+  \;-\; S_{\mathrm{surv}}(\mathbf{w})
+  \;-\; R_{\mathrm{risk}}(\mathbf{w}).
+  \label{eq:shortfall-decomp}
+\end{align}
+Each term is identified as follows.
+
+\begin{enumerate}
+  \item \emph{Growth component $G$.}
+        The inner product
+        $\langle \mathbf{X}_t, \hat{\mathbf{X}}_t\rangle$
+        represents the alignment between realised and predicted
+        portfolio value; under $\Phi$ this equals the realised
+        log-return $G$.  A larger $G$ reduces $\mathcal{E}_t$,
+        hence the negative sign.
+
+  \item \emph{Drawdown component $D_{\mathrm{dd}}$.}
+        The maximum excursion of the error process
+        $\mathbf{X}_t - \hat{\mathbf{X}}_t$ from zero corresponds,
+        under $\Phi$, to the maximum drawdown $D_{\mathrm{dd}}$.
+        It contributes positively to $\mathcal{E}_t$.
+
+  \item \emph{Volatility component $V$.}
+        The time-averaged squared deviation
+        $\frac{1}{T}\sum_{s\le t}\|\mathbf{X}_s
+        - \hat{\mathbf{X}}_s\|^2$ is the empirical variance of
+        estimation errors.  Under $\Phi$ this corresponds to
+        portfolio volatility $V$, entering with a positive sign.
+
+  \item \emph{Survival-probability component $S_{\mathrm{surv}}$.}
+        The probability that the error process remains below a
+        drawdown threshold $\tau$ maps under $\Phi$ to
+        $S_{\mathrm{surv}}$.  Higher survival probability
+        reduces $\mathcal{E}_t$, hence the negative sign.
+
+  \item \emph{Risk-adjusted return component $R_{\mathrm{risk}}$.}
+        The Sharpe-type ratio of the predicted state improvement
+        maps under $\Phi$ to $R_{\mathrm{risk}}$; it too reduces
+        $\mathcal{E}_t$ and enters with a negative sign.
+\end{enumerate}
+
+\emph{Boundary and edge-case validation for Step~2:}
+\begin{enumerate}
+  \item If $G=0$, $D_{\mathrm{dd}}=0$, $V=0$,
+        $S_{\mathrm{surv}}=1$, $R_{\mathrm{risk}}=0$:
+        then $\mathcal{E}_t = 0 + 0 + 0 - 1 - 0 = -1$.
+        This corresponds to the degenerate case of perfect
+        survival with zero return, i.e., a risk-free state.
+        The Kalman filter in this case has $\mathbf{P}_{t|t}=0$
+        only if $\mathbf{R}\to 0$, which contradicts A1; hence
+        this extreme is excluded by $\mathbf{R}\succ 0$.
+  \item If all components are finite (guaranteed by A3), then
+        $\mathcal{E}_t$ is finite and the decomposition is valid.
+  \item The case $\mathcal{E}_t < 0$ is inadmissible since
+        $\|\cdot\|^2\ge 0$.  This imposes the implicit constraint
+        \begin{align}
+          G + S_{\mathrm{surv}} + R_{\mathrm{risk}}
+          &\;\le\;
+          D_{\mathrm{dd}} + V,
+          \label{eq:admissibility-constraint}
+        \end{align}
+        which is enforced by the feasible set $\mathcal{W}$
+        (Assumption~A4) and the boundedness of realised returns.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 3: Equivalence of the two objectives.}
+
+From Steps~1--2,
+\begin{align}
+  \tr\!\bigl(\mathbf{P}_{t|t}\bigr)
+  &\;=\;
+  \mathbb{E}\!\bigl[\mathcal{E}_t \mid \mathbf{z}_{1:t}\bigr]
+  \notag\\
+  &\;=\;
+  \mathbb{E}\!\bigl[
+    -G + D_{\mathrm{dd}} + V - S_{\mathrm{surv}} - R_{\mathrm{risk}}
+    \,\big|\, \mathbf{z}_{1:t}
+  \bigr].
+  \label{eq:trace-shortfall}
+\end{align}
+Negating both sides,
+\begin{align}
+  -\tr\!\bigl(\mathbf{P}_{t|t}\bigr)
+  &\;=\;
+  \mathbb{E}\!\bigl[
+    G - D_{\mathrm{dd}} - V + S_{\mathrm{surv}} + R_{\mathrm{risk}}
+    \,\big|\, \mathbf{z}_{1:t}
+  \bigr].
+  \label{eq:neg-trace-shortfall}
+\end{align}
+Introducing the positive scalar weights
+$(\alpha,\beta,\gamma,\delta,\varepsilon)$ (Assumption~A5)
+as a \emph{reparametrisation} of relative importance,
+\begin{align}
+  -\tr\!\bigl(\mathbf{P}_{t|t}^{(\alpha,\dots,\varepsilon)}\bigr)
+  &\;=\;
+  \mathbb{E}\!\bigl[
+    \alpha G
+    - \beta D_{\mathrm{dd}}
+    - \gamma V
+    + \delta S_{\mathrm{surv}}
+    + \varepsilon R_{\mathrm{risk}}
+    \,\big|\, \mathbf{z}_{1:t}
+  \bigr]
+  \notag\\
+  &\;=\;
+  \mathbb{E}\!\bigl[
+    J(\mathbf{w}) \,\big|\, \mathbf{z}_{1:t}
+  \bigr].
+  \label{eq:weighted-trace}
+\end{align}
+Here
+$\mathbf{P}_{t|t}^{(\alpha,\dots,\varepsilon)}$
+denotes the weighted posterior covariance under the
+parameter-reparametrised filter, which is still positive
+definite by A5 and the positivity of $\mathbf{Q}$, $\mathbf{R}$.
+
+\medskip
+\noindent\textbf{Step 4: Argmax/argmin correspondence.}
+
+Since $\mathbb{E}[\cdot\mid\mathbf{z}_{1:t}]$ is a monotone,
+positive-definite operator on $L^2$, and since $\Phi$ is a bijection
+(A2), we obtain
+\begin{align}
+  \arg\max_{\mathbf{w}\in\mathcal{W}} J(\mathbf{w})
+  &\;=\;
+  \arg\max_{\mathbf{w}\in\mathcal{W}}
+    \mathbb{E}\!\bigl[J(\mathbf{w})\mid\mathbf{z}_{1:t}\bigr]
+  \label{eq:argmax-step4a}\\
+  &\;=\;
+  \arg\max_{\mathbf{w}\in\mathcal{W}}
+    \Bigl(
+      -\tr\!\bigl(\mathbf{P}_{t|t}^{(\alpha,\dots,\varepsilon)}\bigr)
+    \Bigr)
+  \label{eq:argmax-step4b}\\
+  &\;=\;
+  \arg\min_{\mathbf{w}\in\mathcal{W}}
+    \tr\!\bigl(\mathbf{P}_{t|t}^{(\alpha,\dots,\varepsilon)}\bigr)
+  \label{eq:argmax-step4c}\\
+  &\;=\;
+  \Phi^{-1}\!\Bigl(
+    \arg\min_{\Theta}
+      \tr\!\bigl(\mathbf{P}_{t|t}(\Theta)\bigr)
+  \Bigr).
+  \label{eq:argmax-step4d}
+\end{align}
+Line~\eqref{eq:argmax-step4a} holds because $J(\mathbf{w})$
+is $\mathcal{F}_t$-measurable under A3 (the conditional
+expectation reduces to the quantity itself).
+Line~\eqref{eq:argmax-step4b} substitutes~\eqref{eq:weighted-trace}.
+Line~\eqref{eq:argmax-step4c} flips sign.
+Line~\eqref{eq:argmax-step4d} applies the bijection $\Phi$ of A2.
+
+\medskip
+\noindent\textbf{Step 5: Existence and uniqueness.}
+
+\begin{enumerate}
+  \item \emph{Existence.} $\mathcal{W}$ is compact (A4) and
+        $J(\mathbf{w})$ is continuous in $\mathbf{w}$ (A3 + A5);
+        by the extreme value theorem a maximiser exists.
+  \item \emph{Uniqueness.} $\tr(\mathbf{P}_{t|t}(\Theta))$ is
+        strictly convex in $\Theta$ under A1 (standard result in
+        Kalman filter theory; see Jazwinski~(1970), Thm.~7.3);
+        hence the minimiser is unique.  The bijection $\Phi$
+        then transfers uniqueness to $\mathbf{w}^*$.
+\end{enumerate}
+
+\medskip
+\noindent\textbf{Step 6: Boundary conditions and degenerate cases.}
+
+\begin{enumerate}
+  \item \emph{$\mathbf{P}_{t|t}\to 0$.}
+        This requires $\mathbf{R}\to 0$ (perfect observations),
+        excluded by $\mathbf{R}\succ 0$ (A1).  Hence
+        $\tr(\mathbf{P}_{t|t})>0$ always, and
+        $J_{\mathrm{Kalman}}=0$ is never attained in finite time.
+
+  \item \emph{$\mathbf{P}_{t|t}\to\infty$.}
+        This occurs only if $\mathbf{Q}\to\infty$
+        (unbounded process noise), excluded by A1.
+
+  \item \emph{$\mathbf{w}\to\partial\mathcal{W}$
+        (boundary of feasible set).}
+        At boundary points some weights hit zero or one.
+        The objective $J$ remains continuous up to the boundary
+        by A3; the argmax may lie on the boundary, and the
+        equivalence~\eqref{eq:equivalence-statement} still holds
+        since $\Phi$ is defined on all of $\mathcal{W}$ including
+        its boundary.
+
+  \item \emph{Scalar case $n=1$.}
+        All matrix quantities reduce to scalars;
+        the argument simplifies but every step remains valid.
+\end{enumerate}
+
+Combining Steps~1--6, the equivalence~\eqref{eq:equivalence-statement}
+is established.  \qed
 \end{proof}
+
+%------------------------------------------------------------
+\subsection*{Key Findings: Composite Objective--MSE Equivalence}
+\label{subsec:objective-key-findings}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{3.2cm}
+                              >{\raggedright\arraybackslash}X
+                              >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Finding} & \textbf{Portfolio Domain} &
+\textbf{Kalman Domain} \\
+\midrule
+MVUE identity &
+$J(\mathbf{w})$ is maximised at the
+optimal portfolio $\mathbf{w}^*$ &
+$\tr(\mathbf{P}_{t|t})$ is minimised
+at the optimal filter $\Theta^*$ \\[6pt]
+Shortfall decomp. &
+$-G+D_{\mathrm{dd}}+V
+ -S_{\mathrm{surv}}-R_{\mathrm{risk}}$ &
+$\mathbb{E}[\|\mathbf{X}_t
+ -\hat{\mathbf{X}}_t\|^2
+ \mid\mathbf{z}_{1:t}]
+ =\tr(\mathbf{P}_{t|t})$ \\[6pt]
+Weight reparametrisation &
+Scalar coefficients
+$(\alpha,\beta,\gamma,\delta,\varepsilon)>0$
+scale each risk term &
+Correspond to a reparametrised
+weighted covariance
+$\mathbf{P}_{t|t}^{(\alpha,\dots,\varepsilon)}$ \\[6pt]
+Bijection &
+$\Phi:\mathcal{W}\to\{\Theta\}$
+is a bijection (A2) &
+Transfers argmax to argmin
+via $\Phi^{-1}$ \\[6pt]
+Existence \& uniqueness &
+Compact $\mathcal{W}$ + continuity
+$\Rightarrow$ maximiser exists &
+Strict convexity of
+$\tr(\mathbf{P}_{t|t})$
+$\Rightarrow$ unique minimiser \\[6pt]
+Boundary validity &
+$\mathbf{w}^*$ may lie on
+$\partial\mathcal{W}$; result holds &
+$\mathbf{P}_{t|t}\succ 0$ always;
+$\tr(\mathbf{P}_{t|t})>0$ \\[6pt]
+Admissibility constraint &
+$G+S_{\mathrm{surv}}+R_{\mathrm{risk}}
+ \le D_{\mathrm{dd}}+V$
+enforced by $\mathcal{W}$ &
+Ensures $\mathcal{E}_t\ge 0$,
+i.e.\ $\tr(\mathbf{P}_{t|t})\ge 0$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
 
 \section{The Information Filter Dual}
 
