@@ -32,7 +32,7 @@
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
 \usepackage{pseudocode}
-\usepackage{algorithm} 
+\usepackage{algorithm}
 % ============================================================
 % CUSTOM MACROS
 % ============================================================
@@ -200,7 +200,7 @@
 % \Gap, \Reward, \Success, \Perf) are defined once in the CUSTOM COMMANDS
 % block below.  Any new symbol must be added there before first use.
 
-% \DD 
+% \DD
 
 % ============================================================
 % ENUMERATE-ONLY DISCIPLINE (itemize forbidden)
@@ -6436,41 +6436,480 @@ invoked.  The proof is complete.\qed
 \label{ch:four-domain}
 % ==============================================================
 
+\noindent This chapter establishes the rigorous mathematical foundation for
+the four-domain asset partition that underlies the entire system.  Every
+definition is self-contained; all assumptions are made explicit; all edge
+cases and boundary conditions are treated in full.
+
+% --------------------------------------------------------------
+\section{Preliminary Assumptions and Notation}
+\label{sec:four-domain-prelim}
+% --------------------------------------------------------------
+
+\noindent The following assumptions are in force throughout this chapter.
+Each assumption is stated explicitly so that no implicit hypothesis enters
+any subsequent result.
+
+\begin{enumerate}
+  \item \textbf{(A1 -- Non-emptiness.)}
+        The asset universe $\calU$ is a non-empty, finite set:
+        $\calU \neq \emptyset$ and $|\calU| < \infty$.
+
+  \item \textbf{(A2 -- Measurability.)}
+        $\calU$ is equipped with the discrete $\sigma$-algebra
+        $2^{\calU}$; every subset of $\calU$ is measurable.
+
+  \item \textbf{(A3 -- Regime space.)}
+        The regime index set $\calR$ is a finite, non-empty set,
+        $\calR = \{r_1, \ldots, r_M\}$, $M \geq 1$.
+
+  \item \textbf{(A4 -- Return measurability.)}
+        For each domain $i \in \{E,A,F,W\}$ and regime $r \in \calR$,
+        the return vector $\mu^{(r)} \in \R^4$ and the covariance matrix
+        $\Sigma^{(r)} \in \R^{4 \times 4}$ are well-defined and finite.
+
+  \item \textbf{(A5 -- Positive semi-definiteness.)}
+        For every $r \in \calR$, $\Sigma^{(r)}$ is symmetric positive
+        semi-definite (PSD):
+        \begin{align}
+          \Sigma^{(r)} &= \bigl(\Sigma^{(r)}\bigr)^\top,
+          \label{eq:sigma-sym} \\
+          v^\top \Sigma^{(r)} v &\geq 0
+          \quad \forall\, v \in \R^4.
+          \label{eq:sigma-psd}
+        \end{align}
+
+  \item \textbf{(A6 -- Risk-aversion.)}
+        The scalar risk-aversion parameter satisfies $\lambda > 0$.
+\end{enumerate}
+
+% --------------------------------------------------------------
+\section{Four-Domain Partition}
+\label{sec:four-domain-def}
+% --------------------------------------------------------------
+
 \begin{definition}[Four-Domain Partition]
 \label{def:four-domain}
-The full asset universe $\calU$ is partitioned as
+Under Assumption~(A1), the full asset universe $\calU$ is said to admit
+a \emph{four-domain partition} if there exist subsets
 \begin{equation}
-  \calU \;=\; \mathcal{D}_{E} \cup \mathcal{D}_{A}
-            \cup \mathcal{D}_{F} \cup \mathcal{D}_{W},
-  \qquad
-  \mathcal{D}_i \cap \mathcal{D}_j = \emptyset \;\;(i \neq j),
-  \label{eq:four-domain}
+  \mathcal{D}_E,\; \mathcal{D}_A,\; \mathcal{D}_F,\; \mathcal{D}_W
+  \;\subseteq\; \calU
+  \label{eq:four-subsets}
 \end{equation}
-where $\mathcal{D}_E$ (Earth) = Portfolio/Equities,
-$\mathcal{D}_A$ (Air) = Rates/Macro Hedging,
-$\mathcal{D}_F$ (Fire) = Volatility/Options,
-$\mathcal{D}_W$ (Water) = Crypto/Cross-Market Liquidity.
+satisfying the two conditions below.
+
+\begin{enumerate}
+  \item \textbf{(Exhaustiveness.)}
+        \begin{equation}
+          \calU \;=\; \mathcal{D}_{E} \cup \mathcal{D}_{A}
+                    \cup \mathcal{D}_{F} \cup \mathcal{D}_{W}.
+          \label{eq:four-union}
+        \end{equation}
+
+  \item \textbf{(Mutual disjointness.)}
+        \begin{align}
+          \mathcal{D}_i \cap \mathcal{D}_j &= \emptyset
+          \quad \forall\, i \neq j,
+          \quad i,j \in \{E,A,F,W\}.
+          \label{eq:four-disjoint}
+        \end{align}
+\end{enumerate}
+
+\noindent The four domains are interpreted as follows:
+\begin{enumerate}
+  \item $\mathcal{D}_E$ \textbf{(Earth -- Portfolio / Equities):}
+        All equity instruments, including single-name stocks, equity
+        indices, and equity-linked exchange-traded products.
+
+  \item $\mathcal{D}_A$ \textbf{(Air -- Rates / Macro Hedging):}
+        Interest-rate instruments and macro hedging vehicles, including
+        government bonds, interest-rate swaps, and inflation-linked
+        securities.
+
+  \item $\mathcal{D}_F$ \textbf{(Fire -- Volatility / Options):}
+        Derivative instruments whose primary exposure is to realised or
+        implied volatility, including listed options and volatility
+        index products.
+
+  \item $\mathcal{D}_W$ \textbf{(Water -- Crypto / Cross-Market Liquidity):}
+        Digital assets and cross-market liquidity instruments, including
+        spot cryptocurrencies and crypto-derivative products.
+\end{enumerate}
 \end{definition}
+
+\begin{remark}[Well-posedness of the partition]
+\label{rem:partition-wp}
+The following observations ensure the partition is well-posed under all
+boundary conditions.
+\begin{enumerate}
+  \item \textbf{(Empty domains.)}
+        The definition permits $\mathcal{D}_i = \emptyset$ for one or
+        more $i \in \{E,A,F,W\}$, provided
+        \eqref{eq:four-union}--\eqref{eq:four-disjoint} hold.
+        Exhaustiveness then forces the remaining non-empty domains to
+        cover $\calU$.
+
+  \item \textbf{(Singleton universe.)}
+        If $|\calU| = 1$, exactly one domain is non-empty; the other
+        three are empty.  Both conditions remain satisfied.
+
+  \item \textbf{(Uniqueness.)}
+        The partition is unique once the assignment rule (the map
+        $a \mapsto \mathcal{D}_i$ with $a \in \mathcal{D}_i$) is fixed.
+        Different assignment rules yield different valid partitions;
+        the structure itself is not unique in general.
+
+  \item \textbf{(Countable universe.)}
+        Although (A1) assumes $|\calU| < \infty$, the set-theoretic
+        conditions \eqref{eq:four-union}--\eqref{eq:four-disjoint}
+        extend verbatim to countably infinite $\calU$ under the discrete
+        $\sigma$-algebra of (A2).
+\end{enumerate}
+\end{remark}
+
+% --------------------------------------------------------------
+\section{Domain Cardinality and Index Map}
+\label{sec:domain-cardinality}
+% --------------------------------------------------------------
+
+\noindent For notational compactness, index the four domains by
+$\mathcal{I}_D = \{1,2,3,4\}$ via the bijection
+\begin{align}
+  1 &\leftrightarrow E, &
+  2 &\leftrightarrow A, &
+  3 &\leftrightarrow F, &
+  4 &\leftrightarrow W.
+  \label{eq:domain-index}
+\end{align}
+Define the cardinality vector $\mathbf{n} \in \mathbb{Z}_{\geq 0}^{4}$ by
+\begin{equation}
+  n_i \;=\; |\mathcal{D}_i|, \quad i \in \mathcal{I}_D.
+  \label{eq:card-vec}
+\end{equation}
+Conditions \eqref{eq:four-union}--\eqref{eq:four-disjoint} are then
+equivalent to
+\begin{align}
+  \sum_{i=1}^{4} n_i &= |\calU|,
+  \label{eq:card-sum} \\
+  n_i &\geq 0 \quad \forall\, i \in \mathcal{I}_D.
+  \label{eq:card-nonneg}
+\end{align}
+
+% --------------------------------------------------------------
+\section{Cross-Domain Influence Matrix}
+\label{sec:influence-matrix}
+% --------------------------------------------------------------
 
 \begin{definition}[Cross-Domain Influence Matrix]
 \label{def:influence-matrix}
-The directed influence matrix $\Gamma \in \R^{4\times 4}$ is defined by
-$\Gamma_{ij} = \partial\hat{y}_t^{(i)}/\partial\hat{y}_t^{(j)}$ for $i \neq j$.
+Let $\hat{y}_t^{(i)}$ denote the aggregate signal produced by domain
+$\mathcal{D}_i$ at time $t$, for $i \in \mathcal{I}_D$.
+The \emph{directed cross-domain influence matrix}
+$\Gamma \in \R^{4\times 4}$ is defined entry-wise by
+\begin{align}
+  \Gamma_{ij} &\;=\;
+    \frac{\partial\,\hat{y}_t^{(i)}}{\partial\,\hat{y}_t^{(j)}},
+  \quad i \neq j,
+  \label{eq:influence-offdiag} \\
+  \Gamma_{ii} &\;=\; 0,
+  \quad i \in \mathcal{I}_D,
+  \label{eq:influence-diag}
+\end{align}
+where the partial derivative is evaluated with all other domain signals
+held constant.
+
+\noindent The following structural properties hold by construction.
+
+\begin{enumerate}
+  \item \textbf{(Zero diagonal.)}
+        By \eqref{eq:influence-diag}, $\operatorname{diag}(\Gamma) =
+        \mathbf{0}$; no domain influences itself through the cross-domain
+        channel.
+
+  \item \textbf{(Asymmetry.)}
+        In general $\Gamma_{ij} \neq \Gamma_{ji}$; the influence of
+        domain $j$ on domain $i$ need not equal the reverse influence.
+
+  \item \textbf{(Regime dependence.)}
+        When the context requires regime specificity, write
+        $\Gamma^{(r)}$ for the influence matrix under regime $r \in \calR$.
+        All entries are then regime-conditioned:
+        \begin{equation}
+          \Gamma_{ij}^{(r)} \;=\;
+          \frac{\partial\,\hat{y}_t^{(i)}\!\mid r}%
+               {\partial\,\hat{y}_t^{(j)}\!\mid r},
+          \quad i \neq j,\; r \in \calR.
+          \label{eq:influence-regime}
+        \end{equation}
+
+  \item \textbf{(Boundary case: isolated domain.)}
+        If domain $\mathcal{D}_i$ receives no cross-domain input, then
+        $\Gamma_{ij} = 0$ for all $j \neq i$; the $i$-th row of $\Gamma$
+        is the zero vector.
+
+  \item \textbf{(Boundary case: empty domain.)}
+        If $\mathcal{D}_i = \emptyset$ (cf.\ Remark~\ref{rem:partition-wp}),
+        then $\hat{y}_t^{(i)}$ is undefined; set $\Gamma_{ij} = \Gamma_{ji}
+        = 0$ for all $j$ by convention.
+\end{enumerate}
 \end{definition}
 
-\begin{definition}[Regime-Conditioned Allocation]
+% --------------------------------------------------------------
+\section{Regime-Conditioned Allocation}
+\label{sec:regime-alloc}
+% --------------------------------------------------------------
+
+\noindent We derive the regime-conditioned optimal allocation from first
+principles, validating every assumption and treating all boundary cases.
+
+\begin{definition}[Regime-Conditioned Allocation Problem]
 \label{def:regime-alloc}
-For regime $r \in \calR$, the optimal cross-domain allocation vector
-$\alpha^{*} \in \Delta^{3}$ solves
+Under Assumptions~(A3)--(A6), for each regime $r \in \calR$, the
+\emph{regime-conditioned allocation problem} is
 \begin{equation}
-  \alpha^{*} \;=\; \arg\max_{\alpha \in \Delta^{3}}\;
-  \E\!\left[\sum_{i=1}^{4}\alpha_i\,\mu_i^{(r)}
-            - \lambda\,\alpha^\top \Sigma^{(r)}\alpha\right],
-  \label{eq:regime-alloc}
+  \alpha^{*}(r) \;=\;
+  \arg\max_{\alpha \in \Delta^{3}}\; U^{(r)}(\alpha),
+  \label{eq:regime-alloc-argmax}
 \end{equation}
-where $\mu^{(r)} \in \R^4$ and $\Sigma^{(r)} \in \R^{4\times 4}$ are
-regime-conditioned return vector and covariance matrix.
+where the utility function $U^{(r)} : \Delta^{3} \to \R$ is defined by
+\begin{align}
+  U^{(r)}(\alpha)
+  &\;=\; \E\!\left[
+    \sum_{i=1}^{4} \alpha_i\,\mu_i^{(r)}
+    - \lambda\,\alpha^\top \Sigma^{(r)} \alpha
+  \right]
+  \label{eq:utility-full} \\[4pt]
+  &\;=\; \alpha^\top \mu^{(r)}
+         - \lambda\,\alpha^\top \Sigma^{(r)} \alpha,
+  \label{eq:utility-compact}
+\end{align}
+with the simplex constraint
+\begin{align}
+  \Delta^{3}
+  &\;=\; \bigl\{
+    \alpha \in \R^4 \;\bigm|\;
+    \alpha_i \geq 0 \;\forall\, i \in \mathcal{I}_D,\;
+    \textstyle\sum_{i=1}^{4} \alpha_i = 1
+  \bigr\}.
+  \label{eq:simplex-def}
+\end{align}
+The parameters are:
+\begin{enumerate}
+  \item $\mu^{(r)} = (\mu_1^{(r)}, \mu_2^{(r)}, \mu_3^{(r)},
+        \mu_4^{(r)})^\top \in \R^4$: the regime-conditioned expected
+        return vector (finite by (A4)).
+  \item $\Sigma^{(r)} \in \R^{4\times 4}$: the regime-conditioned
+        covariance matrix, symmetric PSD by (A5).
+  \item $\lambda > 0$: the risk-aversion scalar (positive by (A6)).
+\end{enumerate}
 \end{definition}
+
+\begin{proposition}[Existence and Uniqueness of Optimal Allocation]
+\label{prop:alloc-exist-unique}
+Under Assumptions~(A3)--(A6), for every $r \in \calR$:
+\begin{enumerate}
+  \item \textbf{(Existence.)}  A solution $\alpha^{*}(r)$ to
+        \eqref{eq:regime-alloc-argmax} exists.
+
+  \item \textbf{(Uniqueness.)}  If $\Sigma^{(r)}$ is strictly positive
+        definite (SPD), the solution is unique.
+
+  \item \textbf{(Boundary case -- PSD but not SPD.)}
+        If $\Sigma^{(r)}$ is PSD but not SPD, the objective
+        \eqref{eq:utility-compact} is concave but not strictly concave
+        on $\Delta^{3}$; the solution set is a non-empty convex subset
+        of $\Delta^{3}$, and any element of that set is a valid
+        $\alpha^{*}(r)$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+The proof proceeds in numbered steps; no step is omitted.
+
+\begin{enumerate}
+  \item \textbf{(Compactness of $\Delta^{3}$.)}
+        $\Delta^{3}$ is defined by $4 + 1$ affine (in)equalities in $\R^4$
+        and is therefore a closed, bounded, convex polytope.  By the
+        Heine--Borel theorem, $\Delta^{3}$ is compact.
+
+  \item \textbf{(Continuity of $U^{(r)}$.)}
+        The map $\alpha \mapsto \alpha^\top \mu^{(r)}$ is linear and
+        hence continuous.  The map $\alpha \mapsto \alpha^\top
+        \Sigma^{(r)} \alpha$ is a quadratic form with finite coefficients
+        (by (A4)) and hence continuous.  Therefore $U^{(r)}$ is
+        continuous on $\R^4$, and in particular on $\Delta^{3}$.
+
+  \item \textbf{(Existence by Weierstrass.)}
+        A continuous function on a compact set attains its supremum
+        (Extreme Value Theorem / Weierstrass).  Hence $\alpha^{*}(r)$
+        exists.  This establishes claim~(1).
+
+  \item \textbf{(Concavity.)}
+        The term $\alpha^\top \mu^{(r)}$ is linear (concave).
+        The term $-\lambda\,\alpha^\top \Sigma^{(r)}\alpha$ is a
+        non-positive-definite quadratic form scaled by $-\lambda < 0$.
+        Since $\Sigma^{(r)}$ is PSD (A5), we have
+        $\alpha^\top \Sigma^{(r)}\alpha \geq 0$ for all $\alpha$, so
+        $-\lambda\,\alpha^\top \Sigma^{(r)}\alpha \leq 0$.
+        A sum of concave functions is concave; therefore $U^{(r)}$ is
+        concave on $\Delta^{3}$.
+
+  \item \textbf{(Strict concavity under SPD.)}
+        If $\Sigma^{(r)}$ is SPD, the quadratic form
+        $\alpha^\top \Sigma^{(r)}\alpha$ is strictly convex, so
+        $-\lambda\,\alpha^\top\Sigma^{(r)}\alpha$ is strictly concave
+        (for $\lambda > 0$).  A sum of a concave and a strictly concave
+        function is strictly concave.  A strictly concave function on a
+        convex set has at most one maximiser; combined with existence
+        (step~3), the maximiser is unique.  This establishes claim~(2).
+
+  \item \textbf{(Non-unique solution set under PSD.)}
+        If $\Sigma^{(r)}$ is PSD but not SPD, $U^{(r)}$ is concave but
+        not strictly concave.  The level sets of a concave function are
+        convex; the set of maximisers $\{\alpha \in \Delta^3 :
+        U^{(r)}(\alpha) = \max_{\Delta^3} U^{(r)}\}$ is therefore a
+        non-empty (by step~3) closed convex set.  This establishes
+        claim~(3).
+\end{enumerate}
+
+\noindent All claims are proved; no assumption was invoked beyond
+(A3)--(A6).\qed
+\end{proof}
+
+\begin{remark}[Boundary and Edge Cases for the Allocation Problem]
+\label{rem:alloc-boundary}
+The following boundary conditions are treated explicitly.
+\begin{enumerate}
+  \item \textbf{(Single active regime: $M = 1$, $\calR = \{r_1\}$.)}
+        The allocation problem reduces to a single instance of
+        \eqref{eq:regime-alloc-argmax}; all results of
+        Proposition~\ref{prop:alloc-exist-unique} apply directly.
+
+  \item \textbf{(Zero risk-aversion limit.)}
+        As $\lambda \to 0^+$, the objective approaches a linear programme
+        $\max_{\alpha \in \Delta^3} \alpha^\top \mu^{(r)}$, whose
+        solution concentrates all weight on
+        $\arg\max_{i} \mu_i^{(r)}$ (possibly non-unique if the maximum
+        is attained by multiple $i$).  This is a valid degenerate case
+        and does not violate (A6), which requires $\lambda > 0$ strictly.
+
+  \item \textbf{(Infinite risk-aversion limit.)}
+        As $\lambda \to +\infty$, the quadratic penalty dominates; the
+        optimal $\alpha^{*}(r)$ converges to the minimum-variance
+        portfolio on $\Delta^{3}$, which exists and is unique when
+        $\Sigma^{(r)}$ is SPD (by a separate quadratic programme argument
+        analogous to steps~1--5 of the proof above).
+
+  \item \textbf{(Degenerate return vector: $\mu^{(r)} = \mathbf{0}$.)}
+        The objective reduces to
+        $-\lambda\,\alpha^\top\Sigma^{(r)}\alpha$; the maximiser
+        is the minimum-variance portfolio.  Existence is guaranteed by
+        Proposition~\ref{prop:alloc-exist-unique}~(1); uniqueness by~(2)
+        when $\Sigma^{(r)}$ is SPD.
+
+  \item \textbf{(Degenerate covariance: $\Sigma^{(r)} = \mathbf{0}$.)}
+        The objective reduces to the linear programme
+        $\max_{\alpha \in \Delta^3} \alpha^\top \mu^{(r)}$; see
+        case~(2) above.  Assumption~(A5) is satisfied trivially
+        ($\mathbf{0}$ is PSD).
+
+  \item \textbf{(Empty domain.)}
+        If $\mathcal{D}_i = \emptyset$ for some $i$, then $\mu_i^{(r)}$
+        and the $i$-th row/column of $\Sigma^{(r)}$ should be set to
+        zero by convention.  The dimension of the effective problem
+        reduces; the analysis of Proposition~\ref{prop:alloc-exist-unique}
+        applies to the non-empty subset of $\mathcal{I}_D$.
+\end{enumerate}
+\end{remark}
+
+% --------------------------------------------------------------
+\section{First-Order Optimality Conditions}
+\label{sec:kkt-alloc}
+% --------------------------------------------------------------
+
+\noindent We derive the Karush--Kuhn--Tucker (KKT) conditions for
+\eqref{eq:regime-alloc-argmax} and verify that they are necessary and
+sufficient under the stated assumptions.
+
+\begin{proposition}[KKT Conditions for Regime-Conditioned Allocation]
+\label{prop:kkt-alloc}
+Under Assumptions~(A3)--(A6) with $\Sigma^{(r)}$ SPD, the unique
+solution $\alpha^{*}(r)$ to \eqref{eq:regime-alloc-argmax} is
+characterised by the existence of multipliers
+$\nu \in \R$ (equality) and $\eta \in \R_{\geq 0}^{4}$ (inequality)
+such that the following KKT system holds:
+\begin{align}
+  \mu^{(r)} - 2\lambda\,\Sigma^{(r)}\alpha^{*}
+  - \nu\,\mathbf{1} + \eta &= \mathbf{0},
+  \label{eq:kkt-stat} \\
+  \mathbf{1}^\top \alpha^{*} &= 1,
+  \label{eq:kkt-eq} \\
+  \alpha^{*}_i &\geq 0 \quad \forall\,i,
+  \label{eq:kkt-prim} \\
+  \eta_i &\geq 0 \quad \forall\,i,
+  \label{eq:kkt-dual} \\
+  \eta_i\,\alpha^{*}_i &= 0 \quad \forall\,i.
+  \label{eq:kkt-cs}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+The proof proceeds step by step.
+\begin{enumerate}
+  \item \textbf{(Constraint qualification.)}
+        $\Delta^{3}$ is defined by one equality ($\mathbf{1}^\top\alpha = 1$)
+        and four non-negativity constraints ($\alpha_i \geq 0$).
+        The feasible set is a non-empty polytope; Linear Independence
+        Constraint Qualification (LICQ) holds at every interior point,
+        and Mangasarian--Fromovitz holds at boundary points.
+
+  \item \textbf{(Necessity.)}
+        By concavity of $U^{(r)}$ (step~4 of the proof of
+        Proposition~\ref{prop:alloc-exist-unique}) and the validity of
+        the constraint qualification, the KKT conditions are necessary
+        at any local (hence global) maximum.
+
+  \item \textbf{(Sufficiency.)}
+        Since $U^{(r)}$ is concave, the feasible set is convex, and the
+        KKT conditions are sufficient for global optimality
+        (Theorem of KKT for convex programmes).
+
+  \item \textbf{(Stationarity \eqref{eq:kkt-stat}.)}
+        The Lagrangian is
+        \begin{align}
+          \mathcal{L}(\alpha,\nu,\eta)
+          &\;=\; \alpha^\top\mu^{(r)}
+                 - \lambda\,\alpha^\top\Sigma^{(r)}\alpha
+                 - \nu\!\left(\mathbf{1}^\top\alpha - 1\right)
+                 + \eta^\top\alpha.
+          \label{eq:lagrangian}
+        \end{align}
+        Differentiating with respect to $\alpha$ and setting to zero:
+        \begin{align}
+          \nabla_\alpha \mathcal{L}
+          &\;=\; \mu^{(r)} - 2\lambda\,\Sigma^{(r)}\alpha
+                 - \nu\,\mathbf{1} + \eta
+          \;=\; \mathbf{0},
+          \label{eq:kkt-stat-deriv}
+        \end{align}
+        which is \eqref{eq:kkt-stat}.
+
+  \item \textbf{(Complementary slackness \eqref{eq:kkt-cs}.)}
+        For each $i$, either $\alpha^*_i > 0$ (interior) and
+        $\eta_i = 0$ by \eqref{eq:kkt-cs}, or $\alpha^*_i = 0$
+        (boundary) and $\eta_i \geq 0$ is free.  Both cases are
+        consistent with \eqref{eq:kkt-dual}--\eqref{eq:kkt-cs}.
+
+  \item \textbf{(Uniqueness of multipliers.)}
+        Since $\Sigma^{(r)}$ is SPD, $\alpha^{*}$ is unique.
+        Given $\alpha^{*}$, \eqref{eq:kkt-stat} determines
+        $\nu\,\mathbf{1} - \eta = \mu^{(r)} - 2\lambda\Sigma^{(r)}\alpha^*$.
+        The active-set structure of \eqref{eq:kkt-cs} then uniquely
+        determines $\nu$ and $\eta$.
+\end{enumerate}
+\noindent All steps are complete.\qed
+\end{proof}
 
 % ==============================================================
 \chapter{Dependency Graph Acyclicity}
