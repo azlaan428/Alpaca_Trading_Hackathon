@@ -1,0 +1,95 @@
+% Submission requirements:
+% 1️⃣ Dedicated competition paper account (one per email)
+% 2️⃣ Competition account starting balance set to $100,000
+% 3️⃣ One-page write-up: AI logic, risk gates, and Alpaca infrastructure implementation
+% 4️⃣ All strategies must include options trading
+
+\documentclass[7pt,letterpaper]{article}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage[factor=900]{microtype}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[hidelinks]{hyperref}
+
+\titlespacing*{\section}{0pt}{3pt}{1pt}
+\titlespacing*{\subsection}{0pt}{2pt}{1pt}
+\titleformat{\section}{\normalfont\bfseries\normalsize}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\normalfont\bfseries\small}{\thesubsection}{0.5em}{}
+
+\setlength{\parskip}{2pt}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\begin{center}
+  {\bfseries Finite-Capital Multi-Agent Kalman Investment System}\\[2pt]
+  {\large Alpaca Trading Hackathon --- One-Page Write-Up}\\[1pt]
+  {\normalsize Hadrian Hu \quad|\quad \today}
+\end{center}
+
+\vspace{-2pt}\hrule\vspace{4pt}
+
+\section{AI Logic and Signal Architecture}
+
+The system treats portfolio management as \textbf{minimum-variance unbiased estimation} over a latent seven-dimensional State-of-Charge market state vector
+\[
+  \mathbf{X}_t = (\mathcal{E}_t,\,\mathcal{F}_t,\,\mathcal{G}_t,\,\mathcal{P}_t,\,\mathcal{U}_t,\,\mathcal{M}_t,\,\mathcal{T}_t)^\top \in [0,1]^7
+\]
+(economic, financial, fiscal, portfolio, fundamental, microstructure, sector charges).
+
+\textbf{Kalman filter backbone.} Seven specialised agents observe noisy projections of $\mathbf{X}_t$, each emitting $(s_i, c_i, u_i, d_i)$: signal $s_i\!\in\![-1,1]$, confidence $c_i$, uncertainty $u_i$, doubt $d_i$. Measurement noise $r_i = \sigma_{\text{base}}^2(1-c_i)/c_i$ penalises low-confidence agents. A prediction--correction cycle updates $\hat{\mathbf{X}}_{t|t}$ and $\mathbf{P}_{t|t}$ each bar.
+
+\textbf{Ensemble aggregation.} Confidence-weighted signal and disagreement:
+\[
+  S_t = \frac{\sum_i w_i s_i c_i(1-u_i)(1-d_i)}{\sum_i w_i},\qquad D_t = \frac{\sum_i w_i |s_i - S_t|}{\sum_i w_i}.
+\]
+High $D_t$ inflates measurement noise by $D_t^2\sigma_{\text{base}}^2$ (IMM covariance inflation), auto-reducing deployment. Weights $w_i$ update via Beta-Bernoulli posterior after each trade.
+
+\textbf{HMM regime detection.} A Hidden Markov Model ($K{=}3$: bull, bear, crisis) governs $\mathbf{F}^{(k)}$ and $\mathbf{Q}^{(k)}$. Crisis posteriors widen $\mathbf{P}_{t|t-1}$, shrinking the Kalman gain and capital deployment.
+
+\textbf{Options integration.} A volatility agent reads implied-vol surface, put-call skew, and term-structure slope, sizing positions via
+\[
+  f^*_{\text{adj}} = f^*_{\text{Kelly}} \cdot c_i(1-u_i)(1-d_i)\cdot(1-U_t) \leq f_{\max}.
+\]
+Options serve both directional alpha (skew trades, earnings vol) and tail protection (index puts during $\mathcal{F}_t$ stress).
+
+\section{Risk Gates}
+
+Capital deployment is governed by a \textbf{state-gated deployment function}:
+\[
+  C_{\text{deployed}} = C_{\text{available}} \times K_t^{(\text{Kalman})} \times \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right),
+\]
+where $g_d(\mathcal{S}) = \max\!\left(0,\min\!\left(1,\tfrac{\mathcal{S}-\mathcal{S}_{\min}^{(d)}}{\mathcal{S}_{\text{full}}^{(d)}-\mathcal{S}_{\min}^{(d)}}\right)\right)$. Any state below its threshold zeroes the product, halting new positions.
+
+\begin{enumerate}[leftmargin=1.2em,itemsep=0pt,topsep=1pt]
+  \item \textbf{Financial} $\mathcal{F}_t < 0.20$: all orders blocked; liquidation active.
+  \item \textbf{Portfolio} $\mathcal{P}_t < 0.20$: hard stop; max drawdown $\leq\!20\%$ of \$100{,}000.
+  \item \textbf{CVaR}: $\widehat{\text{CVaR}}_{0.95} > \bar{C}$ halts position-opening before order submission.
+  \item \textbf{Disagreement}: $D_t > D_{\max}$ caps deployment at $\kappa_D = \max(0,\,1\!-\!D_t/D_{\max})$.
+  \item \textbf{Concentration}: per-asset $> w_{\max}$, per-bucket $> B_k$, or HHI $> H_{\max}$ triggers rebalancing.
+  \item \textbf{Temporal leakage}: all features verified $\mathcal{F}_t$-measurable; no future data admitted.
+\end{enumerate}
+
+Four-level circuit breakers: Advisory $\to$ Caution $\to$ Alert $\to$ Emergency (20\%/40\%/70\%/100\% deployment cut).
+
+\section{Alpaca Infrastructure Implementation}
+
+\textbf{Execution.} Orders route via Alpaca Broker API (paper endpoint). Options orders use Alpaca Options API with limit orders at Kelly-adjusted sizes; market orders reserved for emergency liquidations only.
+
+\textbf{Data.} Real-time 1-min/5-min bars via Alpaca WebSocket; daily bars via historical endpoint for macro/fiscal agents. HMM regime filter updates each daily close.
+
+\textbf{Capital partition (\$100{,}000):} Core/Stable 35\% $\cdot$ Diversified Growth 20\% $\cdot$ Opportunistic 15\% $\cdot$ Alternative 10\% $\cdot$ Cash Reserve 10\% (floor ${{\geq}}\,\$5{,}000$) $\cdot$ Dynamic Agent 10\%.
+
+\textbf{Priority (lexicographic):} Survival $\succ$ Preservation $\succ$ Allocation $\succ$ Controlled Risk $\succ$ Compounding.
+
+\textbf{Objective:}
+\[
+  \max J = \alpha G - \beta D_{\text{dd}} - \gamma V + \delta S_{\text{surv}} + \varepsilon R_{\text{risk}} - \zeta T_{\text{cost}} - \eta C_{\text{conc}} - \theta L_{\text{excess}}
+\]
+subject to the Kalman-state-gated deployment function above.
+
+\vspace{2pt}\hrule\vspace{2pt}
+{\footnotesize Formal proofs in companion monographs: architecture, diversification, finite capital allocation, and Kalman/State-of-Charge papers.}
+
+\end{document}
