@@ -23,8 +23,8 @@
 \begin{document}
 
 \begin{center}
-  {\bfseries Finite-Capital Multi-Agent Kalman Investment System}\\[2pt]
-  {\large Alpaca Trading Hackathon --- One-Page Write-Up}\\[1pt]
+  {\bfseries Finite-Capital Multi-Agent Kalman Investment System}\\begin{equation}2pt]
+  {\large Alpaca Trading Hackathon --- One-Page Write-Up}\\begin{equation}1pt]
   {\normalsize Hadrian Hu \quad|\quad \today}
 \end{center}
 
@@ -33,33 +33,33 @@
 \section{AI Logic and Signal Architecture}
 
 The system treats portfolio management as \textbf{minimum-variance unbiased estimation} over a latent seven-dimensional State-of-Charge market state vector
-\[
+\begin{equation}
   \mathbf{X}_t = (\mathcal{E}_t,\,\mathcal{F}_t,\,\mathcal{G}_t,\,\mathcal{P}_t,\,\mathcal{U}_t,\,\mathcal{M}_t,\,\mathcal{T}_t)^\top \in [0,1]^7
-\]
+\end{equation}
 (economic, financial, fiscal, portfolio, fundamental, microstructure, sector charges).
 
 \textbf{Kalman filter backbone.} Seven specialised agents observe noisy projections of $\mathbf{X}_t$, each emitting $(s_i, c_i, u_i, d_i)$: signal $s_i\!\in\![-1,1]$, confidence $c_i$, uncertainty $u_i$, doubt $d_i$. Measurement noise $r_i = \sigma_{\text{base}}^2(1-c_i)/c_i$ penalises low-confidence agents. A prediction--correction cycle updates $\hat{\mathbf{X}}_{t|t}$ and $\mathbf{P}_{t|t}$ each bar.
 
 \textbf{Ensemble aggregation.} Confidence-weighted signal and disagreement:
-\[
+\begin{equation}
   S_t = \frac{\sum_i w_i s_i c_i(1-u_i)(1-d_i)}{\sum_i w_i},\qquad D_t = \frac{\sum_i w_i |s_i - S_t|}{\sum_i w_i}.
-\]
+\end{equation}
 High $D_t$ inflates measurement noise by $D_t^2\sigma_{\text{base}}^2$ (IMM covariance inflation), auto-reducing deployment. Weights $w_i$ update via Beta-Bernoulli posterior after each trade.
 
 \textbf{HMM regime detection.} A Hidden Markov Model ($K{=}3$: bull, bear, crisis) governs $\mathbf{F}^{(k)}$ and $\mathbf{Q}^{(k)}$. Crisis posteriors widen $\mathbf{P}_{t|t-1}$, shrinking the Kalman gain and capital deployment.
 
 \textbf{Options integration.} A volatility agent reads implied-vol surface, put-call skew, and term-structure slope, sizing positions via
-\[
+\begin{equation}
   f^*_{\text{adj}} = f^*_{\text{Kelly}} \cdot c_i(1-u_i)(1-d_i)\cdot(1-U_t) \leq f_{\max}.
-\]
+\end{equation}
 Options serve both directional alpha (skew trades, earnings vol) and tail protection (index puts during $\mathcal{F}_t$ stress).
 
 \section{Risk Gates}
 
 Capital deployment is governed by a \textbf{state-gated deployment function}:
-\[
+\begin{equation}
   C_{\text{deployed}} = C_{\text{available}} \times K_t^{(\text{Kalman})} \times \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right),
-\]
+\end{equation}
 where $g_d(\mathcal{S}) = \max\!\left(0,\min\!\left(1,\tfrac{\mathcal{S}-\mathcal{S}_{\min}^{(d)}}{\mathcal{S}_{\text{full}}^{(d)}-\mathcal{S}_{\min}^{(d)}}\right)\right)$. Any state below its threshold zeroes the product, halting new positions.
 
 \begin{enumerate}[leftmargin=1.2em,itemsep=0pt,topsep=1pt]
@@ -84,9 +84,9 @@ Four-level circuit breakers: Advisory $\to$ Caution $\to$ Alert $\to$ Emergency 
 \textbf{Priority (lexicographic):} Survival $\succ$ Preservation $\succ$ Allocation $\succ$ Controlled Risk $\succ$ Compounding.
 
 \textbf{Objective:}
-\[
+\begin{equation}
   \max J = \alpha G - \beta D_{\text{dd}} - \gamma V + \delta S_{\text{surv}} + \varepsilon R_{\text{risk}} - \zeta T_{\text{cost}} - \eta C_{\text{conc}} - \theta L_{\text{excess}}
-\]
+\end{equation}
 subject to the Kalman-state-gated deployment function above.
 
 \vspace{2pt}\hrule\vspace{2pt}
