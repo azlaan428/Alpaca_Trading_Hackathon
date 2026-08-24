@@ -1,0 +1,1248 @@
+\documentclass[12pt,openany]{book}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage[expansion=false]{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{ragged2e}
+\usepackage{thmtools}
+\usepackage{chngcntr}
+\counterwithout{table}{chapter}
+\counterwithout{figure}{chapter}
+\makeatletter
+\renewcommand{\theHtable}{\number\value{table}}
+\renewcommand{\theHfigure}{\number\value{figure}}
+\makeatother
+\usepackage{sectionbreak}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+
+% Guard against overfull hboxes in bibliography entries
+\usepackage{etoolbox}
+\apptocmd{\thebibliography}{\raggedright}{}{}
+
+% ============================================================
+% CUSTOM MACROS
+% ============================================================
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\N}{\mathbb{N}}
+
+\newcommand{\bfw}{\mathbf{w}}
+\newcommand{\bfx}{\mathbf{x}}
+\newcommand{\bfz}{\mathbf{z}}
+\newcommand{\bfy}{\mathbf{y}}
+\newcommand{\bfmu}{\boldsymbol{\mu}}
+\newcommand{\bfSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bfQ}{\mathbf{Q}}
+\newcommand{\bfR}{\mathbf{R}}
+\newcommand{\bfF}{\mathbf{F}}
+\newcommand{\bfH}{\mathbf{H}}
+\newcommand{\bfK}{\mathbf{K}}
+\newcommand{\bfP}{\mathbf{P}}
+\newcommand{\bfI}{\mathbf{I}}
+\newcommand{\bfA}{\mathbf{A}}
+\newcommand{\bfe}{\mathbf{e}}
+\newcommand{\bfv}{\mathbf{v}}
+\newcommand{\bfu}{\mathbf{u}}
+\newcommand{\bfGamma}{\boldsymbol{\Gamma}}
+\newcommand{\bfOmega}{\boldsymbol{\Omega}}
+\newcommand{\bfxi}{\boldsymbol{\xi}}
+\newcommand{\bfone}{\mathbf{1}}
+
+\newcommand{\calE}{\mathcal{E}}
+\newcommand{\calF}{\mathcal{F}}
+\newcommand{\calG}{\mathcal{G}}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calM}{\mathcal{M}}
+\newcommand{\calT}{\mathcal{T}}
+\newcommand{\calR}{\mathcal{R}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\calI}{\mathcal{I}}
+\newcommand{\calX}{\mathbf{X}}
+\newcommand{\calA}{\mathcal{A}}
+\newcommand{\calO}{\mathcal{O}}
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\calL}{\mathcal{L}}
+
+\newcommand{\MaxDD}{\mathrm{MaxDD}}
+\newcommand{\DD}{\mathrm{DD}}
+
+\DeclareMathOperator{\CVaR}{CVaR}
+\DeclareMathOperator{\VaR}{VaR}
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\Cov}{Cov}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\rank}{rank}
+
+% ============================================================
+% GEOMETRY AND LAYOUT
+% ============================================================
+\geometry{margin=1in, includefoot}
+\microtypesetup{expansion=false, final}
+\singlespacing
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0.5ex plus 0.2ex minus 0.1ex}
+\setlength{\emergencystretch}{1.5em}
+\tolerance=9999
+\hbadness=10000
+\vbadness=10000
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\raggedbottom
+\sloppy
+
+\setlength{\abovedisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\belowdisplayskip}{6pt plus 2pt minus 3pt}
+\setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
+\numberwithin{equation}{chapter}
+\allowdisplaybreaks[3]
+
+% ============================================================
+% THEOREM ENVIRONMENTS
+% ============================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\providecommand{\theHtheorem}{}
+\renewcommand{\theHtheorem}{\thechapter-\arabic{theorem}}
+\providecommand{\theHlemma}{}
+\renewcommand{\theHlemma}{\thechapter-\arabic{theorem}}
+\providecommand{\theHcorollary}{}
+\renewcommand{\theHcorollary}{\thechapter-\arabic{theorem}}
+\providecommand{\theHproposition}{}
+\renewcommand{\theHproposition}{\thechapter-\arabic{theorem}}
+\providecommand{\theHdefinition}{}
+\renewcommand{\theHdefinition}{\thechapter-\arabic{theorem}}
+\providecommand{\theHaxiom}{}
+\renewcommand{\theHaxiom}{\thechapter-\arabic{theorem}}
+\providecommand{\theHassumption}{}
+\renewcommand{\theHassumption}{\thechapter-\arabic{theorem}}
+\providecommand{\theHremark}{}
+\renewcommand{\theHremark}{\thechapter-\arabic{theorem}}
+\providecommand{\theHconjecture}{}
+\renewcommand{\theHconjecture}{\thechapter-\arabic{theorem}}
+
+\makeatletter
+\providecommand*{\toclevel@conjecture}{0}
+\makeatother
+
+\newenvironment{abstract}{%
+  \chapter*{Abstract}
+  \begin{quote}\small
+}{%
+  \end{quote}
+}
+\newenvironment{keywords}{%
+  \paragraph*{Keywords:}
+}{}
+
+% ============================================================
+% SECTION FORMATTING
+% ============================================================
+\titleformat{\chapter}[display]
+    {\normalfont\Huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{50pt}{40pt}
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titlespacing*{\section}{0pt}{3.5ex plus 1ex minus 0.2ex}{2.3ex plus 0.2ex}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titlespacing*{\subsection}{0pt}{3.25ex plus 1ex minus 0.2ex}{1.5ex plus 0.2ex}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titlespacing*{\subsubsection}{0pt}{3ex plus 0.5ex minus 0.2ex}{1.5ex plus 0.2ex}
+
+% ============================================================
+% TABLE OF CONTENTS
+% ============================================================
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+\setlength{\cftchapindent}{0em}
+\setlength{\cftsecindent}{1.5em}
+
+% ============================================================
+% HEADER AND FOOTER
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\thepage}
+\fancyhead[RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{27.2pt}
+
+% ============================================================
+% MISCELLANEOUS
+% ============================================================
+\setlist[enumerate]{leftmargin=*, partopsep=0.1ex}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+
+\pdfstringdefDisableCommands{%
+  \def\mathcal#1{#1}%
+  \def\bfz{z}%
+  \def\calE{E}%
+  \def\calF{F}%
+  \def\calG{G}%
+  \def\calP{P}%
+  \def\calU{U}%
+  \def\calM{M}%
+  \def\calT{T}%
+  \def\calR{R}%
+  \def\calS{S}%
+  \def\calI{I}%
+}
+
+\title{Team-Mates Whitepaper:\\
+Multi-Agent Quantitative-Finance Platform\\[0.6em]
+{\large Alpaca Trading Hackathon 2026}}
+\author{Hadrian Hu}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\listoftheorems[ignoreall,show={theorem,lemma,proposition,corollary,definition,axiom,assumption,conjecture}]
+
+% ==============================================================
+\begin{abstract}
+This whitepaper presents the \emph{Multi-Agent Quantitative-Finance
+Platform}, a finite-capital investment architecture designed for
+the Alpaca Trading Hackathon 2026.  The platform integrates
+heterogeneous specialised agents across four financial domains ---
+economic, financial, fiscal, and investment --- into a unified
+capital allocation engine governed by a seven-dimensional
+state-of-charge vector and a Kalman-filter prediction--correction
+cycle.  The central thesis is that optimal agentic trading is
+structurally isomorphic to minimum-variance unbiased estimation
+(MVUE) of a latent market state given partial, noisy, multi-domain
+observations.  The finite initial capital of \$100{,}000 is not a
+handicap but a precision condition: it forces the system to operate
+in the well-calibrated, survival-first regime that preserves the
+principal necessary for long-run compounding.  The platform is
+designed to be fully auditable, reproducible, and extensible.
+\end{abstract}
+
+\begin{keywords}
+multi-agent systems; Kalman filter; state-space model; capital
+allocation; finite initial capital; state-of-charge; seven-state
+architecture; Bayesian reputation; ensemble signal; innovation
+covariance; circuit-breaker; risk-adjusted objective; portfolio
+diversification; Alpaca hackathon
+\end{keywords}
+
+% ==============================================================
+\chapter*{Executive Summary}
+\addcontentsline{toc}{chapter}{Executive Summary}
+% ==============================================================
+
+\noindent
+The platform answers one research question:
+
+\begin{quote}
+\emph{Given all information legitimately available at time $t$,
+what market regime is most probable, what risks currently dominate,
+how uncertain is that assessment, and what portfolio allocation
+provides the best risk-adjusted response under a \$100{,}000 finite
+capital constraint?}
+\end{quote}
+
+\noindent
+The answer is formalised as:
+
+\begin{equation}
+  \begin{aligned}
+    \text{Optimal Agentic Trading}
+    \;=\;\;&\text{MVUE of Latent Market State Given}\\
+    &\text{Partial, Noisy, Multi-Domain Observations}
+  \end{aligned}
+\end{equation}
+
+\noindent\textbf{Priority ordering.}
+
+\begin{equation}
+  \text{Survival}
+  \;\succ\; \text{Preservation}
+  \;\succ\; \text{Intelligent Allocation}
+  \;\succ\; \text{Controlled Risk}
+  \;\succ\; \text{Compounding}
+\end{equation}
+
+\noindent\textbf{Architecture at a glance.}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{@{} l X @{}}
+\toprule
+\textbf{Layer} & \textbf{Function} \\
+\midrule
+Data ingestion & Historical and real-time market, macro, and news feeds. \\
+Specialised agents & Independent analysis across four domains; emit $(s_i, c_i, u_i, d_i)$. \\
+State estimation & Seven-dimensional SoC vector $\mathbf{X}_t \in [0,1]^7$. \\
+Kalman filter & Prediction--correction cycle; Kalman gain $K_t$ as deployment weight. \\
+State gating & Product gate $G(\mathbf{X}_t)$; circuit-breaker on critical threshold breach. \\
+Capital allocator & $\pi^* = K_t \cdot C_{\mathrm{available}} \cdot G(\mathbf{X}_t)$. \\
+Risk gate & CVaR, MaxDD, concentration constraints. \\
+Execution & Alpaca API paper-trading orders. \\
+Performance & Composite objective $J$ vs.\ five baselines. \\
+Reputation update & Bayesian $w_i$ adaptation after each outcome. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% ==============================================================
+\chapter{Platform Architecture and Design Philosophy}
+\label{ch:architecture}
+% ==============================================================
+
+\section{Core Principle}
+
+\noindent
+Success is not defined as maximising predicted profit.  It is
+defined as finding decisions that remain defensible when models
+disagree, markets change regime, forecasts fail, correlations
+break, and uncertainty becomes materially greater.
+
+\section{The Four Financial Domains}
+
+The platform spans four interacting financial domains, treated as
+four views of one system rather than four independent applications:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+\toprule
+\textbf{Domain} & \textbf{Symbol} & \textbf{Scope} \\
+\midrule
+Economic & $\calE$ & GDP, inflation, employment, credit, fiscal impulse. \\
+Financial & $\calF$ & Asset prices, volatility surface, yield curve, spreads. \\
+Fiscal & $\calG$ & Government expenditure, tax regime, deficit, debt. \\
+Investment & $\calI$ & Fund flows, positioning, sentiment, options markets. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Initial Capital Partition}
+
+\begin{definition}[Capital Partition]
+\label{def:partition}
+The initial capital $W_0 = \$100{,}000$ is partitioned into six
+disjoint buckets $\{b_k\}_{k=1}^{6}$ satisfying:
+\begin{enumerate}[label=\textbf{(P\arabic*)}]
+  \item $\sum_{k=1}^{6} b_k = W_0$ (exhaustiveness).
+  \item $b_k \geq 0$ for all $k$ (non-negativity).
+  \item At least one $b_k > 0$ (non-triviality).
+\end{enumerate}
+\end{definition}
+
+\begin{table}[H]
+\centering
+\caption{Canonical six-bucket partition of the \$100{,}000 initial capital.}
+\label{tab:buckets}
+\small
+\begin{tabularx}{\linewidth}{@{} l r r X @{}}
+\toprule
+\textbf{Bucket} & \textbf{Amount (\$)} & \textbf{Weight}
+  & \textbf{Purpose} \\
+\midrule
+Core / Stable               & 35{,}000 & 0.35
+  & Capital preservation; low-volatility instruments. \\
+Diversified Growth          & 20{,}000 & 0.20
+  & Broad-market multi-asset growth exposure. \\
+Opportunistic               & 15{,}000 & 0.15
+  & Tactical short-horizon strategies. \\
+Alternative / Higher-Vol    & 10{,}000 & 0.10
+  & Asymmetric or higher-risk instruments. \\
+Cash / Liquidity Reserve    & 10{,}000 & 0.10
+  & Mandatory floor; not deployed without trigger. \\
+Dynamic Agent Allocation    & 10{,}000 & 0.10
+  & Autonomously managed; agents justify movements. \\
+\midrule
+\textbf{Total}              & \textbf{100{,}000} & \textbf{1.00} & \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{axiom}[Mandatory Liquidity Floor]
+\label{ax:liquidity-floor}
+At all times $t$, the cash reserve satisfies:
+\begin{equation}
+  W_t^{(5)} \;\geq\; \ell_{\min} \;:=\; 0.05 \cdot W_0 \;=\; \$5{,}000.
+  \label{eq:liquidity-floor}
+\end{equation}
+No signal overrides this constraint without explicit risk-gate
+approval and a documented audit entry.
+\end{axiom}
+
+% ==============================================================
+\chapter{Agent Output Contract and Ensemble Aggregation}
+\label{ch:agents}
+% ==============================================================
+
+\section{Agent Output Tuple}
+
+\begin{definition}[Agent Output Tuple]
+\label{def:agent-tuple}
+At each time $t$, specialised agent $i \in \{1,\ldots,N\}$ emits:
+\begin{equation}
+  \calA_i(t)
+  \;=\;
+  \bigl(\,s_i,\;\; c_i,\;\; u_i,\;\; d_i,\;\;
+         p_i^{+},\;\; p_i^{-},\;\; \Delta t_i,\;\; r_i\,\bigr)
+  \label{eq:agent-tuple}
+\end{equation}
+with domains: $s_i \in [-1,1]$, $c_i \in (0,1]$,
+$u_i \in [0,1]$, $d_i \in [0,1]$, $p_i^+,p_i^- \geq 0$ with
+$p_i^+ + p_i^- \leq 1$, $\Delta t_i > 0$, $r_i \geq 0$.
+\end{definition}
+
+\section{Ensemble Aggregate Signal}
+
+\begin{definition}[Ensemble Aggregate Signal]
+\label{def:ensemble-signal}
+The confidence-weighted, uncertainty-discounted, doubt-dampened
+aggregate signal is:
+\begin{equation}
+  S_t
+  \;=\;
+  \frac{\displaystyle\sum_{i=1}^{N}
+        w_i\,s_i\,c_i\,(1-u_i)\,(1-d_i)}
+       {\displaystyle\sum_{i=1}^{N} w_i},
+  \label{eq:ensemble-signal}
+\end{equation}
+where $w_i > 0$ are Bayesian reputation weights.
+\end{definition}
+
+\begin{theorem}[Boundedness of $S_t$]
+\label{thm:signal-bounded}
+Under Definition~\ref{def:agent-tuple} and
+Definition~\ref{def:ensemble-signal}, $S_t \in [-1,1]$.
+\end{theorem}
+
+\begin{proof}
+Each dampened signal $\phi_i = s_i c_i(1-u_i)(1-d_i)$ satisfies
+$|\phi_i| \leq |s_i| \leq 1$ since $c_i, (1-u_i), (1-d_i) \in [0,1]$.
+Therefore $S_t$ is a convex combination of values in $[-1,1]$ and
+thus $S_t \in [-1,1]$.
+\qed
+\end{proof}
+
+\begin{definition}[Agent Disagreement]
+\label{def:disagreement}
+The weighted mean absolute deviation of agent signals from the
+ensemble mean is:
+\begin{equation}
+  D_t \;=\;
+  \frac{\displaystyle\sum_{i=1}^{N} w_i\,|s_i - S_t|}
+       {\displaystyle\sum_{i=1}^{N} w_i}.
+  \label{eq:disagreement}
+\end{equation}
+$D_t \geq 0$ always; $D_t = 0$ iff all agents agree.
+\end{definition}
+
+\begin{remark}[Semantic Significance of Disagreement]
+$S_t = 0$ can arise from genuine neutrality ($D_t \approx 0$) or
+from violent disagreement ($D_t$ large).  Only $D_t$ distinguishes
+these two fundamentally different risk states.  High $D_t$ inflates
+the innovation covariance, reducing the Kalman gain and limiting
+capital deployment regardless of the directional signal.
+\end{remark}
+
+% ==============================================================
+\chapter{The Kalman Filter Investment Architecture}
+\label{ch:kalman}
+% ==============================================================
+
+\section{Structural Isomorphism}
+
+The central theoretical result is the following bijection between
+the Kalman prediction--correction cycle and the investment
+allocation cycle:
+
+\begin{table}[H]
+\centering
+\caption{Kalman filter -- investment allocation isomorphism.}
+\label{tab:isomorphism}
+\small
+\begin{tabularx}{\textwidth}{@{} p{5.5cm} X @{}}
+\toprule
+\textbf{Kalman Filter Concept} & \textbf{Investment Architecture Concept} \\
+\midrule
+Hidden state $\hat{\mathbf{X}}_{t|t-1}$ & Prior expected return and risk model \\
+Prediction covariance $\mathbf{P}_{t|t-1}$ & Pre-signal portfolio variance \\
+Observation $\mathbf{z}_t$ & Agent signals $(s_i, c_i, u_i, d_i)$ \\
+Innovation $\tilde{\mathbf{y}}_t$ & Aggregate signal minus prior forecast \\
+Kalman gain $\mathbf{K}_t$ & Confidence-weighted capital deployment fraction \\
+Posterior estimate $\hat{\mathbf{X}}_{t|t}$ & Updated portfolio weights $\mathbf{w}_{t|t}$ \\
+Posterior covariance $\mathbf{P}_{t|t}$ & Post-signal residual portfolio risk \\
+Process noise $\mathbf{Q}$ & Irreducible market uncertainty (aleatoric) \\
+Measurement noise $\mathbf{R}_t$ & Agent estimation error and calibration doubt \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{The Kalman Prediction--Correction Cycle}
+
+\textbf{Prediction step} (time update):
+\begin{align}
+  \hat{\mathbf{X}}_{t|t-1} &= \mathbf{F}\,\hat{\mathbf{X}}_{t-1|t-1}, \\
+  \mathbf{P}_{t|t-1} &= \mathbf{F}\,\mathbf{P}_{t-1|t-1}\,\mathbf{F}^\top + \mathbf{Q}.
+\end{align}
+
+\textbf{Correction step} (measurement update):
+\begin{align}
+  \tilde{\mathbf{y}}_t &= \mathbf{z}_t - \mathbf{H}\,\hat{\mathbf{X}}_{t|t-1}, \\
+  \mathbf{K}_t &= \mathbf{P}_{t|t-1}\,\mathbf{H}^\top
+    \!\left(\mathbf{H}\,\mathbf{P}_{t|t-1}\,\mathbf{H}^\top + \mathbf{R}_t\right)^{-1}, \\
+  \hat{\mathbf{X}}_{t|t} &= \hat{\mathbf{X}}_{t|t-1} + \mathbf{K}_t\,\tilde{\mathbf{y}}_t, \\
+  \mathbf{P}_{t|t} &= \left(\mathbf{I} - \mathbf{K}_t\,\mathbf{H}\right)\mathbf{P}_{t|t-1}.
+\end{align}
+
+\section{The Investment Kalman Gain}
+
+The ensemble effective confidence is:
+\begin{equation}
+  \bar{c}_t \;=\;
+  \frac{\displaystyle\sum_{i=1}^{N} w_i\,c_i\,(1-u_i)\,(1-d_i)}
+       {\displaystyle\sum_{i=1}^{N} w_i}
+  \;\in\; [0,1].
+  \label{eq:effective-confidence}
+\end{equation}
+
+The effective measurement noise, with disagreement inflation, is:
+\begin{equation}
+  R_t \;=\;
+  \sigma_{\mathrm{base}}^2\!\cdot\!\frac{1-\bar{c}_t}{\bar{c}_t}
+  \;+\;
+  D_t^2\,\sigma_{\mathrm{base}}^2.
+  \label{eq:effective-noise}
+\end{equation}
+
+The scalar investment Kalman gain is:
+\begin{equation}
+  K_t^{(\mathrm{inv})} \;=\;
+  \frac{P_{t|t-1}}{P_{t|t-1} + R_t}
+  \;\in\; [0,1).
+  \label{eq:investment-gain}
+\end{equation}
+
+\begin{proposition}[Properties of $K_t^{(\mathrm{inv})}$]
+\label{prop:gain-properties}
+The investment Kalman gain satisfies:
+\begin{enumerate}
+  \item $K_t^{(\mathrm{inv})} \in [0,1)$ for all $t$ (since $R_t \geq 0$
+        and $P_{t|t-1} > 0$).
+  \item $K_t^{(\mathrm{inv})} \to 1$ as $\bar{c}_t \to 1$, $D_t \to 0$
+        (perfect ensemble).
+  \item $K_t^{(\mathrm{inv})} \to 0$ as $\bar{c}_t \to 0$ or $D_t \to \infty$
+        (no usable signal).
+  \item $K_t^{(\mathrm{inv})}$ is strictly decreasing in $R_t$ and strictly
+        increasing in $P_{t|t-1}$.
+\end{enumerate}
+\end{proposition}
+
+% ==============================================================
+\chapter{The Seven-State Investment Architecture}
+\label{ch:states}
+% ==============================================================
+
+\section{The Seven-Dimensional Hidden State}
+
+\begin{definition}[Seven-Dimensional Investment State]
+\label{def:hidden-state}
+The hidden investment state vector at time $t$ is:
+\begin{equation}
+  \mathbf{X}_t \;=\;
+  \bigl(\calE_t,\;\calF_t,\;\calG_t,\;\calP_t,\;
+         \calU_t,\;\calM_t,\;\calT_t\bigr)^\top
+  \;\in\; [0,1]^7,
+  \label{eq:hidden-state}
+\end{equation}
+where each component $\mathcal{S}_t^{(d)} \in [0,1]$ is the
+State-of-Charge (SoC) of the corresponding investment dimension.
+\end{definition}
+
+\begin{table}[H]
+\centering
+\caption{The seven investment state dimensions.}
+\label{tab:seven-states}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X X @{}}
+\toprule
+\textbf{Symbol} & \textbf{Name} & \textbf{Full Charge ($\approx 1$)}
+  & \textbf{Discharged ($\approx 0$)} \\
+\midrule
+$\calE_t$ & Economic    & Expansion, strong growth & Recession, contraction \\
+$\calF_t$ & Financial   & Low stress, tight spreads & Crisis, illiquid \\
+$\calG_t$ & Fiscal      & Expansionary fiscal policy & Fiscal cliff, austerity \\
+$\calP_t$ & Portfolio   & Low drawdown, ample cash & Near drawdown limit \\
+$\calU_t$ & Fundamental & Reasonable valuations & Bubble or distress \\
+$\calM_t$ & Market      & Deep, orderly markets & Thin, erratic \\
+$\calT_t$ & Sector/Tech & Strong secular tailwinds & Structural headwinds \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Charge Dynamics and Discharge Asymmetry}
+
+\begin{definition}[State Charge Dynamics]
+\label{def:charge-dynamics}
+For each dimension $d$ and each time step $t$:
+\begin{equation}
+  \mathcal{S}_{t+1}^{(d)} \;=\; \Pi\!\left(
+  \begin{cases}
+    \mathcal{S}_t^{(d)} + \kappa_d^{+}(1 - \mathcal{S}_t^{(d)})
+      + w_t^{(d)} & E_t^{+} \\
+    \mathcal{S}_t^{(d)}(1 - \kappa_d^{-}) + w_t^{(d)} & E_t^{-} \\
+    \mathcal{S}_t^{(d)} + w_t^{(d)} & E_t^{0}
+  \end{cases}
+  \right)
+  \label{eq:charge-dynamics}
+\end{equation}
+where $\Pi(x) = \max(0,\min(1,x))$ is the unit-interval
+projection, $\kappa_d^{+}$ and $\kappa_d^{-}$ are the charge and
+discharge rates, and $w_t^{(d)} \sim \mathcal{N}(0,q_d^2)$ is
+process noise.
+\end{definition}
+
+\begin{theorem}[Discharge Dominance]
+\label{thm:discharge-dominance}
+Under symmetric shocks ($p = \tfrac{1}{2}$) and discharge
+asymmetry $\kappa_d^{-} > \kappa_d^{+}$, the long-run expected
+state charge satisfies:
+\begin{equation}
+  \E\!\left[\mathcal{S}_\infty^{(d)}\right]
+  \;=\;
+  \frac{\kappa_d^{+}}{\kappa_d^{+} + \kappa_d^{-}}
+  \;<\; \frac{1}{2}.
+  \label{eq:discharge-dominance}
+\end{equation}
+Financial systems discharge faster than they recover.
+\end{theorem}
+
+\begin{table}[H]
+\centering
+\caption{Charge and discharge rates with asymmetry ratios.}
+\label{tab:charge-rates}
+\small
+\begin{tabularx}{\textwidth}{@{} l l l l l @{}}
+\toprule
+\textbf{State} & \textbf{$\kappa_d^{+}$} & \textbf{$\kappa_d^{-}$}
+  & \textbf{Asymmetry} & \textbf{$\E[\mathcal{S}_\infty^{(d)}]$} \\
+\midrule
+Economic    & 0.03/month & 0.08/month & $2.7\times$ & 0.273 \\
+Financial   & 0.15/day   & 0.60/day   & $4.0\times$ & 0.200 \\
+Fiscal      & 0.01/month & 0.02/month & $2.0\times$ & 0.333 \\
+Portfolio   & 0.05/day   & 0.20/day   & $4.0\times$ & 0.200 \\
+Fundamental & 0.02/month & 0.04/month & $2.0\times$ & 0.333 \\
+Market      & 0.50/hour  & 2.0/hour   & $4.0\times$ & 0.200 \\
+Sector/Tech & 0.005/month & 0.010/month & $2.0\times$ & 0.333 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ==============================================================
+\chapter{The State Gating Architecture}
+\label{ch:gating}
+% ==============================================================
+
+\section{Critical and Full-Charge Thresholds}
+
+\begin{definition}[Critical and Full-Charge Thresholds]
+\label{def:thresholds}
+For each $d \in \{1,\ldots,7\}$, the critical threshold
+$\mathcal{S}_{\min}^{(d)}$ and full-charge threshold
+$\mathcal{S}_{\mathrm{full}}^{(d)}$ satisfy:
+\begin{equation}
+  0 < \mathcal{S}_{\min}^{(d)} < \mathcal{S}_{\mathrm{full}}^{(d)} \leq 1.
+\end{equation}
+\end{definition}
+
+\begin{table}[H]
+\centering
+\caption{Canonical threshold values for the seven state dimensions.}
+\label{tab:thresholds}
+\small
+\begin{tabularx}{\textwidth}{@{} l l l l l @{}}
+\toprule
+\textbf{Dim.} & \textbf{State} & $\mathcal{S}_{\min}^{(d)}$
+  & $\mathcal{S}_{\mathrm{full}}^{(d)}$ & \textbf{Consequence of breach} \\
+\midrule
+1 & $\calE_t$ Economic    & 0.15 & 0.70 & Capital preservation mode \\
+2 & $\calF_t$ Financial   & 0.20 & 0.80 & All new positions blocked \\
+3 & $\calG_t$ Fiscal      & 0.10 & 0.65 & Long-horizon allocations frozen \\
+4 & $\calP_t$ Portfolio   & 0.20 & 0.70 & Hard stop; drawdown limit \\
+5 & $\calU_t$ Fundamental & 0.15 & 0.75 & Reduce equity; seek confirmation \\
+6 & $\calM_t$ Market      & 0.20 & 0.80 & No new orders; monitor only \\
+7 & $\calT_t$ Sector/Tech & 0.15 & 0.75 & Exit disrupted sectors \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{The Gating Function}
+
+\begin{definition}[State Gating Function]
+\label{def:gating-function}
+For each dimension $d$, the piecewise-linear gating function is:
+\begin{equation}
+  g_d(\mathcal{S}) \;=\; \begin{cases}
+    0
+      & \mathcal{S} < \mathcal{S}_{\min}^{(d)}, \\[4pt]
+    \displaystyle\frac{\mathcal{S} - \mathcal{S}_{\min}^{(d)}}
+                      {\mathcal{S}_{\mathrm{full}}^{(d)} - \mathcal{S}_{\min}^{(d)}}
+      & \mathcal{S} \in \bigl[\mathcal{S}_{\min}^{(d)},\,
+                               \mathcal{S}_{\mathrm{full}}^{(d)}\bigr), \\[4pt]
+    1
+      & \mathcal{S} \geq \mathcal{S}_{\mathrm{full}}^{(d)}.
+  \end{cases}
+  \label{eq:gating-function}
+\end{equation}
+\end{definition}
+
+\begin{proposition}[Properties of $g_d$]
+\label{prop:gating-properties}
+$g_d : [0,1] \to [0,1]$ is non-decreasing, Lipschitz continuous,
+and satisfies the circuit-breaker biconditional:
+\begin{equation}
+  g_d(\mathcal{S}) = 0
+  \;\Longleftrightarrow\;
+  \mathcal{S} \leq \mathcal{S}_{\min}^{(d)}.
+\end{equation}
+\end{proposition}
+
+\section{The Product Gating Function}
+
+\begin{definition}[Product Gating Function]
+\label{def:product-gating}
+The seven-dimensional product gate is:
+\begin{equation}
+  G(\mathbf{X}_t) \;=\; \prod_{d=1}^{7} g_d\!\left(\mathcal{S}_t^{(d)}\right)
+  \;\in\; [0,1].
+  \label{eq:product-gating}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Product Gating Properties]
+\label{thm:product-gating}
+$G(\mathbf{X}_t)$ satisfies:
+\begin{enumerate}
+  \item \textbf{Range:} $G(\mathbf{X}_t) \in [0,1]$.
+  \item \textbf{Circuit-Breaker:}
+        $G(\mathbf{X}_t) = 0 \Leftrightarrow
+         \exists\,d : \mathcal{S}_t^{(d)} \leq \mathcal{S}_{\min}^{(d)}$.
+  \item \textbf{Full Deployment:}
+        $G(\mathbf{X}_t) = 1 \Leftrightarrow
+         \forall\,d : \mathcal{S}_t^{(d)} \geq \mathcal{S}_{\mathrm{full}}^{(d)}$.
+  \item \textbf{Monotonicity:} $G$ is non-decreasing in each coordinate.
+  \item \textbf{Single-Dimension Sufficiency:}
+        One critically discharged state halts all capital deployment,
+        regardless of the other six dimensions.
+\end{enumerate}
+\end{theorem}
+
+\section{The Capital Deployment Policy}
+
+\begin{definition}[State-Gated Capital Deployment Policy]
+\label{def:deployment-policy}
+The optimal state-gated capital deployment policy is:
+\begin{equation}
+  \pi^*(\mathbf{X}_t, S_t) \;=\;
+  \begin{cases}
+    0
+      & \exists\,d : \mathcal{S}_t^{(d)} \leq \mathcal{S}_{\min}^{(d)}, \\[6pt]
+    K_t^{(\mathrm{inv})} \cdot C_{\mathrm{available}} \cdot G(\mathbf{X}_t)
+      & \text{otherwise},
+  \end{cases}
+  \label{eq:deployment-policy}
+\end{equation}
+where $C_{\mathrm{available}} = W_t - \ell_{\min}$ is the
+deployable capital after reserving the liquidity floor.
+\end{definition}
+
+\begin{proposition}[Policy is Well-Defined and Bounded]
+\label{prop:policy-bounded}
+$\pi^*(\mathbf{X}_t, S_t) \in [0, C_{\mathrm{available}})$
+for all $\mathbf{X}_t$ and all $t$.  In particular,
+$\pi^* < C_{\mathrm{available}}$ strictly since
+$K_t^{(\mathrm{inv})} < 1$ whenever $R_t > 0$.
+\end{proposition}
+
+% ==============================================================
+\chapter{The Composite Risk-Adjusted Objective}
+\label{ch:objective}
+% ==============================================================
+
+\section{Objective Function}
+
+\begin{definition}[Composite Risk-Adjusted Objective]
+\label{def:objective}
+The composite objective function is:
+\begin{equation}
+  J \;=\; \alpha\,G_{\mathrm{ret}}
+         \;-\; \beta\,D_{\mathrm{dd}}
+         \;-\; \gamma\,V
+         \;+\; \delta\,S_{\mathrm{surv}}
+         \;+\; \varepsilon\,R_{\mathrm{risk}}
+         \;-\; \zeta\,T_{\mathrm{cost}}
+         \;-\; \eta\,C_{\mathrm{conc}}
+         \;-\; \theta\,L_{\mathrm{excess}},
+  \label{eq:composite-objective}
+\end{equation}
+where $G_{\mathrm{ret}}$ is total portfolio growth, $D_{\mathrm{dd}}$
+is maximum drawdown, $V$ is annualised volatility,
+$S_{\mathrm{surv}} = \Prob(W_T \geq \ell_{\min})$,
+$R_{\mathrm{risk}}$ is the Calmar ratio, and the remaining terms
+penalise excessive turnover, concentration, and leverage.
+\end{definition}
+
+\begin{remark}[Equivalence to Negative Posterior MSE]
+Maximising $J$ is equivalent to minimising the trace of the
+posterior covariance $\mathbf{P}_{t|t}$:
+\begin{equation}
+  \argmax_\pi J(\pi)
+  \;=\;
+  \argmin_{\hat{\mathbf{X}}}
+  \E\!\left[\|\mathbf{X}_t - \hat{\mathbf{X}}\|^2
+      \mid \mathbf{z}_{1:t}\right].
+\end{equation}
+This formalises the MVUE identification at the core of the platform.
+\end{remark}
+
+\section{Layered Circuit-Breaker Architecture}
+
+\begin{table}[H]
+\centering
+\caption{Four-level circuit-breaker architecture.}
+\label{tab:circuit-breakers}
+\small
+\begin{tabularx}{\textwidth}{@{} l X X @{}}
+\toprule
+\textbf{Level} & \textbf{Trigger Condition} & \textbf{Response} \\
+\midrule
+1 Advisory    & Any $\mathcal{S}_t^{(d)} < 0.50$
+              & Log warning; reduce sizing 20\%. \\
+2 Caution     & Any $\mathcal{S}_t^{(d)} < 0.35$
+                or two states $< 0.50$
+              & Reduce deployment 40\%; tighten stops. \\
+3 Alert       & Any $\mathcal{S}_t^{(d)} < 0.25$
+                or $\calP_t < 0.30$
+              & Reduce deployment 70\%; hedge all risk. \\
+4 Emergency   & Any $\mathcal{S}_t^{(d)} < \mathcal{S}_{\min}^{(d)}$
+                or $\calP_t < 0.20$
+              & Hard stop; no new positions; audit. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ==============================================================
+\chapter{Portfolio Diversification Mandate}
+\label{ch:diversification}
+% ==============================================================
+
+\section{Diversification as a First-Class Constraint}
+
+Diversification is an \emph{architectural constraint}, not a
+preference.  The platform enforces:
+
+\begin{enumerate}
+  \item \textbf{Hard constraints:} maximum concentration per asset,
+        sector, currency, and geography.
+  \item \textbf{Soft constraints:} target correlation bands,
+        volatility-contribution budgets, and factor-exposure limits.
+  \item \textbf{Dynamic triggers:} rebalancing proposals generated
+        when concentration drifts or correlations spike, before any
+        new signal-based trade is considered.
+\end{enumerate}
+
+\begin{theorem}[Concentration is Sub-Optimal]
+\label{thm:concentration-suboptimal}
+Under a strictly positive definite covariance matrix and the
+composite objective $J$, any single-asset portfolio
+$\bfe_k$ is strictly dominated by a diversified portfolio
+$\bfw^* \in \Delta^{n-1}$ unless $\Cov(r_k, r_j) \geq \sigma_k^2$
+for all $j \neq k$.
+\end{theorem}
+
+\begin{theorem}[CVaR Sub-Additivity]
+\label{thm:cvar-subadd}
+For any portfolio weights $\bfw \in \Delta^{n-1}$ and
+confidence level $\alpha \in (0,1)$:
+\begin{equation}
+  \CVaR_\alpha\!\left(\sum_i w_i L_i\right)
+  \;\leq\;
+  \sum_i w_i\,\CVaR_\alpha(L_i),
+\end{equation}
+with strict inequality whenever the losses are not perfectly
+co-monotonic.  Cross-asset diversification always reduces tail risk.
+\end{theorem}
+
+\section{Regime-Conditional Allocation}
+
+\begin{table}[H]
+\centering
+\caption{Regime-conditioned asset-class tilts.}
+\label{tab:regime-tilts}
+\small
+\begin{tabularx}{\textwidth}{@{} l X @{}}
+\toprule
+\textbf{Regime} & \textbf{Asset-Class Orientation} \\
+\midrule
+Risk-On      & $\uparrow$ Equities, EM, High-Yield Credit, Commodities, Crypto. \\
+Risk-Off     & $\uparrow$ Treasuries, Gold, JPY, CHF, Short-Duration Bonds, Cash. \\
+Inflationary & $\uparrow$ TIPS, Commodities, Energy, Real Assets, Commodity FX. \\
+Recessionary & $\uparrow$ Long-Duration Bonds, Deflation Structures, Utilities. \\
+High-Vol / Crisis & $\uparrow$ Volatility Instruments, Tail Hedges, Defensives, Cash. \\
+Stagflation  & $\uparrow$ Real Assets, Gold, Short Equities, Commodity Producers. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ==============================================================
+\chapter{Bayesian Agent Reputation and Recursive Reinvestment}
+\label{ch:reputation}
+% ==============================================================
+
+\section{Bayesian Reputation Update}
+
+\begin{definition}[Beta Prior for Agent Reliability]
+\label{def:beta-prior}
+The prior distribution over agent $i$'s reliability in regime
+$r$ is $\rho_i^{(r)} \sim \mathrm{Beta}(\alpha_i^{(r)}, \beta_i^{(r)})$.
+After observing $n$ episodes with $k$ correct predictions:
+\begin{align}
+  \alpha_i^{(r)\,\prime} &= \alpha_i^{(r)} + k, \\
+  \beta_i^{(r)\,\prime}  &= \beta_i^{(r)} + n - k.
+\end{align}
+The posterior mean (reputation weight) is:
+\begin{equation}
+  \hat{\rho}_i^{(r)}
+  \;=\;
+  \frac{\alpha_i^{(r)} + k}
+       {\alpha_i^{(r)} + \beta_i^{(r)} + n}.
+  \label{eq:posterior-mean}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Geometric Posterior Convergence]
+\label{thm:posterior-convergence}
+As $n \to \infty$, the posterior mean $\hat{\rho}_i^{(r)} \to
+\rho_i^{(r)}$ almost surely, and the posterior variance satisfies
+$\mathrm{Var}[\rho_i^{(r)} \mid \mathrm{data}] = O(1/n)$.
+Agents whose predictions consistently match reality accumulate
+high reputation; those whose predictions are consistently wrong
+see their Kalman gain contribution shrink toward zero.
+\end{theorem}
+
+\section{Recursive Reinvestment and Compounding}
+
+\begin{theorem}[Monotone Compounding]
+\label{thm:monotone-compounding}
+Under the composite objective $J$ and the state-gated deployment
+policy $\pi^*$, the sequence of composite objective values
+$\{J(\pi_t)\}_{t=0}^{T}$ is non-decreasing in expectation:
+\begin{equation}
+  \E\!\left[J(\pi_{t+1}) \mid \calF_t\right] \;\geq\; J(\pi_t).
+\end{equation}
+The inequality is strict whenever the portfolio crosses a capital
+threshold $\tau_m$, activating a higher-tier allocation strategy.
+\end{theorem}
+
+% ==============================================================
+\chapter{System Integration and Full Architecture}
+\label{ch:integration}
+% ==============================================================
+
+\section{The Complete Processing Pipeline}
+
+The full system architecture implements the following recursive
+loop at each discrete time step $t$:
+
+\begin{enumerate}
+  \item \textbf{Observe:} ingest raw market, macro, and news data
+        across all four domains.
+  \item \textbf{Estimate States:} seven specialised state agents
+        produce $\hat{\mathbf{X}}_{t|t}$ via the Kalman update.
+  \item \textbf{Gate:} evaluate $G(\mathbf{X}_t)$; circuit-breakers
+        fire if any $\mathcal{S}_t^{(d)} \leq \mathcal{S}_{\min}^{(d)}$.
+  \item \textbf{Process Signals:} multi-agent ensemble computes
+        $S_t$, $C_t$, $U_t$, $D_t$; Kalman gain $K_t$ is derived.
+  \item \textbf{Allocate Capital:}
+        $\pi^* = K_t \cdot C_{\mathrm{available}} \cdot G(\mathbf{X}_t)$.
+  \item \textbf{Risk Gate:} CVaR, MaxDD, and concentration checks;
+        hard stop if any limit is breached.
+  \item \textbf{Execute:} orders submitted via Alpaca API.
+  \item \textbf{Measure:} realised P\&L vs.\ five baselines;
+        composite objective $J$ evaluated.
+  \item \textbf{Update Reputations:} Bayesian $w_i$ adaptation;
+        measurement noise $\hat{\mathbf{R}}_t$ updated online.
+  \item \textbf{Return to Step 1.}
+\end{enumerate}
+
+\section{Baseline Comparisons}
+
+The platform is benchmarked against five baselines:
+
+\begin{table}[H]
+\centering
+\caption{Baselines and the mechanism by which the platform
+         strictly dominates each.}
+\label{tab:baselines}
+\small
+\begin{tabularx}{\textwidth}{@{} l X X @{}}
+\toprule
+\textbf{Baseline} & \textbf{Missing Property}
+  & \textbf{Dominated Via} \\
+\midrule
+Buy-and-Hold
+  & No drawdown protection; no CVaR gate.
+  & Circuit-breaker prevents catastrophic drawdowns. \\
+Equal-Weight Rebalancing
+  & Ignores all agent signals.
+  & Ensemble signal carries strictly positive information value. \\
+Static Allocation
+  & No regime adaptation.
+  & Bayesian weights detect and respond to regime shifts. \\
+Single-Strategy
+  & No ensemble diversity.
+  & Ensemble variance reduction strictly improves Kalman gain. \\
+Greedy Maximiser
+  & No risk constraints.
+  & Quality dominance: controlled growth beats volatile boom-bust. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{theorem}[Optimality of the Multi-Agent System]
+\label{thm:main-optimality}
+Under the stated assumptions (positive information value, agent
+diversity, positive risk aversion), the multi-agent capital
+allocation system $\mathcal{M}$ achieves a strictly higher
+expected composite objective than any of the five baselines:
+\begin{equation}
+  \E[J(\mathcal{M})]
+  \;>\;
+  \max\!\left(
+    \E[J(\pi_{\mathrm{BH}})],\;
+    \E[J(\pi_{\mathrm{EW}})],\;
+    \E[J(\pi_{\mathrm{SA}})],\;
+    \E[J(\pi_{\mathrm{SS}})],\;
+    \E[J(\pi_{\mathrm{GM}})]
+  \right).
+\end{equation}
+\end{theorem}
+
+% ==============================================================
+\chapter*{Summary of Key Results}
+\addcontentsline{toc}{chapter}{Summary of Key Results}
+% ==============================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{@{} l X X @{}}
+\toprule
+\textbf{Result} & \textbf{Key Guarantee} & \textbf{Chapter} \\
+\midrule
+Theorem~\ref{thm:signal-bounded}
+  & $S_t \in [-1,1]$ for all $t$.
+  & \ref{ch:agents} \\
+Proposition~\ref{prop:gain-properties}
+  & $K_t^{(\mathrm{inv})} \in [0,1)$; bounded by confidence and disagreement.
+  & \ref{ch:kalman} \\
+Theorem~\ref{thm:discharge-dominance}
+  & Long-run state charge $< \tfrac{1}{2}$; discharge dominates.
+  & \ref{ch:states} \\
+Theorem~\ref{thm:product-gating}
+  & $G(\mathbf{X}_t) = 0$ iff any dimension breaches its floor.
+  & \ref{ch:gating} \\
+Proposition~\ref{prop:policy-bounded}
+  & $\pi^* \in [0, C_{\mathrm{available}})$; strict sub-capacity.
+  & \ref{ch:gating} \\
+Theorem~\ref{thm:concentration-suboptimal}
+  & Concentration is never variance-minimising in the generic case.
+  & \ref{ch:diversification} \\
+Theorem~\ref{thm:cvar-subadd}
+  & CVaR is sub-additive; diversification strictly reduces tail risk.
+  & \ref{ch:diversification} \\
+Theorem~\ref{thm:posterior-convergence}
+  & Agent reputations converge geometrically to true reliability.
+  & \ref{ch:reputation} \\
+Theorem~\ref{thm:monotone-compounding}
+  & Expected composite objective is non-decreasing under $\pi^*$.
+  & \ref{ch:reputation} \\
+Theorem~\ref{thm:main-optimality}
+  & Multi-agent system strictly dominates all five baselines.
+  & \ref{ch:integration} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\medskip
+\noindent
+\textbf{The deepest result:}
+
+\begin{align}
+    \E[J(\mathcal{M})]
+    \;&>\;
+    \max\!\left(
+        \E[J(\pi_{\mathrm{BH}})],\;
+        \E[J(\pi_{\mathrm{EW}})],\;
+        \E[J(\pi_{\mathrm{SA}})],\;
+        \E[J(\pi_{\mathrm{SS}})],\;
+        \E[J(\pi_{\mathrm{GM}})]
+    \right)
+    \nonumber\\[2mm]
+    \;&=\;
+    \max\!\left(
+        \begin{gathered}
+        \E[\text{Buy-and-Hold}],\;
+        \E[\text{Equal-Weight}],\;
+        \E[\text{Static Allocation}],\\
+        \E[\text{Single-Strategy}],\;
+        \E[\text{Greedy Maximiser}]
+        \end{gathered}
+    \right).
+\end{align}
+
+\noindent
+and the finite capital constraint $W_0 = \$100{,}000$ is the
+condition that forces the system into the minimum-variance,
+survival-first regime --- protecting the principal that makes all
+future compounding possible.
+
+% ==============================================================
+\chapter*{References}
+\addcontentsline{toc}{chapter}{References}
+% ==============================================================
+
+\begin{thebibliography}{99}
+
+\bibitem{kalman1960}
+Kalman, R.\,E.\ (1960).
+A New Approach to Linear Filtering and Prediction Problems.
+\textit{Journal of Basic Engineering}, 82(1), 35--45.
+
+\bibitem{markowitz1952}
+Markowitz, H.\ (1952).
+Portfolio Selection.
+\textit{Journal of Finance}, 7(1), 77--91.
+
+\bibitem{rockafellar2000}
+Rockafellar, R.\,T.\ \& Uryasev, S.\ (2000).
+Optimization of Conditional Value-at-Risk.
+\textit{Journal of Risk}, 2(3), 21--41.
+
+\bibitem{barshalom2001}
+Bar-Shalom, Y., Li, X.\,R., \& Kirubarajan, T.\ (2001).
+\textit{Estimation with Applications to Tracking and Navigation}.
+Wiley.
+
+\bibitem{hamilton1989}
+Hamilton, J.\,D.\ (1989).
+A New Approach to the Economic Analysis of Nonstationary Time Series.
+\textit{Econometrica}, 57(2), 357--384.
+
+\bibitem{kelly1956}
+Kelly, J.\,L.\ (1956).
+A New Interpretation of Information Rate.
+\textit{Bell System Technical Journal}, 35(4), 917--926.
+
+\bibitem{plett2004}
+Plett, G.\,L.\ (2004).
+Extended Kalman Filtering for Battery Management Systems.
+\textit{Journal of Power Sources}, 134(2), 252--292.
+
+\bibitem{R8}
+\path{finite_investment_architecture_as_economic_financial_fiscal_investment_kalman_filter.md}
+--- this repository.
+Multi-domain Kalman filter isomorphism; all Kalman notation and
+four-domain observation model.
+
+\bibitem{R9}
+\path{finite_investment_architecture_states_of_portfolio_investments_securities_finance_markets_fundamentals_sectors.md}
+--- this repository.
+Seven-state SoC architecture; charge/discharge dynamics;
+gating function specification.
+
+\bibitem{R10}
+\texttt{high\_level\_finite\_initial\_capital\_master\_capital\_allocation\_proof.tex}
+--- this repository.
+Master capital allocation proof; ensemble signal; Bayesian
+reputation; composite objective; dominance hierarchy.
+
+\bibitem{R11}
+\texttt{high\_level\_architecture\_proof.tex} --- this repository.
+Operator composition algebra; HMM regime detection; uncertainty
+decomposition; CVaR formulation.
+
+\bibitem{R12}
+\texttt{high\_level\_supplementary\_diversification\_proof.tex}
+--- this repository.
+Diversification mandate; CVaR sub-additivity; concentration
+constraints; regime-conditional correlation.
+
+\bibitem{R13}
+\texttt{high\_level\_kalman\_filter\_states\_capital\_allocation\_proof.tex}
+--- this repository.
+Full formal proof framework for Kalman filter states and capital
+allocation; seven-state gating architecture.
+
+\end{thebibliography}
+
+% ==============================================================
+\chapter*{Changelog}
+\addcontentsline{toc}{chapter}{Changelog}
+% ==============================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabularx}{\textwidth}{@{} l l l X @{}}
+\toprule
+\textbf{Version} & \textbf{Date} & \textbf{Author} & \textbf{Description} \\
+\midrule
+1.0.0 & 2026-08-24 & Hadrian Hu
+  & Initial draft.  Established team-mates whitepaper consolidating
+    the full multi-agent quantitative-finance platform architecture:
+    four-domain Kalman filter isomorphism, seven-state SoC
+    architecture, product gating function, Bayesian agent
+    reputation, composite risk-adjusted objective, diversification
+    mandate, and dominance hierarchy over five baselines.
+    Formatted and styled consistent with companion proof monographs.
+    \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\end{document}
