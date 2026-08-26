@@ -27,3 +27,9 @@
 	path = tools/alpaca/cli
 	url = https://github.com/alpacahq/cli.git
 	branch = main
+[submodule "tools/alpaca/alpaca-skills"]
+	path = tools/alpaca/alpaca-skills
+	url = https://github.com/alpacahq/alpaca-skills.git
+[submodule "tools/alpaca/alpaca-trade-api-csharp"]
+	path = tools/alpaca/alpaca-trade-api-csharp
+	url = https://github.com/alpacahq/alpaca-trade-api-csharp.git
