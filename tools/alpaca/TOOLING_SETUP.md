@@ -15,6 +15,7 @@ keywords: ["alpaca", "paper-trading", "sdk", "go", "rust", "python", "mcp", "cli
 | `tools/alpaca/alpaca-py` | `alpacahq/alpaca-py` | Python | Official Python SDK v3+ |
 | `tools/alpaca/alpaca-trade-api-python` | `alpacahq/alpaca-trade-api-python` | Python | Legacy Python SDK (reference) |
 | `tools/alpaca/alpaca-trade-api-go` | `alpacahq/alpaca-trade-api-go` | Go | Official Go client |
+| `tools/alpaca/alpaca-trade-api-csharp` | `alpacahq/alpaca-trade-api-csharp` | C# | Official .NET/C# client |
 | `tools/alpaca/alpaca-mcp-server` | `alpacahq/alpaca-mcp-server` | Python | Official MCP server for VS Code / Claude |
 | `tools/alpaca/cli` | `alpacahq/cli` | Go | Official CLI for paper trading |
 
