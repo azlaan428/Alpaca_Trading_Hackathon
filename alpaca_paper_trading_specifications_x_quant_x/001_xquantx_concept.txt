@@ -57,7 +57,8 @@ unconfirmed at this time; X Quant X is used as the working product name.
 SDK, tools/alpaca/alpaca-py submodule). No Natively AI or X Quant X dependencies are
 required.
 1.4.4. The MVP delivers Paper trading mode and optionally Backtest mode; Live trading is
-explicitly out of scope.
+explicitly out of scope. Options paper trading is mandatory MVP scope (§1.9.1.10), not an
+optional extension.
 1.4.5. This platform is an independent LabLab quantitative trading project; the LabLab
 submission requires: use of Alpaca API tools, a functional dashboard (P&L, API calls,
 decisions, margins, risk metrics), and a working paper-trading session.
@@ -120,10 +121,15 @@ Minimum-variance (R04/R07).
 API call log, decisions log.
 1.9.1.8. Backtest mode (historical OHLCV replay, optional).
 1.9.1.9. Audit log (NDJSON, SHA-256 hash chain).
-[1.9.1.10. Options can and MUST BE used in paper trading, not live execution as noted in 1.9.2. section]
+1.9.1.10. Options paper trading (Fire domain): MANDATORY MVP scope, not optional. Options
+orders are submitted via the Alpaca Options API paper endpoint only; see §1.9.2.2 for the
+live-money boundary and 018_xquantx_future_wishlist.txt §1.6.2 for deferred advanced
+strategies.
 1.9.2. Explicitly Out of Scope (MVP)
-1.9.2.1. Live trading (real money).
-1.9.2.2. Options execution.
+1.9.2.1. Live trading (real money), across all instruments, including options.
+1.9.2.2. Advanced options strategies (Greeks-based hedging, volatility-surface strategies,
+IronCondor/CalendarSpread operators) per 018_xquantx_future_wishlist.txt §1.6.2. Basic
+options paper trading itself is mandatory MVP scope per §1.9.1.10, not deferred.
 1.9.2.3. Multi-broker support (Alpaca only).
 1.9.2.4. Reinforcement-learning-based regime engine.
 1.9.2.5. Real-time streaming LLM news pipeline (offline batch news scoring only).
@@ -142,6 +148,7 @@ API call log, decisions log.
 | Dashboard requirement | P&L, positions, margins, API calls, decisions, regime, risk |
 | Hackathon | LabLab (independent project) |
 | Live trading | Out of scope |
+| Options paper trading | Mandatory (Fire domain) |
 
 1.11. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
@@ -191,3 +198,4 @@ resolutions).
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation as 001_game_concept.txt: X Paradox X brand identity, elevator pitch, MVP scope. | Major |
 | 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per user directive: full content rewrite, product identity, open-items register, regulatory citation log, MVP scope, reconciliation against the sibling project. Prior content preserved in git history, not duplicated in-body. | Major |
 | 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-01: replaced X Quant X/X Paradox X concept with X Quant X quantitative paper-trading platform concept. Brand name X Quant X confirmed; tagline set. MVP scope: Paper trading (Backtest optional), LabLab submission. Open items from INVESTIGATE §9.1, 9.2, 9.5 resolved and documented in Reconciliation Table. | Major |
+| 2026.08.27.00 | 2026-08-27 | Documentation Agent | Fixed self-contradiction flagged in team chat (WOLF/SCP, [SCP] "options is in scope"): §1.9.1.10 (options mandatory in paper trading) directly conflicted with §1.9.2.2 ("Options execution" listed out of scope). Reworded §1.9.1.10 as a proper numbered in-scope item and narrowed §1.9.2.2 to advanced/live options only; basic options paper trading is now unambiguously MVP-mandatory. Updated §1.4.4 and Summary Table (§1.10) to match. | Major |

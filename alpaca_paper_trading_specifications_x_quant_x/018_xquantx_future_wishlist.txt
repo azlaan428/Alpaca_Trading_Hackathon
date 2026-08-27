@@ -26,8 +26,9 @@ future wishlist, live trading, options execution, reinforcement learning, LLM ne
 mobile dashboard, multi-broker, regime learning, walk-forward optimization.
 
 1.3. Executive Summary
-The X Quant X MVP delivers paper trading, backtest, and a core Operator pipeline. Post-MVP
-extensions fall into five tiers: (1) execution upgrades (live trading, options, multi-broker);
+The X Quant X MVP delivers paper trading, backtest, and a core Operator pipeline, including
+mandatory basic options paper trading (Fire domain). Post-MVP extensions fall into five
+tiers: (1) execution upgrades (live trading, advanced options strategies, multi-broker);
 (2) intelligence upgrades (RL-based regime engine, streaming LLM news); (3) UI upgrades
 (mobile dashboard, alert notifications); (4) research upgrades (walk-forward optimization,
 synthetic data generation); (5) infrastructure upgrades (cloud deployment, distributed
@@ -37,9 +38,11 @@ backtesting).
 1.4.1. Deferral is not deletion: every item here remains a candidate for a post-MVP roadmap
 and must be re-evaluated against 001_xquantx_concept.txt Section 1.9.2 before being promoted
 into an active specification document.
-1.4.2. The largest deferred category is execution-facing capability (live trading, options
-execution, multi-broker support) that the MVP intentionally replaces with paper trading via
-the Alpaca paper endpoint per 016_xquantx_operating_modes.txt.
+1.4.2. The largest deferred category is execution-facing capability (live trading, advanced
+options strategies, multi-broker support) that the MVP intentionally replaces with paper
+trading via the Alpaca paper endpoint per 016_xquantx_operating_modes.txt. Basic options
+paper trading itself is MVP-mandatory (001_xquantx_concept.txt §1.9.1.10) and is not part of
+this deferred category.
 1.4.3. RL-based regime learning and streaming LLM news pipeline are the most complex deferred
 items requiring new external dependencies and training infrastructure.
 1.4.4. Any promotion of a wishlist item to active scope requires updating
@@ -56,9 +59,11 @@ Section 1.9.2) without pretending the idea was never worth having.
 1.6.1. Live trading mode: connect ExecutionOperator to the Alpaca live trading endpoint
 (ALPACA_BASE_URL=https://api.alpaca.markets). Requires: risk audit sign-off, kill-switch
 mechanism, emergency FLATTEN with manual override, regulatory compliance review.
-1.6.2. Options execution: implement OptionsOperator using Alpaca Options API. Requires:
-Black-Scholes and binomial pricing in the C++ kernel, Greeks computation (delta, gamma, vega),
-options-specific risk rules (max vega exposure, max gamma exposure).
+1.6.2. Advanced options strategies: extend the MVP-mandatory OptionsOperator (basic paper
+options orders via the Alpaca Options API, see 001_xquantx_concept.txt §1.9.1.10) with
+Black-Scholes and binomial pricing in the C++ kernel, Greeks computation (delta, gamma,
+vega), and options-specific risk rules (max vega exposure, max gamma exposure). Live options
+execution (real money) is deferred with Tier 1 live trading (§1.6.1).
 1.6.3. Multi-broker support: abstract ExecutionOperator behind a BrokerAdapter interface to
 support additional brokers (Interactive Brokers via ib_insync, TD Ameritrade). Requires:
 additional SDK submodules, per-broker order type mapping, unified fill event schema.
@@ -114,7 +119,7 @@ instances, each replaying a different historical window, with results aggregated
 | Tier | Extension | MVP blocker removed | Estimated complexity |
 |------|-----------|---------------------|----------------------|
 | 1 | Live trading | Risk sign-off + kill-switch | Medium |
-| 1 | Options execution | Black-Scholes kernel + options API | High |
+| 1 | Advanced options strategies | Black-Scholes kernel + Greeks | High |
 | 1 | Multi-broker | BrokerAdapter interface | Medium |
 | 2 | RL regime engine | RL training loop + Gymnasium wrapper | High |
 | 2 | Streaming LLM news | LLM API + latency budget | Medium |
@@ -158,3 +163,4 @@ over-engineer).
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/018_future_wishlist_items.txt: deferred modes/features, deferred rules complexity, deferred content expansion, explicit permanent non-goals. | Major |
 | 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: replaced deferred game modes/rules with deferred xquantx features (live production monitoring, multi-language personas, real-time coaching mode) and compliance/scoring complexity items. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
 | 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-06: replaced X Quant X future wishlist with X Quant X five-tier extension roadmap: execution upgrades (live trading, options, multi-broker), intelligence upgrades (RL regime, LLM news, learned weights), UI upgrades (mobile, alerts), research upgrades (walk-forward optimization, synthetic data), infrastructure upgrades (cloud, distributed backtesting). | Major |
+| 2026.08.27.00 | 2026-08-27 | Documentation Agent | Reconciled with 001_xquantx_concept.txt §1.9.1.10 (options mandatory MVP scope, per team chat WOLF/SCP): narrowed §1.6.2 from "Options execution" to "Advanced options strategies" (Black-Scholes kernel, Greeks, options risk rules); basic options paper trading via the Alpaca Options API is no longer listed as deferred. Updated §1.3, §1.4.2, and the Summary Table (§1.11) row accordingly. | Major |

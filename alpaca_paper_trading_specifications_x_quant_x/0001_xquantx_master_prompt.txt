@@ -110,7 +110,9 @@ Non-negotiable architectural rules:
    coding_stds/CodingStandardsRef/.
 
 Four-domain partition: Earth (Portfolio & Income), Air (Hedging & Risk), Fire (Volatility &
-Options), Water (Macro & Cross-Market). Four views of one system.
+Options), Water (Macro & Cross-Market). Four views of one system. Options paper trading
+(Fire domain, via the Alpaca Options API paper endpoint) is MANDATORY MVP scope per the
+hackathon category requirement, not optional — see 001_xquantx_concept.txt §1.9.1.10.
 
 Operator model (implement all): Operator (base), DataOperator, NormalizationOperator,
 FeatureOperator, MarketRegimeOperator, SignalOperator, RiskOperator, PortfolioOperator,
@@ -153,8 +155,10 @@ backtest), Shadow CI gate. See 008_xquantx_testing.txt through 014_xquantx_cicd.
 Parallel task: Rewrite alpaca_paper_trading_specifications_x_quant_x/ corpus per
 CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md.
 
-Explicit non-goals (MVP): Live trading, options execution, multi-broker, RL regime engine,
-real-time LLM news, mobile dashboard.
+Explicit non-goals (MVP): Live trading (real-money execution, including live options),
+advanced options strategies (Greeks-based hedging, volatility-surface strategies),
+multi-broker, RL regime engine, real-time LLM news, mobile dashboard. Basic options paper
+trading itself is MANDATORY MVP scope (Fire domain), not a non-goal.
 ---
 
 1.9. Bounded Follow-Up Prompt Discipline
@@ -240,3 +244,4 @@ later-sprint iteration never regresses to broad, uncontrolled requests.
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: opening-day Natively AI master prompt synthesized from the full reconciled game_specifications corpus, plus a seven-day hackathon pacing guide and bounded follow-up prompt discipline. | Major |
 | 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to the xquantx master prompt per user directive: full content rewrite covering personas, scenario gauntlet, call lifecycle, statutory/policy corpus, guardrails, verdict scoring, and Suggested Patch Adviser. Prior content preserved in git history, not duplicated in-body. | Major |
 | 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-09: replaced X Quant X opening-day master prompt with X Quant X quantitative paper-trading master prompt. §1.8 contains the consolidated copy-paste block derived from CHATS/2026-08-26_alcapa-spec-rewrite-PROMPT.md §6. §1.9 bounded follow-up discipline added. §1.10 day-by-day pacing guide added. | Major |
+| 2026.08.27.00 | 2026-08-27 | Documentation Agent | Fixed self-contradiction flagged in team chat (WOLF/SCP): §1.8 "Explicit non-goals" listed "options execution" as out of scope while 001_xquantx_concept.txt §1.9.1.10 required it. Reworded the four-domain partition sentence and the non-goals list so basic options paper trading is unambiguously MANDATORY MVP scope; only live/advanced options remain non-goals. | Major |
