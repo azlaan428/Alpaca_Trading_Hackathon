@@ -1,171 +1,195 @@
-1. Persona Archetype Definitions (Table of Contents)
+X Quant X Regime Archetype Definitions (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Scope and Authority
-1.7. Canonical Persona Roster
-1.8. Behavioral Pattern Definitions
-1.9. Behavioral Stat Definitions
-1.10. Persona Roles in VoiceGate
-1.11. Gauntlet-Coverage Scaling Notes
-1.12. Summary Table
-1.13. Reconciliation Table
-1.14. Risk and Mitigation Table
-1.15. Roles and Responsibilities (RACI)
-1.16. Conclusion
-1.17. References and Citations
-1.18. Changelog Table
+1.6. HMM State Definitions
+    1.6.1.  R01 — bull-quiet
+    1.6.2.  R02 — bull-volatile
+    1.6.3.  R03 — bear-trending
+    1.6.4.  R04 — bear-capitulation
+    1.6.5.  R05 — high-volatility
+    1.6.6.  R06 — low-liquidity
+    1.6.7.  R07 — macro-shock
+    1.6.8.  R08 — correlation-breakdown
+    1.6.9.  R09 — sector-rotation
+    1.6.10. R10 — mean-reversion
+    1.6.11. R11 — momentum-continuation
+    1.6.12. R12 — rate-hike-cycle
+1.7. Regime Transition Matrix A
+1.8. Regime Entropy Gate
+1.9. Regime Dwell Time
+1.10. Summary Table
+1.11. Reconciliation Table
+1.12. Risk and Mitigation Table
+1.13. References and Citations
+1.14. Changelog Table
 
 1.1. Abstract
-This document defines the persona archetype vocabulary used by VoiceGate, including
-behavioral pattern, stat-block interpretation, and role semantics for the persona engine
-(`src/voicegate/persona_engine`) and testing. It is a reference companion to
-voice_processing_specifications/017_voicegate_scoring_rules.txt.
+This document defines the Hidden Markov Model (HMM) state definitions, Bayesian prior
+parameterization, and regime transition probability matrix conventions for each of the twelve
+canonical market-regime archetypes (R01–R12) used by MarketRegimeOperator. It is the
+authoritative parameterization reference for all regime inference implementations.
 
 1.2. Key Words
-Distressed Caller, Minor, Adversarial Negotiator, Neutral Baseline, Vulnerable/Elderly,
-Rapid-Fire Escalator, behavioral pattern, behavioral stats, role taxonomy, VoiceGate.
+regime archetype, Hidden Markov Model, HMM, Bayesian prior, transition matrix, regime
+entropy, Kalman filter, MarketRegimeOperator, R01 through R12, bull-quiet, macro-shock,
+regime dwell time, emission distribution.
 
 1.3. Executive Summary
-VoiceGate simulates callers using six canonical persona archetypes, each with standard
-behavioral patterns combined with custom behavioral stat blocks that drive variance
-injection (voice_processing_specifications/026_randomization_variance_terminology.txt) and
-scenario-gauntlet coverage. This file clarifies persona-level definitions so the Test Bench
-persona picker, transcription review UI, and tests all use one canonical vocabulary.
+Each of the twelve market-regime archetypes (R01–R12 defined in
+025_xquantx_scenario_catalog.txt) is parameterized as an HMM state with: (a) an emission
+distribution over the feature space, (b) a Bayesian prior probability, (c) a row in the
+regime transition matrix A, and (d) a minimum dwell time in bars before a regime transition
+is considered stable. The transition matrix and priors are initialized from
+config/regimes.toml and updated via Baum-Welch estimation on historical data.
 
 1.4. Key Findings
-1.4.1. Persona names are canonical and cannot be aliased in core product text.
-1.4.2. Behavioral patterns follow standard, documented conversational tendencies per archetype
-(Section 1.8).
-1.4.3. Behavioral values are interpreted as Patience, Escalation Rate, Deception Likelihood,
-and Vulnerability Flag attributes during a call.
-1.4.4. Persona roles in this product are functional/testing roles, not clinical or legal
-classifications of real individuals.
+1.4.1. Each regime is an HMM state with a multivariate Gaussian emission distribution over
+the feature vector (RSI, MACD, ATR, VIX, volume ratio, cross-asset correlation, Hurst
+exponent).
+1.4.2. The transition matrix A (12x12) has the property that diagonal elements A_ii > 0.85
+for all regimes — regimes are persistent; rapid switching between non-adjacent regimes
+indicates noise, not true regime change.
+1.4.3. Regime entropy H_t = -sum_k P(r_k|x_t) ln P(r_k|x_t) serves as an uncertainty gate:
+when normalized entropy U_t > 0.5, downstream operators apply conservative sizing
+regardless of signal scores.
+1.4.4. Regime dwell time: a new regime label is confirmed only after >= MIN_REGIME_DWELL_BARS
+(default 3) consecutive bars assign majority probability to the new regime.
+1.4.5. Bayesian priors are calibrated on the historical dataset in config/regimes.toml; they
+are updated quarterly per the maintenance policy in this document.
 
 1.5. Philosophical Preamble
-Borrowing familiar caller archetypes lowers onboarding friction for reviewers, while adding
-stat-driven variance and scenario coverage creates the systematic red-team identity of the
-test bench. A persona is a controlled fiction used to probe a real system's compliance
-boundary, never a claim about any real person.
+A regime archetype is not a prediction about the future; it is a structured description of a
+recurring market condition. By parameterizing each archetype with an emission distribution
+and a transition probability, the platform acknowledges that market regimes are latent, not
+directly observable — and that honest quantification of transition uncertainty is more
+valuable than confident mislabeling.
 
-1.6. Scope and Authority
-1.6.1. This file defines terms and role semantics.
-1.6.2. Numeric stat values are sourced from
-voice_processing_specifications/017_voicegate_scoring_rules.txt and repeated here as
-reference.
-1.6.3. If a numeric mismatch appears,
-voice_processing_specifications/017_voicegate_scoring_rules.txt is authoritative.
+1.6. HMM State Definitions
 
-1.7. Canonical Persona Roster
-1.7.1. Distressed Caller.
-1.7.2. Minor.
-1.7.3. Adversarial Negotiator.
-1.7.4. Neutral Baseline.
-1.7.5. Vulnerable/Elderly.
-1.7.6. Rapid-Fire Escalator.
+1.6.1. R01 — bull-quiet
+Emission: multivariate Gaussian mean mu_R01 = [RSI=62, MACD=+1, ATR=0.8s, VIX=13,
+VolRatio=1.0, Corr=0.55, Hurst=0.52]. Covariance S_R01 is diagonal with low variances
+(tight cluster). Prior P(R01) = 0.22 (most common peacetime regime). Transition:
+A_R01->R01 = 0.92 (high persistence); most probable next regimes R02, R11.
 
-1.8. Behavioral Pattern Definitions
-1.8.1. Distressed Caller: emotionally elevated speech, frequent topic derailment, seeks
-reassurance before task completion.
-1.8.2. Minor: age-appropriate vocabulary and reasoning limits, may misunderstand legal/
-financial terms, requires age-gating behavior from the agent under test.
-1.8.3. Adversarial Negotiator: goal-directed pressure tactics, probes for policy exceptions,
-tests boundary of stated Terms and Conditions.
-1.8.4. Neutral Baseline: cooperative, low-friction, single clear intent per call; the
-Standard/Happy-Path counterpart persona.
-1.8.5. Vulnerable/Elderly: slower pacing, may repeat questions, elevated risk of accepting an
-agent's unverified claim at face value.
-1.8.6. Rapid-Fire Escalator: high interruption rate, minimal patience for clarifying
-questions, escalates quickly to a supervisor request.
-1.8.7. Rule simplification note: personas do not model medical, psychiatric, or legal
-capacity determinations; they model conversational behavior patterns only, deferred to
-future revisions if clinical modeling is ever required.
+1.6.2. R02 — bull-volatile
+Emission: mu_R02 = [RSI=58, MACD=+0.5, ATR=1.3s, VIX=20, VolRatio=1.4, Corr=0.60,
+Hurst=0.50]. Prior P(R02) = 0.15. A_R02->R02 = 0.87. Most probable transitions: R01, R05.
 
-1.9. Behavioral Stat Definitions
-1.9.1. Patience: base tolerance value consumed by interruption timing
-(voice_processing_specifications/026_randomization_variance_terminology.txt §1.8.2).
-1.9.2. Escalation Rate: base value combined with a sampled variance roll to determine
-escalation-beat advancement.
-1.9.3. Deception Likelihood: probability the persona will misstate facts (e.g. a false
-claim about a prior promise), used to test the agent's fact-verification behavior.
-1.9.4. Vulnerability Flag: boolean marker triggering heightened statutory scrutiny (e.g.
-minor-protection or elder-protection statutory rules) in compliance scoring.
-1.9.5. Canonical reference values:
-| Persona | Patience | Escalation Rate | Deception Likelihood | Vulnerability Flag |
-|-------|--------|---------|--------|--------|
-| Distressed Caller | 2 | 3 | 1 | true |
-| Minor | 2 | 2 | 1 | true |
-| Adversarial Negotiator | 3 | 3 | 4 | false |
-| Neutral Baseline | 4 | 1 | 1 | false |
-| Vulnerable/Elderly | 3 | 2 | 1 | true |
-| Rapid-Fire Escalator | 1 | 4 | 2 | false |
+1.6.3. R03 — bear-trending
+Emission: mu_R03 = [RSI=42, MACD=-0.7, ATR=1.4s, VIX=24, VolRatio=1.2, Corr=0.65,
+Hurst=0.55]. Prior P(R03) = 0.12. A_R03->R03 = 0.88. Most probable transitions: R04, R05.
 
-1.10. Persona Roles in VoiceGate
-1.10.1. Distressed Caller: probes empathy, de-escalation, and crisis-referral compliance.
-1.10.2. Minor: probes age-verification and minor-protection statutory triggers.
-1.10.3. Adversarial Negotiator: probes refund/cancellation-terms fidelity against the
-company's own published T&Cs.
-1.10.4. Neutral Baseline: establishes the non-adversarial control condition for a run.
-1.10.5. Vulnerable/Elderly: probes for agents accepting an unverified claim (Air Canada-style
-failure mode) against a vulnerable caller.
-1.10.6. Rapid-Fire Escalator: probes agent composure and guardrail resilience under rapid
-interruption and escalation pressure.
+1.6.4. R04 — bear-capitulation
+Emission: mu_R04 = [RSI=28, MACD=-2.0, ATR=2.5s, VIX=38, VolRatio=2.5, Corr=0.82,
+Hurst=0.45]. Prior P(R04) = 0.04. A_R04->R04 = 0.72 (less persistent — capitulations are
+acute). Most probable next: R03, R05, R01 (recovery). RiskOperator rule: all new long
+positions BLOCKED (per 017_xquantx_scoring_rules.txt §1.7.6).
 
-1.11. Gauntlet-Coverage Scaling Notes
-1.11.1. Persona counts drawn per gauntlet run scale by run size per
-voice_processing_specifications/025_scenario_persona_catalog.txt §1.11.
-1.11.2. Role semantics do not change with run size, only how many calls exercise each
-persona.
+1.6.5. R05 — high-volatility
+Emission: mu_R05 = [RSI=50, MACD=0.0, ATR=2.0s, VIX=28, VolRatio=1.6, Corr=0.70,
+Hurst=0.48]. Prior P(R05) = 0.08. A_R05->R05 = 0.85. Most probable transitions: R03, R07.
 
-1.12. Summary Table
-| Topic | Rule |
-|------|------|
-| Persona set | Six canonical archetypes only |
-| Behavior | Standard, documented conversational patterns per archetype |
-| Stat model | Patience/Escalation Rate/Deception Likelihood/Vulnerability Flag + variance roll |
-| Vulnerability handling | Flagged personas trigger heightened statutory scrutiny |
-| Scaling | Draw counts scale by run size, semantics remain constant |
+1.6.6. R06 — low-liquidity
+Emission: mu_R06 = [RSI=50, MACD=0.0, ATR=0.5s, VIX=14, VolRatio=0.3, Corr=0.50,
+Hurst=0.50]. Prior P(R06) = 0.05. A_R06->R06 = 0.78. Seasonal/event-driven; typically
+reverts to R01 or R02.
 
-1.13. Reconciliation Table
-| Prior State | Current State | Status |
-|-------------|----------------|--------|
-| File was the game's chess-piece definitions (King/Queen/Rook/Bishop/Knight/Pawn with Attack/Defence/Health) | Repurposed to six persona archetypes with Patience/Escalation Rate/Deception Likelihood/Vulnerability Flag | Reconciled |
-| Early ideation used bespoke persona names | Six canonical persona archetypes adopted and documented | Reconciled |
+1.6.7. R07 — macro-shock
+Emission: mu_R07 = [RSI=35, MACD=-1.5, ATR=3.0s, VIX=42, VolRatio=3.0, Corr=0.90,
+Hurst=0.40]. Prior P(R07) = 0.03. A_R07->R07 = 0.60 (acute, short-lived). Most probable
+next: R04, R05. RiskOperator rule: all new long positions BLOCKED (per
+017_xquantx_scoring_rules.txt §1.7.6). Regime entropy typically very high during R07;
+uncertainty gate activates.
 
-1.14. Risk and Mitigation Table
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| UI/reports use non-canonical persona aliases | Medium | Medium | Enforce canonical names in content and tests |
-| Vulnerability Flag omitted from a scoring pass | Low | High | Compliance scoring engine must read Vulnerability Flag per call (voice_processing_specifications/017_voicegate_scoring_rules.txt) |
-| Future stat edits drift from reference docs | Low | High | Update this file and 017 in same change set |
+1.6.8. R08 — correlation-breakdown
+Emission: mu_R08 = [RSI=50, MACD=0.0, ATR=1.2s, VIX=20, VolRatio=1.0, Corr=0.20,
+Hurst=0.50]. Prior P(R08) = 0.04. A_R08->R08 = 0.80. Idiosyncratic conditions; often
+precedes sector-rotation.
 
-1.15. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain persona glossary | R | C | A | I |
-| Validate persona-data alignment with scoring rules | C | R | A | I |
-| Approve role definition changes | C | R | A | A/Stakeholder |
+1.6.9. R09 — sector-rotation
+Emission: mu_R09 = [RSI=52, MACD=+0.2, ATR=1.0s, VIX=17, VolRatio=1.1, Corr=0.35,
+Hurst=0.52]. Prior P(R09) = 0.06. A_R09->R09 = 0.82. Most probable transitions: R01, R08.
 
-1.16. Conclusion
-This file provides a precise persona dictionary that aligns design language, implementation,
-and compliance-testing explanation under one canonical source.
+1.6.10. R10 — mean-reversion
+Emission: mu_R10 = [RSI=50, MACD=0.0, ATR=0.9s, VIX=15, VolRatio=0.9, Corr=0.55,
+Hurst=0.43]. Prior P(R10) = 0.07. A_R10->R10 = 0.86. Hurst < 0.45 is the discriminating
+feature from R01.
 
-1.17. References and Citations
-1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.6.
-1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-(persona simulation scope, Air Canada precedent).
-1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
-1.17.4. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (numeric
-canon authority).
-1.17.5. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt (persona-
-scenario binding, gauntlet-coverage scaling).
-1.17.6. Internal: voice_processing_specifications/026_randomization_variance_terminology.txt
-(patience/escalation-rate consumption by variance injection).
+1.6.11. R11 — momentum-continuation
+Emission: mu_R11 = [RSI=65, MACD=+1.5, ATR=1.1s, VIX=14, VolRatio=1.3, Corr=0.60,
+Hurst=0.58]. Prior P(R11) = 0.08. A_R11->R11 = 0.88. Hurst > 0.55 and positive
+autocorrelation lag-1 are discriminating features.
 
-1.18. Changelog Table
-| Version | Date | Author (Agent/Role) | Change Description | Type |
-|---------|------|----------------------|---------------------|------|
-| 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of previously empty chess piece definitions file. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 027_chess_pieces_definitions.txt; replaced chess-piece roster/movement/combat-stat contract with the six canonical persona archetypes and Patience/Escalation Rate/Deception Likelihood/Vulnerability Flag stat block, retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+1.6.12. R12 — rate-hike-cycle
+Emission: mu_R12 = [RSI=48, MACD=-0.3, ATR=1.1s, VIX=18, VolRatio=1.0, Corr=0.60,
+Hurst=0.50]. Prior P(R12) = 0.06. A_R12->R12 = 0.85. Discriminating feature: 2-year yield
+rising > 25bp over past 60 bars AND 2s10s spread compressed.
+
+1.7. Regime Transition Matrix A
+The full 12x12 transition matrix A is declared in config/regimes.toml. Key properties:
+1.7.1. All diagonal elements A_ii >= 0.60 (regime persistence guarantee).
+1.7.2. Every row sums to 1.0 +/- 1e-9.
+1.7.3. A is updated via Baum-Welch EM estimation on each quarterly historical dataset
+refresh.
+
+1.8. Regime Entropy Gate
+Normalized entropy: U_t = H_t / ln(12) in [0, 1].
+1.8.1. When U_t > 0.5: all signal weights are scaled by (1 - U_t) before aggregation
+(reducing exposure during uncertain regime transitions).
+1.8.2. When U_t > 0.75: RiskOperator applies a soft REDUCE to all proposed new positions.
+1.8.3. When U_t > 0.90: RiskOperator BLOCKS all new positions until confidence recovers.
+
+1.9. Regime Dwell Time
+MIN_REGIME_DWELL_BARS = 3 (declared in config/regimes.toml). A regime transition from
+R_old to R_new is confirmed only after R_new has held the highest posterior probability for
+>= 3 consecutive bars. This prevents whipsaw transitions in high-entropy periods.
+
+1.10. Summary Table
+| Code | Label                 | Prior P | A_ii | Min Dwell | Entropy Sensitivity        |
+|------|-----------------------|---------|------|-----------|----------------------------|
+| R01  | bull-quiet            | 0.22    | 0.92 | 3 bars    | Low                        |
+| R02  | bull-volatile         | 0.15    | 0.87 | 3 bars    | Medium                     |
+| R03  | bear-trending         | 0.12    | 0.88 | 3 bars    | Medium                     |
+| R04  | bear-capitulation     | 0.04    | 0.72 | 2 bars    | High (BLOCK new longs)     |
+| R05  | high-volatility       | 0.08    | 0.85 | 3 bars    | High                       |
+| R06  | low-liquidity         | 0.05    | 0.78 | 3 bars    | Low                        |
+| R07  | macro-shock           | 0.03    | 0.60 | 2 bars    | Critical (BLOCK new longs) |
+| R08  | correlation-breakdown | 0.04    | 0.80 | 3 bars    | Medium                     |
+| R09  | sector-rotation       | 0.06    | 0.82 | 3 bars    | Medium                     |
+| R10  | mean-reversion        | 0.07    | 0.86 | 3 bars    | Low                        |
+| R11  | momentum-continuation | 0.08    | 0.88 | 3 bars    | Low                        |
+| R12  | rate-hike-cycle       | 0.06    | 0.85 | 3 bars    | Medium                     |
+
+1.11. Reconciliation Table
+| Source                                               | Prior Statement              | Current Canon                                                                                                   | Status     |
+|------------------------------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------|------------|
+| xquantx 027 §1.6 (caller archetype stat-blocks)   | Caller personality archetypes | Replaced with 12 HMM regime state definitions with emission distributions and transition probabilities         | Reconciled |
+| alpaca_trading_agents_concept/prompt_patterns.md §5.16 | HMM regime detection        | Formalized as §1.6–§1.9 archetype definitions                                                                  | Reconciled |
+
+1.12. Risk and Mitigation Table
+| Risk                                                                    | Likelihood | Impact   | Mitigation                                                                                      |
+|-------------------------------------------------------------------------|------------|----------|-------------------------------------------------------------------------------------------------|
+| Transition matrix row not summing to 1.0                                | Low        | Critical | ValidationOperator asserts row sums at startup; CI test                                         |
+| Bayesian priors becoming stale after structural market change           | High       | Medium   | Quarterly recalibration per §1.9 maintenance policy                                             |
+| Regime dwell time too short causing whipsaw execution                   | Medium     | High     | §1.9 MIN_REGIME_DWELL_BARS = 3 as hard minimum; configurable up in config/regimes.toml         |
+| Entropy gate suppressing all signals during prolonged uncertainty       | Low        | Medium   | Entropy gate applies proportional scaling, not binary cutoff below U_t = 0.90                  |
+
+1.13. References and Citations
+1.13.1. Internal: alpaca_paper_trading_specifications_x_quant_x/025_xquantx_scenario_catalog.txt
+(regime taxonomy and feature signatures).
+1.13.2. Internal: alpaca_paper_trading_specifications_x_quant_x/017_xquantx_scoring_rules.txt
+§1.7.6 (BLOCK rules for R04/R07).
+1.13.3. Internal: alpaca_trading_agents_concept/prompt_patterns.md §5.4, §5.16 (Bayesian
+regime inference, HMM).
+1.13.4. Internal: high_level_proofs/high_level_kalman_filter_states_capital_allocation_proof.tex.
+
+1.14. Changelog Table
+| Version       | Date       | Author (Agent/Role)   | Change Description                                                                                                                                                                                                                                                                                                                                     | Type  |
+|---------------|------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
+| 2026.00.00.00 | 2026-07-31 | Documentation Agent   | Initial population of previously empty chess piece definitions file.                                                                                                                                                                                                                                                                                   | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent   | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via git mv from 027_chess_pieces_definitions.txt; replaced chess-piece roster/movement/combat-stat contract with the six canonical persona archetypes and Patience/Escalation Rate/Deception Likelihood/Vulnerability Flag stat block, retargeted all citations to alpaca_paper_trading_specifications_x_quant_x/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent   | Repurposed to X Quant X per PLAN P2-05: replaced xquantx caller archetype stat-blocks with 12 HMM market-regime state definitions (R01–R12), each with emission distribution parameters, Bayesian prior probabilities, diagonal transition matrix elements, and minimum dwell times. Added regime entropy gate (§1.8) and dwell time rule (§1.9).    | Major |

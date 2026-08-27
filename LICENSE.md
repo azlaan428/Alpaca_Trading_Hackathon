@@ -1,7 +1,7 @@
 # License
 
-**VoiceGate** — Copyright (c) 2026 [Company name not yet confirmed — OPEN ITEM, see
-`voice_processing_specifications/001_voice_transcription_concept.txt §1.9.1`; this line must be
+**xquantx** — Copyright (c) 2026 [Company name not yet confirmed — OPEN ITEM, see
+`alpaca_paper_trading_specifications_x_quant_x/001_voice_transcription_concept.txt §1.9.1`; this line must be
 completed with the confirmed legal entity name before this license is relied upon]. All rights
 not expressly granted below are reserved.
 
@@ -9,7 +9,7 @@ This project is **source-available**, not open source in the OSI sense. It is di
 
 This document's legal structure (base license + supplementary proprietary terms + mandatory-fork
 contribution policy) is inherited unchanged from the sibling project `DarkStrategy_XParadoxX`;
-only the product name, company name, and brand marks have been updated to VoiceGate/TBD. The
+only the product name, company name, and brand marks have been updated to xquantx/TBD. The
 company name placeholder above must be resolved by an authorized stakeholder — it is not
 invented here.
 
@@ -17,7 +17,7 @@ invented here.
 
 ## 1. Base License — CC BY-NC 4.0
 
-The source code, product specification documents (`voice_processing_specifications/`), and other original content in this repository are licensed under:
+The source code, product specification documents (`alpaca_paper_trading_specifications_x_quant_x/`), and other original content in this repository are licensed under:
 
 > **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**
 > Full legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode
@@ -31,7 +31,7 @@ The source code, product specification documents (`voice_processing_specificatio
 ### 1.2. Under the following terms
 
 - **Attribution** — You must give appropriate credit to the copyright holder named above (once confirmed), provide a link to this repository, link to this license, and indicate if changes were made. You may not do so in any manner that suggests the copyright holder endorses you or your use.
-- **NonCommercial** — You may **not** use the material for commercial purposes. Commercial purposes include, without limitation: selling VoiceGate or derivatives, bundling it into a paid product or service, monetizing it with advertising, or using it to generate revenue in any form, without a separate written commercial license from the copyright holder.
+- **NonCommercial** — You may **not** use the material for commercial purposes. Commercial purposes include, without limitation: selling xquantx or derivatives, bundling it into a paid product or service, monetizing it with advertising, or using it to generate revenue in any form, without a separate written commercial license from the copyright holder.
 - **No additional restrictions** — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits, except as expressly reserved in Section 2.
 
 ### 1.3. Notices
@@ -42,11 +42,11 @@ You do not have to comply with the license for elements of the material in the p
 
 ## 2. Supplementary Proprietary Terms
 
-These terms are additive to, and where conflicting take precedence over, CC BY-NC 4.0. They exist because **VoiceGate** is intended as a commercial product developed for an assumed LabLab AI Factory / Natively AI hackathon submission and beyond, and remains proprietary in intent even while its source is visible.
+These terms are additive to, and where conflicting take precedence over, CC BY-NC 4.0. They exist because **xquantx** is intended as a commercial product developed for an assumed LabLab AI Factory / Natively AI hackathon submission and beyond, and remains proprietary in intent even while its source is visible.
 
 ### 2.1. Proprietary Reservation
 
-All rights to the confirmed company name (once supplied), the **Voice Compliance QA (VCQ)** category label, the **VoiceGate** title, and all associated branding, logos, palettes (`002_voicegate_aesthetics.txt`), and marketing assets are **reserved trademarks and trade dress** and are **not** licensed under CC BY-NC 4.0. No permission is granted to use these marks to name, brand, or market any fork, derivative, or unrelated project.
+All rights to the confirmed company name (once supplied), the **Voice Compliance QA (VCQ)** category label, the **xquantx** title, and all associated branding, logos, palettes (`002_xquantx_aesthetics.txt`), and marketing assets are **reserved trademarks and trade dress** and are **not** licensed under CC BY-NC 4.0. No permission is granted to use these marks to name, brand, or market any fork, derivative, or unrelated project.
 
 ### 2.2. Mandatory Forking for Contribution Tracking
 
@@ -63,7 +63,7 @@ Direct pushes to upstream branches are not permitted for non-maintainers. This r
 By submitting a contribution (via Pull Request or otherwise) to this repository, you:
 
 1. Retain copyright ownership of your contribution;
-2. Grant the confirmed copyright holder (Section 2.1, once named) a perpetual, worldwide, royalty-free, irrevocable, sublicensable license to use, reproduce, modify, adapt, publish, distribute, and commercially exploit your contribution as part of VoiceGate or any derivative or successor product, **including in ways that exceed the NonCommercial restriction in Section 1.2** when exercised by the copyright holder itself;
+2. Grant the confirmed copyright holder (Section 2.1, once named) a perpetual, worldwide, royalty-free, irrevocable, sublicensable license to use, reproduce, modify, adapt, publish, distribute, and commercially exploit your contribution as part of xquantx or any derivative or successor product, **including in ways that exceed the NonCommercial restriction in Section 1.2** when exercised by the copyright holder itself;
 3. Confirm you have the right to grant this license (i.e., the contribution is your own original work or you otherwise hold the necessary rights).
 
 This asymmetric grant is what allows the copyright holder to ship a commercial product while the wider community license (Section 1) remains non-commercial for everyone else.
@@ -84,7 +84,7 @@ Your rights under this license terminate automatically if you fail to comply wit
 
 ## 3. Trademark Notice
 
-"VoiceGate" and any confirmed company/brand name (Section 2.1) are trademarks of the copyright holder named above, once confirmed. This license does not grant permission to use these trademarks except to describe the origin of the material as required by the Attribution term in Section 1.2.
+"xquantx" and any confirmed company/brand name (Section 2.1) are trademarks of the copyright holder named above, once confirmed. This license does not grant permission to use these trademarks except to describe the origin of the material as required by the Attribution term in Section 1.2.
 
 ---
 

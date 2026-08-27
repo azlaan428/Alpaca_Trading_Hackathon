@@ -1,158 +1,189 @@
-1. VoiceGate CI/CD (Table of Contents)
+X Quant X CI/CD (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Pipeline Stages
-1.6.1. Lint and Style
-1.6.2. Type Checking
-1.6.3. Unit Test and Coverage Gate
-1.6.4. Integration Test Gate
-1.6.5. Guardrail Test Suite Gate
-1.6.6. End-to-End Test Gate
-1.6.7. Scheduled Performance/Guardrail-Load Simulation
-1.7. Branching and Release Strategy
-1.8. Summary Table
-1.9. Reconciliation Table
-1.10. Risk and Mitigation Table
-1.11. Roles and Responsibilities (RACI)
-1.12. Conclusion
-1.13. References and Citations
-1.14. Changelog Table
+1.6. GitHub Actions Workflow Layout
+1.7. Per-Language Test Stage Details
+1.8. Lint and Type-Check Gates
+1.9. Coverage Gates
+1.10. Build-Artifact Versioning
+1.11. Summary Table
+1.12. Reconciliation Table
+1.13. Risk and Mitigation Table
+1.14. References and Citations
+1.15. Changelog Table
 
 1.1. Abstract
-This document specifies the continuous integration and continuous deployment pipeline for
-VoiceGate, implementing the testing baseline established in 008_voicegate_testing.txt as a
-concrete, staged pipeline with explicit quality gates, including a dedicated, mandatory
-guardrail-test-suite gate that must pass before any merge.
+This document defines the CI/CD pipeline for X Quant X across all four implementation
+languages (Python, Go, C++, Rust). It specifies pipeline stages, per-language test runners,
+coverage gates, lint and type-check stages, build-artifact versioning, and the GitHub Actions
+workflow layout.
 
 1.2. Key Words
-CI/CD, pipeline, quality gate, coverage gate, guardrail gate, lint, type check, branching
-strategy, scheduled job.
+CI/CD, GitHub Actions, pytest, go test, ctest, cargo test, coverage gates, lint, mypy,
+golangci-lint, clang-tidy, clippy, build matrix, artifact versioning, four-language,
+Shadow CI gate.
 
 1.3. Executive Summary
-Every change to VoiceGate passes through an ordered pipeline: lint/style, type checking, unit
-tests with a 100% coverage gate, integration tests, a dedicated guardrail-test-suite gate
-(prompt-injection resistance, actor/role-confusion resistance, seeded-randomization
-reproducibility), and end-to-end tests, with the large-sample guardrail-load simulation
-(012_voicegate_performance_tests.txt Section 1.6.5) run on a scheduled/slower cadence rather
-than on every commit.
+X Quant X CI/CD runs in GitHub Actions with parallel jobs per language layer. The pipeline
+stages are: (1) lint + type-check for each language; (2) unit tests with coverage gate;
+(3) integration tests; (4) simulation tests (backtest e2e); (5) performance tests;
+(6) Shadow CI gate (Dry-run comparison). No merge to main is permitted unless all six stages
+pass for all four languages. Build artifacts are versioned with the short git commit SHA.
 
 1.4. Key Findings
-1.4.1. The unit-test coverage gate enforces the 100% coverage/100% pass-rate baseline from
-008_voicegate_testing.txt Section 1.8 as a hard pipeline failure condition, not merely a
-report.
-1.4.2. The guardrail-test-suite gate (Section 1.6.5) is a dedicated, mandatory pipeline
-stage, distinct from the ordinary unit/integration coverage gates, and blocks merge on its
-own if any guardrail case (008_voicegate_testing.txt Section 1.9) fails.
-1.4.3. End-to-end tests (013_voicegate_end2end_testing.txt) run in the pipeline but are
-permitted a longer timeout budget than unit/integration tests, consistent with their heavier
-UI automation tooling.
-1.4.4. The large-sample guardrail-load simulation (012_voicegate_performance_tests.txt
-Section 1.6.5) is explicitly scheduled rather than run per-commit, since its minimum
-10-minute wall-clock budget would otherwise slow every change; the per-commit guardrail gate
-(1.6.5) still runs the fixture-level guardrail cases on every commit.
-1.4.5. Every pipeline stage failure blocks merge; no stage is advisory-only except the
-scheduled guardrail-load simulation, which is reviewed rather than auto-blocking, per Section
-1.6.7.
+1.4.1. Four parallel language jobs: Python, Go, C++, Rust. Each job runs its own lint,
+type-check, unit test, and coverage gate independently.
+1.4.2. Coverage gates: 100% branch coverage on all Operator implementations in Python
+(coverage.py), and per-language equivalents for Go, C++, Rust (enforced per
+009_xquantx_unit_tests.txt).
+1.4.3. Lint and type-check stages: ruff + mypy --strict (Python), golangci-lint (Go),
+clang-tidy (C++), clippy --deny warnings (Rust). Any lint failure blocks the merge.
+1.4.4. The integration and simulation test stages run after all four language unit test
+stages pass (sequential dependency).
+1.4.5. The Shadow CI gate is the last mandatory CI step; it runs the Dry-run comparison
+against a pinned baseline (per 008_xquantx_testing.txt §1.10).
 
 1.5. Philosophical Preamble
-A pipeline is where this corpus's other promises (100% coverage, mandatory guardrail
-resistance, transcript-as-data) stop being aspirations and start being mechanically enforced
-facts about every single change. This document exists so that no quality standard declared
-elsewhere in this corpus is left to depend on a human remembering to check it manually.
+A pipeline is where this corpus's other promises (100% branch coverage on operators,
+mandatory Shadow CI gate, multi-language correctness) stop being aspirations and start being
+mechanically enforced facts about every single change. This document exists so that no
+quality standard declared elsewhere in this corpus is left to depend on a human remembering
+to check it manually.
 
-1.6. Pipeline Stages
+1.6. GitHub Actions Workflow Layout
+The CI pipeline is defined in .github/workflows/ci.yml with the following jobs structure:
 
-1.6.1. Lint and Style
-Project style rules checked via an automated linter; failure blocks merge.
+    jobs:
+      lint-python:
+        runs-on: ubuntu-latest
+        steps: checkout -> setup Python 3.14 -> pip install -r requirements-dev.txt
+               -> ruff check src/python/ tests/python/
+               -> mypy --strict src/python/
 
-1.6.2. Type Checking
-Static type checking against the `src/voicegate/` and `src/data/` type hints; failure blocks
-merge.
+      lint-go:
+        runs-on: ubuntu-latest
+        steps: checkout -> setup Go (pinned version from go.mod) -> go mod download
+               -> golangci-lint run ./...
 
-1.6.3. Unit Test and Coverage Gate
-All unit tests (009_voicegate_unit_tests.txt) must pass with 100% coverage, per
-008_voicegate_testing.txt Section 1.8; failure blocks merge.
+      lint-cpp:
+        runs-on: ubuntu-latest
+        steps: checkout -> conan install -> cmake configure
+               -> clang-tidy -p build/ src/cpp/
 
-1.6.4. Integration Test Gate
-All integration tests (011_voicegate_integration_tests.txt) must pass; failure blocks merge.
+      lint-rust:
+        runs-on: ubuntu-latest
+        steps: checkout -> rustup show (use rust-toolchain.toml)
+               -> cargo clippy -- -D warnings
 
-1.6.5. Guardrail Test Suite Gate
-All guardrail-specific cases across the unit and integration tiers (prompt-injection
-resistance, actor/speaker-role-confusion resistance, deterministic seeded-randomization
-reproducibility, per 008_voicegate_testing.txt Section 1.9) are run as a dedicated,
-independently reported suite; any failure in this suite blocks merge regardless of the
-outcome of Sections 1.6.3-1.6.4.
+      test-python:
+        needs: [lint-python]
+        steps: ... -> pytest tests/python/ --cov=src/python --cov-branch
+                    -> coverage report --fail-under=100
 
-1.6.6. End-to-End Test Gate
-All end-to-end tests (013_voicegate_end2end_testing.txt) must pass, including the guardrail
-scenario playthrough (013_voicegate_end2end_testing.txt Section 1.6.6), with a longer timeout
-budget than earlier stages to accommodate UI automation; failure blocks merge.
+      test-go:
+        needs: [lint-go]
+        steps: ... -> go test ./... -coverprofile=coverage.out -covermode=atomic
 
-1.6.7. Scheduled Performance/Guardrail-Load Simulation
-The large-sample guardrail-load simulation (012_voicegate_performance_tests.txt Section
-1.6.5) runs on a scheduled cadence (e.g. nightly or on release-branch merges) rather than
-per-commit; a regression here is reviewed by the product owner rather than automatically
-blocking every merge, since it reflects a statistical-resistance signal at scale rather than
-a fixture-level correctness defect (which is already caught per-commit by Section 1.6.5).
+      test-cpp:
+        needs: [lint-cpp]
+        steps: ... -> cmake --build build --target tests -> ctest --test-dir build
 
-1.7. Branching and Release Strategy
-1.7.1. Feature branches for new work, bug-fix branches for defects, release branches for
-hackathon-submission cut points.
-1.7.2. Merges to the `main` branch require all pipeline stages in Sections 1.6.1-1.6.6 to
-pass and at least one code review approval.
-1.7.3. Commit messages are clear and concise, describing what changed and why.
+      test-rust:
+        needs: [lint-rust]
+        steps: ... -> cargo test --all-features
+                    -> cargo tarpaulin --out Xml
 
-1.8. Summary Table
-| Stage | Gate Type | Blocks Merge |
-|-------|-----------|----------------|
-| Lint/style | Per-commit | Yes |
-| Type check | Per-commit | Yes |
-| Unit tests + 100% coverage | Per-commit | Yes |
-| Integration tests | Per-commit | Yes |
-| Guardrail test suite | Per-commit | Yes |
-| End-to-end tests | Per-commit (extended timeout) | Yes |
-| Guardrail-load simulation | Scheduled | No (reviewed, not auto-blocking) |
+      test-integration:
+        needs: [test-python, test-go, test-cpp, test-rust]
+        steps: ... -> pytest tests/python/integration/ -v
 
-1.9. Reconciliation Table
-| Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Sibling project, 014_game_cicd.txt (prior revision) | Seven-stage pipeline including an import-direction/architecture gate | Six per-commit-relevant stages retained in spirit, with the import-direction gate replaced by a dedicated, mandatory Guardrail Test Suite Gate (1.6.5), and the scheduled balance simulation re-mapped to the scheduled guardrail-load simulation (1.6.7) | Reconciled |
+      test-simulation:
+        needs: [test-integration]
+        steps: ... -> pytest tests/python/simulation/ -v
+                    -> pytest tests/python/simulation/test_temporal_leakage.py -v
 
-1.10. Risk and Mitigation Table
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Pipeline duration growing unacceptably as test tiers accumulate | Medium | Medium | Guardrail-load simulation moved to a scheduled stage (1.6.7) specifically to bound per-commit duration |
-| Guardrail-test-suite gate treated as part of the ordinary coverage gate and de-prioritized | Medium | High | 1.6.5 is reported and blocks independently of Sections 1.6.3-1.6.4 |
-| A failing scheduled guardrail-load simulation being ignored since it does not block merge | Medium | Medium | 1.6.7 assigns explicit product-owner review responsibility rather than leaving it unowned |
+      test-performance:
+        needs: [test-simulation]
+        steps: ... -> pytest tests/python/performance/ --benchmark-autosave
 
-1.11. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain pipeline configuration | R | C | A | I |
-| Review scheduled guardrail-load-simulation regressions | C | R | A | A/Stakeholder (product owner) |
+      shadow-ci:
+        needs: [test-performance]
+        steps: ... -> pytest tests/shadow/test_shadow_ci.py -v
 
-1.12. Conclusion
-A six-stage per-commit pipeline mechanically enforces every quality standard declared
-elsewhere in this corpus, with a dedicated mandatory guardrail-test-suite gate and the one
-deliberately non-blocking exception of the scheduled guardrail-load simulation, whose
-regressions require product judgment rather than automatic rejection.
+1.7. Per-Language Test Stage Details
+1.7.1. Python: pytest with --cov=src/python --cov-branch. Coverage report fails build if
+branch coverage < 100% for any operator file. Hypothesis tests run with 500 examples
+(configurable via HYPOTHESIS_MAX_EXAMPLES env var).
+1.7.2. Go: go test ./... with -race flag (race detector enabled). go cover with
+-covermode=atomic. Coverage threshold is enforced via a script checking go cover output.
+1.7.3. C++: ctest in Release build mode. Google Test XML output is published as CI artifact.
+clang-tidy runs with -warnings-as-errors for all X Quant X source files.
+1.7.4. Rust: cargo test --all-features. cargo tarpaulin generates coverage XML. clippy with
+-- -D warnings ensures zero lint warnings.
 
-1.13. References and Citations
-1.13.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
-§1.1-1.14.
-1.13.2. Internal: voice_processing_specifications/008_voicegate_testing.txt (coverage/
-pass-rate baseline; Section 1.9 mandatory guardrail testing).
-1.13.3. Internal: voice_processing_specifications/012_voicegate_performance_tests.txt
-§1.6.5 (guardrail-load simulation).
-1.13.4. Internal: voice_processing_specifications/013_voicegate_end2end_testing.txt §1.6.6
-(guardrail scenario playthrough).
-1.13.5. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.5.
+1.8. Lint and Type-Check Gates
+| Language | Lint tool              | Type check              | Failure behavior |
+|----------|------------------------|-------------------------|-----------------|
+| Python   | ruff                   | mypy --strict           | Block merge     |
+| Go       | golangci-lint          | native (go vet)         | Block merge     |
+| C++      | clang-tidy             | clang-analyzer          | Block merge     |
+| Rust     | clippy --deny warnings | native (rustc)          | Block merge     |
 
-1.14. Changelog Table
-| Version | Date | Author (Agent/Role) | Change Description | Type |
-|---------|------|----------------------|---------------------|------|
-| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation (sibling project, as 014_game_cicd.txt): seven-stage CI/CD pipeline, branching strategy, and gate/blocking semantics. | Major |
-| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via `git mv` from 014_game_cicd.txt; replaced the import-direction/architecture gate with a dedicated, mandatory Guardrail Test Suite Gate (1.6.5) covering prompt-injection resistance, actor/role-confusion resistance, and seeded-randomization reproducibility; re-mapped the scheduled balance simulation to a scheduled guardrail-load simulation (1.6.7). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+1.9. Coverage Gates
+| Language | Tool         | Gate                                | Scope                        |
+|----------|--------------|-------------------------------------|------------------------------|
+| Python   | coverage.py  | 100% branch on Operator files       | src/python/operators/**/*.py |
+| Go       | go cover     | 80% total (no per-package gate yet) | internal/ packages           |
+| C++      | gcov/lcov    | 80% line coverage                   | src/cpp/src/**/*.cpp         |
+| Rust     | tarpaulin    | 80% line coverage                   | src/rust/src/**/*.rs         |
+
+1.10. Build-Artifact Versioning
+1.10.1. All build artifacts are labeled with the short git commit SHA:
+xquantx-python-{SHA}.tar.gz, xquantx-go-{SHA}.tar.gz, etc.
+1.10.2. Docker images (if built) are tagged:
+ghcr.io/xquantx/xquantx-platform:{SHA} and ghcr.io/xquantx/xquantx-platform:latest.
+1.10.3. The RULESET_VERSION from config/risk_rules.toml is included in the artifact
+metadata and logged in AUDIT_LOGS/ at session start.
+
+1.11. Summary Table
+| Stage             | Job                                        | Dependency       | Failure behavior |
+|-------------------|--------------------------------------------|------------------|-----------------|
+| Lint + type-check | lint-python, lint-go, lint-cpp, lint-rust  | None (parallel)  | Block merge     |
+| Unit tests        | test-python, test-go, test-cpp, test-rust  | Respective lint  | Block merge     |
+| Integration tests | test-integration                           | All test-*       | Block merge     |
+| Simulation tests  | test-simulation                            | test-integration | Block merge     |
+| Performance tests | test-performance                           | test-simulation  | Block merge     |
+| Shadow CI gate    | shadow-ci                                  | test-performance | Block merge     |
+
+1.12. Reconciliation Table
+| Source                                  | Prior Statement           | Current Canon                                                                                                    | Status     |
+|-----------------------------------------|---------------------------|------------------------------------------------------------------------------------------------------------------|------------|
+| xquantx 014 §1.6 (Python-only CI/CD) | Single Python CI pipeline | Replaced with four-language parallel CI matrix + sequential integration/simulation/performance/shadow stages     | Reconciled |
+
+1.13. Risk and Mitigation Table
+| Risk                                                                    | Likelihood | Impact | Mitigation                                                                                                          |
+|-------------------------------------------------------------------------|------------|--------|---------------------------------------------------------------------------------------------------------------------|
+| C++ or Rust CI steps skipped due to slow build                          | Medium     | High   | CI stages are mandatory (no skip); cache Conan packages and Cargo registry between runs                             |
+| Shadow CI gate becomes stale due to market structure change             | High       | Medium | Baseline in tests/baselines/ is a versioned file; update deliberately when operator behavior intentionally changes  |
+| Python 100% branch coverage gate too strict (causes test proliferation) | Medium     | Medium | Gate applies only to src/python/operators/**; dashboard/ and scripts/ are exempt                                    |
+| CI API rate limit on Alpaca sandbox integration tests                   | Medium     | Low    | Sandbox tests gated on RUN_SANDBOX_TESTS=1; default CI does not run them                                            |
+
+1.14. References and Citations
+1.14.1. Internal: alpaca_paper_trading_specifications_x_quant_x/008_xquantx_testing.txt
+(test strategy; Shadow CI gate §1.10).
+1.14.2. Internal: alpaca_paper_trading_specifications_x_quant_x/009_xquantx_unit_tests.txt
+(coverage requirements).
+1.14.3. Internal: alpaca_paper_trading_specifications_x_quant_x/007_xquantx_virtual_env.txt
+(build environments per language).
+1.14.4. Internal: coding_stds/CodingStandardsRef/coding_stds/devops/cicd_standards.txt.
+1.14.5. External: GitHub Actions documentation (docs.github.com/en/actions).
+
+1.15. Changelog Table
+| Version       | Date       | Author (Agent/Role)  | Change Description                                                                                                                                                                                                                                                                                                                                              | Type  |
+|---------------|------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent  | Initial creation (sibling project, as 014_game_cicd.txt): seven-stage CI/CD pipeline, branching strategy, and gate/blocking semantics.                                                                                                                                                                                                                         | Major |
+| 2026.08.00.01 | 2026-08-03 | Documentation Agent  | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via `git mv` from 014_game_cicd.txt; replaced the import-direction/architecture gate with a dedicated, mandatory Guardrail Test Suite Gate (1.6.5) covering prompt-injection resistance, actor/role-confusion resistance, and seeded-randomization reproducibility; re-mapped the scheduled balance simulation to a scheduled guardrail-load simulation (1.6.7). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent  | Repurposed to X Quant X per PLAN P2-14: replaced xquantx Python-only CI/CD with X Quant X four-language CI/CD matrix (Python/Go/C++/Rust). Added GitHub Actions workflow layout (§1.6), per-language test stage details (§1.7), lint/type-check gates (§1.8), coverage gates (§1.9), build artifact versioning (§1.10), and six-stage pipeline dependency graph. | Major |

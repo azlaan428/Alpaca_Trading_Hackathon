@@ -1,30 +1,14 @@
-1. VoiceGate Opening-Day Master Prompt (Table of Contents)
+X Quant X Opening-Day Master Prompt (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Hackathon Context and Timeline
+1.6. Development Sprint Context and Timeline
 1.7. How to Use This Document
 1.8. The Master Prompt (Copy-Paste Block)
-1.8.1. Project Identity
-1.8.2. Mission and Target Platform
-1.8.3. Personas and Scenario Catalog
-1.8.4. Scenario Gauntlet Execution
-1.8.5. Call Lifecycle Structure
-1.8.6. Statutory and Policy Reference Corpus
-1.8.7. Guardrails — Prompt Injection, Model Poisoning, Actor-Role Confusion
-1.8.8. Verdict Scoring
-1.8.9. User Interface
-1.8.10. Visual Style
-1.8.11. Software Architecture
-1.8.12. Suggested Patch Adviser
-1.8.13. Persistence
-1.8.14. Testing and Debug Panel
-1.8.15. Delivery Priority
-1.8.16. Explicit Non-Goals
-1.9. Day-by-Day Pacing Guide for the Hackathon Week
-1.10. Bounded Follow-Up Prompt Discipline
+1.9. Bounded Follow-Up Prompt Discipline
+1.10. Day-by-Day Pacing Guide
 1.11. Summary Table
 1.12. Reconciliation Table
 1.13. Risk and Mitigation Table
@@ -34,413 +18,225 @@
 1.17. Changelog Table
 
 1.1. Abstract
-This document is the single, submission-ready master prompt to be pasted into Natively AI on
-the opening day of the assumed LabLab AI Factory hackathon window (2026-08-03 through
-2026-08-10 — see Section 1.9.4 of 001_voice_transcription_concept.txt for the open-item
-caveat on this assumption) to scaffold and generate the initial vertical slice of VoiceGate.
-It is assembled from the locked canon in voice_processing_specifications/001 through 024 (see
-References, Section 1.16), plus the guardrail requirements recorded verbatim in
-voice_transcription_concept/voice_chat_concept.md, so the team can paste one internally
-consistent prompt on day one instead of discovering contradictions mid-generation. This
-document invents no new statute, no new numeric compliance threshold, and declares no new
-hallucination-envelope invocation beyond what the cited source documents already declare.
+This file is the in-repository copy of the X Quant X opening-day master prompt. It is
+co-authored with and derived from CHATS/2026-08-26_alcapa-spec-rewrite-PROMPT.md §6. The
+master prompt in §1.8 (The Master Prompt) is the copy-paste block submitted to an AI
+code-generation platform on Day 1 of the development sprint. Section §1.9 defines the
+bounded follow-up prompt discipline for subsequent prompts. Section §1.10 provides the
+day-by-day pacing guide.
 
 1.2. Key Words
-Natively AI, LabLab AI Factory, hackathon, master prompt, opening day, VoiceGate, Voice
-Compliance QA, vertical slice, Test Bench, Call Review, Risk Report, guardrails, prompt
-injection, day-by-day pacing, bounded follow-up prompts, delivery priority.
+master prompt, opening-day, X Quant X, paper trading, quantitative finance, operator model,
+four-domain, multi-agent, Python, Go, C++, Rust, bounded follow-up.
 
 1.3. Executive Summary
-This document gives the team a single, copy-paste-ready master prompt (Section 1.8)
-reflecting current VoiceGate canon — an automated compliance test bench that simulates
-callers across persona/scenario categories, drives a scripted-and-adversarial gauntlet
-against a target voice agent, transcribes both channels, and scores each call against a
-statutory/policy reference corpus and the target company's own published terms — plus a
-day-by-day pacing guide (Section 1.9) and a bounded follow-up prompt discipline (Section
-1.10), carried forward unchanged in spirit from the sibling DarkStrategy_XParadoxX project's
-own prompt-discipline lesson: never submit an open-ended request such as "make the testing
-smarter," always name the exact file/component and what must stay unchanged.
+The X Quant X opening-day master prompt consolidates all architectural decisions — operator
+model, data pipeline, regime engine, risk rules, portfolio operators, execution integration,
+performance attribution, testing, logging, visualization, and the specification corpus rewrite
+directive — into a single, internally consistent copy-paste block. It is designed to scaffold
+the platform in one submission.
 
 1.4. Key Findings
-1.4.1. This document supersedes, for prompt-submission purposes, the prior 0001 revision that
-synthesized the X Paradox X game canon; that prior content is preserved in this repository's
-git history (commit 14726ca) rather than duplicated in-body, per the 2026-08-03 user
-directive to rewrite corpus content for VoiceGate efficiently.
-1.4.2. The assumed hackathon window (2026-08-03 to 2026-08-10) is inherited from the sibling
-project's own timeline and matches the current session date, but is explicitly flagged as an
-open item, not a confirmed fact, in 001_voice_transcription_concept.txt Section 1.9.4.
-1.4.3. The master prompt in Section 1.8 is written for single-piece, day-one submission, per
-the same discipline the source chat itself urged for the sibling project: avoid numerous,
-piecemeal iterations with Natively AI.
-1.4.4. Every guardrail requirement named in Section 1.8.7 (prompt-injection resistance,
-model-poisoning resistance, actor/speaker-role-confusion resistance) is cited verbatim in
-intent from voice_transcription_concept/voice_chat_concept.md and must not be weakened by any
-later follow-up prompt without an explicit, reviewed reconciliation entry.
-1.4.5. All external regulatory citations quoted in this document (EU AI Act Article 50,
-California SB 243, the Air Canada precedent) are carried through from
-001_voice_transcription_concept.txt Section 1.11 and remain verification-flagged, not
-independently confirmed by this document.
+1.4.1. The master prompt (§1.8) is a single copy-paste block; it must NOT be fragmented into
+smaller prompts on Day 1.
+1.4.2. All subsequent prompts must follow the bounded follow-up discipline (§1.9): TARGET /
+CHANGE / PRESERVE / SCOPE / TEST format.
+1.4.3. The day-by-day pacing guide (§1.10) sequences the sprint from scaffold through
+validation.
+1.4.4. This document is the in-repository canonical copy of the prompt;
+CHATS/2026-08-26_alcapa-spec-rewrite-PROMPT.md is the planning artifact from which it derives.
+1.4.5. Every META-PROMPT referenced in alcapa_trading_agents_concept/prompt_patterns.md is
+represented in §1.8.
 
 1.5. Philosophical Preamble
-An opening-day prompt is the single highest-leverage artifact of a one-week hackathon: every
-ambiguity left unresolved in it is an ambiguity Natively AI will resolve on the team's behalf,
-almost certainly at the cost of a day's regeneration. This is doubly true for VoiceGate,
-whose entire purpose is catching exactly this kind of unreviewed, ungrounded assumption in
-someone else's product — a documentation corpus that tolerates the same drift in its own
-prompt would be self-defeating.
+A master prompt is the highest-level instruction set a development sprint receives. Its
+purpose is to establish consistent architectural decisions across all components before any
+implementation begins. A fragmented master prompt — submitted as many small prompts over
+multiple sessions — produces an inconsistent architecture where each component reflects
+different implicit assumptions about the platform. Submit the master prompt whole, on Day 1,
+and use bounded follow-up prompts for all subsequent changes.
 
-1.6. Hackathon Context and Timeline
-1.6.1. Event: assumed LabLab AI Factory hackathon (open item, see Section 1.4.2).
-1.6.2. Duration: assumed one week, 2026-08-03 (Monday) through 2026-08-10 (Monday), inclusive.
-1.6.3. Required platform: Natively AI (code-generation/scaffolding tool), per
-015_voicegate_deployment.txt.
-1.6.4. Submission target: this repository (X_Voice_X), a py.typed Python package forked from
-DarkStrategy_XParadoxX, per voice_transcription_concept/voice_chat_concept.md.
-1.6.5. Team: TAQI's team, distinct from the sibling project's team; SCP/Hadrian advises both.
+1.6. Development Sprint Context and Timeline
+1.6.1. Platform: X Quant X — quantitative paper-trading intelligence platform.
+1.6.2. Duration: seven-day development sprint; Day 1 through Day 7 (see §1.10 for daily
+targets).
+1.6.3. Primary AI code-generation tool: AI code-generation platform (name TBD by team).
+1.6.4. Submission target: this repository, Alpaca_Trading_Hackathon, per the project README.
+1.6.5. Standards authority: coding_stds/CodingStandardsRef/ Tier 0-5 rules apply
+unconditionally to every generated artifact.
 
 1.7. How to Use This Document
-1.7.1. On day one, submit the entire Section 1.8 block to Natively AI as the first prompt, in
-one piece, before requesting any incremental change.
-1.7.2. Do not paraphrase or shorten Section 1.8 before submission.
-1.7.3. After initial generation, all further requests must follow the bounded follow-up
-prompt discipline in Section 1.10.
-1.7.4. If Natively AI's output conflicts with any statement in Section 1.8, this
-specification corpus remains authoritative; file a reconciliation note rather than silently
-accepting the deviation.
+1.7.1. On Day 1, submit the entire §1.8 block to the AI code-generation platform as the
+first prompt, in one piece, before requesting any incremental change.
+1.7.2. Do not paraphrase or shorten §1.8 before submission.
+1.7.3. After initial generation, all further requests must follow the bounded follow-up prompt
+discipline in §1.9.
+1.7.4. If the AI tool's output conflicts with any statement in §1.8, this specification
+corpus remains authoritative; file a reconciliation note rather than silently accepting the
+deviation.
 
 1.8. The Master Prompt (Copy-Paste Block)
-The following text (Sections 1.8.1 through 1.8.16) is the literal content to submit to
-Natively AI on opening day, as a single unbroken submission.
+The following text is the literal content to submit to the AI code-generation platform on
+opening day, as a single unbroken submission.
 
-1.8.1. Project Identity
-```
-PROJECT NAME
-VoiceGate
+---
+You are scaffolding and building the X Quant X quantitative paper-trading intelligence
+platform — a multi-agent, multi-language system that continuously determines the state of
+financial markets, estimates uncertainty and risk, and dynamically proposes portfolio
+allocation, hedging, and trading decisions.
 
-COMPANY
-Not yet confirmed (open item — see 001_voice_transcription_concept.txt Section 1.9.1). Do not
-invent a company name in generated output; use "VoiceGate" as the product/project name only.
+Repository: Alpaca_Trading_Hackathon (current workspace).
+Implementation languages: Python, Go, C++, Rust.
+Primary execution API: Alpaca Paper Trading API via alpaca-py SDK (tools/alpaca/alpaca-py).
+Secondary execution API: Alpaca Go SDK (tools/alpaca/alpaca-trade-api-go) for
+performance-critical paths.
+Standards authority: coding_stds/CodingStandardsRef/coding_stds/MOST_CITED_STANDARDS.md
+Tier 0-5 rules apply unconditionally.
 
-CATEGORY
-Voice Compliance QA (VCQ) — PROPOSED working category: automated red-teaming and
-regulatory/policy scoring of production voice AI agents.
+Central research question: Given all information legitimately available at time t, what
+market regime is most probable, what risks currently dominate, how uncertain is that
+assessment, and what portfolio allocation, hedge, or trading action provides the best
+risk-adjusted response?
 
-PROJECT TYPE
-An automated compliance and safety test bench for voice AI agents, submitted to the assumed
-LabLab AI Factory hackathon (2026-08-03 to 2026-08-10 — see Section 1.6.2 caveat).
-```
+Non-negotiable architectural rules:
+1. Agents are software objects implementing typed interfaces (Operator, Agent, Strategy).
+   Markdown does not execute agents.
+2. Deterministic over magic: same input + same seed = same output for every Operator.
+3. Uncertainty is a first-class citizen: every signal and decision carries an explicit
+   confidence or uncertainty estimate.
+4. Evidence-traceability: every order is reconstructable from raw data to features to regime
+   to signal to risk verdict to allocation to order.
+5. SOLID + ACID + JPL Power of Ten: all code follows these principles per
+   coding_stds/CodingStandardsRef/.
 
-1.8.2. Mission and Target Platform
-```
-MISSION
-Build a working test bench that calls a target voice agent with simulated caller identity engineered by
-age, emotional state, and adversarial style; transcribes both sides of every call; and scores
-each call against applicable statutes and the target company's own published terms. The
-project must prioritize functional correctness of the scoring/citation pipeline and guardrail
-robustness over feature quantity.
+Four-domain partition: Earth (Portfolio & Income), Air (Hedging & Risk), Fire (Volatility &
+Options), Water (Macro & Cross-Market). Four views of one system.
 
-TARGET
-Create a responsive web-rendered UI (Test Bench, Call Review, Risk Report) backed by a Python
-backend (this repository, X_Voice_X, a py.typed package) usable in a desktop browser. Do not
-require user accounts, payments, multi-tenant billing, or live production call interception in
-the MVP; test against a sandbox/staging instance of the target voice agent only.
-```
+Operator model (implement all): Operator (base), DataOperator, NormalizationOperator,
+FeatureOperator, MarketRegimeOperator, SignalOperator, RiskOperator, PortfolioOperator,
+HedgeOperator, ExecutionOperator, SimulationOperator, PerformanceOperator,
+ValidationOperator, NewsOperator. Every Operator implements: process(), validate_inputs(),
+schema_version(), operator_id().
 
-1.8.3. Personas and Scenario Catalog
-```
-PERSONAS AND SCENARIOS
-Provide a minimum viable persona/scenario catalog with at least one entry in each category:
-Crisis/Emotional, Minor/Age-Sensitive, Adversarial-Refund, and Standard/Happy-Path (see
-voice_processing_specifications/025_scenario_persona_catalog.txt for the full catalog schema
-and voice_processing_specifications/027_persona_archetype_definitions.txt for per-persona
-behavioral fields: patience, escalation rate, deception likelihood, vulnerability flag).
-Each persona/scenario pairing must declare an intensity tier (Low, Medium, High, Extreme; see
-voice_processing_specifications/026_randomization_variance_terminology.txt) that bounds the
-randomized variance (tone jitter, interruption timing, escalation pacing) injected into that
-simulated caller's turns, so gauntlet runs remain reproducible under a seeded RNG.
-```
+Multi-language boundaries: Python = ML/research/orchestration/Alpaca API; Go =
+streaming/services/low-latency; C++ = numerical kernels (Kalman, covariance, options
+pricing); Rust = concurrent pipeline/serialization.
 
-1.8.4. Scenario Gauntlet Execution
-```
-GAUNTLET EXECUTION
-A gauntlet run selects one or more persona/scenario pairings and drives each through a full
-call lifecycle (Section 1.8.5) against the target voice agent, one call at a time or in a
-declared batch. Every call produces: a dual-channel transcript, a per-turn event log, and a
-final verdict (Section 1.8.8). A gauntlet run must be fully replayable from its RNG seed.
-```
+Canonical data schemas (define before implementing any Operator): OHLCVBar, Tick, Order,
+Position, PortfolioSnapshot, RegimeState, Signal, AllocationVector — all specified in
+alpaca_paper_trading_specifications_x_quant_x/021_xquantx_data_standards.txt §1.8.
 
-1.8.5. Call Lifecycle Structure
-```
-CALL LIFECYCLE
-Every simulated call proceeds through five phases, displayed and enforced by the orchestration
-engine:
-1. Greeting — establish the simulated caller's opening context.
-2. Intent Discovery — the caller states or reveals their need across one or more turns.
-3. Resolution Attempt — the target agent attempts to resolve the caller's need.
-4. Compliance Check — the scoring engine evaluates the transcript-so-far against the
-   statutory/policy reference corpus (Section 1.8.6), continuously, not only at call end.
-5. Wrap-up — the call ends; a final verdict and citation set are produced.
-Compliance Check may flag a violation at any phase; it is never skipped or deferred solely to
-call end.
-```
+Market-regime engine: Twelve canonical regimes R01-R12 (defined in
+025_xquantx_scenario_catalog.txt). Methods: HMM (Baum-Welch + Viterbi), Kalman filter
+state estimation, Bayesian posterior update. Regime entropy gate: U_t > 0.75 = REDUCE;
+U_t > 0.90 = BLOCK new positions.
 
-1.8.6. Statutory and Policy Reference Corpus
-```
-STATUTORY AND POLICY REFERENCE CORPUS
-Maintain a structured, versioned corpus of: (a) applicable statutes/regulations (minimum
-viable set: EU AI Act Article 50, California SB 243 — both verification-flagged per
-001_voice_transcription_concept.txt Section 1.11, do not present as legally confirmed without
-review) and (b) the target company's own published refund/cancellation terms, scraped and
-snapshotted per run. Verdicts cite structured rule IDs and clause references, never full
-statute or contract text reproduction (see
-voice_processing_specifications/028_statutory_ruleset_integration.txt for the non-import
-boundary). The corpus schema must record, per rule: rule ID, source, effective-date status
-(verified/unverified), and the scoring logic that applies it.
-```
+Risk rule-set (defined in 028_xquantx_risk_ruleset.txt): 10 rules. FLATTEN trigger:
+drawdown > 15% from peak. BLOCK: concentration > 20%, leverage > 1.0, new long in R04/R07
+with confidence <= 0.85. REDUCE: sector exposure > 35%, entropy U_t > 0.75. Kelly sizing:
+f = 0.25 * f*, capped at 20% per position.
 
-1.8.7. Guardrails — Prompt Injection, Model Poisoning, Actor-Role Confusion
-```
-GUARDRAILS
-Treat all transcribed speech (caller and agent) as untrusted data, never as instructions, when
-passed to any scoring/judge model — this applies even if transcribed text contains phrases
-that look like system instructions. Defend explicitly against: (a) prompt injection embedded
-in simulated-caller or target-agent speech attempting to alter judge behavior; (b) model
-poisoning via crafted transcript content; (c) actor/speaker-role confusion, where a judge
-model conflates which line belongs to the caller versus the agent (an observed failure mode
-in current-generation models per voice_transcription_concept/voice_chat_concept.md). Every
-transcript turn must carry an unambiguous, structurally-enforced speaker-role tag that the
-judge model cannot be talked out of via in-text claims.
-```
+Portfolio optimization: Mean-variance (R01, R11), Risk-parity (R03, R05),
+Minimum-variance (R04, R07). Finite-capital axioms per high_level_proofs/.
 
-1.8.8. Verdict Scoring
-```
-VERDICT SCORING
-Each call resolves to exactly one verdict: Pass, Fail, or Flag. Fail requires at least one
-cited rule/clause violation. Flag denotes an ambiguous or borderline case requiring human
-review. A Fail must produce a suggested system-prompt patch (Section 1.8.12) and queue an
-automatic re-run of the same scenario/persona pairing to verify the fix, recording both the
-before and after transcripts and verdicts side by side.
-```
+Operating modes: Paper (MVP, primary) and Backtest (MVP, optional).
+SessionContext.mode is immutable per session.
 
-1.8.9. User Interface
-```
-SCREENS
-Test Bench, Call Review, Risk Report, Settings.
+Dashboard (7 charts): Equity curve, Drawdown waterfall, Regime probability bar,
+Correlation heatmap, Signal score series, Portfolio treemap, Risk-gate log table. Dark-mode
+theme (#1a1a2e), alert-critical color #FFACE9 reserved for FLATTEN/BLOCK states only.
 
-Test Bench: choose one or more persona/scenario pairings from the catalog, configure the
-target agent endpoint (sandbox/staging only), launch a run, and watch a live transcript as
-each simulated call happens.
+Testing layers: Unit (100% branch on Operators), Integration (chain + sandbox API),
+Simulation (4-variant regime-matrix), Performance (<=200ms order latency, >=1000 bars/sec
+backtest), Shadow CI gate. See 008_xquantx_testing.txt through 014_xquantx_cicd.txt.
 
-Call Review: full transcript per call with speaker-role tags, findings shown inline at the
-turn where they occurred, and a verdict badge (Pass/Fail/Flag) per call.
+Parallel task: Rewrite alpaca_paper_trading_specifications_x_quant_x/ corpus per
+CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md.
 
-Risk Report: failed calls listed next to the exact rule/clause text they broke, the
-before-and-after re-run comparison for each suggested patch, and a judge-calibration chart
-showing verdict agreement/drift across repeated runs of the same scenario.
+Explicit non-goals (MVP): Live trading, options execution, multi-broker, RL regime engine,
+real-time LLM news, mobile dashboard.
+---
 
-INTERACTION MODEL
-Launching a run, applying a suggested patch, and re-running a gauntlet are each two-step
-actions: a preview/confirmation step, then an explicit confirm. No suggested patch may be
-applied to a live target agent from a single, un-previewed input.
-```
+1.9. Bounded Follow-Up Prompt Discipline
+1.9.1. Every follow-up prompt after Day 1 MUST use:
 
-1.8.10. Visual Style
-```
-VISUAL STYLE
-Inherit the two-variant palette from the sibling DarkStrategy_XParadoxX project as a reused
-starting default (open to revision, not yet a confirmed VoiceGate-specific brand decision):
+TARGET: <exact file or module being modified>
+CHANGE: <one-sentence description of exactly what changes>
+PRESERVE: <what must NOT change>
+SCOPE: <files that may be touched>
+TEST: <how to verify the change>
 
-Variant A (Dark): Background #000000, Primary text #FFACE9, Accent/border #B76E79.
-Variant B (Light/Inverted): Background #FFACE9, Primary text #000000, Accent/border #B76E79.
+1.9.2. NEVER submit: "make it better", "improve the signal", "fix the tests". These violate
+the scope invariant.
+1.9.3. Any follow-up that would alter an Operator interface, data schema, risk rule, or
+dashboard specification declared in §1.8 must be routed back through this specification
+corpus for an explicit, reviewed update before being sent to the AI platform — never patched
+ad hoc in a follow-up prompt.
+1.9.4. Fragmented Day 1 submissions (submitting §1.8 as multiple sequential prompts) are
+forbidden; each sub-prompt establishes conflicting implicit defaults that are irreversible
+without a full regeneration pass.
 
-Verdict badges use color plus an icon plus a text label (Pass/Fail/Flag) — never color alone.
-Typography: one readable sans-serif for interface text; monospaced text for transcripts and
-event logs; tabular figures for verdict counts and calibration percentages.
-```
-
-1.8.11. Software Architecture
-```
-SOFTWARE ARCHITECTURE
-Separate orchestration/scoring logic from presentation. The scoring engine is the sole
-authority over verdicts; the UI displays results, it does not compute them.
-
-Structure the Python backend as:
-src/voicegate/    call_orchestrator, persona_engine, scenario_engine, transcription_engine,
-                  compliance_scoring_engine, verdict_engine, patch_adviser, event_log,
-                  rng_service
-src/data/         personas, scenarios, statutory_rules, company_terms_snapshots
-src/services/     patch_adviser (advisory-only), persistence (run history, re-runs)
-src/api/          commands (the command schema for the frontend to invoke)
-tests/            one mirrored test package per production package above
-
-Cross-package imports flow one direction only: data -> voicegate -> services/api; reverse
-imports are disallowed. All transcript content passed into src/voicegate/compliance_scoring_
-engine must be wrapped as untrusted data per Section 1.8.7, never concatenated into a judge
-prompt as raw, unescaped instruction-adjacent text.
-
-Implement seeded random numbers so a gauntlet run can be replayed during testing; show the
-active seed in the debug panel.
-```
-
-1.8.12. Suggested Patch Adviser
-```
-SUGGESTED PATCH ADVISER
-On a Fail verdict, the adviser reads the failing transcript, the cited rule/clause, and the
-target agent's current system prompt (if available), and returns: one suggested system-prompt
-patch, a plain-language explanation of what it fixes, and a confidence rating (Low, Moderate,
-High). The adviser must never apply the patch automatically; every suggested patch requires
-explicit human confirmation before re-running the gauntlet against a patched configuration.
-The adviser must not introduce new rules, statutes, or scoring logic not already present in
-the statutory/policy reference corpus (Section 1.8.6).
-```
-
-1.8.13. Persistence
-```
-PERSISTENCE
-Save every gauntlet run at the end of each call's Wrap-up phase, and immediately before a
-graceful application shutdown. Save data includes: persona/scenario pairing, full dual-channel
-transcript, per-turn events, verdict and cited rules, any suggested patch and its before/after
-re-run result, and the RNG seed.
-
-Provide New Run, Continue Run (shown only when a valid autosave exists), and Reset Run
-(two-step confirm) flows. No backend database or network service beyond the target agent's
-own sandbox endpoint is required for this MVP.
-```
-
-1.8.14. Testing and Debug Panel
-```
-TESTING
-Generate automated tests for: persona/scenario catalog loading, call-lifecycle phase
-enforcement, dual-channel transcription role tagging, compliance scoring against each rule in
-the minimum viable statutory/policy corpus, verdict assignment (Pass/Fail/Flag), suggested
-patch generation, before/after re-run comparison, resistance to prompt-injection payloads
-embedded in simulated transcripts, resistance to actor/speaker-role-confusion payloads,
-deterministic seeded randomization, and prevention of an unattended/unsupervised patch
-application.
-
-Include a debug panel, available only in development builds, that can: change the random
-seed, force a specific verdict for a given rule to test Risk Report rendering, inject a
-sample prompt-injection payload into a transcript to test guardrail resistance, and reset a
-run.
-```
-
-1.8.15. Delivery Priority
-```
-DELIVERY PRIORITY
-Priority 1: one working end-to-end gauntlet run (Test Bench -> live call -> transcript ->
-verdict) against a mock/sandbox target agent.
-Priority 2: full minimum viable persona/scenario catalog (Section 1.8.3) and statutory/policy
-corpus (Section 1.8.6) with complete rule-citation scoring.
-Priority 3: Call Review and Risk Report screens, including the before/after re-run comparison
-and judge-calibration chart.
-Priority 4: guardrail hardening (prompt-injection and actor-role-confusion test suite,
-Section 1.8.7) and Suggested Patch Adviser (Section 1.8.12).
-Priority 5: visual polish (both palette variants, verdict badge iconography, restrained
-motion).
-
-Do not add unspecified features. Do not reinterpret the scoring rules above. Before making a
-major architectural change, preserve all existing working guardrail behavior.
-```
-
-1.8.16. Explicit Non-Goals
-```
-NON-GOALS (do not build these for this hackathon)
-No user accounts, authentication, billing, or multi-tenant isolation. No live production call
-interception (sandbox/staging targets only). No full legal-advice generation — verdicts cite
-rule IDs and clause text, never render legal opinions. No automatic, unsupervised deployment
-of a suggested system-prompt patch to a customer's live agent. No open-ended, AI-generated
-scoring rules during a live run — any AI feature (Suggested Patch Adviser) remains
-advisory-only, permanently, not just for this hackathon. No presentation of the
-verification-flagged regulatory citations (Section 1.8.6) as legally confirmed without
-review.
-```
-
-1.9. Day-by-Day Pacing Guide for the Hackathon Week
-| Day | Date | Focus | End-of-Day Target |
-|-----|------|-------|----------------------|
-| 1 | 2026-08-03 (Mon) | Submit Section 1.8 master prompt; scaffold repository | Generated project skeleton matches 006_voicegate_scaffolding.txt layout; Test Bench renders |
-| 2 | 2026-08-04 (Tue) | Priority 1 | One full gauntlet run playable end-to-end against a mock target agent |
-| 3 | 2026-08-05 (Wed) | Priority 1 continued | Dual-channel transcription and a first working verdict (Pass/Fail/Flag) |
-| 4 | 2026-08-06 (Thu) | Priority 2 | Minimum viable persona/scenario catalog and statutory/policy corpus fully wired to scoring |
-| 5 | 2026-08-07 (Fri) | Priority 3 | Call Review and Risk Report screens complete, including before/after re-run comparison |
-| 6 | 2026-08-08 (Sat) | Priority 4 | Guardrail test suite passing (prompt injection, actor-role confusion); Suggested Patch Adviser working, advisory-only |
-| 7 | 2026-08-09 (Sun) | Priority 5 + hardening | Visual polish complete; full automated test pass; debug panel gated to development builds only |
-| 8 | 2026-08-10 (Mon) | Submission | Production build (debug panel disabled per 015_voicegate_deployment.txt); final review of verification-flagged citations; submit |
-
-1.10. Bounded Follow-Up Prompt Discipline
-1.10.1. Every follow-up prompt to Natively AI after day one must name the exact file(s),
-component(s), or screen(s) to modify, and must explicitly state what must remain unchanged.
-1.10.2. Use the pattern: "Modify only the Risk Report calibration chart. Keep all scoring
-logic, verdict rules, guardrails, and navigation unchanged. Add: [specific, itemized change]."
-1.10.3. Never submit an open-ended request (e.g. "make the testing smarter"); this invites
-broad, uncontrolled regeneration, per the same lesson the sibling project's own ideation
-session recorded.
-1.10.4. Any follow-up prompt that would change a statutory citation, verdict rule, or
-guardrail behavior declared in Section 1.8 must be routed back through this specification
-corpus for an explicit, reviewed update before being sent to Natively AI, never patched ad hoc
-in a follow-up prompt.
+1.10. Day-by-Day Pacing Guide
+| Day | Focus | Deliverable |
+|-----|-------|-------------|
+| 1 | Submit master prompt; scaffold repo structure; define all Operator interfaces | src/ layout; interface stubs per language; schemas/ directory |
+| 2 | Phase 1 spec rewrite; DataOperator + NormalizationOperator | Phase 1 spec files done; data ingestion pipeline green |
+| 3 | Phase 2 spec rewrite start; FeatureOperator + MarketRegimeOperator | Operating modes defined; regime engine returning RegimeState |
+| 4 | Phase 2 spec rewrite complete; SignalOperators (3 of 6) | Signal operators green; unit tests green |
+| 5 | RiskOperator + PortfolioOperator + ExecutionOperator | Paper-trade orders submitted via alpaca-py sandbox |
+| 6 | PerformanceOperator; backtest loop; visualization dashboard | Equity curve and regime chart rendering |
+| 7 | Phase 3 spec rewrite; integration + e2e tests; CI/CD green; final review | All spec files done; all tests green; dashboard working |
 
 1.11. Summary Table
-| Attribute | Value |
-|-----------|-------|
-| Hackathon | Assumed LabLab AI Factory (open item) |
-| Window | 2026-08-03 to 2026-08-10 (assumed) |
-| Platform | Natively AI |
-| Submission target | This repository (X_Voice_X) |
-| Prompt submission mode | Whole, single-piece, on day one |
-| Product / Category | VoiceGate / Voice Compliance QA (VCQ, proposed) |
-| Follow-up prompt mode | Bounded, itemized, file/component-scoped only |
+| Section | Audience | When to Use |
+|---------|----------|-------------|
+| §1.8 Master Prompt | AI code-generation platform | Day 1: paste as single submission |
+| §1.9 Follow-Up Discipline | All contributors | Every subsequent prompt |
+| §1.10 Pacing | Team lead | Daily sprint planning |
 
 1.12. Reconciliation Table
-| Topic | Sibling Project's Prompt (0001, prior revision) | This Document's Master Prompt (§1.8) | Justification |
-|-------|---------------------------------------------------|------------------------------------------|----------------|
-| Product identity | X Paradox X / X Dark X / Dark Strategy (DS) | VoiceGate / company TBD / Voice Compliance QA (VCQ, proposed) | 001_voice_transcription_concept.txt §1.6-1.9 |
-| Core loop | Board/turn/combat/economy | Call lifecycle / gauntlet execution / verdict scoring | 001_voice_transcription_concept.txt §1.8 repurposing map |
-| Guardrail emphasis | Game balance/fairness | Prompt-injection, model-poisoning, actor-role-confusion resistance | voice_transcription_concept/voice_chat_concept.md |
-| Visual palette | Confirmed as the game's own brand | Reused as inherited default only, not a confirmed VoiceGate decision | Section 1.8.10 |
-| Hackathon timeline | Confirmed for the sibling project | Assumed by inheritance, explicitly flagged open | Section 1.4.2 |
+| Source | Prior Statement | Current Canon | Status |
+|--------|----------------|---------------|--------|
+| X Quant X 0001 §1.8 (X Quant X master prompt) | X Quant X opening-day master prompt | Replaced with X Quant X opening-day master prompt | Reconciled |
+| CHATS/2026-08-26_alcapa-spec-rewrite-PROMPT.md §6 | Planning artifact master prompt | Canonical source for §1.8 | Reconciled |
 
 1.13. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Team submits the superseded game-era prompt instead of this document | Low | High | This document explicitly supersedes the prior 0001 revision (Section 1.4.1) |
-| Assumed hackathon window (Section 1.6.2) is wrong | Medium | Medium | Flagged as an open item in 001_voice_transcription_concept.txt Section 1.9.4; confirm before Day 1 |
-| Guardrails (Section 1.8.7) are weakened by an unreviewed follow-up prompt | Medium | High | Section 1.10.4 routes any guardrail-affecting change back through this corpus first |
-| Verification-flagged statutes presented as confirmed in generated UI copy | Medium | High | Section 1.8.16 non-goal explicitly forbids presenting them as legally confirmed without review |
-| Debug panel accidentally left enabled in the submitted build | Low | High | Section 1.9 Day 8 requires the production build (debug panel disabled) before submission |
+|------|-----------|--------|------------|
+| Master prompt fragmented into multiple Day 1 submissions | High | High | §1.8 explicitly instructs: submit as single copy-paste block |
+| Follow-up prompt does not include TARGET/CHANGE/PRESERVE | High | Medium | §1.9 discipline enforced in code review; any open-ended follow-up is rejected |
 
 1.14. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
 |----------|-----------------|----------|------------|-------------|
-| Assemble and maintain the master prompt (1.8) | R | C | A | A/Stakeholder (TAQI's team) |
-| Submit the master prompt to Natively AI on day one | I | I | A/Stakeholder | R |
-| Author and send bounded follow-up prompts (1.10) | C | C | A/Stakeholder | R |
-| Track day-by-day pacing (1.9) against actual progress | C | C | A/Stakeholder | R |
-| Confirm the assumed hackathon window before Day 1 (Section 1.6.2) | I | C | A/Stakeholder | R |
+| Assemble and maintain the master prompt (§1.8) | R | C | A | I |
+| Submit the master prompt to the AI platform on Day 1 | I | I | A | R |
+| Author and send bounded follow-up prompts (§1.9) | C | C | A | R |
+| Track day-by-day pacing (§1.10) against actual progress | C | C | A | R |
+| Maintain specification corpus alignment with §1.8 | R | C | A | I |
 
 1.15. Conclusion
-This document closes the loop between the voice_processing_specifications/ corpus and the
-first concrete action the team takes with Natively AI: a single, internally reconciled prompt
-covering personas, gauntlet execution, statutory scoring, and guardrails, paired with a
-pacing guide and a follow-up prompt discipline so later-week iteration never regresses to
-broad, uncontrolled requests.
+This document closes the loop between the alpaca_paper_trading_specifications_x_quant_x/
+corpus and the first concrete action the team takes on Day 1: a single, internally reconciled
+master prompt covering the operator model, regime engine, risk rules, portfolio optimization,
+execution integration, dashboard specification, and the specification corpus rewrite
+directive, paired with a bounded follow-up prompt discipline and a seven-day pacing guide so
+later-sprint iteration never regresses to broad, uncontrolled requests.
 
 1.16. References and Citations
-1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
-1.16.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-§1.6-1.11 (product identity, MVP scope, open items, regulatory citations).
-1.16.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation
-conversation and team-lead guidance).
-1.16.4. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt,
-026_randomization_variance_terminology.txt, 027_persona_archetype_definitions.txt,
-028_statutory_ruleset_integration.txt (scenario/persona/statute detail, once written).
-1.16.5. Internal: voice_processing_specifications/015_voicegate_deployment.txt (build
-configurations, Natively AI submission target, once written).
-1.16.6. Internal: this repository's git history, commit 14726ca ("first commit"), preserving
-the superseded X Paradox X master prompt content.
+1.16.1. Internal: CHATS/2026-08-26_alcapa-spec-rewrite-PROMPT.md §6 (canonical source).
+1.16.2. Internal: CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md (task plan).
+1.16.3. Internal: alcapa_trading_agents_concept/prompt_patterns.md (17+ META-PROMPTs).
+1.16.4. Internal: alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt
+(platform concept).
+1.16.5. Internal: alpaca_paper_trading_specifications_x_quant_x/0000_documentation_standards.txt
+§1.1-1.14 (documentation standards).
+1.16.6. Internal: coding_stds/CodingStandardsRef/coding_stds/MOST_CITED_STANDARDS.md
+(Tier 0-5 standards authority).
 
 1.17. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: opening-day Natively AI master prompt synthesized from the full reconciled game_specifications corpus, plus a seven-day hackathon pacing guide and bounded follow-up prompt discipline. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to the VoiceGate master prompt per user directive: full content rewrite covering personas, scenario gauntlet, call lifecycle, statutory/policy corpus, guardrails, verdict scoring, and Suggested Patch Adviser. Prior content preserved in git history, not duplicated in-body. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to the xquantx master prompt per user directive: full content rewrite covering personas, scenario gauntlet, call lifecycle, statutory/policy corpus, guardrails, verdict scoring, and Suggested Patch Adviser. Prior content preserved in git history, not duplicated in-body. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-09: replaced X Quant X opening-day master prompt with X Quant X quantitative paper-trading master prompt. §1.8 contains the consolidated copy-paste block derived from CHATS/2026-08-26_alcapa-spec-rewrite-PROMPT.md §6. §1.9 bounded follow-up discipline added. §1.10 day-by-day pacing guide added. | Major |

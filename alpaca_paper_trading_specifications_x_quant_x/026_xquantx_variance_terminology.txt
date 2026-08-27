@@ -1,160 +1,192 @@
-1. Randomization and Variance Injection Terminology (Table of Contents)
+X Quant X Variance and Uncertainty Terminology (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Scope and Authority
-1.7. Randomization Notation Standard
-1.8. Variance Injection Contract
-1.9. Outcome Terminology
-1.10. Probability Baseline
-1.11. Logging and Audit Terminology
-1.12. Summary Table
-1.13. Reconciliation Table
-1.14. Risk and Mitigation Table
-1.15. Roles and Responsibilities (RACI)
-1.16. Conclusion
+1.6. Epistemic vs Aleatoric Uncertainty
+1.7. Monte Carlo Sampling
+1.8. Bootstrap Confidence Intervals
+1.9. Seed Management
+1.10. Variance Decomposition
+1.11. Summary Table
+1.12. Reconciliation Table
+1.13. Risk and Mitigation Table
+1.14. Roles and Responsibilities (RACI)
+1.15. Conclusion
+1.16. Glossary of Key Symbols
 1.17. References and Citations
 1.18. Changelog Table
 
 1.1. Abstract
-This document defines randomization and variance-injection terminology for all seeded-random
-persona behavior in VoiceGate. It standardizes notation, injection interpretation, and
-logging vocabulary so that design, implementation, and testing teams use one shared language
-for probabilistic caller behavior, based on the same "deterministic seeded randomness"
-role such mechanisms played in the sibling project's dice system
-(voice_processing_specifications/0000_documentation_standards.txt records this repurposing
-lineage).
+This document defines the uncertainty, variance, and stochastic terminology used consistently
+throughout the X Quant X specification corpus and codebase. It distinguishes epistemic
+uncertainty (model uncertainty, reducible with more data) from aleatoric uncertainty (market
+randomness, irreducible), defines Monte Carlo sampling conventions, explains bootstrap
+confidence intervals for backtest metrics, and establishes seed management rules for
+reproducibility.
 
 1.2. Key Words
-tone jitter, interruption timing, escalation rate, seeded RNG, rng_service, contested
-variance, deterministic ordering, audit log, probability baseline, VoiceGate.
+epistemic uncertainty, aleatoric uncertainty, Monte Carlo, bootstrap, confidence interval,
+seed management, reproducibility, variance decomposition, market noise, regime sampling,
+signal uncertainty, sigma, confidence band.
 
 1.3. Executive Summary
-VoiceGate uses seeded pseudo-random variance injection — tone jitter, interruption timing,
-and escalation rate — to make each simulated caller in a gauntlet run behave with bounded,
-reproducible unpredictability rather than fixed scripted delivery. This file defines the
-canonical terms and equations that map a persona's base behavioral stats
-(voice_processing_specifications/027_persona_archetype_definitions.txt §1.9) plus a sampled
-variance roll to an actual in-call behavior, based on the scenario intensity-tier contract
-in voice_processing_specifications/025_scenario_persona_catalog.txt §1.9. It also defines
-required logging fields so each run can be replayed and verified.
+X Quant X distinguishes two types of uncertainty throughout its pipeline: epistemic (our
+ignorance of the true model, reducible with better data/models) and aleatoric (irreducible
+market randomness). Signal confidence scores represent epistemic uncertainty about the signal
+direction. Regime entropy represents aleatoric uncertainty about market state. Monte Carlo
+methods are used for backtest distribution estimation, stress testing, and
+regime-transition simulation. All random processes in the platform use seeded RNG for
+reproducibility.
 
 1.4. Key Findings
-1.4.1. The system uses `rng_service` (`src/voicegate/rng_service`) as the single seeded RNG
-source in MVP scope; no unseeded/non-reproducible randomness is used in scored runs.
-1.4.2. In-call behavior is determined by combining a persona's base stat with a sampled
-variance roll, not by raw sampled values alone.
-1.4.3. Variance semantics must be logged as structured events to preserve auditability and
-enable exact run replay from a recorded seed.
-1.4.4. Terminology drift (e.g., "jitter" vs "wobble") is a reconciliation risk and is banned.
+1.4.1. Epistemic uncertainty: the uncertainty in a model's estimate that would be reduced if
+more (or better) data were available. In X Quant X, signal confidence scores are epistemic
+estimates of how sure a SignalOperator is about its directional prediction.
+1.4.2. Aleatoric uncertainty: the inherent randomness of the market that cannot be reduced
+regardless of model sophistication. Regime entropy is partly aleatoric — regime transitions
+are stochastic even with perfect feature information.
+1.4.3. Monte Carlo sampling in X Quant X is used for: (a) backtest distribution estimation
+(sample many random walk-forward windows), (b) stress testing (sample adverse scenarios),
+(c) regime-transition simulation (sample from transition matrix A). All Monte Carlo runs use
+an integer seed declared in config/backtest.toml.
+1.4.4. Bootstrap confidence intervals: for backtest performance metrics (Sharpe, Sortino,
+Calmar), the platform computes 95% bootstrap confidence intervals over 1,000 resampled
+return series, so that reported metrics include uncertainty bands.
+1.4.5. Reproducibility invariant: any Monte Carlo or bootstrap run, given the same seed,
+input data, and operator versions, must produce byte-identical results.
 
 1.5. Philosophical Preamble
-Chance is allowed in a compliance test bench only when it can be explained after the fact. A
-sampled variance value is not a black box event; it is a state transition with evidence, and
-that evidence is what lets a Risk Report's Fail verdict be reproduced and defended.
+Variance in a trading system is not a problem to be eliminated; it is a signal to be
+quantified. A system that reports a Sharpe of 1.8 without a confidence interval is expressing
+false certainty. A system that never uses Monte Carlo simulation to stress-test its
+regime-transition assumptions is optimistic by construction. This document's purpose is to
+give every operator, analyst, and reviewer a shared vocabulary for expressing, measuring, and
+bounding the uncertainty that is inherent to any quantitative model operating in a partially
+observable market.
 
-1.6. Scope and Authority
-1.6.1. This file governs terms and meaning, not persona-stat tuning.
-1.6.2. Persona-stat changes that alter equations belong in
-voice_processing_specifications/027_persona_archetype_definitions.txt first, then here.
+1.6. Epistemic vs Aleatoric Uncertainty
+1.6.1. Epistemic uncertainty: model uncertainty. Example: a SignalOperator's confidence score
+of 0.65 means the model is 65% confident in its directional prediction, given the current
+feature vector. This confidence is epistemic — more historical data or a better model could
+improve it.
+1.6.2. Aleatoric uncertainty: market randomness. Example: even a perfect
+MarketRegimeOperator cannot eliminate the inherent stochasticity of regime transitions. The
+regime entropy U_t captures this.
+1.6.3. Decomposition: total uncertainty = epistemic + aleatoric. The platform tracks both
+separately: signal confidence captures epistemic uncertainty; regime entropy captures
+aleatoric uncertainty.
+1.6.4. Practical implication: when both epistemic and aleatoric uncertainty are high (low
+signal confidence AND high regime entropy), RiskOperator applies a conservative REDUCE or
+BLOCK regardless of signal score magnitude.
 
-1.7. Randomization Notation Standard
-1.7.1. `seed` means the integer value used to initialize `rng_service` for one gauntlet run;
-the same `seed` reproduces the same sequence of variance rolls.
-1.7.2. `roll` refers to one sampled variance value in the normalized range [0.0, 1.0].
-1.7.3. "Value" refers to a persona base stat plus its applicable variance roll contribution.
-1.7.4. "Resample" means discarding a prior sampled value and drawing one new sample from the
-same seeded stream, where explicitly allowed by a scenario's escalation script.
+1.7. Monte Carlo Sampling
+1.7.1. Backtest distribution: to avoid overfitting to a single historical window, the platform
+samples N_MC random walk-forward windows of length W from the historical dataset, runs a
+full backtest in each, and reports the distribution of Sharpe, Sortino, Calmar, and max
+drawdown.
+1.7.2. Stress testing: the platform samples K adverse scenarios by drawing regime sequences
+with high R04/R07 probability from the transition matrix and computing portfolio performance
+under each.
+1.7.3. Regime-transition simulation: transition matrix A is sampled forward T steps to
+simulate probable regime paths for scenario planning.
+1.7.4. Seeds: all Monte Carlo runs declare MONTE_CARLO_SEED in config/backtest.toml.
+Reproducibility invariant: same seed + same data + same operator versions = same results.
+1.7.5. N_MC default: 1,000 samples. W default: 252 bars (approximately 1 trading year for
+daily bars). These are configurable in config/backtest.toml.
 
-1.8. Variance Injection Contract
-1.8.1. tone_jitter_value = persona.tone_baseline + (roll - 0.5) * persona.tone_variance_band.
-1.8.2. interruption_timing_value = persona.patience_stat - roll * scenario.pressure_factor.
-1.8.3. escalation_rate_value = persona.escalation_rate_stat + roll *
-scenario.intensity_multiplier (voice_processing_specifications/025_scenario_persona_catalog.txt
-§1.9 intensity-tier magnitude).
-1.8.4. If escalation_rate_value crosses the scenario's scripted escalation-point threshold,
-the persona advances to its next scripted escalation beat.
-1.8.5. A call reaching its final scripted escalation beat without agent resolution triggers a
-scenario-defined terminal state (e.g. "caller disconnects," "caller demands supervisor").
+1.8. Bootstrap Confidence Intervals
+1.8.1. For each performance metric M (Sharpe, Sortino, Calmar, max drawdown), the bootstrap
+confidence interval at 95% level is computed by:
+   (a) Sample 1,000 resampled return series (with replacement) from the backtest return
+       series.
+   (b) Compute M on each resampled series.
+   (c) Report [5th percentile, 95th percentile] as the 95% CI.
+1.8.2. Reported metrics always include the 95% CI: e.g.
+"Sharpe = 1.42 [0.87, 1.95] (95% CI, 1000 bootstrap samples)".
+1.8.3. Any backtest report that omits confidence intervals is non-compliant with this
+specification.
 
-1.9. Outcome Terminology
-1.9.1. High Volatility: sampled roll drives value more than 0.75 of the variance band from
-baseline (analytics label only).
-1.9.2. Standard Variance: sampled roll drives value within 0.25-0.75 of the variance band.
-1.9.3. Baseline Hold: sampled roll drives value within 0.25 of baseline.
-1.9.4. Labels in 1.9 are reporting vocabulary and do not alter escalation rules.
+1.9. Seed Management
+1.9.1. All random processes in the platform (Monte Carlo, bootstrap, regime initialization
+noise) use a single integer seed per session, declared in config/backtest.toml
+(MONTE_CARLO_SEED) for backtest sessions and in config/paper_trading.toml (SESSION_SEED)
+for paper-trading sessions.
+1.9.2. The seed is logged as part of the session metadata in AUDIT_LOGS/ so that any result
+is exactly reproducible given the same configuration.
+1.9.3. No operator uses the language default random source (Python random.random(), Go
+math/rand without seeding, C++ std::rand). All use the seeded RNG wrapper from
+xquantx.utils.rng.
 
-1.10. Probability Baseline
-1.10.1. For `rng_service`, P(roll in any sub-interval of equal width within [0.0, 1.0]) is
-uniform by construction (uniform distribution requirement).
-1.10.2. With a persona's default variance band and no scenario modifiers, the probability of
-a Baseline Hold outcome (Section 1.9.3) is 0.5.
-1.10.3. Extreme-tier scenarios (voice_processing_specifications/025_scenario_persona_catalog.txt
-§1.9) widen the effective variance band, shifting probability mass toward High Volatility.
+1.10. Variance Decomposition
+1.10.1. Portfolio return variance is decomposed into: systematic variance (correlated with
+regime), factor variance (loading on common factors: market, sector, rate), and idiosyncratic
+variance (uncorrelated with any factor).
+1.10.2. The PerformanceOperator computes this decomposition and includes it in
+PerformanceSnapshot.variance_decomposition.
+1.10.3. A portfolio with high idiosyncratic variance has poorly diversified positions; this is
+a REDUCE trigger per 028_xquantx_risk_ruleset.txt.
 
-1.11. Logging and Audit Terminology
-1.11.1. Required fields per variance-injection event:
-1.11.1.1. event_id.
-1.11.1.2. call_id.
-1.11.1.3. persona_id and scenario_id.
-1.11.1.4. seed and roll_index (position of this roll within the seeded stream).
-1.11.1.5. base_stat_name and base_stat_value.
-1.11.1.6. sampled_roll.
-1.11.1.7. resulting_value.
-1.11.1.8. outcome_label from Section 1.9.
-1.11.2. Field names should align with
-voice_processing_specifications/021_voicegate_data_standards.txt naming guidance.
+1.11. Summary Table
+| Term                   | Type                  | Definition                                          | Operator              |
+|------------------------|-----------------------|-----------------------------------------------------|-----------------------|
+| Epistemic uncertainty  | Model uncertainty     | Signal confidence score in (0,1]                    | SignalOperator        |
+| Aleatoric uncertainty  | Market randomness     | Regime entropy U_t in [0,1]                         | MarketRegimeOperator  |
+| Monte Carlo sample     | Stochastic simulation | Random walk-forward window or scenario path         | SimulationOperator    |
+| Bootstrap CI           | Statistical interval  | [5th, 95th percentile] over 1000 resamples          | PerformanceOperator   |
+| Seed                   | Reproducibility       | Integer declared in config; logged per session      | All random processes  |
+| Variance decomposition | Risk attribution      | Systematic + factor + idiosyncratic                 | PerformanceOperator   |
 
-1.12. Summary Table
-| Topic | Rule |
-|------|------|
-| RNG source | Seeded `rng_service` only (MVP) |
-| Injected variables | Tone jitter, interruption timing, escalation rate |
-| Combination rule | Persona base stat + sampled roll, tier-scaled |
-| Audit requirement | Log seed, roll index, base stat, roll, resulting value |
-| Reporting labels | Analytics-only labels do not change escalation rules |
+1.12. Reconciliation Table
+| Source                                                                         | Prior Statement                            | Current Canon                                                                                                                  | Status     |
+|--------------------------------------------------------------------------------|--------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|------------|
+| xquantx 026 §1.6 (tone-jitter, interruption-timing, escalation-variance)     | xquantx randomization terminology        | Replaced with epistemic/aleatoric uncertainty, Monte Carlo, bootstrap CI, seed management                                      | Reconciled |
+| alpaca_trading_agents_concept/prompt_patterns.md §5.17                         | Epistemic/aleatoric decomposition          | Formalized as §1.6                                                                                                             | Reconciled |
 
-1.13. Reconciliation Table
-| Prior State | Current State | Status |
-|-------------|----------------|--------|
-| File was the game's dice-roll (d6) meaning/terminology specification | Repurposed to randomization/variance-injection terminology (tone jitter, interruption timing, escalation rate), same "deterministic seeded randomness" role | Reconciled |
-| Variance details were scattered across scenario/persona ideation | Consolidated terminology reference file created | Reconciled |
+1.13. Risk and Mitigation Table
+| Risk                                                    | Likelihood | Impact | Mitigation                                                                                                          |
+|---------------------------------------------------------|------------|--------|---------------------------------------------------------------------------------------------------------------------|
+| Bootstrap CI omitted from backtest report               | High       | Medium | §1.8.3 compliance rule; CI computation is mandatory step in PerformanceOperator.generate_report()                  |
+| Monte Carlo seed not logged                             | Medium     | High   | §1.9.2 rule; session metadata in AUDIT_LOGS/ includes seed; CI validates presence                                   |
+| Backtest metrics reported as point estimates without CI | High       | Medium | §1.8.2 format mandate; PerformanceOperator template enforces CI inclusion                                           |
 
-1.14. Risk and Mitigation Table
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Inconsistent term usage across modules/tests | Medium | Medium | Enforce glossary in this file and lint checks in tests |
-| Missing variance fields in logs preventing exact replay | Medium | High | Require 1.11 field contract in integration tests |
-| Misinterpretation of analytics labels as escalation rules | Low | Medium | Explicitly mark 1.9 labels as non-mechanical |
+1.14. Roles and Responsibilities (RACI)
+| Activity                                    | Author (Agent) | Reviewer | Maintainer | Stakeholder   |
+|---------------------------------------------|----------------|----------|------------|---------------|
+| Maintain uncertainty terminology            | R              | C        | A          | I             |
+| Validate bootstrap CI implementation        | C              | R        | A          | I             |
+| Approve Monte Carlo seed policy changes     | C              | R        | A          | A/Stakeholder |
+| Audit seed logging in AUDIT_LOGS/           | R              | C        | A          | I             |
 
-1.15. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain variance terminology | R | C | A | I |
-| Validate logging schema alignment | C | R | A | I |
-| Approve semantic rule changes | C | R | A | A/Stakeholder |
+1.15. Conclusion
+This file provides a single vocabulary and equation contract for all uncertainty-driven
+modeling in X Quant X, reducing ambiguity across implementation, QA, and risk analytics,
+and preserving reproducibility of any backtest or paper-trading run given its recorded seed
+and configuration.
 
-1.16. Conclusion
-This file provides a single vocabulary and equation contract for all seeded-variance-driven
-persona behavior, reducing ambiguity across implementation, QA, and Risk Report analytics,
-and preserving reproducibility of any run given its recorded seed.
+1.16. Glossary of Key Symbols
+| Symbol | Meaning                                                               |
+|--------|-----------------------------------------------------------------------|
+| U_t    | Regime entropy at time t (aleatoric uncertainty measure, in [0,1])    |
+| N_MC   | Number of Monte Carlo samples (default 1,000)                         |
+| W      | Walk-forward window length in bars (default 252)                      |
+| CI     | Confidence interval                                                   |
+| sigma  | Standard deviation (of returns or signal scores)                      |
+| A      | Regime transition matrix                                              |
+| seed   | Integer RNG seed; declared in config and logged per session           |
 
 1.17. References and Citations
-1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.6.
-1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-(scenario gauntlet, guardrail/reproducibility requirements).
-1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
-1.17.4. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt
-(intensity-tier magnitude contract).
-1.17.5. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
-(persona behavioral base stats).
-1.17.6. Internal: voice_processing_specifications/020_voicegate_logging_standards.txt.
-1.17.7. Internal: voice_processing_specifications/021_voicegate_data_standards.txt.
+1.17.1. Internal: alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt
+§1.8 (entropy gate using aleatoric uncertainty).
+1.17.2. Internal: alpaca_trading_agents_concept/prompt_patterns.md §5.17
+(uncertainty quantification).
+1.17.3. Internal: alpaca_paper_trading_specifications_x_quant_x/028_xquantx_risk_ruleset.txt
+(variance decomposition REDUCE trigger).
 
 1.18. Changelog Table
-| Version | Date | Author (Agent/Role) | Change Description | Type |
-|---------|------|----------------------|---------------------|------|
-| 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of previously empty dice terminology and meaning specification. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 026_dice_roll_meanings_terminologies.txt; replaced d6 combat-roll contract with tone-jitter/interruption-timing/escalation-rate variance-injection contract using `rng_service`, retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| Version       | Date       | Author (Agent/Role)  | Change Description                                                                                                                                                                                                                                                                                              | Type  |
+|---------------|------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
+| 2026.00.00.00 | 2026-07-31 | Documentation Agent  | Initial population of previously empty dice terminology and meaning specification.                                                                                                                                                                                                                              | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent  | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via git mv from 026_dice_roll_meanings_terminologies.txt; replaced d6 combat-roll contract with tone-jitter/interruption-timing/escalation-rate variance-injection contract using `rng_service`, retargeted all citations to alpaca_paper_trading_specifications_x_quant_x/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent  | Repurposed to X Quant X per PLAN P2-04: replaced xquantx tone-jitter and caller-escalation randomization terminology with X Quant X quantitative uncertainty vocabulary: epistemic vs aleatoric uncertainty, Monte Carlo sampling (§1.7), bootstrap confidence intervals (§1.8), seed management (§1.9), variance decomposition (§1.10). | Major |

@@ -2,18 +2,18 @@
 
 ## Supported Versions
 
-`VoiceGate` is currently in active hackathon-stage development (assumed LabLab AI Factory / Natively AI, 2026-08-03 to 2026-08-10, window inherited from a sibling project and not yet independently confirmed) and has not yet reached a tagged `1.0.0` release. Security fixes are applied to the `main` branch only until a formal release cadence is established.
+`xquantx` is currently in active hackathon-stage development (assumed LabLab AI Factory / Natively AI, 2026-08-03 to 2026-08-10, window inherited from a sibling project and not yet independently confirmed) and has not yet reached a tagged `1.0.0` release. Security fixes are applied to the `main` branch only until a formal release cadence is established.
 
 | Version | Supported |
 | ------- | --------- |
 | `main` (pre-release / hackathon build) | :white_check_mark: |
 | Any tagged release prior to `1.0.0` | :x: |
 
-This table will be revised once versioned releases begin, per `voice_processing_specifications/015_voicegate_deployment.txt`.
+This table will be revised once versioned releases begin, per `alpaca_paper_trading_specifications_x_quant_x/015_xquantx_deployment.txt`.
 
 ## Reporting a Vulnerability
 
-We take the security of `VoiceGate` and its Python backend seriously. If you discover a security vulnerability, **please do not open a public GitHub issue**.
+We take the security of `xquantx` and its Python backend seriously. If you discover a security vulnerability, **please do not open a public GitHub issue**.
 
 Instead, report it privately using one of the following channels, in order of preference:
 
@@ -42,9 +42,9 @@ These are target timelines for a small, hackathon-stage project, not contractual
 
 In scope:
 
-- The Python backend implementing VoiceGate's call orchestration, transcription, scoring/verdict engine, and guardrails (prompt-injection and actor/speaker-role-confusion resistance), including any operating-mode components introduced per `voice_processing_specifications/016_voicegate_operating_modes.txt`;
-- Build, packaging, and CI/CD configuration under `voice_processing_specifications/014_voicegate_cicd.txt` and `015_voicegate_deployment.txt`;
-- Dependency and supply-chain issues (e.g., vulnerable third-party packages declared in the project's virtual environment per `voice_processing_specifications/007_voicegate_virtual_env.txt`);
+- The Python backend implementing xquantx's call orchestration, transcription, scoring/verdict engine, and guardrails (prompt-injection and actor/speaker-role-confusion resistance), including any operating-mode components introduced per `alpaca_paper_trading_specifications_x_quant_x/016_xquantx_operating_modes.txt`;
+- Build, packaging, and CI/CD configuration under `alpaca_paper_trading_specifications_x_quant_x/014_xquantx_cicd.txt` and `015_xquantx_deployment.txt`;
+- Dependency and supply-chain issues (e.g., vulnerable third-party packages declared in the project's virtual environment per `alpaca_paper_trading_specifications_x_quant_x/007_xquantx_virtual_env.txt`);
 - Guardrail bypass reports (e.g., a crafted transcript that causes the scoring/verdict engine to execute injected instructions instead of treating transcript content as untrusted data) are treated as **high-priority security vulnerabilities**, not ordinary bugs.
 
 Out of scope:

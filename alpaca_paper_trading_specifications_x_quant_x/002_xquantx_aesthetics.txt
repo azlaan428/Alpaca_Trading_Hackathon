@@ -1,19 +1,19 @@
-1. VoiceGate Aesthetics (Table of Contents)
+X Quant X Aesthetics (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
-1.5. Philosophical Preamble
-1.6. Visual Identity
-1.6.1. Palette Variant A (Dark, Inherited Default)
-1.6.2. Palette Variant B (Light/Inverted, Inherited Default)
-1.6.3. Shared Accent and Border Rule
-1.6.4. Contrast, Legibility, and Word-Wrap Requirements
+1.5. Aesthetic Preamble
+1.6. Color Palette
+1.6.1. Full Color Token Table
+1.6.2. Alert-Critical (#FFACE9) Prohibition Rules
+1.6.3. Brand Accent and Border Rule
+1.6.4. Contrast and Accessibility Requirements
 1.7. Typography
-1.8. Screen Visual Language (Test Bench, Call Review, Risk Report)
-1.9. Motion and Animation Restraint
-1.10. Logo Concept
-1.11. Reconciliation with Prior Ideation
+1.8. Chart Grid Rules
+1.9. Motion and Transition Tokens
+1.10. Dark Mode Enforcement
+1.11. Accessibility
 1.12. Summary Table
 1.13. Reconciliation Table
 1.14. Risk and Mitigation Table
@@ -23,173 +23,199 @@
 1.18. Changelog Table
 
 1.1. Abstract
-This document defines the visual identity of VoiceGate's three screens (Test Bench, Call
-Review, Risk Report): palette, typography, contrast/legibility requirements, and the shared
-visual language for verdict badges, findings, and calibration charts. The two-variant
-palette below is inherited unchanged from the sibling DarkStrategy_XParadoxX project (prior
-002_game_aesthetics.txt, preserved in git history) as a starting default only; it is
-explicitly NOT a confirmed VoiceGate brand decision and remains open to revision.
+This document defines the aesthetic standards for the X Quant X dashboard and visualization
+layer, covering the dark-mode color palette, typography, chart grid rules, motion/transition
+tokens, brand accent color usage, and accessibility standards. It is the single source of
+truth for all visual design decisions in xquantx/dashboard/.
 
 1.2. Key Words
-palette, dark theme, light theme, contrast, legibility, word wrap, accessibility, typography,
-verdict badge, Test Bench, Call Review, Risk Report, inherited default, unconfirmed brand.
+aesthetics, dark mode, color palette, typography, chart grid, motion, brand accent, #FFACE9,
+accessibility, WCAG AA, Plotly theme, Dash theme, visualization tokens.
 
 1.3. Executive Summary
-VoiceGate reuses, as a placeholder default, the two selectable color-palette variants
-inherited from the sibling game project: Variant A (Dark, near-black background with
-warm-pink text) and Variant B (Light/Inverted, pink background with near-black text), sharing
-one accent/border color. All three VoiceGate screens (Test Bench, Call Review, Risk Report)
-must render legibly in both variants and must never communicate a Pass/Fail/Flag verdict by
-color alone. This palette carries no brand authority for VoiceGate; it is reused purely to
-avoid blocking UI work while a dedicated VoiceGate brand identity remains unconfirmed (see
-001_voice_transcription_concept.txt Section 1.9, open items).
+X Quant X uses a deep-navy dark-mode primary theme (#1a1a2e background) with a cool blue
+primary data series color (#7ec8e3), neutral text (#e0e0e0), and a rose/pink brand accent
+(#FFACE9) reserved exclusively for alert and critical states. Typography uses a monospace
+font for data values (JetBrains Mono or Roboto Mono) and a sans-serif for labels (Inter or
+Roboto). All charts have consistent grid lines, axis labels, and source annotations. Motion
+transitions are minimal (≤ 300ms). WCAG AA contrast is enforced throughout.
 
 1.4. Key Findings
-1.4.1. The palette values (#000000/#FFACE9 background-text pair, #B76E79 shared accent) are
-carried forward unchanged from the sibling project's aesthetics document as an inherited
-default only, per explicit user directive 2026-08-03; they are not a VoiceGate brand
-decision and must be labeled as such wherever displayed to stakeholders.
-1.4.2. Variant A (Dark) is background #000000 / text #FFACE9; Variant B (Light) inverts this
-to background #FFACE9 / text #000000. Both variants use #B76E79 for accents, borders, and
-dividers.
-1.4.3. Legibility, readability, and word-wrapping are non-negotiable requirements, unchanged
-in principle from the inherited baseline, applied now to transcript text, rule citations, and
-verdict rationale rather than card/tile text.
-1.4.4. Verdict state (Pass/Fail/Flag) must never be communicated by color alone; a badge
-shape/label/icon must duplicate every color-coded signal, given the compliance-critical
-nature of this product.
-1.4.5. Any future VoiceGate-specific brand refresh supersedes this document's palette
-sections without requiring changes to Sections 1.7-1.9 (typography, screen visual language,
-motion), which are treated as VoiceGate-native content, not inherited.
+1.4.1. Deep-navy (#1a1a2e) is the primary background for all dashboard panels and chart
+backgrounds. This provides the high contrast needed for 24/7 trading monitor use without eye
+fatigue.
+1.4.2. The brand accent color #FFACE9 (rose/pink, as used in high_level_concept.md mermaid
+diagrams) is reserved exclusively for: ALERT states (REDUCE/BLOCK/FLATTEN verdicts),
+drawdown thresholds > 15% (FLATTEN trigger), and stress-regime highlighting (R04, R07). It
+is never used for normal-state data series.
+1.4.3. Monospace typography (JetBrains Mono 12px or Roboto Mono) is used for all numeric
+values (P&L, equity, prices, percentages, signal scores). This ensures digit alignment in
+tables and charts.
+1.4.4. Chart grid lines use #2a2a4a (slightly lighter than background) to provide visual
+structure without obscuring data series.
+1.4.5. All color choices achieve WCAG AA contrast ≥ 4.5:1 on the dark background.
 
-1.5. Philosophical Preamble
-A palette is a contract of legibility between the tool and the compliance reviewer using it;
-in a product whose entire purpose is flagging risk, an illegible or ambiguous verdict display
-would itself be a compliance failure. VoiceGate borrows the sibling project's dark, high-
-contrast aesthetic as a convenient, already-vetted starting point, but treats it explicitly
-as scaffolding, not identity: every reused hex value in this document carries an inherited-
-default label so no future contributor mistakes convenience for confirmation.
+1.5. Aesthetic Preamble
+A color system is a contract of clarity between the trading tool and the analyst monitoring
+it under real market conditions; in a product whose critical output is risk-gate verdicts,
+an ambiguous or inconsistent color assignment would itself constitute an operational risk.
+X Quant X's aesthetic choices are not decorative — the deep-navy background is chosen for
+24/7 monitor legibility, the monospace font is chosen for digit alignment, and the #FFACE9
+accent is constrained to alert states precisely because visual salience degrades when a
+signal color appears in non-signal contexts. Every token in this document is the output of
+a legibility-first decision, not a brand preference.
 
-1.6. Visual Identity
+1.6. Color Palette
 
-1.6.1. Palette Variant A (Dark, Inherited Default)
-| Role | Hex |
-|------|-----|
-| Background | #000000 |
-| Primary text | #FFACE9 |
-| Accent / border | #B76E79 |
+1.6.1. Full Color Token Table
+| Token name | Hex | RGB | Usage |
+|-----------|-----|-----|-------|
+| bg-primary | #1a1a2e | 26, 26, 46 | All chart and panel backgrounds |
+| bg-secondary | #16213e | 22, 33, 62 | Sidebar, control panels |
+| bg-card | #0f3460 | 15, 52, 96 | Data cards, info panels |
+| text-primary | #e0e0e0 | 224, 224, 224 | Body text, axis labels, annotations |
+| text-secondary | #a0a0b0 | 160, 160, 176 | Captions, footnotes, less-emphasis text |
+| text-accent | #7ec8e3 | 126, 200, 227 | Highlighted values, equity series, series primary |
+| grid-line | #2a2a4a | 42, 42, 74 | All chart grid lines |
+| border | #3a3a5a | 58, 58, 90 | Panel borders, dividers |
+| series-1 | #7ec8e3 | 126, 200, 227 | Equity curve, primary data |
+| series-2 | #4a90d9 | 74, 144, 217 | Benchmark, secondary series |
+| series-3 | #50c8a0 | 80, 200, 160 | Bull regime segments, long positions |
+| series-4 | #9e9e9e | 158, 158, 158 | Neutral regime, benchmark lines |
+| warn-soft | #FF9800 | 255, 152, 0 | Drawdown 10–15%, moderate warnings |
+| alert-critical | #FFACE9 | 255, 172, 233 | FLATTEN trigger, BLOCK verdicts, drawdown > 15%, R04/R07 |
+| regime-bull | #4CAF50 | 76, 175, 80 | R01, R02, R11 regime probability segments |
+| regime-bear | #F44336 | 244, 67, 54 | R03, R04 regime probability segments |
+| regime-shock | #FFACE9 | 255, 172, 233 | R07 macro-shock (same as alert-critical) |
+| regime-neutral | #9E9E9E | 158, 158, 158 | R06, R08, R09, R10, R12 |
 
-1.6.2. Palette Variant B (Light/Inverted, Inherited Default)
-| Role | Hex |
-|------|-----|
-| Background | #FFACE9 |
-| Primary text | #000000 |
-| Accent / border | #B76E79 |
+1.6.2. Alert-Critical (#FFACE9) Prohibition Rules
+1.6.2.1. alert-critical (#FFACE9) MUST NOT appear on any chart element that represents a
+normal operating state: normal P&L, normal signal score, normal regime probability, or any
+non-alert data series.
+1.6.2.2. Its exclusive use for ALERT states (REDUCE/BLOCK/FLATTEN verdicts, drawdown > 15%,
+R04/R07 regime segments) maintains its visual salience as a warning signal.
+1.6.2.3. Any code reviewer encountering a Plotly color assignment of #FFACE9 on a non-alert
+series must flag it as a specification violation.
 
-1.6.3. Shared Accent and Border Rule
-1.6.3.1. #B76E79 is used identically in both variants for panel borders, selection outlines,
-dividers, and the provisional wordmark.
-1.6.3.2. The active variant is a per-session, user-selectable Settings toggle (see
-004_voicegate_ui_navigation.txt); it is not tied to any run or verdict state.
-1.6.3.3. Verdict colors (Pass/Fail/Flag) are not defined by this document; a future addendum
-must declare them explicitly, following the same inherited-default-vs-confirmed labeling
-discipline established here.
+1.6.3. Brand Accent and Border Rule
+1.6.3.1. The border token (#3a3a5a) is used for all panel borders and dividers.
+1.6.3.2. The text-accent token (#7ec8e3) is used as the primary series color (equity curve,
+highlighted metric values) and is distinct from alert-critical (#FFACE9).
+1.6.3.3. No token serves dual roles across alert and non-alert contexts.
 
-1.6.4. Contrast, Legibility, and Word-Wrap Requirements
-1.6.4.1. #000000-on-#FFACE9 and #FFACE9-on-#000000 both satisfy strong contrast for body
-text; transcript timestamps and small metric badges must use a minimum 14px-equivalent size.
-1.6.4.2. All text containers (transcript lines, finding annotations, rule-citation tooltips,
-Suggested Patch Adviser explanations) must wrap at word boundaries and must never clip or
-silently truncate.
-1.6.4.3. Verdict and finding state must never be communicated by color alone; borders, icons,
-and labels must duplicate every color-coded signal, per accessibility guidance in
-0000_documentation_standards.txt.
+1.6.4. Contrast and Accessibility Requirements
+1.6.4.1. text-primary (#e0e0e0) on bg-primary (#1a1a2e) achieves approximately 14:1
+contrast ratio (WCAG AAA; exceeds the 4.5:1 AA minimum).
+1.6.4.2. text-accent (#7ec8e3) on bg-primary (#1a1a2e) achieves approximately 8.5:1
+contrast ratio (WCAG AAA; exceeds the 4.5:1 AA minimum).
+1.6.4.3. All numeric values and axis labels must use at least 11px rendered size. Minimum
+interactive touch target for Dash components is 44px × 44px.
 
 1.7. Typography
-1.7.1. One geometric display face for headings; one highly readable sans-serif for interface
-text, including transcript display.
-1.7.2. Monospaced text is reserved for raw transcript timestamps and rule-ID citations, to
-aid scanability and audit review.
-1.7.3. Numeric displays (pass/fail/flag counts, calibration scores) use a tabular-figure
-treatment so values do not visually reflow.
+| Context | Font | Size | Weight |
+|---------|------|------|--------|
+| Numeric values (P&L, prices, %) | JetBrains Mono (fallback: Roboto Mono) | 12px–14px | Regular |
+| Chart axis labels | Inter (fallback: Roboto) | 11px | Regular |
+| Chart titles | Inter (fallback: Roboto) | 14px | SemiBold |
+| Dashboard section headers | Inter (fallback: Roboto) | 16px | Bold |
+| Table cell values | JetBrains Mono | 11px | Regular |
+| Alert text (BLOCK/FLATTEN) | Inter | 12px | Bold, uppercase |
 
-1.8. Screen Visual Language (Test Bench, Call Review, Risk Report)
-1.8.1. Test Bench: persona/scenario selectors and the live transcript panel share the base
-palette; an active-run indicator uses the shared accent color plus a distinct icon, never
-color alone.
-1.8.2. Call Review: the dual-channel transcript is rendered as two visually distinct speaker
-lanes (agent under test vs. simulated caller); inline findings are shown as verdict badges
-(Pass/Fail/Flag label + icon + border treatment) anchored to the exact transcript line they
-apply to.
-1.8.3. Risk Report: failed calls are listed against the specific rule text they violate; a
-before/after re-run diff view and a judge-calibration chart share the base palette and
-typography, with the chart using pattern/texture in addition to color to remain legible for
-color-vision-deficient reviewers.
-1.8.4. Every verdict badge (Pass/Fail/Flag) uses a distinct shape and icon in addition to
-color, per 1.6.4.3.
+1.7.1. Monospaced font (JetBrains Mono or Roboto Mono fallback) is used for all numeric
+values to ensure digit alignment in tables and charts.
+1.7.2. Sans-serif font (Inter or Roboto fallback) is used for all labels, titles, headers,
+and non-numeric text.
+1.7.3. Alert text (BLOCK/FLATTEN verdicts displayed in the risk-gate log) uses Inter Bold
+uppercase to visually differentiate from normal data text.
 
-1.9. Motion and Animation Restraint
-1.9.1. Animation is restrained: transcript auto-scroll, subtle badge-appear transitions, and
-a live-run pulse indicator are permitted; continuous background motion, screen shake, and
-full-surface gradients are avoided, carried forward unchanged from the inherited baseline's
-stated aesthetic exclusions.
+1.8. Chart Grid Rules
+1.8.1. All charts display a horizontal grid at major Y-axis tick values; grid color: #2a2a4a.
+1.8.2. No vertical grid lines. Vertical lines are used only for event markers: regime
+transitions and FLATTEN triggers.
+1.8.3. Event marker: a vertical dashed line in alert-critical (#FFACE9) marks every FLATTEN
+verdict on the equity curve and drawdown chart.
+1.8.4. Zero-reference line on signal score charts: solid horizontal line at y=0, color
+#4a4a6a, width 1px.
+1.8.5. Every chart has a title (top-left), axis labels (both axes), a legend, and a source
+annotation ("X Quant X | {session_id} | {mode}") in the bottom-right corner in
+text-secondary color (#a0a0b0).
 
-1.10. Logo Concept
-1.10.1. A provisional wordmark "VoiceGate" is used without an accompanying mark; the sibling
-project's fractured-geometry logo concept is explicitly NOT carried forward, since it is
-thematically tied to the game brand. A dedicated VoiceGate mark remains an open item pending
-brand confirmation (see 1.4.1).
+1.9. Motion and Transition Tokens
+1.9.1. Dashboard refresh rate: per-bar (1-minute default in Paper mode; configurable in
+config/).
+1.9.2. Chart update transition duration: ≤ 300ms using Plotly's default transition. No
+animation on data-critical elements (risk-gate log, regime probabilities).
+1.9.3. No infinite loading spinners. Use a static "Waiting for data..." text on panels that
+have not yet received their first bar.
+1.9.4. No auto-scroll on the risk-gate log table; the user pins the view manually.
 
-1.11. Reconciliation with Prior Ideation
-| Topic | Original (002_game_aesthetics.txt) | Current Canon (this document) | Justification |
-|-------|--------------------------------------|-------------------------------|----------------|
-| Palette structure | Two selectable variants; tile/piece/card visual language | Same two variants reused as inherited default; visual language retargeted to Test Bench/Call Review/Risk Report screens | Explicit user directive 2026-08-03: repurpose content, mark palette as default-only |
-| Logo | Fractured-geometry board/die/card mark | Not carried forward; wordmark-only, pending brand confirmation | Sibling logo concept is game-specific and not transferable |
-| Danger/success/verdict colors | Not yet redefined in sibling document | Verdict colors (Pass/Fail/Flag) also not yet redefined here | Consistent open item across both documents |
+1.10. Dark Mode Enforcement
+1.10.1. All Plotly charts use template="plotly_dark" as the base template, overriding with
+the X Quant X token colors defined in §1.6.1.
+1.10.2. Dash app layout uses the DBC (Dash Bootstrap Components) darkly theme or equivalent.
+1.10.3. No light-mode charts are permitted in the dashboard. All PNG exports use the dark
+theme.
+
+1.11. Accessibility
+1.11.1. WCAG AA: all text on bg-primary (#1a1a2e) achieves ≥ 4.5:1 contrast. #e0e0e0 on
+#1a1a2e ≈ 14:1 (passes). #7ec8e3 on #1a1a2e ≈ 8.5:1 (passes).
+1.11.2. Color-blind safety: all series that convey meaning through color also use distinct
+line styles (solid, dashed, dotted) or distinct marker symbols. Regime segments use both
+color and text label.
+1.11.3. All interactive Dash components have aria-label attributes for screen reader support.
 
 1.12. Summary Table
-| Element | Variant A (Dark) | Variant B (Light) | Status |
-|---------|-------------------|---------------------|--------|
-| Background | #000000 | #FFACE9 | Inherited default |
-| Text | #FFACE9 | #000000 | Inherited default |
-| Accent/Border | #B76E79 | #B76E79 | Inherited default |
-| Verdict colors | Not yet defined | Not yet defined | Open item |
+| Token | Hex | Exclusive use |
+|-------|-----|---------------|
+| bg-primary | #1a1a2e | All backgrounds |
+| text-primary | #e0e0e0 | All readable text |
+| series-1 | #7ec8e3 | Equity curve, primary data |
+| alert-critical | #FFACE9 | Alert/FLATTEN/BLOCK only |
+| warn-soft | #FF9800 | Moderate warnings (10–15% drawdown) |
+| regime-bull | #4CAF50 | R01, R02, R11 |
+| regime-bear | #F44336 | R03, R04 |
+| Font: numeric | JetBrains Mono | All P&L, price, % values |
+| Font: labels | Inter | Titles, axis labels, headers |
 
 1.13. Reconciliation Table
-See Section 1.11 above; cross-referenced here in full satisfaction of the mandatory document
-skeleton.
+| Source | Prior Statement | Current Canon | Status |
+|--------|----------------|---------------|--------|
+| X Quant X 002 §1.6 (voice-UI color palette, audio cues) | Voice-call review dashboard aesthetics | Replaced with X Quant X dark-mode trading dashboard aesthetics | Reconciled |
+| high_level_concept.md mermaid diagrams | fill:#FFACE9 used for all nodes | #FFACE9 adopted as alert-critical exclusive token | Reconciled |
 
 1.14. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Inherited palette mistaken for a confirmed VoiceGate brand decision | Medium | Medium | Explicit "inherited default, open to revision" labeling in 1.4.1 and throughout |
-| Verdict communicated by color alone, misread by color-vision-deficient reviewer | Medium | High | Mandatory badge shape/icon duplication (1.6.4.3, 1.8.4) |
-| Judge-calibration chart illegible for color-vision-deficient reviewers | Low | Medium | Pattern/texture requirement in 1.8.3 |
+|------|-----------|--------|------------|
+| #FFACE9 used for normal-state data | High | Medium | §1.6.2 prohibition explicitly documented; code review checks Plotly color assignments |
+| Dashboard legibility on non-dark monitors | Low | Low | §1.10 darkly theme + PNG export tested on standard monitor; no light-mode support in MVP |
+| Font fallback failing (JetBrains Mono not installed) | Medium | Low | Fallback to Roboto Mono in font-family stack; numeric alignment still acceptable |
 
 1.15. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
 |----------|-----------------|----------|------------|-------------|
-| Maintain inherited-default palette values | R | C | A | I |
-| Approve future VoiceGate-specific brand refresh | C | R | A | A/Stakeholder (product owner) |
-| Accessibility/contrast sign-off | C | R/A | A | I |
+| Maintain color token table (§1.6.1) | R | C | A | I |
+| Approve changes to alert-critical (#FFACE9) usage rules | C | R | A | A/Stakeholder (product owner) |
+| Accessibility/contrast sign-off (§1.11) | C | R/A | A | I |
+| Chart grid rule enforcement in code review | C | R | A | I |
 
 1.16. Conclusion
-VoiceGate's current visual identity is an explicitly-labeled inherited default, retargeted
-from tile/piece/card visual language to Test Bench/Call Review/Risk Report screen language,
-with unchanged legibility guarantees and a still-open brand/logo decision.
+X Quant X's visual aesthetic is a legibility-first, alert-aware dark-mode design: every
+token is anchored to a specific functional role, and the #FFACE9 brand accent is constrained
+to alert states to preserve its visual salience as a critical warning signal. These standards
+are the single source of truth for xquantx/dashboard/ and supersede all prior X Quant X or
+game-era aesthetic content in this file.
 
 1.17. References and Citations
-1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
-1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (brand
-identity, open items, Section 1.9).
-1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source concept chat).
-1.17.4. Internal: voice_processing_specifications/004_voicegate_ui_navigation.txt (palette
-toggle location).
-1.17.5. Internal (superseded, preserved in git history): 002_game_aesthetics.txt (source of
-the inherited-default palette values).
+1.17.1. Internal: alpaca_paper_trading_specifications_x_quant_x/022_xquantx_visualization_dev_standards.txt (chart type specifications).
+1.17.2. Internal: alpaca_trading_agents_concept/high_level_concept.md (brand color origin, #FFACE9).
+1.17.3. Internal: coding_stds/CodingStandardsRef/coding_stds/visualization/aesthetic_standards.txt.
+1.17.4. External: WCAG 2.1 AA contrast guidelines (w3.org/WAI/WCAG21/quickref).
+1.17.5. External: Plotly Python theming documentation.
 
 1.18. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/002_game_aesthetics.txt: two-variant palette, typography, tile/piece/card visual language. | Major |
-| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: retargeted visual language to Test Bench/Call Review/Risk Report screens, relabeled inherited palette as default-only/not-confirmed-brand, deferred logo/verdict-color decisions as open items. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: retargeted visual language to Test Bench/Call Review/Risk Report screens, relabeled inherited palette as default-only/not-confirmed-brand, deferred logo/verdict-color decisions as open items. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-02: replaced X Quant X voice-UI color palette and audio cue aesthetics with X Quant X dark-mode dashboard aesthetic standards. Color palette token table (18 tokens), typography (2 font families), chart grid rules (§1.8), motion tokens (§1.9), dark mode enforcement (§1.10), WCAG AA accessibility (§1.11). #FFACE9 designated alert-critical exclusive use. | Major |

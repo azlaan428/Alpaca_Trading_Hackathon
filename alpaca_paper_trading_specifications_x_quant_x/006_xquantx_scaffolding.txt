@@ -1,4 +1,4 @@
-1. VoiceGate Scaffolding (Table of Contents)
+1. X Quant X Repository Scaffold (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
@@ -16,148 +16,210 @@
 1.15. Changelog Table
 
 1.1. Abstract
-This document defines the package/module scaffolding for the VoiceGate Python backend,
-adapting the module isolation plan first sketched for the prior DarkStrategy_XParadoxX game
-project into a concrete directory layout for this repository (X_Voice_X), now repurposed as
-an automated compliance/red-team test bench for voice AI agents.
+This document defines the multi-language repository scaffold for X Quant X — a Python/Go/
+C++/Rust quantitative paper-trading platform built on the Alpaca API. It establishes
+directory layout, language-layer boundaries, package responsibilities, and module isolation
+rules that all implementation files must follow.
 
 1.2. Key Words
-scaffolding, package layout, module boundaries, orchestration, services, tests, py.typed,
-repository structure.
+scaffolding, repository layout, module boundaries, language layers, operator hierarchy,
+Python, Go, C++, Rust, Alpaca SDK, src layout, tests, schemas, config, data.
 
 1.3. Executive Summary
-The backend is organized into four top-level packages — `voicegate` (call orchestration,
-persona/scenario engines, transcription, compliance scoring, verdicts, patch advice, event
-log, RNG), `data` (static personas/scenarios/statutory rules/company-terms snapshots),
-`services` (patch-adviser client, persistence for run history/re-runs), and `api` (command/
-contract surface for the frontend) — plus `tests` mirroring every package, so that the
-verdict-producing engines remain fully decoupled from any presentation layer.
+The repository is organized into four language source trees (src/python/, src/go/, src/cpp/,
+src/rust/) plus shared cross-language artifacts (schemas/, config/, data/). Each language
+tree is independently buildable. Alpaca SDK submodules live in tools/alpaca/. Tests mirror
+the source tree. The Python layer hosts Operators, Agents, ML models, and Alpaca API calls.
+The Go layer hosts streaming data ingestion, WebSocket handling, and low-latency API
+services. The C++ layer hosts numerical kernels (Kalman filter, covariance, options pricing).
+The Rust layer hosts concurrent data-pipeline components and Parquet/Arrow serialization.
 
 1.4. Key Findings
-1.4.1. The scaffolding directly reuses and extends the module isolation plan carried forward
-from the prior game-project ideation, adapted from a five-package game layout to the
-four-package VoiceGate layout below.
-1.4.2. `voicegate/` contains only the orchestration and decision-making engines (call
-orchestration, persona/scenario simulation, transcription, compliance scoring, verdicts,
-patch advice); it must never import from a presentation or API layer.
-1.4.3. `services/patch_adviser` must only read a serialized transcript/verdict summary and
-return a suggested (advisory-only) system-prompt patch; it must never auto-apply a patch
-without human confirmation, and it must never hold a reference to live mutable call state.
-1.4.4. `tests/` mirrors every top-level package one-to-one.
-1.4.5. Every package and sub-package contains an `__init__.py`; the repository root carries
-`py.typed` to advertise inline type information to consumers, per
-005_voicegate_coding_standards.txt Section 1.9.3.
+1.4.1. The scaffold directly extends the prior game-project and xquantx module isolation
+plan into a four-language monorepo layout.
+1.4.2. Language boundaries are hard: Python does not re-implement C++ kernel logic; Go does
+not maintain regime state (Python does); C++ does not call Alpaca API (Python does).
+1.4.3. The shared `schemas/` directory holds all language-neutral schema definitions
+(Protocol Buffers or JSON Schema) — the single source of truth for OHLCVBar, Order,
+Position, RegimeState, and all other cross-language data structures.
+1.4.4. `tests/` mirrors every source sub-tree one-to-one (tests/python/, tests/go/,
+tests/cpp/, tests/rust/).
+1.4.5. `tools/alpaca/` contains all Alpaca SDK submodules (alpaca-py, alpaca-trade-api-go,
+alpaca-mcp-server, alpaca-skills, cli).
 
 1.5. Philosophical Preamble
-Scaffolding is the skeleton that keeps a rapidly generated hackathon prototype from collapsing
+Scaffolding is the skeleton that keeps a rapidly built quantitative platform from collapsing
 under its own ambition. A directory layout is itself a claim about responsibility boundaries;
-getting it right before implementation begins is cheaper than untangling coupled
-orchestration-and-UI code under a deadline — and for a compliance test bench specifically, a
-clean boundary between the scoring/verdict engines and any external service is what keeps a
-Pass/Fail/Flag verdict auditable rather than merely plausible.
+getting it right before implementation begins is cheaper than untangling coupled Python ML
+code and Go streaming code under a deadline. For a four-language quantitative system, clean
+language-layer boundaries are what keeps the Kalman filter kernel from being silently
+reimplemented in three different languages with three subtly different numerical conventions.
 
 1.6. Repository Layout
 ```
-X_Voice_X/
-    voice_processing_specifications/   # this specification corpus
+Alpaca_Trading_Hackathon/
+    alpaca_paper_trading_specifications_x_quant_x/   # this specification corpus
+    alcapa_trading_agents_concept/                    # concept and meta-prompt source material
+    high_level_proofs/                                # mathematical foundations (LaTeX + MD)
+    api_references/                                   # Alpaca API reference docs
+    tools/
+        alpaca/                                       # Alpaca SDK submodules
+            alpaca-py/                                # Python SDK (primary execution)
+            alpaca-trade-api-python/                  # Python SDK (legacy reference)
+            alpaca-trade-api-go/                      # Go SDK (high-perf paths)
+            alpaca-trade-api-csharp/                  # C# SDK (reference only)
+            alpaca-mcp-server/                        # MCP server for VS Code / Claude
+            alpaca-skills/                            # Alpaca skills package
+            cli/                                      # Official CLI
+    schemas/                                          # Language-neutral schema definitions
+        ohlcv_bar.proto / ohlcv_bar.json
+        order.proto / order.json
+        position.proto / position.json
+        regime_state.proto / regime_state.json
+        signal.proto / signal.json
+        portfolio_snapshot.proto / portfolio_snapshot.json
+    config/                                           # Declarative configuration only (no logic)
+        paper_trading.toml                            # default paper-trading config
+        backtest.toml                                 # backtest replay config
+        risk_rules.toml                               # risk gate thresholds
+        regimes.toml                                  # regime taxonomy and priors
+    data/                                             # Static reference data
+        scenarios/                                    # market scenario definitions
+        regime_archetypes/                            # regime archetype definitions
+        historical/                                   # historical OHLCV datasets (gitignored)
     src/
-        voicegate/
-            call_orchestrator.py   # call lifecycle sequencing (Greeting/Intent Discovery/
-                                    # Resolution Attempt/Compliance Check/Wrap-up)
-            persona_engine.py      # persona archetype behavior (patience, escalation rate,
-                                    # deception likelihood, vulnerability flag)
-            scenario_engine.py     # scenario/category x intensity-tier selection and
-                                    # variance injection
-            transcription_engine.py# both-sides call transcription; treats transcript
-                                    # content as untrusted DATA, never instructions
-            compliance_scoring_engine.py# scores transcript vs statutory rules and company
-                                    # terms snapshots
-            verdict_engine.py      # Pass/Fail/Flag verdict with rule citation
-            patch_adviser.py       # advisory-only suggested system-prompt patch
-            event_log.py          # structured, human-readable event records
-            rng_service.py        # seeded random-number service for reproducible runs
-        data/
-            personas.py           # persona archetype definitions and stat-blocks
-            scenarios.py          # scenario/persona catalog (category x intensity)
-            statutory_rules.py    # structured statutory rule citations (rule IDs only, never
-                                   # full statute text reproduced)
-            company_terms_snapshots.py # scraped/published company T&C snapshots per run
-        services/
-            patch_adviser_client.py # client wrapper for the advisory patch service
-            persistence.py         # run-history persistence and re-run retrieval
-        api/
-            commands.py           # START_RUN, SELECT_PERSONA, SELECT_SCENARIO,
-                                   # SUBMIT_VERDICT_REVIEW, REQUEST_PATCH, CONFIRM_PATCH,
-                                   # RE_RUN_GAUNTLET command schema for the frontend to invoke
+        python/                                       # Python layer: ML/research/orchestration
+            operators/
+                data/                                 # DataOperator, NormalizationOperator
+                features/                             # FeatureOperator (OHLCV -> indicators)
+                regime/                               # MarketRegimeOperator (HMM/Kalman/Bayes)
+                signals/                              # SignalOperator subtypes (Momentum, etc.)
+                risk/                                 # RiskOperator (rule-set gate)
+                portfolio/                            # PortfolioOperator (Markowitz/Kelly/RP)
+                execution/                            # ExecutionOperator (Alpaca paper API)
+                simulation/                           # SimulationOperator (backtest replay)
+                performance/                          # PerformanceOperator (P&L, Sharpe, etc.)
+                validation/                           # ValidationOperator (invariant checks)
+                news/                                 # NewsOperator (NLP sentiment)
+            agents/                                   # Agent compositions of Operators
+            dashboard/                                # Plotly/Dash visualization components
+            __init__.py
+        go/                                           # Go layer: streaming, APIs, telemetry
+            cmd/
+                streamer/                             # main.go for live market data streaming
+                server/                               # main.go for API service
+            internal/
+                stream/                               # Alpaca WebSocket streaming
+                orderbook/                            # order-book processing
+                telemetry/                            # structured event logging
+        cpp/                                          # C++ layer: numerical kernels
+            include/
+                kalman/                               # Kalman filter interface headers
+                covariance/                           # covariance estimation headers
+                options/                              # options pricing kernel headers
+            src/
+                kalman/                               # Kalman filter implementation
+                covariance/                           # covariance estimation
+                options/                              # options pricing
+            CMakeLists.txt
+        rust/                                         # Rust layer: concurrent pipeline components
+            src/
+                pipeline/                             # data pipeline orchestration
+                serialization/                        # Parquet/Arrow serialization
+                ipc/                                  # inter-process communication
+            Cargo.toml
     tests/
-        voicegate/
-        data/
-        services/
-        api/
+        python/                                       # mirrors src/python/ one-to-one
+        go/                                           # mirrors src/go/ one-to-one
+        cpp/                                          # mirrors src/cpp/ one-to-one
+        rust/                                         # mirrors src/rust/ one-to-one
+    CHATS/                                            # session logs and planning artifacts
+    AUDIT_LOGS/                                       # audit trail for risk decisions
+    coding_stds/                                      # CodingStandardsRef submodule
+    public_team_mates/                                # whitepaper and presentation docs
 ```
 
 1.7. Module Responsibilities
-| Package | Responsibility | Must Never |
-|---------|------------------|------------|
-| `src/voicegate` | Call orchestration, persona/scenario simulation, transcription, scoring, verdicts, patch advice | Import from `api` or any presentation layer |
-| `src/data` | Static, versioned personas/scenarios/statutory-rule/company-terms data | Contain executable orchestration or scoring logic |
-| `src/services` | Patch-adviser client, persistence | Mutate call state directly, or auto-apply a patch without human confirmation |
-| `src/api` | Command schema/contract for the frontend | Contain orchestration or scoring logic itself |
-| `tests` | Mirror of all packages above | Depend on production data changing test outcomes without a seeded RNG |
+| Layer | Language | Responsibility | Must Never |
+|-------|---------|---------------|-----------|
+| operators/ | Python | Typed Operator implementations | Import from dashboard/ or api/ |
+| agents/ | Python | Agent compositions of Operators | Bypass RiskOperator in the pipeline |
+| dashboard/ | Python | Plotly/Dash visualization | Contain trading logic or Operator implementations |
+| cmd/ | Go | Entry points for streaming/API services | Maintain regime state (Python does) |
+| internal/stream/ | Go | Alpaca WebSocket live data ingestion | Call Alpaca paper-trade order API (Python does) |
+| include/ + src/ | C++ | Pure numerical kernels | Call any external API or read from disk |
+| src/pipeline/ | Rust | Concurrent data pipeline orchestration | Hold regime state or make trading decisions |
+| schemas/ | Language-neutral | Single source of truth for all data types | Contain executable logic |
+| config/ | Language-neutral | Declarative configuration only | Contain executable logic (thresholds only) |
 
 1.8. Scaffolding Rules
-1.8.1. No package may exceed a single clearly named responsibility (see
-005_voicegate_coding_standards.txt Section 1.7.4).
-1.8.2. Every new module requires a corresponding test module in `tests/` before it is
-considered complete.
-1.8.3. Cross-package imports flow one direction only: `data` -> `voicegate` -> `services`/
-`api`; reverse imports are disallowed to prevent circular dependencies (see
-023_voicegate_modules_imports.txt).
+1.8.1. Language boundaries are hard: no Python file re-implements a function that already
+exists in the C++ numerical kernel. No Go file maintains regime state. No C++ file calls any
+external API.
+1.8.2. Every Operator in Python implements exactly the four interface methods: `process()`,
+`validate_inputs()`, `schema_version()`, `operator_id()`.
+1.8.3. All cross-language data types are defined in `schemas/` first. No language defines its
+own canonical data structure if it crosses a language boundary.
+1.8.4. `config/` contains only declarative TOML/YAML: threshold values, regime priors, risk
+limits. No executable logic in configuration files.
+1.8.5. `data/` historical datasets are gitignored; only schema and scenario definitions are
+versioned.
+1.8.6. Every new Operator gets a corresponding unit test in `tests/python/operators/` before
+any integration test is written.
 
 1.9. Summary Table
-| Package | Key Modules |
-|---------|--------------|
-| voicegate | call_orchestrator, persona_engine, scenario_engine, transcription_engine, compliance_scoring_engine, verdict_engine, patch_adviser, event_log, rng_service |
-| data | personas, scenarios, statutory_rules, company_terms_snapshots |
-| services | patch_adviser_client, persistence |
-| api | commands |
+| Layer | Location | Language | Primary Dependency |
+|-------|---------|---------|-------------------|
+| Operator implementations | src/python/operators/ | Python | alpaca-py, numpy, scipy |
+| Agent compositions | src/python/agents/ | Python | src/python/operators/ |
+| Dashboard | src/python/dashboard/ | Python | plotly, dash |
+| Streaming services | src/go/ | Go | alpaca-trade-api-go |
+| Numerical kernels | src/cpp/ | C++ | Eigen, CMake |
+| Data pipeline | src/rust/ | Rust | arrow2, parquet2 |
+| Cross-language schemas | schemas/ | Language-neutral | protobuf / json-schema |
+| Configuration | config/ | Language-neutral | TOML / YAML |
 
 1.10. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Prior game-project ideation (module isolation plan) | Five-package game layout (`src/game`, `src/data`, `src/services`, `src/api`, plus mirrored `tests`) | Adapted to the four-package VoiceGate layout (`src/voicegate`, `src/data`, `src/services`, `src/api`, `tests/`), renaming the rules-engine package to the orchestration/decision-engine package for the compliance-testing domain | Reconciled |
+|--------|----------------|---------------|--------|
+| xquantx 006 §1.6 (X_Voice_X/ Python-only layout) | Single Python package: xquantx/, data/, services/, api/ | Replaced with four-language src/python/, src/go/, src/cpp/, src/rust/ layout plus schemas/ and config/ | Reconciled |
+| alcapa_trading_agents_concept/prompt_patterns.md META-PROMPT 23 | Directory design principles | Formalized into §1.6 repository layout | Reconciled |
 
 1.11. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Orchestration/scoring logic leaking into `api` or `services` under time pressure | Medium | High | 1.8.3 import direction rule enforced via lint/import-graph check in CI |
-| Missing `__init__.py` or `py.typed` breaking type distribution | Low | Medium | Scaffolding checklist item in code review |
-| Test package drifting out of sync with production package structure | Medium | Medium | 1.8.2 mandates a test module per new production module |
-| `patch_adviser` auto-applying a patch without human confirmation | Low | High | 1.4.3 and the `services` "must never" column enforced via code review and an explicit human-confirmation gate in `api/commands.py` (`CONFIRM_PATCH`) |
+|------|-----------|--------|------------|
+| Python re-implementing C++ kernel functions | Medium | High | §1.8.1 language boundary rule enforced in code review and CI |
+| schemas/ diverging across language implementations | Medium | High | schemas/ is single source of truth; CI validates all language bindings against it |
+| config/ accumulating executable logic | High | Medium | §1.8.4 rule: config/ review checklist; CI lint for executable constructs in TOML |
+| Missing test for a new Operator | High | Medium | §1.8.6 rule: test-first; CI coverage gate requires 100% branch on all Operators |
 
 1.12. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain repository layout | R | C | A | I |
-| Approve new top-level packages | C | R | A | I |
+|----------|---------------|----------|-----------|------------|
+| Maintain scaffold layout | R | C | A | I |
+| Enforce language boundary in code review | C | R/A | A | I |
+| schemas/ schema versioning | R | C | A | I |
 
 1.13. Conclusion
-The scaffolding isolates the deterministic-where-possible orchestration/scoring engines from
-data, services, and the API/frontend contract, directly fulfilling the architecture principle
-carried forward from the original ideation session and adapted to VoiceGate's compliance-
-testing domain.
+The four-language scaffold establishes clear responsibility boundaries before implementation
+begins. Every implementation file must reside in the correct language sub-tree and respect
+the language boundary rules in §1.8.
 
 1.14. References and Citations
-1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
-1.14.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-(product concept and canonical package layout origin).
-1.14.3. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt
-(structural discipline).
-1.14.4. Internal: voice_processing_specifications/023_voicegate_modules_imports.txt (import
-direction rules).
+1.14.1. Internal: alpaca_paper_trading_specifications_x_quant_x/0000_documentation_standards.txt.
+1.14.2. Internal: alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt
+§1.9 (language-specific rules).
+1.14.3. Internal: alpaca_paper_trading_specifications_x_quant_x/007_xquantx_virtual_env.txt
+(build environments).
+1.14.4. Internal: alpaca_paper_trading_specifications_x_quant_x/023_xquantx_modules_imports.txt
+(module import map).
+1.14.5. Internal: alcapa_trading_agents_concept/prompt_patterns.md META-PROMPT 23
+(directory design).
+1.14.6. Internal: tools/alpaca/TOOLING_SETUP.md (SDK submodule map).
 
 1.15. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: Python package scaffolding adapted from the original frontend module-isolation plan. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 006_game_scaffolding.txt; replaced the five-package game layout (game/data/services/api engines: game_state, turn_engine, movement_engine, combat_engine, territory_engine, card_engine, upgrade_engine, victory_engine) with the canonical four-package VoiceGate layout (voicegate/data/services/api: call_orchestrator, persona_engine, scenario_engine, transcription_engine, compliance_scoring_engine, verdict_engine, patch_adviser, event_log, rng_service). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed file via `git mv` from 006_game_scaffolding.txt; replaced the five-package game layout (game/data/services/api engines: game_state, turn_engine, movement_engine, combat_engine, territory_engine, card_engine, upgrade_engine, victory_engine) with the canonical four-package xquantx layout (xquantx/data/services/api: call_orchestrator, persona_engine, scenario_engine, transcription_engine, compliance_scoring_engine, verdict_engine, patch_adviser, event_log, rng_service). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P1-02: replaced xquantx Python-only scaffold with four-language monorepo layout (Python/Go/C++/Rust). New sections: shared schemas/, config/, tools/alpaca/ submodule tree. Language boundary rules added in §1.8. All xquantx package names and examples removed. | Major |

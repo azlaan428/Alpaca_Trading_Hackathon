@@ -1,157 +1,226 @@
-1. VoiceGate Deployment (Table of Contents)
+X Quant X Deployment (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
-1.4. Key Findings
-1.5. Philosophical Preamble
-1.6. Build Configurations
-1.7. Persistence and Run Storage
-1.7.1. Run Data Contents
-1.7.2. Save Triggers
-1.7.3. New Run / Continue Review / Reset
-1.8. Hackathon Submission Target (Natively AI) [ASSUMED]
-1.9. Summary Table
-1.10. Reconciliation Table
-1.11. Risk and Mitigation Table
-1.12. Roles and Responsibilities (RACI)
-1.13. Conclusion
+1.6. Local Deployment Steps
+1.6.1. Clone and Initialize
+1.6.2. Python Environment
+1.6.3. Go Service Build
+1.6.4. C++ Kernel Build
+1.6.5. Rust Pipeline Build
+1.7. Environment Variable Configuration
+1.7.1. Required Environment Variables
+1.7.2. .env.example
+1.7.3. Loading via python-dotenv
+1.7.4. No Hardcoding Rule
+1.8. Session Startup Sequence
+1.9. Docker Deployment (Optional)
+1.9.1. docker-compose.yml Services
+1.9.2. Python Service
+1.9.3. Go Service
+1.9.4. Environment Variable Injection
+1.9.5. Dashboard Port
+1.9.6. C++ and Rust Components
+1.10. Health-Check Endpoints
+1.10.1. Go Streaming Service
+1.10.2. Python Main Process
+1.10.3. Startup Probe
+1.11. Secrets Rotation
+1.11.1. Alpaca Key Rotation
+1.11.2. .env VCS Exclusion
+1.11.3. CI Repository Secrets
+1.12. Summary Table
+1.13. Reconciliation Table
 1.14. References and Citations
 1.15. Changelog Table
 
 1.1. Abstract
-This document specifies deployment build configurations and gauntlet-run persistence
-behavior for VoiceGate, including the distinction between development and production
-builds referenced by 009_voicegate_unit_tests.txt, and this file's own role as the
-deployment target definition for the assumed LabLab AI Factory / Natively AI hackathon
-submission window.
+This document defines the local deployment procedure for X Quant X, covering environment
+setup, secrets management, Docker containerization option, health-check endpoints, and the
+session startup sequence for Paper and Backtest modes.
 
 1.2. Key Words
-deployment, build configuration, persistence, sandbox/staging, debug panel, mock target
-agent, Natively AI, hackathon submission.
+deployment, local deployment, Docker, environment variables, secrets management, health check,
+session startup, Paper mode, Backtest mode, alpaca-py, config.
 
 1.3. Executive Summary
-VoiceGate ships as a Python backend (this repository) paired with a web-rendered UI exposing
-the Test Bench, Call Review, and Risk Report screens. Two build configurations exist:
-development (debug panel enabled, verbose logging) and production (debug panel disabled, per
-009_voicegate_unit_tests.txt Section 1.7.1). In every build configuration, calls launched by
-the Test Bench target only sandbox/staging or mock target agents; no live production call
-interception is in scope for the MVP. Gauntlet-run state persists continuously and supports
-New Run, Continue Review, and Reset flows.
+X Quant X is deployed locally for the MVP sprint. Deployment consists of: (1) cloning the
+repository and initializing submodules; (2) setting up per-language build environments (per
+007_xquantx_virtual_env.txt); (3) configuring secrets via environment variables; (4) starting
+the session via a single entry-point command. An optional Docker compose configuration
+containerizes all four language services. Health-check endpoints are provided for the Go
+streaming service.
 
-1.4. Key Findings
-1.4.1. Exactly two build configurations are defined: development and production; the debug
-panel (009_voicegate_unit_tests.txt Section 1.7) is present only in development builds and is
-disabled entirely in the production build.
-1.4.2. Production builds never enable any development-only debug panel, and calls are
-restricted to sandbox/staging targets only in every build configuration — there is no
-live-production-call-interception capability anywhere in MVP scope, per
-001_voice_transcription_concept.txt Section 1.9.2.
-1.4.3. Persistence uses a local run-record store (format governed by the project's data
-standards) rather than a networked production-call feed, consistent with the sandbox-only
-MVP scope.
-1.4.4. Autosave triggers at the end of every completed gauntlet phase, not merely at run
-completion, to minimize data loss.
-1.4.5. Reset Run and Reset Session are distinct, explicit, user-confirmed actions that never
-fire implicitly.
-1.4.6. The LabLab AI Factory / Natively AI hackathon window (2026-08-03 to 2026-08-10) is
-recorded here as an ASSUMED timeline carried over from the sibling project's own confirmed
-submission context, not independently confirmed for VoiceGate; Day 8 (2026-08-10) is treated
-as the assumed submission day requiring a production build, per Section 1.8.
+1.6. Local Deployment Steps
 
-1.5. Philosophical Preamble
-Deployment is the point where every prior design promise either survives contact with a real
-running build or does not. For a compliance test bench specifically, this document also
-carries a safety obligation: a test bench that could accidentally place a live call against a
-real production voice agent would itself become the very unauthorized, untested action it
-exists to catch elsewhere. Two build configurations and one sandbox-only call-target rule make
-that boundary explicit rather than incidental.
+1.6.1. Clone and Initialize
+```bash
+git clone <repo_url> Alpaca_Trading_Hackathon
+cd Alpaca_Trading_Hackathon
+git submodule update --init --recursive
+```
 
-1.6. Build Configurations
-| Configuration | Debug Panel | Call Targets | Logging Verbosity | Intended Use |
-|-----------------|--------------|----------------|----------------------|-----------------|
-| Development | Enabled (009_voicegate_unit_tests.txt §1.7) | Sandbox/staging or mock agent only | Verbose (DEBUG level) | Local development, automated testing |
-| Production | Disabled | Sandbox/staging or mock agent only (never live production) | Standard (INFO level and above) | Hackathon demo/submission build |
+1.6.2. Python Environment
+```bash
+python -m venv .venv-xquantx
+source .venv-xquantx/bin/activate  # Windows: .venv-xquantx\Scripts\activate
+pip install -r requirements.txt -r requirements-dev.txt
+```
 
-1.7. Persistence and Run Storage
+1.6.3. Go Service Build
+```bash
+cd src/go
+go mod download
+go build -o bin/streamer ./cmd/streamer/
+go build -o bin/server ./cmd/server/
+```
 
-1.7.1. Run Data Contents
-Persona/scenario selection, dual-channel transcript, per-phase timestamps, compliance score
-and rule citations, verdict (Pass/Fail/Flag), any suggested-patch proposal and its
-re-run outcome, `rng_service` seed, and the company-terms snapshot version used for scoring.
+1.6.4. C++ Kernel Build
+```bash
+cd src/cpp
+conan install . --build=missing -s build_type=Release
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+```
 
-1.7.2. Save Triggers
-Autosave fires at the end of every completed gauntlet phase (Greeting, Intent Discovery,
-Resolution Attempt, Compliance Check, Wrap-up) and immediately before application shutdown,
-if shutdown is detected gracefully.
+1.6.5. Rust Pipeline Build
+```bash
+cd src/rust
+cargo build --release
+```
 
-1.7.3. New Run / Continue Review / Reset
-1.7.3.1. New Run: initializes a fresh gauntlet run against the selected sandbox/staging or
-mock target agent, per the persona/scenario chosen in the Test Bench.
-1.7.3.2. Continue Review: resumes review of the most recently completed run in Call Review or
-Risk Report, offered only when a completed run record exists.
-1.7.3.3. Reset Run: an explicit, user-confirmed action that discards the current in-progress
-run's state but retains prior completed-run records and per-session statistics.
+1.7. Environment Variable Configuration
 
-1.8. Hackathon Submission Target (Natively AI) [ASSUMED]
-1.8.1. This repository is ASSUMED to target the LabLab AI Factory / Natively AI hackathon
-window of 2026-08-03 to 2026-08-10, mirroring the sibling project's confirmed submission
-context; this has not been independently reconfirmed for VoiceGate and must not be treated as
-locked without explicit confirmation.
-1.8.2. Day 8 of the assumed window (2026-08-10) is the assumed submission day; the production
-build configuration (Section 1.6) — debug panel disabled, sandbox/staging call targets only —
-is the configuration intended for judging.
-1.8.3. No external paid services or accounts are required to run or judge the submission,
-consistent with the sandbox-only MVP scope.
+1.7.1. Required Environment Variables
+Set in .env -- must not be committed to VCS:
+```
+ALPACA_API_KEY=<your_paper_api_key>
+ALPACA_SECRET_KEY=<your_paper_api_secret>
+ALPACA_BASE_URL=https://paper-api.alpaca.markets
+ALPACA_DATA_URL=https://data.alpaca.markets
+MONTE_CARLO_SEED=42
+SESSION_SEED=42
+```
 
-1.9. Summary Table
-| Aspect | Behavior |
-|--------|-----------|
-| Build configurations | Development (debug panel, verbose logs), Production (neither) |
-| Call targets (all builds) | Sandbox/staging or mock target agent only; no live production interception |
-| Persistence medium | Local run-record store |
-| Autosave trigger | End of every completed gauntlet phase, plus graceful shutdown |
-| New Run/Continue Review/Reset | Three distinct, explicitly confirmed flows |
-| Submission target | ASSUMED: Natively AI, LabLab AI Factory hackathon, window 2026-08-03 to 2026-08-10, Day 8 submission |
+1.7.2. .env.example
+A .env.example file is committed to VCS documenting all required variables without values.
 
-1.10. Reconciliation Table
+1.7.3. Loading via python-dotenv
+The Python entry point loads .env via python-dotenv:
+```python
+from dotenv import load_dotenv
+load_dotenv()
+```
+
+1.7.4. No Hardcoding Rule
+No environment variable may be hardcoded in any source file, per
+005_xquantx_coding_standards.txt §1.9.1.
+
+1.8. Session Startup Sequence
+Paper mode:
+```bash
+python -m xquantx.main --mode paper --config config/paper_trading.toml
+```
+
+Backtest mode:
+```bash
+python -m xquantx.main --mode backtest --config config/backtest.toml --data-dir data/historical/
+```
+
+Dry-run mode:
+```bash
+python -m xquantx.main --mode dry_run --config config/paper_trading.toml
+```
+
+The entry point: validates config, loads SessionContext, starts the Go streaming service as
+a subprocess, initializes the Operator DAG, starts the Dash dashboard on
+http://localhost:8050, begins the session loop.
+
+1.9. Docker Deployment (Optional)
+
+1.9.1. docker-compose.yml Services
+docker-compose.yml defines four services: xquantx-python, xquantx-go-streamer,
+xquantx-go-server, and xquantx-dashboard.
+
+1.9.2. Python Service
+Builds from Dockerfile.python using Python 3.14-slim base.
+
+1.9.3. Go Service
+Builds from Dockerfile.go using golang:alpine base.
+
+1.9.4. Environment Variable Injection
+Environment variables are injected from .env file via `env_file: .env` in
+docker-compose.yml.
+
+1.9.5. Dashboard Port
+Dashboard exposed on host port 8050.
+
+1.9.6. C++ and Rust Components
+C++ and Rust components are compiled into the Python service container as shared libraries
+(pybind11/ctypes binding).
+
+1.10. Health-Check Endpoints
+
+1.10.1. Go Streaming Service
+GET http://localhost:8080/health returns {"status": "ok", "last_bar_ts": <unix_ns>} when
+the WebSocket is connected and delivering bars.
+
+1.10.2. Python Main Process
+The Dash dashboard's root page (http://localhost:8050/) returns HTTP 200 when the session
+is active.
+
+1.10.3. Startup Probe
+On session start, the Python entry point calls GET http://localhost:8080/health and waits
+up to 30 seconds for a {"status": "ok"} response before beginning the pipeline loop.
+
+1.11. Secrets Rotation
+
+1.11.1. Alpaca Key Rotation
+Alpaca API keys are rotated via the Alpaca dashboard (alpaca.markets). After rotation,
+update .env and restart the session.
+
+1.11.2. .env VCS Exclusion
+Never commit .env to VCS. The .gitignore already excludes .env.
+
+1.11.3. CI Repository Secrets
+CI uses repository secrets (GitHub Actions Secrets) for any sandbox integration test that
+requires ALPACA_API_KEY.
+
+1.12. Summary Table
+| Step | Command | Result |
+|------|---------|--------|
+| Clone + submodules | git clone + git submodule update | Full repo cloned |
+| Python env | python -m venv + pip install | .venv-xquantx activated |
+| Go build | go build | Streamer + server binaries |
+| C++ build | conan install + cmake | Numerical kernel shared library |
+| Rust build | cargo build --release | Pipeline binary |
+| Configure secrets | .env file | API keys loaded |
+| Start session | python -m xquantx.main | Session loop + dashboard live |
+
+1.13. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Sibling project, 015_game_deployment.txt (prior revision) | Two build configurations; local save-file persistence; New/Continue/Reset flows; confirmed Natively AI hackathon target | Re-mapped to VoiceGate: same two-build-configuration shape, sandbox/staging-only call-target rule added, persistence re-scoped to gauntlet-run records, hackathon target explicitly downgraded from confirmed to ASSUMED per user directive | Reconciled |
+|--------|----------------|---------------|--------|
+| Sibling project, 015_game_deployment.txt (prior revision) | Two build configurations; local save-file persistence; New/Continue/Reset flows; confirmed Natively AI hackathon target | Re-mapped to xquantx: same two-build-configuration shape, sandbox/staging-only call-target rule added, persistence re-scoped to gauntlet-run records, hackathon target explicitly downgraded from confirmed to ASSUMED per user directive | Reconciled |
+| X Quant X 015 §1.6 (X Quant X cloud deployment) | Cloud-based voice service deployment | Replaced with local four-language paper-trading deployment | Reconciled |
 
-1.11. Risk and Mitigation Table
+Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Debug panel accidentally shipping in the production/submission build | Low | High | 1.6 and 009_voicegate_unit_tests.txt §1.7.1 both gate it to development builds only |
-| A production build accidentally targeting a live production voice agent | Low | Critical | 1.4.2/1.6 make sandbox/staging-only call targets a build-configuration-independent, always-on constraint |
-| Assumed hackathon timeline being treated as confirmed and driving premature commitments | Medium | Medium | 1.8.1 explicitly labels the window ASSUMED, not confirmed, per the user's own canon facts |
-| Data loss from an ungraceful shutdown between phase-end autosaves | Low | Medium | 1.7.2 autosaves at every completed phase, minimizing the loss window to at most one in-progress phase |
-
-1.12. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain build/persistence configuration | R | C | A | I |
-| Confirm hackathon submission build and timeline | C | R | A | A/Stakeholder (product owner) |
-
-1.13. Conclusion
-VoiceGate's deployment contract defines exactly two build configurations, one sandbox/
-staging-only call-target rule that holds regardless of build configuration, and one
-gauntlet-run persistence model, while explicitly marking the hackathon submission timeline as
-an assumed, not confirmed, carry-over from the sibling project.
+|------|-----------|--------|------------|
+| .env file accidentally committed | Medium | Critical | .gitignore excludes .env; CI pre-commit hook scans for secret patterns |
+| Go streaming service not started before Python pipeline | Medium | High | §1.10.3 health-check startup probe; Python entry point waits up to 30s |
+| Docker image using non-paper Alpaca endpoint | Low | Critical | §1.9.4 env_file injection; ALPACA_BASE_URL must be set to paper endpoint in .env |
 
 1.14. References and Citations
-1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
-§1.1-1.14.
-1.14.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.9.2
-(no-live-production, sandbox-only MVP scope).
-1.14.3. Internal: voice_processing_specifications/009_voicegate_unit_tests.txt §1.7 (debug
-panel build gating).
-1.14.4. Internal: voice_processing_specifications/008_voicegate_testing.txt (testing
-baseline referencing this file's build-configuration constraints).
-1.14.5. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (company
-terms snapshot versioning referenced in run data).
+1.14.1. Internal: alpaca_paper_trading_specifications_x_quant_x/007_xquantx_virtual_env.txt
+(per-language build environments).
+1.14.2. Internal: alpaca_paper_trading_specifications_x_quant_x/016_xquantx_operating_modes.txt
+(session startup modes).
+1.14.3. Internal: api_references/api_refs_paper_trading.md (Alpaca paper API endpoint).
+1.14.4. External: python-dotenv documentation (pypi.org/project/python-dotenv).
 
 1.15. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation (sibling project, as 015_game_deployment.txt): build configurations, persistence/autosave contract, New/Continue/Reset flows, hackathon submission target confirmation. | Major |
-| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via `git mv` from 015_game_deployment.txt; added the always-on sandbox/staging-only call-target constraint (production builds never intercept live production calls); re-scoped persistence to gauntlet-run records (New Run/Continue Review/Reset); downgraded the hackathon submission target from confirmed to explicitly ASSUMED. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via `git mv` from 015_game_deployment.txt; added the always-on sandbox/staging-only call-target constraint (production builds never intercept live production calls); re-scoped persistence to gauntlet-run records (New Run/Continue Review/Reset); downgraded the hackathon submission target from confirmed to explicitly ASSUMED. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-05: replaced X Quant X deployment with X Quant X local four-language deployment (Python/Go/C++/Rust). Added local deployment steps (§1.6), environment variable configuration (§1.7), session startup sequence (§1.8), optional Docker deployment (§1.9), health-check endpoints (§1.10), and secrets rotation policy (§1.11). | Major |

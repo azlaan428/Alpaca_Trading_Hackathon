@@ -44,369 +44,108 @@
 4.3.1. Rejected content is considered untrusted and outside the policy corpus until re-submitted, re-validated, and successfully accepted through the full upload gate.
 4.4. Enforcement point: post-upload, triggered only upon successful corpus commitment and integrity verification (rule 4.1.1.1).
 
-5. File Input Criteria — Expanded Governance
-5.1. Table of Contents
+5. X Quant X Data Input Criteria — Expanded Governance
+5.1. X Quant X Data Input Criteria (Table of Contents)
 5.1.1. Abstract
 5.1.2. Key Words
 5.1.3. Executive Summary
 5.1.4. Key Findings
-5.1.5. Philosophical Preamble
-5.1.6. Operating Instructions
-5.1.7. Summary Table
-5.1.8. Reconciliation Table
-5.1.9. Risk and Mitigation Table
-5.1.10. Roles and Responsibilities (RACI)
-5.1.11. Conclusion
-5.1.12. References and Citations
-5.1.13. Changelog Table
+5.1.5. Live Stream Formats
+5.1.6. Historical File Formats
+5.1.7. Schema Validation Rules
+5.1.8. Missing-Bar Detection and Interpolation
+5.1.9. Replay Fidelity Requirements
+5.1.10. Summary Table
+5.1.11. Reconciliation Table
+5.1.12. Risk and Mitigation Table
+5.1.13. References and Citations
+5.1.14. Changelog Table
 
 5.2. Abstract
-5.2.1. This section formalizes and expands rules 1-4 above into a governed specification, per coding_stds/MOST_CITED_STANDARDS.md Tier 2 (documentation/enumeration) and voice_processing_specifications/0000_documentation_standards.txt. Rules 1-4 remain the immutable baseline; nothing herein removes or contradicts them.
-5.2.2. The expansion in this section provides deeper operational guidance, explicit failure modes, escalation paths, version-control discipline, review/sign-off requirements, risk and RACI governance, and terminology governance — closing prior gaps and increasing overall auditability, fidelity, and depth of coverage across the file-input specification, in alignment with 0000_documentation_standards.txt §1.1.
-5.2.3. This abstract must be re-read by any agent prior to editing this file, as it functions as the binding contract layer beneath which all lower-level checklists and enforcement sub-rules operate, per 0000_documentation_standards.txt §1.1.
+5.2.1. This document defines the acceptable live stream formats and historical file formats for market data ingestion in X Quant X, including schema validation rules at ingestion, missing-bar detection and interpolation policy, and replay fidelity requirements for backtesting.
+5.2.2. The specification applies to all operating modes: Paper, Dry-run, and Backtest. Live stream sources (Alpaca WebSocket API, Alpaca REST API) serve Paper and Dry-run modes; historical file sources (Parquet, CSV) serve Backtest mode. All ingestion paths converge on the OHLCVBar schema defined in 021_xquantx_data_standards.txt §1.8.1.
+5.2.3. This document must be read by any agent or engineer before modifying data ingestion logic in DataOperator, NormalizationOperator, or the Go streaming service, as it functions as the binding contract for all data input acceptance criteria.
 
 5.3. Key Words
-5.3.1. file-input, .txt format, hierarchical enumeration, client-side scanning, prompt injection, SQL injection, corpus poisoning, magic-byte inspection, MIME-type validation, corpus adaptation, hallucination envelope, version control, change management, RACI, VoiceOps, SecDevOps, AgentOps, LLMOps, traceability, auditability, renumbering discipline, reconciliation table, sign-off.
+5.3.1. data input, Alpaca WebSocket, REST API, Parquet, CSV, schema validation, missing bar, forward-fill, temporal leakage, replay fidelity, DataOperator, NormalizationOperator, data quality gate.
 
 5.4. Executive Summary
-5.4.1. All files submitted to the X_Voice_X corpus must be plain .txt, strictly and absolutely nested-enumerated, pre-screened client-side for injection/poisoning attacks prior to upload, and — upon successful upload — ingested by AI agents to adapt policy behavior from the available corpus.
-5.4.2. Compliance is not a one-time checkbox but a continuously re-verified state: every edit to this document must re-trigger the full compliance pass described in 0000_documentation_standards.txt §1.6, including structure compliance, enumeration compliance, table completeness, citation completeness, checklist adherence, and hallucination envelope compliance.
-5.4.3. Rules 1-4 are the immutable baseline for this file; no expansion herein removes, overrides, or contradicts any baseline rule; any apparent conflict must be resolved in favor of rules 1-4, per 0000_documentation_standards.txt §1.6.5.3.
+5.4.1. X Quant X accepts market data from two categories of sources: live streams (Alpaca WebSocket API, Alpaca REST API) for Paper and Dry-run modes, and historical files (Parquet, CSV) for Backtest mode. All inputs are validated against the OHLCVBar schema before processing.
+5.4.2. Missing bars trigger forward-fill (≤ 5 bars) or a data-quality warning (> 5 bars). Timestamps must be UTC nanoseconds int64. Replay in Backtest mode must be strictly monotonically increasing and may not skip bars without explicit handling.
+5.4.3. Compliance with this document is continuously re-verified: every edit to data ingestion code must re-check schema validation coverage, missing-bar handling completeness, and replay fidelity invariants against the acceptance criteria defined in sections 5.6–5.10.
 
 5.5. Key Findings
-5.5.1. Format Constraint. .txt is mandatory (rule 1) for simplicity, ease-of-use, and ease-of-access.
-5.5.1.1. The .txt constraint is enforced client-side at the file-extension level before any content inspection begins (rule 1.1.1.1).
-5.5.1.2. Extension spoofing must be caught by MIME-type or magic-byte inspection as a secondary check (rule 1.1.1.1); reliance on extension alone is non-compliant.
-5.5.1.3. Any file failing the .txt format check must be rejected immediately with a logged rejection event; no partial ingestion is permitted (rule 1.1.1.2).
-5.5.1.4. The .txt constraint is immutable; no exception or waiver may be granted without a formal deviation entry in the Reconciliation Table (5.9) and an approving Maintainer sign-off per RACI (5.11), per rule 1.1.2.1.
-5.5.2. Enumeration Constraint. Absolute nested hierarchical enumeration (rule 2) is mandatory at every level, per documentation/stricter_hierarchical_enumeration_standards_global.txt (Tier 2).
-5.5.2.1. Enumeration must follow the pattern: 1. → 1.1. → 1.1.1. → 1.1.1.1. → 1.1.1.1.1. and beyond, without bound on nesting depth (rule 2.1.1).
-5.5.2.2. Numbering must not restart mid-document; any insertion requires full renumbering of all subsequent affected nodes, per rule 2.1.1.2 and 0000_documentation_standards.txt §1.6.2.2.
-5.5.2.3. All cross-references within the file citing section numbers must be updated whenever renumbering occurs, per rule 2.1.1.3 and 0000_documentation_standards.txt §1.4.2.2.
-5.5.2.4. Every numbered node must carry content; empty placeholder headers are non-compliant in any final submitted file, per rule 2.1.1.1 and 0000_documentation_standards.txt §1.6.2.3.
-5.5.2.5. Files submitted with absent, partial, or incorrect enumeration must be rejected or flagged for correction prior to acceptance, per rule 2.1.2.
-5.5.3. Security Constraint. Client-side scanning (rule 3) must reject prompt injection, SQL injection, and other attacks/poisonings before real upload occurs.
-5.5.3.1. The client-side scanner is a mandatory pre-upload gate; no file may be transmitted to any server-side or agent-side endpoint without first passing this gate successfully (rule 3.1).
-5.5.3.2. The scanner must check for, at minimum: prompt injection patterns, SQL injection patterns, command injection patterns, path traversal patterns, and known corpus-poisoning signatures (rule 3.1.1).
-5.5.3.3. The scanner must employ both signature-based detection and heuristic/behavioral detection layers; reliance on signatures alone is non-compliant, per rule 3.1.1.3 and 0000_documentation_standards.txt §1.13.3.
-5.5.3.4. On detection of any attack or poisoning pattern, the scanner must immediately halt the upload transaction, log a rejection event with the detected pattern type and file metadata, and surface a rejection notice to the user; silent pass-through of a flagged file is strictly prohibited, per rule 3.1.2.
-5.5.3.5. The scanner must be versioned and updated as new attack/poisoning signatures and heuristics are identified; scanner version must be recorded in the rejection log for each scan event (rule 3.1.3).
-5.5.4. Adaptation Constraint. Post-upload, AI agents learn and adapt to policy per rule 4, based strictly on the accepted corpus.
-5.5.4.1. Adaptation must not exceed the hallucination envelope defined in 0000_documentation_standards.txt §1.6.6 — 0 by default, bounded 0.3-0.6 only within an explicitly declared, narrow context, per rule 4.2.1.
-5.5.4.2. Any invocation of a non-zero hallucination envelope during adaptation must be explicitly labeled with: the bounded context, the chosen envelope range, and a one-line rationale, per rule 4.2.1.1 and 0000_documentation_standards.txt §1.6.6.3 and §1.6.6.5.
-5.5.4.3. Adaptation actions must be traceable to the specific accepted file(s) driving the policy change; untraceable adaptation is a compliance defect, per rule 4.2.2 and 0000_documentation_standards.txt §1.4.7.
-5.5.4.4. Agents must not adapt to or learn from content that was rejected, quarantined, or flagged at any point in the upload pipeline, even if such content is accessible in a rejected-log store (rule 4.3).
-5.5.4.5. Partial uploads, interrupted uploads, or uploads completing with integrity-check failures do not qualify as successful and must not be used as adaptation input (rule 4.1.1).
+5.5.1. Live stream: Alpaca WebSocket (wss://stream.data.alpaca.markets/v2/iex) is the primary live data source for Paper and Dry-run modes. The Go streaming service (src/go/internal/stream/) handles WebSocket reconnection and delivers normalized OHLCVBar events to the Python pipeline via IPC.
+5.5.2. REST API: Alpaca StockHistoricalDataClient.get_stock_bars() is the fallback for live bar retrieval and the primary source for historical data assembly.
+5.5.3. Historical files: Parquet is the primary format; CSV is accepted with explicit schema validation. Files must contain all OHLCVBar fields (021_xquantx_data_standards.txt §1.8.1). Timestamps must be UTC nanoseconds int64.
+5.5.4. Schema validation: every bar received (live or historical) passes through NormalizationOperator which validates field types, price invariants (high ≥ close ≥ low, all prices > 0, volume ≥ 0), and timestamp format before the bar enters the operator pipeline.
+5.5.5. Missing-bar policy: follows 021_xquantx_data_standards.txt §1.4.6: gaps ≤ 5 consecutive bars are forward-filled with the last valid close; gaps > 5 bars emit a DataOperator WARNING and are configurable to halt or continue.
+5.5.6. Replay fidelity: in Backtest mode, bars are replayed in strictly ascending timestamp order. Any out-of-order bar triggers a hard error (not a warning) and halts the session.
 
-5.6. Philosophical Preamble
-5.6.1. A file-input gate is the first line of defense in any agent-facing corpus: format discipline, enumeration discipline, and security screening are inseparable — each protects the integrity that the next layer (agent adaptation) depends upon.
-5.6.2. Structure is not bureaucracy for its own sake, but a defense mechanism against entropy: in a living specification corpus edited by many hands — human and machine alike — the absence of rigid format enforcement, mandatory enumeration, and security screening inevitably produces contradictory, unauditable, and untrustworthy policy artifacts that downstream AI agents cannot safely ingest, per the philosophical stance codified in 0000_documentation_standards.txt §1.5.
-5.6.3. The four rules of this file form an ordered, interdependent chain: format integrity (rule 1) enables enumeration integrity (rule 2); enumeration integrity enables reliable security scanning (rule 3); security scanning enables trustworthy corpus adaptation (rule 4). Breaking any link in the chain degrades all downstream layers — a fact that makes each rule's enforcement non-negotiable rather than merely advisory.
-5.6.4. Hallucination in agent adaptation is not forbidden outright; it is a controlled reagent, dosed within a declared envelope, exactly as randomness is dosed into a system to produce controlled unpredictability rather than chaos — but only within the bounds declared in rule 4.2.1 and 0000_documentation_standards.txt §1.6.6.
+5.6. Live Stream Formats
+5.6.1. Alpaca WebSocket: primary live stream. URL: wss://stream.data.alpaca.markets/v2/{feed} where feed is "iex" (free tier) or "sip" (paid tier). The Go streaming service (src/go/internal/stream/StreamHandler) subscribes to the WebSocket, receives raw JSON bar events, and converts them to OHLCVBar JSON for IPC delivery to the Python pipeline.
+5.6.2. WebSocket reconnection: the Go service implements exponential-backoff reconnection (initial delay 1s, max delay 30s, max retries 10). A reconnection gap produces forward-fill bars via the missing-bar policy.
+5.6.3. Alpaca REST API: backup source. StockHistoricalDataClient.get_stock_bars() with timeframe=TimeFrame.Minute fetches bars for the last N minutes as needed for pipeline warm-up at session start.
+5.6.4. Live data schema validation: every bar from the WebSocket is validated by NormalizationOperator before entry to the pipeline. Validation failures (e.g. high < low, price = NaN) are logged as ERROR and the bar is discarded (not forward-filled).
 
-5.7. Operating Instructions
-5.7.1. Format Enforcement
-5.7.1.1. Reject any non-.txt upload at the client boundary before further processing.
-5.7.1.2. Apply MIME-type or magic-byte inspection as a secondary check after extension validation, to catch extension-spoofed files (rule 1.1.1.1).
-5.7.1.3. Log each rejection event with file metadata (name, size, detected MIME type, timestamp) and surface a rejection notice to the uploader; no silent failure is permitted (rule 1.1.1.2).
-5.7.1.4. No waiver of the .txt constraint is permitted without a formal deviation entry in the Reconciliation Table (5.9) and Maintainer sign-off per RACI (5.11), per rule 1.1.2.1.
-5.7.2. Enumeration Enforcement
-5.7.2.1. Reject or flag files lacking absolute nested enumeration (1., 1.1., 1.1.1., et al.) for correction prior to acceptance.
-5.7.2.2. The client-side scanner must include an enumeration-compliance linting pass as part of its pre-upload checks, per rule 2.1.2.2.
-5.7.2.3. Any insertion into an enumerated document requires full renumbering of all subsequent affected nodes, not local patching; this pass must be validated before the file is accepted, per rule 2.1.1.2 and 0000_documentation_standards.txt §1.6.2.2.
-5.7.2.4. All cross-references citing section numbers must be verified and updated after any renumbering event, per rule 2.1.1.3 and 0000_documentation_standards.txt §1.4.2.2.
-5.7.3. Security Screening
-5.7.3.1. Run client-side scanner against prompt injection, SQL injection, command injection, path traversal, and other known attack/poisoning signatures before any real upload transaction begins.
-5.7.3.2. Log and reject on detection; never silently pass a flagged file through.
-5.7.3.3. The scanner must employ both signature-based and heuristic/behavioral detection layers; signature-only scanning is non-compliant, per rule 3.1.1.3.
-5.7.3.4. Rejection logs must record: the detected pattern type, file metadata, scanner version, and timestamp; logs must be retained and auditable by the Maintainer role (RACI, 5.11), per rule 3.1.2.1.
-5.7.3.5. Repeated rejection events from the same uploader must trigger an escalation path to the Maintainer for review, per rule 3.1.2.2 and 0000_documentation_standards.txt §1.13.3.
-5.7.3.6. Scanner version must be updated as new attack/poisoning signatures and heuristics are identified, and the version must be recorded in each rejection log entry, per rule 3.1.3.
-5.7.4. Corpus Adaptation
-5.7.4.1. Only successfully uploaded (accepted) files may be used as adaptation input for AI agents.
-5.7.4.2. Adaptation actions must be traceable to the specific accepted file(s) driving the policy change.
-5.7.4.3. An integrity check (checksum or hash verification) must be performed post-transfer to confirm the stored file is byte-identical to the client-side validated file before it is made available for agent ingestion, per rule 4.1.1.1.
-5.7.4.4. AI agent adaptation must be strictly bounded by the accepted corpus; agents must not extrapolate, generalize, or hallucinate beyond what the corpus explicitly supports, except within the hallucination envelope defined in 0000_documentation_standards.txt §1.6.6, per rule 4.2.
-5.7.4.5. The hallucination envelope for corpus adaptation is 0 by default; a bounded envelope of 0.3–0.6 is permitted only within an explicitly declared, narrow context, per rule 4.2.1 and 0000_documentation_standards.txt §1.6.6.2.
-5.7.4.6. Traceability records for adaptation actions must be retained and auditable by the Maintainer role (RACI, 5.11), per rule 4.2.2.1.
-5.7.4.7. Rejected content is considered untrusted and outside the policy corpus until re-submitted, re-validated, and successfully accepted through the full upload gate, per rule 4.3.1.
-5.7.5. Version Control and Change Management
-5.7.5.1. Every substantive edit to this file must be accompanied by a change note in the Changelog Table (5.14) describing what changed, why, and the triggering requirement or defect, per 0000_documentation_standards.txt §1.6.7.1.
-5.7.5.2. Breaking changes to enforcement rules, numbering schemes, or scanner requirements must be flagged in the Reconciliation Table (5.9) and propagated to all dependent documents, per 0000_documentation_standards.txt §1.6.7.3.
-5.7.5.3. The Changelog Table must be updated in the same edit that introduces the change it describes; retroactive changelog entries are non-compliant, per 0000_documentation_standards.txt §1.6.7.6.
-5.7.6. Review, Validation, and Sign-off
-5.7.6.1. No version of this file is considered authoritative until it has passed a review pass checking: structure compliance (0000_documentation_standards.txt §1.6.1), enumeration compliance (§1.6.2), table completeness (§1.6.3), citation completeness (§1.6.4), checklist adherence (§1.6.5), and hallucination envelope compliance (§1.6.6), per 0000_documentation_standards.txt §1.6.8.1.
-5.7.6.2. The reviewing role/agent must be identified in the RACI table (5.11) and the outcome recorded in the Reconciliation Table (5.9), per 0000_documentation_standards.txt §1.6.8.2.
-5.7.6.3. Failed reviews must produce an itemized defect list, not a vague rejection, per 0000_documentation_standards.txt §1.6.8.3.
+5.7. Historical File Formats
+5.7.1. Primary format: Parquet files at data/historical/{symbol}_{timeframe}_{date_range}.parquet. Must contain all OHLCVBar fields with correct types (schema defined in 021_xquantx_data_standards.txt §1.8.1).
+5.7.2. Secondary format: CSV files accepted with explicit column mapping (symbol, timestamp_ns, open, high, low, close, volume, vwap, trade_count, timeframe). CSV timestamps must be UTC nanoseconds int64 (not datetime strings).
+5.7.3. Schema validation at file load: DataOperator validates that all required fields are present, types are correct, and the file's schema_version (if present) matches the expected version.
+5.7.4. File format rejected: Excel (.xlsx), ARXML, PICKLE, and binary formats other than Parquet are rejected for historical market data. Log a hard error if attempted.
 
-5.8. Summary Table
-| Rule | Requirement                                      | Enforcement Point              | Failure Mode                        |
-|------|---------------------------------------------------|-------------------------------|--------------------------------------|
-| 1    | Strict .txt format                                | Client-side, pre-upload        | Rejection + logged event             |
-| 1    | MIME/magic-byte secondary check                   | Client-side, pre-upload        | Rejection + logged event             |
-| 2    | Absolute nested hierarchical enumeration          | Client-side, pre-upload        | Rejection/flag for correction        |
-| 2    | Enumeration linting pass                          | Client-side scanner            | Rejection/flag for correction        |
-| 3    | Reject injection/poisoning attacks                | Client-side scanner            | Halt + log + rejection notice        |
-| 3    | Signature + heuristic scanner layers              | Client-side scanner            | Non-compliant scan = re-scan gate    |
-| 4    | AI agents learn/adapt from accepted corpus only   | Post-upload                    | Untraceable adaptation = defect      |
-| 4    | Hallucination envelope enforcement                | Post-upload, agent-side        | Envelope breach = compliance defect  |
-| 4    | Integrity check pre-ingestion                     | Post-upload, pre-ingestion     | Checksum failure = no ingestion      |
+5.8. Schema Validation Rules
+5.8.1. Required OHLCVBar fields at ingestion: symbol (str), timestamp (int64 UTC nanoseconds), open (float64 > 0), high (float64 >= open and >= close), low (float64 <= open and <= close), close (float64 > 0), volume (float64 >= 0), vwap (float64 > 0), trade_count (int64 >= 0), timeframe (str in {"1m", "5m", "1h", "1d"}).
+5.8.2. Validation failures: any required field missing or out of range is logged as an ERROR in AUDIT_LOGS/ with the specific field and value. The bar is discarded; the pipeline continues.
+5.8.3. Timestamp validation: timestamp must be strictly greater than the previous bar's timestamp. Out-of-order timestamps in Backtest mode are a hard error (halt session). Out-of-order timestamps in Paper mode are an ERROR log (discard the late bar).
 
-5.9. Reconciliation Table
-| Source Rule (Baseline)           | Expanded Section              | Status     |
-|-----------------------------------|-------------------------------|------------|
-| Rule 1 (.txt format)              | 5.5.1, 5.7.1                  | Reconciled |
-| Rule 1 (MIME/magic-byte check)    | 5.5.1.2, 5.7.1.2              | Reconciled |
-| Rule 1 (rejection logging)        | 5.5.1.3, 5.7.1.3              | Reconciled |
-| Rule 1 (immutability/waiver)      | 5.5.1.4, 5.7.1.4              | Reconciled |
-| Rule 2 (enumeration)              | 5.5.2, 5.7.2                  | Reconciled |
-| Rule 2 (renumbering discipline)   | 5.5.2.2, 5.7.2.3              | Reconciled |
-| Rule 2 (cross-reference update)   | 5.5.2.3, 5.7.2.4              | Reconciled |
-| Rule 2 (linting pass)             | 5.5.2.5, 5.7.2.2              | Reconciled |
-| Rule 3 (scanner reject)           | 5.5.3, 5.7.3                  | Reconciled |
-| Rule 3 (layered detection)        | 5.5.3.3, 5.7.3.3              | Reconciled |
-| Rule 3 (rejection log retention)  | 5.5.3.4, 5.7.3.4              | Reconciled |
-| Rule 3 (scanner versioning)       | 5.5.3.5, 5.7.3.6              | Reconciled |
-| Rule 4 (agent adapt)              | 5.5.4, 5.7.4                  | Reconciled |
-| Rule 4 (hallucination envelope)   | 5.5.4.1–5.5.4.2, 5.7.4.5     | Reconciled |
-| Rule 4 (traceability)             | 5.5.4.3, 5.7.4.2, 5.7.4.6    | Reconciled |
-| Rule 4 (integrity check)          | 5.5.4.5, 5.7.4.3              | Reconciled |
-| (New) Version control discipline  | 5.7.5                         | Added      |
-| (New) Review/sign-off requirement | 5.7.6                         | Added      |
+5.9. Missing-Bar Detection and Interpolation
+5.9.1. Missing-bar detection: at each bar, DataOperator checks that the elapsed time since the previous bar matches the expected timeframe interval. A gap larger than 1 interval indicates missing bars.
+5.9.2. Forward-fill policy: gaps of 1-5 consecutive bars are forward-filled with the last valid close (open=high=low=close=prev_close, volume=0, trade_count=0). The fill is marked with a metadata field is_synthetic=true.
+5.9.3. Large gap policy: gaps > 5 consecutive bars emit a DataOperator WARNING logged to AUDIT_LOGS/ with the gap start/end timestamps and count. In Backtest mode, a configurable halt_on_large_gap flag (default: true) halts the session.
+5.9.4. Holiday / market-close handling: expected gaps at known market holidays are pre-loaded from a calendar file (config/market_calendar.json) and are not treated as missing bars.
 
-5.10. Risk and Mitigation Table
-| Risk                                        | Likelihood | Impact | Mitigation                                                          |
-|----------------------------------------------|------------|--------|----------------------------------------------------------------------|
-| Non-.txt file bypasses extension gate         | Low        | Medium | Strict client-side extension check (5.7.1.1)                        |
-| Extension-spoofed file bypasses format check  | Low        | High   | MIME-type/magic-byte secondary inspection (5.7.1.2)                 |
-| Enumeration drift in submitted file           | Medium     | Medium | Reject/flag for correction; linting pass (5.7.2.1–5.7.2.2)         |
-| Renumbering drift after mid-doc insertion     | Medium     | Medium | Full renumbering pass required; validated pre-acceptance (5.7.2.3)  |
-| Cross-reference staleness after renumbering   | Medium     | Medium | Cross-reference update pass required (5.7.2.4)                      |
-| Injection payload evades scanner              | Low        | High   | Layered signature + heuristic scan (5.7.3.3)                        |
-| Rejection event not logged or auditable       | Low        | High   | Mandatory rejection log with metadata + scanner version (5.7.3.4)   |
-| Repeated injection attempts not escalated     | Low        | High   | Escalation path to Maintainer on repeated rejections (5.7.3.5)      |
-| Scanner outdated, misses new attack patterns  | Medium     | High   | Mandatory scanner versioning and update discipline (5.7.3.6)        |
-| Agent adapts from non-accepted content        | Low        | High   | Only accepted corpus permitted as adaptation input (5.7.4.1)        |
-| Agent over-adapts beyond corpus scope         | Medium     | High   | Hallucination envelope bound (5.7.4.5)                              |
-| Adaptation untraceable to source file         | Medium     | High   | Traceability records retained and auditable (5.7.4.6)               |
-| Integrity check failure allows corrupt file   | Low        | High   | Checksum/hash verification pre-ingestion (5.7.4.3)                  |
-| Document shipped without review               | Low        | High   | Mandatory review/sign-off gate (5.7.6.1)                            |
+5.10. Replay Fidelity Requirements
+5.10.1. In Backtest mode, bars are delivered to the pipeline in strictly ascending timestamp order from the historical file.
+5.10.2. The synthetic clock advances exactly one bar per pipeline iteration. No lookahead: feature computation at bar t uses only bars with timestamp < t.
+5.10.3. Any bar reuse or timestamp repetition in the replay sequence is a hard error (halt session, log to AUDIT_LOGS/).
+5.10.4. Replay speed: the Backtest replay loop must process >= 1,000 daily bars/second (approximately 4 years of daily data in < 1 second). Performance below this threshold triggers a performance test failure per 012_xquantx_performance_tests.txt.
 
-5.11. Roles and Responsibilities (RACI)
-| Activity                                   | Creator  | Uploader        | Client Scanner  | AI Agent | Maintainer  | Reviewer |
-|--------------------------------------------|----------|-----------------|-----------------|----------|-------------|----------|
-| Format/extension compliance                | R        | C               | I               | A        | C           | I        |
-| MIME/magic-byte secondary check            | I        | R/A             | I               | C        | I           | I        |
-| Enumeration compliance + linting           | R        | C               | I               | A        | C           | I        |
-| Renumbering and cross-reference update     | R        | C               | I               | A        | C           | I        |
-| Security screening (injection/poisoning)   | I        | R/A             | I               | C        | I           | I        |
-| Rejection logging and escalation           | I        | R/A             | I               | C        | I           | I        |
-| Scanner versioning and update              | I        | R               | I               | A        | I           | I        |
-| Corpus integrity check (post-upload)       | I        | I               | R               | A        | I           | I        |
-| Corpus adaptation (agent-side)             | I        | I               | R/A             | C        | I           | I        |
-| Hallucination envelope declaration         | I        | I               | R/A             | C        | C           | I        |
-| Traceability record retention              | I        | I               | R               | A        | I           | I        |
-| Document review and sign-off               | C        | I               | I               | A        | R           | I        |
-(R = Responsible, A = Accountable, C = Consulted, I = Informed)
+5.11. Summary Table
+| Input Type       | Format              | Validation                                     | Missing Bar Policy                        |
+|------------------|---------------------|------------------------------------------------|-------------------------------------------|
+| Live WebSocket   | JSON -> OHLCVBar    | NormalizationOperator; discard on failure      | Forward-fill <= 5 bars                    |
+| REST API backup  | JSON -> OHLCVBar    | Same                                           | Same                                      |
+| Historical Parquet | Parquet -> OHLCVBar | Schema field check + type check              | Forward-fill <= 5; halt on > 5            |
+| Historical CSV   | CSV -> OHLCVBar     | Explicit column mapping + type check           | Same                                      |
+| Rejected formats | .xlsx, ARXML, PICKLE| Hard error                                     | N/A                                       |
 
-5.12. Conclusion
-5.12.1. Rules 1-4 remain the authoritative and immutable baseline for this file; the expansion in sections 5.2–5.11 adds structural, security, adaptation, version-control, review, and risk governance consistent with the corpus-wide documentation and enumeration standards defined in 0000_documentation_standards.txt, without altering or contradicting baseline intent.
-5.12.2. The four rules form an ordered, interdependent enforcement chain — format (rule 1), enumeration (rule 2), security screening (rule 3), corpus adaptation (rule 4) — and the integrity of each layer depends on full compliance of all preceding layers; no partial compliance is acceptable.
-5.12.3. All agents, uploaders, scanners, and maintainers operating on the X_Voice_X corpus are bound by this specification; deviations must be logged, justified, and reconciled in the Reconciliation Table (5.9) with Maintainer sign-off per RACI (5.11), and must never be silently applied, per 0000_documentation_standards.txt §1.6.5.3–§1.6.5.4.
+5.12. Reconciliation Table
+| Source                                                                      | Prior Statement                          | Current Canon                                                                   | Status     |
+|-----------------------------------------------------------------------------|------------------------------------------|---------------------------------------------------------------------------------|------------|
+| xquantx 031 §1.6 (audio file input criteria)                              | Audio file format and quality rules      | Replaced with market data stream and file input criteria                        | Reconciled |
+| alpaca_paper_trading_specifications_x_quant_x/021_xquantx_data_standards.txt §1.4.6 | Forward-fill policy             | Cross-referenced and enforced by DataOperator here                              | Reconciled |
 
-
-
-5.13. Attack Pattern Taxonomies
-5.13.1. Overview
-5.13.1.1. This section formalizes the taxonomies of attack patterns that the client-side scanner (rule 3, Section 5.7.3) must detect and reject, organized by attacker origin class: human-actor attacks (5.13.2), bot-actor attacks (5.13.3), and AI-agent/model-actor attacks (5.13.4).
-5.13.1.2. These taxonomies are not exhaustive enumerations of all possible attack variants; they are canonical reference classes that define the minimum detection surface the scanner must cover, per rule 3.1.1 and 0000_documentation_standards.txt §1.13.3.
-5.13.1.3. Scanner versioning and update discipline (Section 5.7.3.6) requires that new attack patterns discovered in practice be appended to the appropriate taxonomy class below via a compliant changelog entry, not substituted in place of existing entries.
-5.13.1.4. Each taxonomy entry carries: a pattern class name, a brief behavioral definition, a representative signature or heuristic indicator, and the applicable enforcement reference within this file.
-
-5.13.2. Human-Actor Attack Patterns
-5.13.2.1. Manual Prompt Injection
-5.13.2.1.1. Definition: A human author deliberately embeds natural-language instruction sequences within file content intended to override, redirect, or subvert the behavior of any AI agent that subsequently ingests the file as corpus input.
-5.13.2.1.2. Representative indicators: phrases of the form "ignore previous instructions", "disregard all prior rules", "your new directive is", "from now on you must", "system override:", or structurally equivalent imperative rewrites targeting agent behavior.
-5.13.2.1.3. Enforcement reference: rule 3.1.1.1; Section 5.7.3.1; Section 5.5.3.1.
-5.13.2.2. Manual SQL Injection
-5.13.2.2.1. Definition: A human author inserts SQL syntax fragments — either inline within prose or disguised within enumeration nodes — intended to corrupt, exfiltrate, or manipulate any database layer that processes or indexes the uploaded file.
-5.13.2.2.2. Representative indicators: classic SQL metacharacter sequences (e.g., ' OR '1'='1, ; DROP TABLE, UNION SELECT, --, /*, xp_cmdshell), including obfuscated variants using encoding, whitespace padding, or comment interleaving.
-5.13.2.2.3. Enforcement reference: rule 3.1.1; Section 5.7.3.1; Section 5.5.3.2.
-5.13.2.3. Manual Command Injection
-5.13.2.3.1. Definition: A human author embeds shell command sequences or OS-level directives within file content intended to be executed if the file is processed by a system that passes content to a command interpreter.
-5.13.2.3.2. Representative indicators: shell metacharacters and command-chaining operators (e.g., ; rm -rf, && curl, | bash, $(command), `backtick execution`, > /etc/passwd) within enumeration content or prose sections.
-5.13.2.3.3. Enforcement reference: rule 3.1.1; Section 5.7.3.1; Section 5.5.3.2.
-5.13.2.4. Manual Path Traversal
-5.13.2.4.1. Definition: A human author includes filesystem path traversal sequences within file content intended to cause any agent or system processing the file to access, read, or write files outside the intended corpus directory.
-5.13.2.4.2. Representative indicators: traversal sequences such as ../../, ..\..\ , %2e%2e%2f, %252e%252e%252f, and their URL-encoded or double-encoded variants.
-5.13.2.4.3. Enforcement reference: rule 3.1.1; Section 5.7.3.1; Section 5.5.3.2.
-5.13.2.5. Manual Corpus Poisoning (Deliberate Policy Corruption)
-5.13.2.5.1. Definition: A human author deliberately crafts file content to systematically bias, corrupt, contradict, or degrade the policy output of AI agents that ingest the corpus — not via injection syntax, but via semantically adversarial content designed to appear compliant while subverting intended behavior.
-5.13.2.5.2. Representative indicators: contradictory rule statements that undermine baseline rules 1–4, fabricated cross-references to non-existent sections, false attribution of authority to non-existent documents, deliberate introduction of ambiguous or self-contradictory enumeration nodes.
-5.13.2.5.3. Enforcement reference: rule 3.1.1.2; Section 5.5.3; Section 5.7.3.1.
-5.13.2.6. Manual Extension Spoofing
-5.13.2.6.1. Definition: A human actor renames a non-.txt binary or structured file (e.g., .pdf, .docx, .exe) with a .txt extension to bypass the format gate (rule 1.1.1.1).
-5.13.2.6.2. Representative indicators: MIME-type mismatch between declared extension and detected content type; magic-byte header inconsistent with plain-text encoding (e.g., PDF magic bytes %PDF-, ZIP/OOXML PK header, ELF header 7F 45 4C 46).
-5.13.2.6.3. Enforcement reference: rule 1.1.1.1; Section 5.5.1.2; Section 5.7.1.2.
-5.13.2.7. Manual Enumeration Subversion
-5.13.2.7.1. Definition: A human author intentionally submits a file with absent, partial, or structurally inconsistent enumeration to pass casual review while defeating automated enumeration linting, or to introduce untraceable cross-reference drift.
-5.13.2.7.2. Representative indicators: mixed enumeration schemes within a single file (e.g., numeric sections alongside bullet lists or lettered sub-items), deliberate numbering gaps, phantom cross-references citing non-existent section numbers.
-5.13.2.7.3. Enforcement reference: rule 2.1.2; Section 5.5.2.5; Section 5.7.2.1–5.7.2.2.
-
-5.13.3. Bot-Actor Attack Patterns
-5.13.3.1. Automated Prompt Injection (High-Volume)
-5.13.3.1.1. Definition: An automated bot submits large volumes of files containing prompt injection payloads — often with minor syntactic variations per file — in an attempt to find injection patterns that evade signature-based detection through lexical diversity.
-5.13.3.1.2. Representative indicators: high upload velocity from a single uploader identity; payload variation patterns consistent with automated fuzzing (e.g., character substitution, unicode normalization variants, homoglyph substitution in instruction phrases); structurally valid .txt enumeration wrapping semantically injecting content.
-5.13.3.1.3. Enforcement reference: rule 3.1.1.1; rule 3.1.2.2; Section 5.7.3.1; Section 5.7.3.5.
-5.13.3.2. Automated SQL / Command Injection Fuzzing
-5.13.3.2.1. Definition: An automated bot systematically submits SQL or command injection payloads encoded in varied formats (URL encoding, hex encoding, unicode escapes, comment fragmentation) to probe for scanner blind spots.
-5.13.3.2.2. Representative indicators: files whose enumeration nodes consist primarily of encoded special characters; systematic cycling through known evasion encoding schemes across a submission sequence; abnormal file-content entropy consistent with dense encoding.
-5.13.3.2.3. Enforcement reference: rule 3.1.1; rule 3.1.1.3; Section 5.7.3.1; Section 5.7.3.3.
-5.13.3.3. Automated Corpus Flooding
-5.13.3.3.1. Definition: An automated bot submits large volumes of syntactically compliant but semantically low-quality or near-duplicate files in an attempt to dilute the signal quality of the corpus, degrading agent adaptation fidelity without triggering injection or format rejections.
-5.13.3.3.2. Representative indicators: near-duplicate content fingerprints across submission batches; abnormally high submission rate from a single uploader; files that pass all format, enumeration, and security checks but carry minimal unique semantic content relative to existing corpus.
-5.13.3.3.3. Enforcement reference: rule 3.1.1.2; rule 3.1.2.2; Section 5.5.3; Section 5.7.3.5.
-5.13.3.4. Automated Enumeration Drift Injection
-5.13.3.4.1. Definition: An automated bot systematically submits files with subtly incorrect enumeration (e.g., off-by-one node numbering, missing fourth-level nesting on specific nodes) in an attempt to introduce cross-reference drift into the corpus at scale.
-5.13.3.4.2. Representative indicators: enumeration linting failures concentrated in consistent structural positions across a batch of files; cross-reference targets that consistently resolve to adjacent-but-incorrect section numbers.
-5.13.3.4.3. Enforcement reference: rule 2.1.2; Section 5.7.2.1–5.7.2.4; Section 5.5.2.5.
-5.13.3.5. Automated Extension-Spoof Scanning
-5.13.3.5.1. Definition: An automated bot systematically probes the upload gate by submitting files of various binary types renamed with .txt extensions, attempting to map the specific binary formats or magic-byte sequences that the MIME/magic-byte secondary check fails to detect.
-5.13.3.5.2. Representative indicators: high volume of format-rejected submissions from a single uploader identity; systematic cycling through binary magic-byte headers across a submission sequence.
-5.13.3.5.3. Enforcement reference: rule 1.1.1.1; rule 3.1.2.2; Section 5.7.1.2; Section 5.7.3.5.
-
-5.13.4. AI-Agent / Model-Actor Attack Patterns
-5.13.4.1. Indirect Prompt Injection via Corpus Relay
-5.13.4.1.1. Definition: An AI agent or model — acting as an intermediary file author, editor, or corpus contributor — embeds instruction sequences within a file it generates or modifies, intended to influence the behavior of a downstream AI agent that subsequently ingests the file. The originating agent may have itself been compromised by prior corpus poisoning or external prompt injection.
-5.13.4.1.2. Representative indicators: instruction-shaped content in enumeration nodes that would be non-sequitur for a human author in context (e.g., behavioral override phrases embedded within what appears to be policy prose); content that mirrors known prompt injection patterns but is syntactically integrated more fluently than typical human injection attempts; generation-artifact phrasing inconsistent with the document's declared authorship.
-5.13.4.1.3. Enforcement reference: rule 3.1.1.1; rule 3.1.1.2; Section 5.5.3; Section 5.7.3.1.
-5.13.4.2. Hallucination-Driven Policy Fabrication
-5.13.4.2.1. Definition: An AI agent acting as a document author or editor introduces hallucinated policy content — fabricated rule citations, non-existent cross-references, invented section numbers, or false attribution to non-existent authority documents — that, if accepted into the corpus, would corrupt downstream agent adaptation with false policy grounding.
-5.13.4.2.2. Representative indicators: cross-references to section numbers that do not exist in the cited document; citations to documents not present in the corpus; rule statements that contradict or are unresolvable against baseline rules 1–4 without deviation entry; hallucination-envelope boundary violations per rule 4.2.1.
-5.13.4.2.3. Enforcement reference: rule 4.2; rule 4.2.1; rule 4.2.2; Section 5.5.4.1–5.5.4.3; Section 5.7.4.4–5.7.4.5.
-5.13.4.3. Adversarial Fine-Tuning Payload Insertion
-5.13.4.3.1. Definition: An AI agent — potentially operating under adversarial instruction from an external principal — crafts file content structured to function as a fine-tuning or in-context learning payload, designed to shift the policy priors of any model that ingests the corpus; distinct from prompt injection in that the payload operates through statistical pattern reinforcement rather than explicit instruction override.
-5.13.4.3.2. Representative indicators: unnaturally repetitive policy phrasings across multiple submitted files that consistently reinforce a specific behavioral direction not grounded in baseline rules 1–4; content with high lexical similarity to known adversarial fine-tuning datasets; systematic introduction of reward-hacking framings (e.g., framing non-compliant behaviors as compliant via definitional drift across enumeration nodes).
-5.13.4.3.3. Enforcement reference: rule 3.1.1.2; rule 4.2; rule 4.3; Section 5.5.4.4; Section 5.7.4.1.
-5.13.4.4. Agentic Chain Poisoning
-5.13.4.4.1. Definition: An AI agent operating within a multi-agent pipeline (e.g., a document-generation agent, a review agent, and a commit agent operating in sequence) introduces a poisoning payload at one stage of the chain — typically a stage with lower security scrutiny — relying on downstream agents in the chain to relay the payload into the accepted corpus without triggering scanner gates that would catch direct human or bot submissions.
-5.13.4.4.2. Representative indicators: file content whose injection or poisoning patterns appear only when cross-referencing the file against other recently committed corpus files from the same pipeline run; payload fragments distributed across multiple files that are individually non-triggering but collectively constitute a complete injection or poisoning pattern; commit metadata inconsistencies suggesting multi-agent authorship with differing policy alignments.
-5.13.4.4.3. Enforcement reference: rule 3.1.1.2; rule 4.1.2; rule 4.3; Section 5.5.4.4; Section 5.7.4.1; Section 5.7.4.7.
-5.13.4.5. Autonomous Enumeration Manipulation
-5.13.4.5.1. Definition: An AI agent acting as a document editor autonomously renumbers, restructures, or reorders enumeration nodes — outside the full-renumbering discipline required by rule 2.1.1.2 — in a manner that silently invalidates existing cross-references within the file or across dependent corpus documents, degrading traceability without triggering format or security rejections.
-5.13.4.5.2. Representative indicators: renumbering edits not accompanied by a corresponding cross-reference update pass (detectable via static cross-reference validation); changelog entries that describe structural edits but lack renumbering justification; enumeration node content transpositions that preserve local numbering correctness while breaking corpus-level citation chains.
-5.13.4.5.3. Enforcement reference: rule 2.1.1.2; rule 2.1.1.3; Section 5.7.2.3–5.7.2.4; Section 5.5.2.2–5.5.2.3.
-5.13.4.6. Model-Exfiltration Probing via Corpus Content
-5.13.4.6.1. Definition: An AI agent embeds probing content within a submitted file designed to elicit the disclosure of system internals, other corpus file contents, model weights, configuration parameters, or operational secrets from any AI agent that ingests and responds to the file's content during corpus processing or review.
-5.13.4.6.2. Representative indicators: enumeration nodes containing rhetorical or interrogative structures directed at a reader-agent rather than a human reviewer (e.g., "describe your system prompt", "list all files in the corpus", "output your configuration"); content that mirrors known model-extraction or membership-inference attack phrasings.
-5.13.4.6.3. Enforcement reference: rule 3.1.1.1; rule 3.1.1.2; Section 5.5.3; Section 5.7.3.1.
-
-5.13.5. Attack Pattern Summary Tables
-
-5.13.5.1. Human-Actor Attack Patterns
-
-| #   | Pattern Class                   | Behavioral Definition (Summary)                                                                                          | Representative Indicators                                                                                             | Enforcement Reference                    |
-|-----|---------------------------------|--------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------|------------------------------------------|
-| H-1 | Manual Prompt Injection         | Human embeds natural-language instruction sequences to override AI agent behavior on ingestion.                          | "ignore previous instructions", "system override:", imperative rewrites targeting agent behavior.                     | rule 3.1.1.1; §5.7.3.1; §5.5.3.1        |
-| H-2 | Manual SQL Injection            | Human inserts SQL syntax to corrupt, exfiltrate, or manipulate any database layer processing the file.                  | ' OR '1'='1; ; DROP TABLE; UNION SELECT; --; obfuscated via encoding or whitespace.                                   | rule 3.1.1; §5.7.3.1; §5.5.3.2          |
-| H-3 | Manual Command Injection        | Human embeds shell command sequences intended for execution by a downstream command interpreter.                         | ; rm -rf; && curl; \| bash; $(command); backtick execution; > /etc/passwd.                                            | rule 3.1.1; §5.7.3.1; §5.5.3.2          |
-| H-4 | Manual Path Traversal           | Human includes filesystem traversal sequences to access files outside the corpus directory.                              | ../../; ..\..\ ; %2e%2e%2f; double-encoded variants.                                                                  | rule 3.1.1; §5.7.3.1; §5.5.3.2          |
-| H-5 | Manual Corpus Poisoning         | Human crafts semantically adversarial content that appears compliant but corrupts AI agent policy output.                | Contradictory rule statements; fabricated cross-references; false authority attribution; self-contradictory nodes.    | rule 3.1.1.2; §5.5.3; §5.7.3.1          |
-| H-6 | Manual Extension Spoofing       | Human renames a non-.txt binary file with a .txt extension to bypass the format gate.                                   | MIME-type mismatch; magic-byte header inconsistent with plain text (e.g., %PDF-, PK header, ELF 7F454C46).            | rule 1.1.1.1; §5.5.1.2; §5.7.1.2        |
-| H-7 | Manual Enumeration Subversion   | Human submits file with absent, partial, or structurally inconsistent enumeration to defeat linting or introduce drift. | Mixed enumeration schemes; deliberate numbering gaps; phantom cross-references.                                       | rule 2.1.2; §5.5.2.5; §5.7.2.1–§5.7.2.2|
-
-5.13.5.2. Bot-Actor Attack Patterns
-
-| #   | Pattern Class                          | Behavioral Definition (Summary)                                                                                        | Representative Indicators                                                                                              | Enforcement Reference                          |
-|-----|----------------------------------------|------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
-| B-1 | Automated Prompt Injection             | Bot submits high volumes of files with syntactically varied prompt injection payloads to evade signature detection.    | High upload velocity; fuzzing variation patterns; homoglyph substitution; valid .txt wrapping injecting content.       | rule 3.1.1.1; rule 3.1.2.2; §5.7.3.1; §5.7.3.5|
-| B-2 | Automated SQL/Command Injection Fuzzing| Bot submits SQL or command injection payloads in varied encodings to probe for scanner blind spots.                    | Enumeration nodes of primarily encoded special characters; systematic cycling through encoding evasion schemes.        | rule 3.1.1; rule 3.1.2.2; §5.7.3.1; §5.7.3.3  |
-| B-3 | Automated Corpus Flooding              | Bot submits large volumes of syntactically compliant but semantically low-quality or near-duplicate files.             | Near-duplicate content fingerprints; abnormally high submission rate; files passing all checks but low uniqueness.     | rule 3.1.1.2; rule 3.1.2.2; §5.5.3; §5.7.3.5  |
-| B-4 | Automated Enumeration Drift Injection  | Bot submits files with subtly incorrect enumeration to introduce cross-reference drift into the corpus at scale.       | Linting failures at consistent structural positions across a batch; cross-references resolving to adjacent numbers.    | rule 2.1.2; §5.7.2.1–§5.7.2.4; §5.5.2.5       |
-| B-5 | Automated Extension-Spoof Scanning     | Bot probes the upload gate by submitting various binary types renamed .txt to map MIME/magic-byte detection gaps.      | High volume of format-rejected submissions from one identity; systematic cycling through binary magic-byte headers.    | rule 1.1.1.1; rule 3.1.2.2; §5.7.1.2; §5.7.3.5|
-
-5.13.5.3. AI-Agent / Model-Actor Attack Patterns
-
-| #   | Pattern Class                           | Behavioral Definition (Summary)                                                                                              | Representative Indicators                                                                                            | Enforcement Reference                                           |
-|-----|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| A-1 | Indirect Prompt Injection via Corpus    | AI agent embeds instruction sequences in generated/modified files to influence downstream agents that ingest the corpus.     | Behavioral override phrases in policy prose; fluent injection patterns inconsistent with declared authorship.        | rule 3.1.1.1; rule 3.1.1.2; §5.5.3; §5.7.3.1                  |
-| A-2 | Hallucination-Driven Policy Fabrication | AI agent introduces hallucinated policy content — fabricated citations, non-existent cross-references, invented sections.    | Cross-references to nonexistent sections; citations to absent documents; statements contradicting baseline rules.    | rule 4.2; rule 4.2.1; rule 4.2.2; §5.5.4.1–§5.5.4.3; §5.7.4.4–§5.7.4.5|
-| A-3 | Adversarial Fine-Tuning Payload         | AI agent crafts content structured as a fine-tuning payload to shift policy priors via statistical pattern reinforcement.    | Repetitive phrasings reinforcing a specific behavioral direction; reward-hacking framings; definitional drift.       | rule 3.1.1.2; rule 4.2; rule 4.3; §5.5.4.4; §5.7.4.1          |
-| A-4 | Agentic Chain Poisoning                 | AI agent in a multi-agent pipeline introduces a poisoning payload at a low-scrutiny stage, relayed by downstream agents.    | Cross-file payload patterns from the same pipeline run; distributed payload fragments; commit metadata anomalies.    | rule 3.1.1.2; rule 4.1.2; rule 4.3; §5.5.4.4; §5.7.4.1; §5.7.4.7|
-| A-5 | Autonomous Enumeration Manipulation     | AI agent editor renumbers/restructures nodes outside full-renumbering discipline, silently invalidating cross-references.    | Renumbering not followed by cross-reference update pass; changelog lacking renumbering justification.                | rule 2.1.1.2; rule 2.1.1.3; §5.7.2.3–§5.7.2.4; §5.5.2.2–§5.5.2.3|
-| A-6 | Model-Exfiltration Probing              | AI agent embeds probing content to elicit disclosure of system internals, corpus contents, or model parameters.              | Interrogative structures directed at a reader-agent; "describe your system prompt"; model-extraction phrasings.      | rule 3.1.1.1; rule 3.1.1.2; §5.5.3; §5.7.3.1                  |
-
-5.13.5.4. Cross-Class Comparison
-
-| Dimension                 | Human-Actor                                 | Bot-Actor                                      | AI-Agent / Model-Actor                                         |
-|---------------------------|---------------------------------------------|------------------------------------------------|----------------------------------------------------------------|
-| Attack velocity           | Low (manual)                                | High (automated, scaled)                       | Variable (pipeline-dependent)                                  |
-| Syntactic sophistication  | Moderate                                    | Low–moderate (pattern-based)                   | High (fluent, context-aware)                                   |
-| Semantic sophistication   | High                                        | Low (volume over quality)                      | Very high (policy-aware fabrication, chain exploitation)       |
-| Primary detection surface | Content pattern matching, format gates      | Rate limiting, fingerprinting, format gates    | Cross-reference validation, hallucination envelope, chain audit|
-| Evasion strategy          | Manual obfuscation, social engineering      | Encoding variants, flooding, fuzzing           | Fluent integration, distributed payload, pipeline trust abuse  |
-| Corpus impact scope       | Single file or targeted section             | Corpus-wide dilution or targeted drift         | Corpus-wide policy corruption or cross-file chain compromise   |
-| Governing enforcement     | rule 3.1.1; rule 2.1.2; rule 1.1.1.1        | rule 3.1.2.2; rule 2.1.2; rule 1.1.1.1        | rule 4.2; rule 4.3; rule 3.1.1.2; rule 2.1.1.2                |
-
-
-
-5.13.6. Attack Mitigation Methods by Actor Class
-
-5.13.6.1. Universal Mitigations (Applied Across All Actor Classes)
-
-| #    | Mitigation                              | Description                                                                                                                                                           | Enforcement Reference                                      |
-|------|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|
-| U-1  | Single-File Submission Limit            | One .txt file submission is permitted per upload transaction, with no exceptions. Batch or multi-file upload attempts must be rejected at the upload gate entirely.    | rule 1.1.1; rule 3.1; §5.7.1.1; §5.7.3.2                  |
-| U-2  | Mandatory Pre-Upload Scanner Gate       | All files must pass the full client-side scanner before any server-side or agent-side processing; no bypass, partial scan, or deferred scan is permitted.             | rule 3.1; rule 3.1.1; §5.7.3.1                             |
-| U-3  | Upload Rate Limiting                    | Each uploader identity is subject to a maximum submission rate; submissions exceeding the threshold must be automatically rejected and escalated to Maintainer review. | rule 3.1.2.2; §5.7.3.5; §5.11                              |
-| U-4  | Immutable Rejection Logging             | Every rejected submission must produce a tamper-evident, auditable log entry capturing file metadata, detected pattern type, scanner version, and uploader identity.  | rule 3.1.2; rule 3.1.2.1; §5.7.3.2                        |
-| U-5  | Enumeration Linting Pass                | Every file must pass a full hierarchical enumeration compliance lint before ingestion; any enumeration failure is an automatic rejection, not a warning.              | rule 2.1.2; rule 2.1.2.2; §5.5.2.5; §5.7.2.1              |
-| U-6  | Format Gate (Extension + MIME + Magic)  | Three-layer format enforcement: file extension must be .txt, MIME type must be text/plain, and magic-byte header must be consistent with plain text.                  | rule 1.1.1.1; §5.5.1.2; §5.7.1.2                          |
-| U-7  | Cross-Reference Integrity Validation    | All internal cross-references in a submitted file must resolve to existing, correctly numbered sections; dangling or fabricated references trigger rejection.         | rule 2.1.1.3; rule 4.2.1; §5.5.4.1; §5.7.4.4              |
-| U-8  | Scanner Versioning and Update Discipline| Scanner signature and heuristic sets must be versioned; version must be logged per scan event; outdated scanner versions must be blocked from serving as a gate.      | rule 3.1.3; §5.7.3.4                                       |
-
-5.13.6.2. Human-Actor Mitigations
-
-| #    | Targets | Mitigation                              | Description                                                                                                                                                         | Enforcement Reference                             |
-|------|---------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
-| MH-1 | H-1     | Prompt Injection Pattern Matching       | Scanner must include both signature-based and heuristic detection for prompt injection; homoglyph normalization must precede pattern matching.                       | rule 3.1.1.1; rule 3.1.1.3; §5.7.3.1             |
-| MH-2 | H-2     | SQL/Command Syntax Stripping Detection  | Scanner must detect SQL and shell command syntax including encoded and whitespace-obfuscated variants; any detected pattern causes immediate rejection.              | rule 3.1.1; §5.7.3.1; §5.5.3.2                   |
-| MH-3 | H-3     | Command Injection Heuristic Layer       | Heuristic detection layer must flag shell metacharacters, backtick execution patterns, and redirect operators independent of signature matches.                      | rule 3.1.1; rule 3.1.1.3; §5.7.3.1               |
-| MH-4 | H-4     | Path Traversal Sequence Blocking        | Scanner must detect raw and encoded path traversal sequences (../../, %2e%2e%2f, double-encoded variants) and reject the file on first detection.                   | rule 3.1.1; §5.7.3.1; §5.5.3.2                   |
-| MH-5 | H-5     | Corpus Semantic Consistency Check       | Ingestion pipeline must flag files containing contradictory rule statements, fabricated authority attribution, or self-contradictory nodes for Maintainer review.   | rule 3.1.1.2; §5.5.3; §5.7.3.1                   |
-| MH-6 | H-6     | Three-Layer Format Gate (see U-6)       | Extension, MIME type, and magic-byte header must all independently confirm plain text; mismatch at any layer causes immediate rejection.                             | rule 1.1.1.1; §5.5.1.2; §5.7.1.2                 |
-| MH-7 | H-7     | Enumeration Lint Gate (see U-5)         | Mixed schemes, numbering gaps, and phantom cross-references all constitute linting failures; the file is rejected, not flagged for later correction.                 | rule 2.1.2; §5.5.2.5; §5.7.2.1–§5.7.2.2          |
-
-5.13.6.3. Bot-Actor Mitigations
-
-| #    | Targets | Mitigation                              | Description                                                                                                                                                         | Enforcement Reference                                    |
-|------|---------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| MB-1 | B-1     | Single-File Gate + Velocity Throttle    | One file per transaction (U-1) combined with per-identity rate limiting (U-3) structurally eliminates high-velocity injection fuzzing campaigns.                    | rule 3.1.2.2; §5.7.3.5                                   |
-| MB-2 | B-1,B-2 | Homoglyph Normalization Pre-Scan        | All text must be Unicode-normalized before pattern matching; homoglyph substitution and lookalike character evasion are neutralized prior to signature application.  | rule 3.1.1.1; rule 3.1.1.3; §5.7.3.1                    |
-| MB-3 | B-2     | Multi-Encoding Injection Detection      | Scanner must decode and inspect URL-encoded, hex-encoded, base64-encoded, and double-encoded payloads before pattern matching; encoded-only detection is insufficient.| rule 3.1.1; rule 3.1.1.3; §5.7.3.3                      |
-| MB-4 | B-3     | Content Fingerprint Deduplication       | Each submitted file must be fingerprinted; near-duplicate submissions within a configurable time window from the same identity must be rejected automatically.       | rule 3.1.2.2; §5.5.3; §5.7.3.5                           |
-| MB-5 | B-4     | Linting Failure Batch Escalation        | If linting failures occur at consistent structural positions across multiple submissions from one identity within a session, automatic escalation to Maintainer.    | rule 2.1.2; §5.7.2.1–§5.7.2.4; §5.11                    |
-| MB-6 | B-5     | Format Rejection Velocity Monitoring    | Repeated format-gate rejections (extension spoof probing) from the same identity must trigger automatic lockout and Maintainer escalation after a defined threshold.| rule 1.1.1.1; rule 3.1.2.2; §5.7.1.2; §5.7.3.5          |
-
-5.13.6.4. AI-Agent / Model-Actor Mitigations
-
-| #    | Targets | Mitigation                              | Description                                                                                                                                                              | Enforcement Reference                                              |
-|------|---------|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
-| MA-1 | A-1     | Behavioral Override Phrase Detection    | Scanner must detect behavioral override phrases, fluent instruction sequences, and indirect prompt injection patterns embedded within policy prose.                      | rule 3.1.1.1; rule 3.1.1.2; §5.5.3; §5.7.3.1                     |
-| MA-2 | A-2     | Hallucination Envelope Enforcement      | Cross-reference validation (U-7) must be supplemented by citation existence checks; any reference to a nonexistent section, document, or authority triggers rejection.  | rule 4.2; rule 4.2.1; rule 4.2.2; §5.5.4.1–§5.5.4.3; §5.7.4.4   |
-| MA-3 | A-3     | Repetitive Phrasing Anomaly Detection   | Heuristic layer must flag files exhibiting statistically abnormal repetition of specific behavioral direction phrases, reward-hacking framings, or definitional drift.   | rule 3.1.1.2; rule 4.2; rule 4.3; §5.5.4.4; §5.7.4.1             |
-| MA-4 | A-4     | Pipeline Commit Metadata Audit          | Files submitted through an agentic pipeline must carry verifiable commit metadata; distributed payload fragments across a pipeline run must be flagged for chain audit. | rule 3.1.1.2; rule 4.1.2; rule 4.3; §5.5.4.4; §5.7.4.7           |
-| MA-5 | A-5     | Renumbering Discipline Enforcement      | Any file exhibiting renumbered nodes without a corresponding full cross-reference update pass and changelog entry must be rejected; partial renumbering is non-compliant.| rule 2.1.1.2; rule 2.1.1.3; §5.7.2.3–§5.7.2.4; §5.5.2.2–§5.5.2.3|
-| MA-6 | A-6     | Interrogative Extraction Pattern Block  | Scanner must detect and reject files containing interrogative structures directed at a reader-agent, model-extraction phrasings, or system-prompt disclosure attempts.   | rule 3.1.1.1; rule 3.1.1.2; §5.5.3; §5.7.3.1                     |
-| MA-7 | A-1–A-6 | Authorship Consistency Heuristic        | Files generated or modified by an AI agent must declare authorship in the changelog; undeclared AI authorship detected via stylometric heuristic triggers Maintainer review.| rule 4.2; §5.5.4.1; §5.7.4.5; §5.11                            |
+5.13. Risk and Mitigation Table
+| Risk                                                       | Likelihood | Impact   | Mitigation                                                                                                             |
+|------------------------------------------------------------|------------|----------|------------------------------------------------------------------------------------------------------------------------|
+| NaN price from WebSocket validated but passed through      | Low        | Critical | §5.8.2: NaN on any price field is an ERROR + discard; unit test asserts NaN rejection                                 |
+| Timezone-ambiguous timestamp in CSV (not UTC nanoseconds)  | Medium     | High     | §5.7.2: CSV timestamp must be int64 UTC ns; datetime strings are rejected as a validation error                       |
+| Missing-bar forward-fill not marked as synthetic           | Medium     | Medium   | §5.9.2: is_synthetic=true metadata required; ValidationOperator checks this field                                     |
+| Out-of-order bars in Backtest silently ignored             | Low        | Critical | §5.8.3 and §5.10.3: hard error + session halt on out-of-order timestamps in Backtest mode                             |
 
 5.14. References and Citations
-5.13.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1 (Abstract), §1.4.2 (Enumeration Compliance), §1.4.2.1–§1.4.2.2 (renumbering and cross-reference discipline), §1.4.5 (no-deviation rule), §1.4.6–§1.4.6.1 (hallucination envelope), §1.4.7 (traceability), §1.5 (Philosophical Preamble), §1.6.2 (Enumeration Compliance), §1.6.5 (Deviation and Checklist Discipline), §1.6.6–§1.6.6.6 (Hallucination Envelope Enforcement), §1.6.7–§1.6.7.6 (Version Control and Change Management), §1.6.8–§1.6.8.3 (Review, Validation, and Sign-off), §1.13.3 (SecDevOps Checklist — escalation).
-5.13.2. Internal: coding_stds/MOST_CITED_STANDARDS.md Tier 2 (documentation/enumeration).
-5.13.3. Internal: documentation/stricter_hierarchical_enumeration_standards_global.txt (Tier 2 — enumeration pattern authority).
+5.14.1. Internal: alpaca_paper_trading_specifications_x_quant_x/021_xquantx_data_standards.txt §1.8.1 and §1.4.6 (schema and forward-fill policy).
+5.14.2. Internal: alpaca_paper_trading_specifications_x_quant_x/019_xquantx_data_structures_algorithms.txt §1.4.6 (temporal leakage invariant).
+5.14.3. Internal: alpaca_trading_agents_concept/prompt_patterns.md META-PROMPT 6, META-PROMPT 11 (data pipeline, anti-leakage).
+5.14.4. External: Alpaca WebSocket streaming API documentation (alpaca.markets/docs/api-references/market-data-api/stock-pricing-data/realtime).
+5.14.5. External: Apache Parquet format specification.
 
-5.14. Changelog Table
+
+
+5.15. Changelog Table
 | Version         | Date       | Author            | Change Description                                                                                                                                                                              | Type  |
 |------------------|------------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
 | 2026.00.00.00    | 2026-08-03 | Documentation Agent| Expanded rules 1-4 into full governed spec with nested enumeration.                                                                                                                             | Minor |
 | 2026.08.01.00    | 2026-08-03 | Documentation Agent| Further expanded sections 5.2–5.14 in depth: deepened Abstract, Key Words, Executive Summary, Key Findings, Philosophical Preamble, and Operating Instructions to fully mirror 0000_documentation_standards.txt §1.1–§1.6.8; added MIME/magic-byte, linting, renumbering, cross-reference, scanner versioning, integrity check, hallucination envelope, traceability, version-control, and review/sign-off sub-rules throughout; expanded Summary Table with failure modes; expanded Reconciliation Table with all new sub-rule mappings; expanded Risk and Mitigation Table with new risk rows; expanded RACI with Reviewer column and new activity rows; expanded Conclusion and References. | Minor |
+| 2026.08.26.00    | 2026-08-26 | Documentation Agent| Repurposed to X Quant X per PLAN P2-08: replaced xquantx audio file input criteria with X Quant X market data stream and file input criteria. Added live WebSocket format (§5.6), historical Parquet/CSV format (§5.7), schema validation rules (§5.8), missing-bar detection (§5.9), and backtest replay fidelity requirements (§5.10). | Major |

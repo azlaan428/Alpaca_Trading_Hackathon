@@ -1,14 +1,14 @@
-1. VoiceGate Visualization Development Standards (Table of Contents)
+X Quant X Visualization Development Standards (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Original Baseline Directive (Preserved Verbatim)
-1.7. Screenshot Format Rule
-1.8. Captioning and Section-Reference Rule
-1.9. Aesthetic Compliance Rule
-1.10. Applicability
+1.6. Required Chart Types
+1.7. Color Palette Tokens
+1.8. Accessibility Requirements
+1.9. Export Formats
+1.10. Dashboard Layout
 1.11. Summary Table
 1.12. Reconciliation Table
 1.13. Risk and Mitigation Table
@@ -18,120 +18,193 @@
 1.17. Changelog Table
 
 1.1. Abstract
-This document specifies visualization/screenshot standards for VoiceGate's specification
-corpus, elaborating the original baseline directive into concrete rules for image format,
-captioning, and cross-referencing, and binding all such images to the palette and visual
-identity defined in voice_processing_specifications/002_voicegate_aesthetics.txt.
+This document defines the visualization development standards for X Quant X, specifying
+required chart types, Plotly/Matplotlib conventions, color palette tokens, accessibility
+requirements, export formats, and the dashboard layout for the X Quant X paper-trading
+monitoring interface.
 
 1.2. Key Words
-visualization, screenshot, PNG, caption, cross-reference, aesthetic compliance, Risk Report,
-calibration chart, VoiceGate.
+visualization, Plotly, Dash, Matplotlib, equity curve, drawdown, regime probability,
+correlation heatmap, signal score, portfolio weights, risk gate log, dark mode, WCAG AA,
+color palette, chart export.
 
 1.3. Executive Summary
-Every screenshot included in any VoiceGate specification document is a single image per
-instance, in PNG format only, accompanied by a clear caption and an explicit reference to the
-section of text it illustrates, and must visually conform to the palette/typography rules in
-voice_processing_specifications/002_voicegate_aesthetics.txt. Typical illustrated instances
-are Test Bench launch screens, Call Review transcript-with-verdict-badge views, and Risk
-Report judge-calibration charts.
+X Quant X uses Plotly (with Dash for the interactive dashboard) as the primary visualization
+library. Seven chart types are required for the MVP dashboard: equity curve, drawdown
+waterfall, regime probability bar, correlation heatmap, signal score time series, portfolio
+weights treemap, and risk-gate trigger log table. All charts use a dark-mode primary theme
+with the X Quant X brand color tokens. WCAG AA contrast minimum is enforced. Charts export
+as PNG (static) and HTML (interactive). All chart code lives in xquantx/dashboard/ and
+never contains trading logic.
 
 1.4. Key Findings
-1.4.1. Exactly one image is used per illustrated instance (no multi-panel composite images),
-per the preserved baseline directive.
-1.4.2. PNG is the only accepted image format, per the preserved baseline directive, chosen
-for lossless quality suited to UI screenshots and calibration charts containing text and
-sharp geometric shapes.
-1.4.3. Every included screenshot requires a caption and an explicit reference to the relevant
-section(s) of the surrounding text, per the preserved baseline directive.
-1.4.4. Screenshots must reflect the aesthetic standards document
-(voice_processing_specifications/002_voicegate_aesthetics.txt), i.e. actual palette
-variants, typography, and visual language, not placeholder or inconsistent styling.
-1.4.5. This document governs documentation-embedded screenshots specifically; it does not
-redefine UI layout (voice_processing_specifications/004_voicegate_ui_navigation.txt) or
-palette values, both of which remain governed by their own documents.
+1.4.1. Seven MVP chart types cover the full monitoring surface: equity performance (equity
+curve + drawdown), regime state (regime probability bar), correlation structure (correlation
+heatmap), signal confidence (signal score time series), allocation (portfolio weights
+treemap), and risk audit (risk-gate trigger log).
+1.4.2. Dark-mode is the primary theme: background #1a1a2e (deep navy), text #e0e0e0, accent
+grid lines #2a2a4a.
+1.4.3. Brand accent color #FFACE9 (Rose/Pink) is reserved exclusively for ALERT states --
+REDUCE/BLOCK/FLATTEN verdicts, drawdown warning thresholds, and stress-regime highlights.
+It must not be used for normal-state data series.
+1.4.4. All charts are generated with Plotly graph objects (not plotly.express) to maintain
+full control over layout and styling.
+1.4.5. Every chart has a title, axis labels, legend, and a source annotation
+("X Quant X | {session_id} | {mode}").
 
 1.5. Philosophical Preamble
-A screenshot embedded in a specification document is a claim about what the product actually
-looks like; an uncaptioned or unreferenced image is a claim nobody can verify or locate. This
-matters more, not less, in a compliance test bench: a Risk Report calibration chart is itself
-evidence, and evidence that cannot be traced to the text it supports is not usable evidence.
+A visualization embedded in a monitoring dashboard is a claim about the current state of
+the portfolio and risk posture; an unlabeled or unsourced chart is a claim nobody can
+audit. This matters more, not less, in a quantitative trading context: a risk-gate trigger
+log and an equity drawdown chart are themselves evidence, and evidence that cannot be traced
+to a session ID and data source is not actionable evidence.
 
-1.6. Original Baseline Directive (Preserved Verbatim)
-"Follow aesthetic standards document -- single image per instance, and in PNG format only.
-All relevant screenshots must be included in the game specification document, with clear
-captions and references to the relevant sections of the text."
+1.6. Required Chart Types
+1.6.1. Equity Curve:
+- Chart type: Plotly line chart
+- X-axis: datetime (from timestamp_ns converted to UTC datetime)
+- Y-axis: equity ($)
+- Two series: portfolio equity (primary line, color #7ec8e3), risk-free rate baseline
+  (dashed, color #4a4a6a)
+- Annotation: peak equity watermark; current drawdown percentage
+- Source: PortfolioSnapshot.equity per bar
 
-1.7. Screenshot Format Rule
-1.7.1. PNG format only (per Section 1.6); no JPEG, GIF, WEBP, BMP, or other raster/vector
-formats.
-1.7.2. Exactly one image per illustrated instance; composite/multi-panel images are not
-used, per Section 1.6.
+1.6.2. Drawdown Waterfall:
+- Chart type: Plotly waterfall or area chart (shaded area below zero)
+- X-axis: datetime
+- Y-axis: drawdown (% from peak, displayed as negative values)
+- Color: normal drawdown #7ec8e3 (blue); drawdown > 10% warn threshold #FF9800 (orange);
+  drawdown > 15% critical (FLATTEN trigger) #FFACE9 (rose/pink alert)
+- Source: computed from PortfolioSnapshot.equity using max watermark
 
-1.8. Captioning and Section-Reference Rule
-1.8.1. Every embedded screenshot carries a caption describing what it depicts.
-1.8.2. Every embedded screenshot's caption includes an explicit reference to the section(s)
-of the surrounding document text that it illustrates (e.g. "See Section 1.7, Risk Report
-judge-calibration chart").
+1.6.3. Regime Probability Bar Chart:
+- Chart type: Plotly stacked horizontal bar chart (one bar per time point, stacked by
+  regime probability)
+- X-axis: probability (0 to 1)
+- Each segment: labeled with regime ID (R01-R12) and color-coded per regime category
+  (R01/R02/R11 = green tones; R03/R04 = orange/red tones; R05/R07 = red/FFACE9 alert
+  tones)
+- Source: RegimeState.regime_probabilities per bar
 
-1.9. Aesthetic Compliance Rule
-Every screenshot must depict the product rendered per
-voice_processing_specifications/002_voicegate_aesthetics.txt's approved palette variant(s)
-and typography; a screenshot depicting an unapproved or placeholder visual style does not
-satisfy this standard and must not be included.
+1.6.4. Correlation Heatmap:
+- Chart type: Plotly heatmap
+- Rows and columns: symbols in the portfolio
+- Cell values: rolling 20-day pairwise correlation (CrossAssetSignalOperator output)
+- Color scale: RdYlGn diverging (red = -1, yellow = 0, green = +1); correlation > 0.7
+  annotated as potential concentration risk
+- Source: CrossAssetSignalOperator output per bar
 
-1.10. Applicability
-This standard applies to all specification documents in `voice_processing_specifications/`
-that embed screenshots, including but not limited to
-voice_processing_specifications/004_voicegate_ui_navigation.txt (Test Bench/Call Review
-screen layouts) and voice_processing_specifications/002_voicegate_aesthetics.txt
-(palette/typography examples), and to any future document that embeds a screenshot (e.g. a
-Risk Report calibration-chart export).
+1.6.5. Signal Score Time Series:
+- Chart type: Plotly multi-line chart (one line per active SignalOperator)
+- X-axis: datetime
+- Y-axis: signal score [-1, +1] with zero reference line
+- Line colors: one distinct color per operator (no color reuse across operators)
+- Confidence bands: +/- confidence displayed as shaded area around each signal line
+- Source: Signal.signal_score and Signal.confidence per bar per operator
+
+1.6.6. Portfolio Weights Treemap:
+- Chart type: Plotly treemap
+- Nodes: symbols, sized by |position_weight|
+- Color: green tones for long positions, red tones for short positions
+- Center label: equity ($ value) and % weight per node
+- Source: AllocationVector and PortfolioSnapshot.positions per bar
+
+1.6.7. Risk-Gate Trigger Log Table:
+- Chart type: Plotly table
+- Columns: timestamp, rule_id, verdict, symbol, measured_value, threshold
+- Row highlight: BLOCK = orange background, FLATTEN = #FFACE9 background,
+  REDUCE = light orange
+- Source: AUDIT_LOGS/ RISK_GATE_DECISION entries for the session
+
+1.7. Color Palette Tokens
+| Token | Hex | Usage |
+|-------|-----|-------|
+| background-primary | #1a1a2e | Chart and dashboard background |
+| text-primary | #e0e0e0 | All text, axis labels, annotations |
+| grid-line | #2a2a4a | All chart grid lines |
+| series-equity | #7ec8e3 | Equity curve, normal-state data |
+| series-benchmark | #4a4a6a | Benchmark/baseline lines |
+| alert-warn | #FF9800 | Drawdown 10-15%, moderate warning |
+| alert-critical | #FFACE9 | Drawdown > 15%, FLATTEN, BLOCK verdicts |
+| regime-bull | #4CAF50 | R01, R02, R11 regime segments |
+| regime-bear | #F44336 | R03, R04, R07 regime segments |
+| regime-neutral | #9E9E9E | R06, R08, R09, R10, R12 segments |
+
+1.8. Accessibility Requirements
+1.8.1. WCAG AA contrast minimum: all text on background must achieve >= 4.5:1 contrast
+ratio. #e0e0e0 on #1a1a2e achieves ~14:1 (passes).
+1.8.2. Color-blind safety: all series that convey meaning through color must also use
+distinct line styles (solid, dashed, dotted) or marker shapes.
+1.8.3. All charts have alternative text descriptions for screen reader compatibility
+(Plotly `alt` parameter or accompanying markdown description).
+
+1.9. Export Formats
+1.9.1. PNG: static export via plotly.io.write_image() with width=1920, height=1080,
+scale=2.
+1.9.2. HTML: interactive export via plotly.io.write_html() with full_html=True,
+include_plotlyjs='cdn'.
+1.9.3. All exports are saved to
+AUDIT_LOGS/{session_id}/charts/{chart_name}_{timestamp}.{ext}.
+
+1.10. Dashboard Layout
+The Dash dashboard is organized into six panels:
+- Panel 1 (top): Equity Curve + Drawdown Waterfall (2 charts, side by side)
+- Panel 2 (middle-left): Regime Probability Bar Chart (full-width, updated live)
+- Panel 3 (middle-right): Signal Score Time Series (one line per active operator)
+- Panel 4 (bottom-left): Portfolio Weights Treemap
+- Panel 5 (bottom-middle): Correlation Heatmap
+- Panel 6 (bottom-right): Risk-Gate Trigger Log Table
 
 1.11. Summary Table
-| Rule | Requirement |
-|------|-------------|
-| Image count | Exactly one image per instance (preserved baseline) |
-| Image format | PNG only (preserved baseline) |
-| Caption | Required, clear, descriptive (preserved baseline) |
-| Section reference | Required, explicit (preserved baseline) |
-| Aesthetic compliance | Must depict an approved palette variant/visual language |
+| Chart | Library | Update frequency | Source data |
+|-------|---------|-----------------|-------------|
+| Equity curve | Plotly line | Per bar | PortfolioSnapshot.equity |
+| Drawdown waterfall | Plotly area | Per bar | Computed from PortfolioSnapshot |
+| Regime probability bar | Plotly stacked bar | Per bar | RegimeState.regime_probabilities |
+| Correlation heatmap | Plotly heatmap | Per session (20-day rolling) | CrossAssetSignalOperator |
+| Signal score series | Plotly multi-line | Per bar | Signal.signal_score, confidence |
+| Portfolio weights treemap | Plotly treemap | Per bar | AllocationVector, positions |
+| Risk-gate log table | Plotly table | Per event | AUDIT_LOGS/ RISK_GATE_DECISION |
 
 1.12. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Original baseline (this file, pre-existing) | "Follow aesthetic standards document -- single image per instance, and in PNG format only. All relevant screenshots must be included in the game specification document, with clear captions and references to the relevant sections of the text." | Preserved verbatim in Section 1.6; decomposed into format (1.7), captioning/reference (1.8), and aesthetic-compliance (1.9) rules, retargeted to VoiceGate deliverables | Reconciled |
+|--------|----------------|---------------|--------|
+| X Quant X 022 §1.6 (call-review dashboard charts) | Voice-call transcript review visualization | Replaced with 7 portfolio/risk/regime chart types | Reconciled |
+| alcapa_trading_agents_concept/high_level_concept.md | Rose/Pink #FFACE9 color in mermaid diagrams | Adopted as alert-critical color token exclusively (not general use) | Reconciled |
 
 1.13. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Screenshots embedded without a caption or section reference, becoming untraceable | Medium | Low | 1.8 makes both mandatory, not optional |
-| Non-PNG images introduced for convenience (e.g. a quick JPEG export) | Low | Low | 1.7.1 restricts to PNG only, per the preserved baseline |
-| Risk Report calibration chart screenshots depicting stale/placeholder styling | Medium | Medium | 1.9 requires aesthetic-compliance review whenever the aesthetics document is revised |
+|------|-----------|--------|------------|
+| #FFACE9 alert color used for normal-state data series | High | Medium | §1.7 token table prohibits non-alert use; code review checks chart color assignments |
+| Dashboard trading logic violating layer boundary | Medium | High | §1.13: xquantx/dashboard/ must not import from xquantx/operators/ except to read schema types |
+| Chart export failing silently (kaleido not installed) | Medium | Low | requirements-dev.txt pins kaleido; CI test generates one PNG export as a smoke test |
 
 1.14. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
 |----------|-----------------|----------|------------|-------------|
 | Maintain visualization standards | R | C | A | I |
-| Verify aesthetic compliance of embedded screenshots | C | R | A | A/Stakeholder |
+| Verify chart color token compliance | C | R | A | A/Stakeholder |
+| Validate dashboard layer boundary (no trading logic) | C | R | A | I |
 
 1.15. Conclusion
-The original screenshot-standards directive is preserved verbatim and elaborated into
-concrete format, captioning, and aesthetic-compliance rules that keep every visual artifact
-in the VoiceGate corpus traceable and faithful to the approved visual identity.
+The seven-chart MVP dashboard covers the full monitoring surface of X Quant X: equity
+performance, drawdown, regime state, correlation structure, signal confidence, allocation,
+and risk audit. All charts use the dark-mode color tokens defined in §1.7; the
+alert-critical #FFACE9 token is reserved exclusively for ALERT states and must not appear
+in normal-state data series. All chart code is isolated in xquantx/dashboard/ with no
+trading logic.
 
 1.16. References and Citations
-1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14
-(including the binding rule against removing existing baseline text).
-1.16.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (Test
-Bench/Call Review/Risk Report deliverable descriptions).
-1.16.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
-1.16.4. Internal: voice_processing_specifications/002_voicegate_aesthetics.txt (palette,
-typography, visual language screenshots must comply with).
-1.16.5. Internal: voice_processing_specifications/004_voicegate_ui_navigation.txt (screens
-most likely to be illustrated by screenshots).
+1.16.1. Internal: alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt §1.9.1
+(no trading logic in dashboard/).
+1.16.2. Internal: alcapa_trading_agents_concept/high_level_concept.md (brand color origin).
+1.16.3. Internal: coding_stds/CodingStandardsRef/coding_stds/visualization/aesthetic_standards.txt.
+1.16.4. External: Plotly Python documentation (plotly.com/python/).
+1.16.5. External: Dash documentation (dash.plotly.com); WCAG 2.1 AA contrast guidelines.
 
 1.17. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Expanded pre-existing screenshot-standards baseline (preserved verbatim in Section 1.6) into a full visualization development standards document: format, captioning/reference, and aesthetic-compliance rules. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 022_game_visualization_dev_standards.txt; swapped illustrated-instance examples for Test Bench/Call Review/Risk Report screens, retargeted citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via git mv from 022_game_visualization_dev_standards.txt; swapped illustrated-instance examples for Test Bench/Call Review/Risk Report screens, retargeted citations to alpaca_paper_trading_specifications_x_quant_x/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P2-16: replaced X Quant X call-review charts with X Quant X 7-chart dashboard (equity curve, drawdown, regime probability, correlation heatmap, signal score series, portfolio treemap, risk-gate log). Added color palette tokens (§1.7) with #FFACE9 as alert-only, accessibility rules (§1.8), export formats (§1.9), and 6-panel dashboard layout (§1.10). | Major |

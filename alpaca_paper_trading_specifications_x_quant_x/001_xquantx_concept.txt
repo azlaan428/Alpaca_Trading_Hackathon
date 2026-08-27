@@ -1,11 +1,11 @@
-1. VoiceGate Concept (Table of Contents)
+X Quant X Platform Concept (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
 1.6. Brand Identity
-1.6.1. Company
+1.6.1. Company/Team
 1.6.2. Genre
 1.6.3. Title
 1.6.4. Tagline
@@ -24,198 +24,170 @@
 
 1.1. Abstract
 This document defines the canonical concept, brand identity, and minimum-viable-product
-(MVP) scope for X Paradox X, the first title published under the X Dark X company banner in
-the Dark Strategy (DS) genre. It supersedes, with explicit reconciliation, the earlier
-ideation captured in chatGPT_records/chat_record_30072026.md, which used the working genre
-label "eXtended Strategy Game (XSG)" and working title "X Paradox." This document is the
-single source of truth for what the game is; all other files in game_specifications/ must
-cite this document rather than restate or reinterpret its content.
+(MVP) scope for X Quant X, a multi-agent, cross-market quantitative intelligence
+paper-trading platform. It is the single source of truth for what the platform is; all
+other files in alpaca_paper_trading_specifications_x_quant_x/ must cite this document
+rather than restate or reinterpret its content.
 
 1.2. Key Words
-VoiceGate, voice agent, compliance testing, red-team, EU AI Act Article 50, California
-SB 243, persona simulation, scenario gauntlet, transcript, verdict, Test Bench, Call Review,
-Risk Report, LabLab AI Factory, Natively AI, hackathon, guardrails, prompt injection.
+X Quant X, quantitative finance, paper trading, multi-agent, Alpaca API, market regime,
+operator model, four-domain, Earth-Air-Fire-Water, dashboard, P&L, LabLab, Python, Go,
+C++, Rust.
 
 1.3. Executive Summary
-VoiceGate is an automated compliance and safety test bench for production voice AI agents.
-It calls the agent under test with simulated callers that vary by age, emotional state, and
-adversarial style, drives them through a scenario gauntlet, transcribes both sides of every
-call, and scores each call against two grounded references: the statutes that apply to the
-deploying company (e.g. EU AI Act Article 50, California SB 243), and that company's own
-published refund/cancellation terms. Every finding returns Pass, Fail, or Flag with the
-specific rule or clause behind the verdict; a Fail produces a suggested system-prompt patch
-that is re-run through the same gauntlet to prove the fix. This repository (X_Voice_X, a
-py.typed Python package) was forked from the sibling DarkStrategy_XParadoxX project on
-team-lead guidance (voice_transcription_concept/voice_chat_concept.md) specifically because
-its documentation-first methodology — concept, then rules, then coding/testing standards,
-then CICD/deployment/monitoring — transfers with only content-level changes, not
-structural ones. The concept intentionally narrows initial scope to one working gauntlet run
-end-to-end (Test Bench -> Call Review -> Risk Report) rather than broad but shallow coverage.
+X Quant X is an automated quantitative paper-trading intelligence platform. It ingests live
+and historical market data, infers market regimes using Bayesian and Kalman-filter state
+estimation, aggregates signals from independent operator agents, gates them through a risk
+rule-set, and places paper-trade orders via the Alpaca API. The system is partitioned into
+four orthogonal views of one market: Earth (Portfolio & Income), Air (Hedging & Risk),
+Fire (Volatility & Options), Water (Macro & Cross-Market). The platform is built in Python
+(primary), Go, C++, and Rust. The MVP delivers: Paper trading via Alpaca paper API,
+real-time P&L dashboard, risk-gate audit trail, regime probability display, and signal
+attribution. The platform was developed as part of the LabLab hackathon on quantitative
+AI-driven trading.
 
 1.4. Key Findings
-1.4.1. This document supersedes 001_game_concept.txt (X Paradox X brand/MVP canon); the prior
-file's content is preserved in this repository's git history (commit 14726ca, "first
-commit") rather than duplicated in-body, per the explicit user directive of 2026-08-03 to
-update titles/contents to match the new VoiceGate requirements while keeping the rewrite
-token-efficient.
-1.4.2. No company/publisher brand name has been confirmed for VoiceGate in the source
-conversation; unlike the prior project's confirmed "X Dark X", this is an OPEN ITEM (see
-Section 1.9) and must not be invented. "VoiceGate" is used as the working product name only.
-1.4.3. Three regulatory drivers are explicitly cited in the source chat and must be treated
-as external citations requiring independent verification before being asserted in
-customer-facing material: EU AI Act Article 50 (transparency obligations), California SB 243
-($1,000 per violation, private right of action), and the Air Canada tribunal precedent
-(a chatbot's invented refund policy was held enforceable against the company). See Section
-1.11.
-1.4.4. The product synthesizes four capabilities rather than cloning any single existing
-tool: adversarial persona simulation, live call orchestration, dual-channel transcription,
-and dual-referent (statute + company-T&C) compliance scoring.
-1.4.5. This repository is the real Python backend target, not a disposable planning
-artifact; every subsequent engineering document (005-009, 011-015, 019, 023, 024, renumbered
-per voice_processing_specifications/000_index.txt) governs code that will actually ship.
-1.4.6. An explicit, unresolved open question from the source chat — whether a training/
-analysis dataset already exists, or whether the team must assume a transcript and
-reverse-engineer the voice-transcription pipeline — is recorded as an open risk in Section
-1.12 and in 030_inhouse_scenario_dataset_creation.txt, not silently resolved by invention.
+1.4.1. This document supersedes the prior X Quant X-domain concept content
+(voice_transcription_concept); the prior file's content is preserved in this repository's
+git history rather than duplicated in-body, per 0000_documentation_standards.txt's binding
+instruction.
+1.4.2. The brand name X Quant X is confirmed. The platform company/team banner is
+unconfirmed at this time; X Quant X is used as the working product name.
+1.4.3. The platform's primary API dependency is the Alpaca paper-trading API (alpaca-py
+SDK, tools/alpaca/alpaca-py submodule). No Natively AI or X Quant X dependencies are
+required.
+1.4.4. The MVP delivers Paper trading mode and optionally Backtest mode; Live trading is
+explicitly out of scope.
+1.4.5. This platform is an independent LabLab quantitative trading project; the LabLab
+submission requires: use of Alpaca API tools, a functional dashboard (P&L, API calls,
+decisions, margins, risk metrics), and a working paper-trading session.
+1.4.6. Agents are software objects (typed Python/Go/C++/Rust classes implementing Operator
+interfaces) — not Markdown files and not AI personas.
 
 1.5. Philosophical Preamble
-A concept document is the deed to a territory not yet built. Before a single line of Python
-is written, before Natively AI generates a single component, the team must be able to answer,
-without hesitation: what is this, who is it for, and what will we deliberately not build
-first. VoiceGate's own subject matter — testing whether an AI agent tells the truth to a
-caller in crisis — demands that its own specification corpus hold itself to the same
-standard: no unverified claim asserted as fact, no speaker's words trusted as instructions,
-no guardrail skipped because the deadline is a week away. Rigor here is not bureaucracy; it
-is the same discipline the product exists to enforce on other people's voice agents.
+Documentation is a contract between agent and system: precision of structure mirrors
+precision of thought. X Quant X extends that claim from documentation into the product
+itself. A platform whose purpose is quantitative market intelligence forfeits its own
+credibility the moment it accepts untested model outputs as ground truth, or asserts an
+unverified return estimate as settled performance. Epistemic humility, risk discipline, and
+evidence-traceability are therefore not bureaucratic overhead layered onto the platform;
+they are the platform's core value proposition.
 
-1.6. Product Identity
+1.6. Brand Identity
 
-1.6.1. Company
-Not yet confirmed. Recorded as an open item; see Section 1.9. No fictitious brand name is
-substituted for it in this document.
+1.6.1. Company/Team
+Unconfirmed. X Quant X is the working product name. Update when team identity is confirmed.
 
-1.6.2. Category
-"Voice Compliance QA (VCQ)" is a PROPOSED, descriptive working category for this class of
-product (automated red-teaming and regulatory/policy scoring of voice AI agents) — analogous
-in role to the prior project's confirmed "Dark Strategy (DS)" genre, but not itself a
-confirmed brand term. It may be renamed once the team ratifies a category name.
+1.6.2. Genre
+Quantitative Finance / Algorithmic Paper Trading / Market Intelligence Platform.
 
 1.6.3. Title
-VoiceGate is the working product name used throughout this specification corpus.
+X Quant X — the canonical name used in all documentation, code namespaces (xquantx), and
+external submissions. The lowercase equivalent xquantx is the Python package root, Go
+module prefix, C++ top namespace, and Rust crate prefix.
 
 1.6.4. Tagline
-Not yet supplied in the source conversation; recorded as TBD rather than invented. See
-Section 1.9.
+"Predict less blindly. Measure more completely. Control risk before capital."
 
 1.7. Elevator Pitch
-VoiceGate calls your voice agent with simulated callers who vary by age, emotional state, and
-adversarial style, transcribes every call, and scores it against the laws that apply to you
-and the policies you actually published — returning a Pass/Fail/Flag verdict with the exact
-rule behind it, and a suggested fix you can re-test on the spot.
+X Quant X is a quantitative paper-trading platform that continuously determines the state
+of financial markets, estimates uncertainty and risk, and dynamically proposes portfolio
+allocation and trading decisions. Rather than relying on a single predictive model, it
+composes typed Operators — DataOperator, MarketRegimeOperator, SignalOperator, RiskOperator,
+PortfolioOperator, ExecutionOperator — into a DAG that processes market data into
+paper-trade orders via the Alpaca API. The platform's central question: "Given all
+information available at time t, what market regime is most probable, what risks dominate,
+and what portfolio action provides the best risk-adjusted response?"
 
-1.8. Reuse and Reconciliation with the Sibling Project
-The table below records how this document's canon derives from, and diverges from, the
-sibling DarkStrategy_XParadoxX corpus, per the mandatory Reconciliation Table requirement of
-voice_processing_specifications/0000_documentation_standards.txt Sections 1.6.3.2 and
-1.6.5.3.
+1.8. Reconciliation with Prior Ideation
+Prior ideation (X Quant X/X Paradox X): this repository was previously used for a
+voice-agent compliance testing platform (X Quant X) and before that for a dark-strategy
+game (X Paradox X). Both prior projects are preserved in git history. The current X Quant X
+platform reuses the structural documentation discipline (numbered TOC, changelog tables,
+mathematical rigor) from those predecessors but replaces all domain content.
 
-| Topic | Sibling Project (X Paradox X) | VoiceGate (this document) | Justification |
-|-------|-------------------------------|----------------------------|----------------|
-| Company name | X Dark X (confirmed) | Not yet confirmed (open item) | Source chat never named a VoiceGate company/publisher; must not be invented |
-| Category/genre | Dark Strategy (DS), confirmed | Voice Compliance QA (VCQ), PROPOSED only | No equivalent confirmation exists yet for VoiceGate |
-| Title | X Paradox X | VoiceGate | Team-lead's own product name in the source pitch |
-| Documentation method | Concept -> rules -> coding/testing standards -> CICD -> deployment -> monitoring/feedback | Identical structure retained | Explicitly instructed: "look at how I did the X Paradox X game...I established what the game is about first. Then the rules, the coding standards, the testing standards, CICD, deployment, monitoring, feedback cycles." |
-| Repository origin | Original | Forked from DarkStrategy_XParadoxX, ~90% of standards reused per source chat | Explicit instruction: "just fork that over, rename it on your end...about 90% probably, of all the standards are already there" |
-| Core loop | Board/turn/combat/economy | Scenario gauntlet / call lifecycle / transcription / compliance scoring | See voice_processing_specifications/017_voicegate_scoring_rules.txt for the full repurposing map |
-| Guardrail emphasis | Balance and fairness of game mechanics | Prompt-injection and model-poisoning defense; actor/speaker-role confusion resistance | Explicit instruction: "you will need a lot of guardrails though...AI models can confuse which actor is which" |
+1.9. MVP Scope Boundaries
 
-1.9. Open Items Requiring Stakeholder Confirmation
-1.9.1. Company/publisher brand name for VoiceGate (Section 1.6.1).
-1.9.2. Official tagline (Section 1.6.4).
-1.9.3. Whether an existing labeled dataset is available for transcript/violation-detection
-training and evaluation, or whether the team must build the transcription pipeline from
-first principles (see 030_inhouse_scenario_dataset_creation.txt Section 1.9 for the detailed
-open-question record).
-1.9.4. Exact target hackathon submission (assumed, not confirmed, to be the same LabLab AI
-Factory / Natively AI window as the sibling project, 2026-08-03 to 2026-08-10, since both the
-source chat's cross-references to Natively AI and the current session date align with that
-window).
+1.9.1. In Scope (MVP)
+1.9.1.1. Paper trading via Alpaca paper API (alpaca-py SDK).
+1.9.1.2. Real-time market data ingestion (Alpaca WebSocket).
+1.9.1.3. Market regime inference (HMM + Bayesian + Kalman filter).
+1.9.1.4. Signal operators: Momentum, MeanReversion, MacroTrend, Volatility.
+1.9.1.5. Risk gate: 10 rules (CONC-001 through EXEC-001 per 028_xquantx_risk_ruleset.txt).
+1.9.1.6. Portfolio operator: Mean-variance (R01/R11), Risk-parity (R03/R05),
+Minimum-variance (R04/R07).
+1.9.1.7. Dashboard: equity curve, drawdown, regime probability, positions, P&L, margins,
+API call log, decisions log.
+1.9.1.8. Backtest mode (historical OHLCV replay, optional).
+1.9.1.9. Audit log (NDJSON, SHA-256 hash chain).
+[1.9.1.10. Options can and MUST BE used in paper trading, not live execution as noted in 1.9.2. section]
+1.9.2. Explicitly Out of Scope (MVP)
+1.9.2.1. Live trading (real money).
+1.9.2.2. Options execution.
+1.9.2.3. Multi-broker support (Alpaca only).
+1.9.2.4. Reinforcement-learning-based regime engine.
+1.9.2.5. Real-time streaming LLM news pipeline (offline batch news scoring only).
+1.9.2.6. Mobile dashboard (web/terminal only).
+1.9.2.7. C# implementation (reference SDK only; not a primary language).
 
-1.10. MVP Scope Boundaries
+1.10. Summary Table
+| Attribute | Value |
+|-----------|-------|
+| Platform name | X Quant X |
+| Code namespace | xquantx |
+| Primary API | Alpaca Paper Trading (alpaca-py) |
+| Primary language | Python 3.14.4 |
+| Additional languages | Go, C++, Rust |
+| MVP mode | Paper trading (Backtest optional) |
+| Dashboard requirement | P&L, positions, margins, API calls, decisions, regime, risk |
+| Hackathon | LabLab (independent project) |
+| Live trading | Out of scope |
 
-1.10.1. In Scope
-1.10.1.1. One end-to-end scenario-gauntlet run: launch from Test Bench, live transcript,
-Call Review with inline verdicts, Risk Report with at least one before/after re-run.
-1.10.1.2. A minimum viable persona/scenario catalog covering at least one entry each from the
-Crisis/Emotional, Minor/Age-Sensitive, Adversarial-Refund, and Standard/Happy-Path categories
-(see 025_scenario_persona_catalog.txt).
-1.10.1.3. A minimum viable statutory ruleset corpus (EU AI Act Art. 50, CA SB 243, plus one
-scraped example company terms page) with structured rule citations, not full statute text
-(see 028_statutory_ruleset_integration.txt).
-1.10.1.4. Dual-channel (caller/agent) transcription with role labels resistant to in-text
-role-confusion and injected instructions.
-1.10.1.5. Pass/Fail/Flag verdict scoring with a suggested-patch adviser (advisory-only, never
-auto-applying a patch without human review).
-
-1.10.2. Explicitly Out of Scope (MVP)
-1.10.2.1. User accounts, authentication, billing, or multi-tenant isolation.
-1.10.2.2. Live production call interception (MVP tests against a sandbox/staging instance of
-the target voice agent only).
-1.10.2.3. Full legal-advice generation; verdicts cite rule IDs and clause text, they do not
-render legal opinions.
-1.10.2.4. Automatic, unsupervised deployment of a suggested system-prompt patch to the
-customer's live agent.
-1.10.2.5. Items deferred to 018_voicegate_future_wishlist.txt are, by definition, out of MVP
-scope.
-
-1.11. Regulatory and Precedent Citations (External, Verification-Flagged)
-1.11.1. EU AI Act, Article 50 (transparency obligations for certain AI systems) — cited in
-source chat as having "went live August 2"; year not stated in the source conversation and
-must be independently verified before external publication (citation-needed per
-0000_documentation_standards.txt Section 1.6.4.1).
-1.11.2. California SB 243 — cited in source chat as carrying a $1,000-per-violation penalty
-with a private right of action; statute text and current status must be independently
-verified before external publication.
-1.11.3. Air Canada tribunal precedent — cited in source chat as an instance where the company
-was made to honor a refund policy its chatbot had invented; case name/citation must be
-independently verified before external publication.
+1.11. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|----------------|---------------|--------|
+| 001_voice_transcription_concept.txt | X Quant X — voice-agent compliance test bench | X Quant X — quantitative paper-trading platform | Superseded |
+| 001_game_concept.txt | X Paradox X — dark strategy game | X Quant X — quantitative finance platform | Superseded |
+| INVESTIGATE §9.1 (brand name) | Brand name unresolved | X Quant X confirmed | Resolved |
+| INVESTIGATE §9.2 (MVP mode) | Paper only or Paper+Backtest? | Paper (Backtest optional) | Resolved |
+| INVESTIGATE §9.5 (hackathon context) | Natively AI vs independent? | Independent LabLab project using Alpaca tools | Resolved |
 
 1.12. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Regulatory citations (1.11) asserted publicly before legal verification | Medium | High | Treat as citation-needed; route through legal/stakeholder review before customer-facing use |
-| No dataset exists for transcript/violation-detection training (1.9.3) | Medium | High | 030_inhouse_scenario_dataset_creation.txt defines a reverse-engineering fallback pipeline |
-| Judge/scoring model confuses caller vs. agent speaker roles, or is steered by injected in-transcript instructions | Medium | High | Transcript content is treated strictly as untrusted data, never instructions, in judge prompts; see 017_voicegate_scoring_rules.txt |
-| Scope creep beyond the MVP boundary (Section 1.10) | High | High | Every feature request checked against 1.10.1/1.10.2 before implementation; deferred items routed to 018 |
+|------|-----------|--------|------------|
+| Paper trading UI confused with live trading capability | Medium | High | Dashboard clearly labels all sessions as "PAPER MODE" in header; no live-trading UI elements |
+| Scope creep adding live trading in MVP sprint | High | High | §1.9.2 explicitly lists live trading as out of scope; PLAN.md execution protocol gates feature additions |
+| Dashboard not meeting LabLab submission requirements | Medium | High | §1.9.1 dashboard checklist matches LabLab requirements; verified against api_references/ |
 
 1.13. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain product identity (1.6) and resolve open items (1.9) | C | R | A | A/Stakeholder (TAQI's team) |
-| Approve MVP scope changes (1.10) | C | R | A | A/Stakeholder |
-| Verify external regulatory/precedent citations (1.11) | C | R (legal/stakeholder) | A | I |
+|----------|---------------|----------|-----------|------------|
+| Maintain platform concept | R | C | A | I |
+| Define MVP scope boundaries | C | R/A | A | I |
+| LabLab submission compliance | R | C | A | I |
 
 1.14. Conclusion
-VoiceGate is scoped as a documentation-first, guardrail-first compliance test bench for voice
-AI agents, deliberately reusing the sibling project's proven specification structure while
-replacing its content wholesale and flagging, rather than inventing, every fact the source
-conversation left unconfirmed. Every subsequent specification document must treat Sections
-1.6 through 1.10 of this file as binding and must not silently assert a brand name, tagline,
-or scope boundary this document has marked open.
+X Quant X is a quantitative paper-trading platform delivering a complete, auditable,
+multi-agent pipeline from market data ingestion through risk-gated order execution to P&L
+attribution. The MVP scope is intentionally bounded to paper trading to allow focused
+development of the core quantitative intelligence pipeline before extending to live
+execution.
 
 1.15. References and Citations
-1.15.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
-1.15.2. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation
-conversation, VoiceGate pitch and team-lead guidance), cited throughout Sections 1.3-1.9.
-1.15.3. Internal: this repository's git history, commit 14726ca ("first commit"), preserving
-the superseded 001_game_concept.txt content per Section 1.4.1.
-1.15.4. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt
-(authoritative mechanics/scoring detail, once written).
-1.15.5. External (verification-flagged, not yet independently confirmed): EU AI Act Article
-50; California SB 243; Air Canada voice/chat-agent tribunal precedent. See Section 1.11.
+1.15.1. Internal: alpaca_paper_trading_specifications_x_quant_x/0000_documentation_standards.txt
+(structural rules).
+1.15.2. Internal: alpaca_trading_agents_concept/high_level_concept.md (architecture source).
+1.15.3. Internal: CHATS/2026-08-26_alpaca-spec-rewrite-INVESTIGATE.md §9 (open item
+resolutions).
+1.15.4. Internal: CHATS/2026-08-26_alpaca-spec-rewrite-PLAN.md (rewrite task plan).
+1.15.5. Internal: api_references/api_refs_paper_trading.md (Alpaca API reference).
+1.15.6. Internal: tools/alpaca/TOOLING_SETUP.md (SDK submodule map).
+1.15.7. External: Alpaca Markets paper trading documentation (alpaca.markets/docs).
+1.15.8. External: LabLab AI Factory (lablab.ai).
 
 1.16. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation as 001_game_concept.txt: X Paradox X brand identity, elevator pitch, MVP scope. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per user directive: full content rewrite, product identity, open-items register, regulatory citation log, MVP scope, reconciliation against the sibling project. Prior content preserved in git history, not duplicated in-body. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per user directive: full content rewrite, product identity, open-items register, regulatory citation log, MVP scope, reconciliation against the sibling project. Prior content preserved in git history, not duplicated in-body. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-01: replaced X Quant X/X Paradox X concept with X Quant X quantitative paper-trading platform concept. Brand name X Quant X confirmed; tagline set. MVP scope: Paper trading (Backtest optional), LabLab submission. Open items from INVESTIGATE §9.1, 9.2, 9.5 resolved and documented in Reconciliation Table. | Major |

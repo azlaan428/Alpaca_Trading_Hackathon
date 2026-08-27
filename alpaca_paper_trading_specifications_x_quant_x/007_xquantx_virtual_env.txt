@@ -1,4 +1,4 @@
-1. VoiceGate Virtual Environment (Table of Contents)
+X Quant X Build Environments (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
@@ -16,114 +16,136 @@
 1.15. Changelog Table
 
 1.1. Abstract
-This document defines the Python virtual environment and dependency-management policy for
-the VoiceGate backend, satisfying the standalone virtual-environment requirement implied by
-this file's name and by voice_processing_specifications/005_voicegate_coding_standards.txt
-Section 1.9.6.
+This document defines the build environments and dependency management policies for all four
+language layers of X Quant X: Python (virtual environment), Go (modules), C++ (CMake +
+Conan), and Rust (Cargo workspace). Each language layer is independently buildable and
+reproducible from its declared dependency manifest.
 
 1.2. Key Words
-virtual environment, venv, dependency management, requirements, lock file, reproducibility,
-Python version pinning.
+virtual environment, venv, Python 3.14.4, Go modules, go.mod, CMake, Conan, Cargo,
+Cargo.toml, dependency management, lock file, reproducibility, build isolation,
+multi-language.
 
 1.3. Executive Summary
-Every contributor and CI job must run the VoiceGate backend inside an isolated Python virtual
-environment, with dependencies declared in a single pinned requirements source and never
-installed globally. Per user preference recorded in this agent's persistent memory, Python
-3.14.4 x64 is the standard interpreter for any virtual environment created for this
-repository unless a future revision states otherwise.
+Every contributor and CI job must build each language layer inside its own isolated build
+environment. Python uses `python -m venv .venv-xquantx` with pinned requirements. Go uses
+`go.mod` and `go.sum` for module pinning. C++ uses CMake with Conan for dependency
+management. Rust uses a workspace `Cargo.toml` with `Cargo.lock`. No cross-language
+dependency installation bleeds into another language's environment.
 
 1.4. Key Findings
-1.4.1. The standard tool is the built-in `venv` module (`python -m venv .venv-x-voice-x-voice-gate`); no
-alternative environment manager is mandated, but any alternative (e.g. `virtualenv`) must
-still produce a reproducible, isolated environment.
-1.4.2. Python 3.14.4 x64 is the pinned interpreter version for this repository's virtual
-environments.
-1.4.3. Dependencies are declared in `requirements.txt` (runtime) and
-`requirements-dev.txt` (testing/linting/tooling), both pinned to exact versions for
+1.4.1. Python 3.14.4 x64 is the pinned interpreter for the Python layer; the standard tool
+is `python -m venv .venv-xquantx`.
+1.4.2. Go toolchain version is pinned in the `go` directive of `go.mod`; all Go dependencies
+are committed in `go.sum`.
+1.4.3. C++ build uses CMake >= 3.25 with Conan 2.x for Eigen and other C++ dependencies;
+`conanfile.py` is the canonical dependency declaration.
+1.4.4. Rust uses a workspace `Cargo.toml` at `src/rust/`; `Cargo.lock` is committed for
 reproducibility.
-1.4.4. A known packaging risk exists: `lxml` has no prebuilt wheel for Python 3.14 on
-Windows at this time and fails to build from source (missing `libxml/xmlversion.h`); any
-HTML-parsing dependency needed by the transcription or company-terms-snapshot ingestion
-paths should prefer BeautifulSoup with the built-in `html.parser` over `lxml` on this
-platform/version combination.
-1.4.5. The virtual environment directory (`.venv-x-voice-x-voice-gate/`) is never committed to version control;
-only the requirements files are.
+1.4.5. Known packaging risk (Python): `lxml` has no prebuilt wheel for Python 3.14 on
+Windows; use BeautifulSoup with `html.parser` for any HTML-parsing need.
+1.4.6. The Python virtual environment directory (`.venv-xquantx/`) is never committed to
+version control; only the requirements files are.
+1.4.7. Secrets (Alpaca API key, secret key) are never stored in any environment file or
+requirements file; they are loaded from environment variables (ALPACA_API_KEY,
+ALPACA_SECRET_KEY) at runtime.
 
 1.5. Philosophical Preamble
-A virtual environment is the smallest unit of reproducibility a project can guarantee: if two
-contributors cannot produce byte-identical dependency behavior, no downstream claim about a
-seeded, reproducible compliance-gauntlet run can be trusted either. Isolating dependencies is
-not bureaucratic overhead; it is the precondition for `rng_service`'s own determinism claim
-and, by extension, for any Risk Report's before/after re-run diff being meaningful.
+A reproducible build environment is the smallest unit of correctness a multi-language
+quantitative platform can guarantee. If two contributors cannot produce byte-identical
+dependency behavior in each language layer, no downstream claim about reproducible backtest
+results or deterministic regime inference can be trusted. Isolating each language's build
+environment is not bureaucratic overhead; it is the precondition for the Kalman filter kernel
+producing the same result on two different machines.
 
 1.6. Environment Policy
-1.6.1. Every contributor creates a local virtual environment before installing any
-dependency: `python -m venv .venv-x-voice-x-voice-gate` followed by environment activation.
-1.6.2. CI jobs create a fresh virtual environment on every run; they never reuse a cached
-environment across dependency-version changes without re-resolving.
-1.6.3. The pinned interpreter is Python 3.14.4 x64. Contributors on other platforms must
-still target this version where feasible; deviations must be logged per
-0000_documentation_standards.txt Section 1.6.5.3.
+1.6.1. Python: `python -m venv .venv-xquantx` followed by activation. CI creates a fresh
+venv on every run.
+1.6.2. Go: `go mod download` after cloning. No global GOPATH dependencies; `go.sum` is the
+lock file.
+1.6.3. C++: `conan install . --build=missing` then
+`cmake -B build -S . -DCMAKE_BUILD_TYPE=Release`. Dependencies defined in `conanfile.py`.
+No system-level Eigen or other headers used directly.
+1.6.4. Rust: `cargo build` at the workspace root (`src/rust/`). `Cargo.lock` is committed.
+No system Rust toolchain requirement beyond the version pinned in `rust-toolchain.toml`.
+1.6.5. Secrets management: all API keys and secrets are loaded from environment variables
+only, never from files committed to version control. A `.env.example` file documents
+required environment variables without values.
 
 1.7. Dependency Management
-1.7.1. `requirements.txt` lists exact, pinned runtime dependencies only.
-1.7.2. `requirements-dev.txt` lists exact, pinned development/test/lint dependencies
-(pytest, coverage, mypy/type-checker, linters) in addition to the runtime set.
-1.7.3. No dependency is installed outside of the virtual environment; no dependency is
-installed without being added to the appropriate requirements file in the same change.
-1.7.4. Known incompatibility: `lxml` lacks a Windows/Python-3.14 prebuilt wheel and fails to
-build from source; prefer BeautifulSoup with `html.parser` for any HTML-parsing need in this
-repository (e.g. parsing scraped company terms-and-conditions pages for
-`company_terms_snapshots`).
+1.7.1. Python: `requirements.txt` (pinned runtime) and `requirements-dev.txt` (pinned
+dev/test/lint). Key runtime dependencies: `alpaca-py`, `numpy`, `scipy`, `pandas`,
+`plotly`, `dash`, `hmmlearn`, `scikit-learn`, `pyarrow`. Key dev dependencies: `pytest`,
+`pytest-cov`, `mypy`, `ruff`.
+1.7.2. Go: `go.mod` declares minimum Go version and direct dependencies; `go.sum` pins all
+transitive dependencies. Key dependency: `github.com/alpacahq/alpaca-trade-api-go`.
+1.7.3. C++: `conanfile.py` declares all C++ dependencies with pinned versions. Key
+dependency: `Eigen3`. `CMakeLists.txt` links to Conan-provided targets.
+1.7.4. Rust: `Cargo.toml` (workspace root) declares workspace members and shared
+dependencies with pinned versions. Key dependencies: `arrow2`, `parquet2`, `tokio`,
+`serde`, `serde_json`. `Cargo.lock` pins all transitive dependencies.
+1.7.5. No dependency is installed without being added to the appropriate manifest in the
+same change.
 
 1.8. Reproducibility Requirements
-1.8.1. A fresh clone, given only `requirements.txt`/`requirements-dev.txt` and the pinned
-Python version, must be able to reproduce an identical dependency set.
-1.8.2. Dependency upgrades are deliberate, reviewed changes, not incidental side effects of
-an unrelated feature branch.
+1.8.1. A fresh clone, given only the four dependency manifests and the pinned toolchain
+versions, must produce an identical build on any supported platform.
+1.8.2. Dependency upgrades are deliberate, reviewed changes, not side effects of unrelated
+feature branches.
+1.8.3. CI validation: each language layer is built from scratch (no cache reuse for
+dependency installation) in the CI pipeline on every merge.
 
 1.9. Summary Table
-| Aspect | Rule |
-|--------|------|
-| Tool | Built-in `venv` (`python -m venv .venv-x-voice-x-voice-gate`) |
-| Interpreter | Python 3.14.4 x64 |
-| Runtime deps | `requirements.txt`, pinned |
-| Dev/test deps | `requirements-dev.txt`, pinned |
-| Committed to VCS | Requirements files only, never `.venv-x-voice-x-voice-gate/` |
-| Known risk | `lxml` unsupported on Win/Py3.14; prefer BeautifulSoup + `html.parser` |
+| Language      | Tool              | Environment dir / Lock file               | Key dependencies                          |
+|---------------|-------------------|-------------------------------------------|-------------------------------------------|
+| Python 3.14.4 | `python -m venv`  | `.venv-xquantx/` / `requirements.txt`    | alpaca-py, numpy, scipy, plotly, hmmlearn |
+| Go            | `go mod`          | `go.sum`                                  | alpaca-trade-api-go                       |
+| C++           | CMake + Conan 2.x | `conanfile.py` + `build/`                | Eigen3                                    |
+| Rust          | Cargo workspace   | `Cargo.lock`                              | arrow2, tokio, serde                      |
 
 1.10. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| (New) | File was empty | Full virtual-environment and dependency policy established | Added |
+|--------|----------------|---------------|--------|
+| xquantx 007 §1.6 (Python-only venv .venv-x-voice-x-voice-gate) | Single Python venv | Extended to four language environments; Python venv renamed to .venv-xquantx | Reconciled |
+| alcapa_trading_agents_concept/prompt_patterns.md META-PROMPT 24 | Build systems | Formalized into §1.6-§1.7 | Reconciled |
 
 1.11. Risk and Mitigation Table
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Dependency drift between contributors' local environments | Medium | Medium | Pinned requirements files, reproducibility rule (1.8.1) |
-| `lxml` build failure blocking a contributor on Windows/Python 3.14 | Medium | Low | 1.7.4 documented substitute (BeautifulSoup + html.parser) |
-| CI using a stale cached environment after a dependency bump | Low | Medium | 1.6.2 mandates fresh environment creation per CI run |
+| Risk                                                           | Likelihood | Impact   | Mitigation                                                                                |
+|----------------------------------------------------------------|------------|----------|-------------------------------------------------------------------------------------------|
+| Python `lxml` fails on Windows/Python 3.14                    | High       | Medium   | §1.4.5 rule: use BeautifulSoup + html.parser instead                                      |
+| Go dependency version drift (no go.sum committed)             | Low        | High     | go.sum is always committed; CI runs `go mod verify`                                       |
+| C++ Conan center package unavailable                          | Low        | High     | Conan center + fallback local cache; pin exact version in conanfile.py                    |
+| API keys accidentally committed in requirements or .env       | Medium     | Critical | §1.6.5 secrets policy; CI pre-commit hook scans for key patterns                          |
+| Rust nightly toolchain breaking stable builds                 | Low        | Medium   | rust-toolchain.toml pins stable channel + specific version                                |
 
 1.12. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain requirements files | R | C | A | I |
-| Approve dependency additions/upgrades | C | R | A | I |
+| Activity                                        | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|-------------------------------------------------|----------------|----------|------------|-------------|
+| Maintain dependency manifests                   | R              | C        | A          | I           |
+| Enforce reproducibility in CI                   | C              | R/A      | A          | I           |
+| Secrets rotation and .env.example maintenance   | R              | C        | A          | I           |
 
 1.13. Conclusion
-Every contributor and CI job runs the VoiceGate backend inside a pinned, reproducible Python
-3.14.4 x64 virtual environment with explicitly declared dependencies, closing the
-reproducibility gap this file previously left open.
+The four-language build environment policy ensures that every contributor and CI job produces
+identical builds from the same dependency manifests. Per-language isolation prevents
+cross-contamination and enables independent upgrades of each language layer.
 
 1.14. References and Citations
-1.14.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
-1.14.2. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt §1.9.6.
-1.14.3. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-(product concept referencing company-terms scraping/ingestion).
-1.14.4. External: Python `venv` module documentation (Python Software Foundation).
+1.14.1. Internal: alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt
+§1.9 (language-specific rules).
+1.14.2. Internal: alpaca_paper_trading_specifications_x_quant_x/006_xquantx_scaffolding.txt
+(repository layout).
+1.14.3. Internal: tools/alpaca/TOOLING_SETUP.md (SDK submodule map).
+1.14.4. Internal: alcapa_trading_agents_concept/prompt_patterns.md META-PROMPT 24
+(build systems).
+1.14.5. External: Python venv documentation (docs.python.org).
+1.14.6. External: Go Modules Reference (go.dev/ref/mod).
+1.14.7. External: CMake documentation (cmake.org); Conan 2.x documentation (docs.conan.io).
+1.14.8. External: Cargo reference (doc.rust-lang.org/cargo).
 
 1.15. Changelog Table
-| Version | Date | Author (Agent/Role) | Change Description | Type |
-|---------|------|----------------------|---------------------|------|
-| 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: virtual environment policy, pinned Python 3.14.4 x64, dependency management rules. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 007_game_virtual_env.txt; updated cross-references from game_specifications/ to voice_processing_specifications/ and reframed the `lxml` risk note and reproducibility rationale in terms of VoiceGate's transcription/company-terms-snapshot ingestion and seeded gauntlet re-run use cases. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| Version       | Date       | Author (Agent/Role)   | Change Description                                                                                                                                                                                                                                                                                                                                                    | Type  |
+|---------------|------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
+| 2026.00.00.00 | 2026-07-30 | Documentation Agent   | Initial creation: virtual environment policy, pinned Python 3.14.4 x64, dependency management rules.                                                                                                                                                                                                                                                                 | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent   | Repurposed to xquantx per explicit user directive 2026-08-03: renamed file via `git mv` from 007_game_virtual_env.txt; updated cross-references from game_specifications/ to alpaca_paper_trading_specifications_x_quant_x/ and reframed the `lxml` risk note and reproducibility rationale in terms of xquantx's transcription/company-terms-snapshot ingestion and seeded gauntlet re-run use cases. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent   | Repurposed to X Quant X per PLAN P1-03: replaced Python-only xquantx venv policy with four-language build environment policy (Python/Go/C++/Rust). Added Go modules, CMake+Conan, and Cargo workspace sections. Python venv renamed to .venv-xquantx. Secrets management policy added.                                                                            | Major |

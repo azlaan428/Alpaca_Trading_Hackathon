@@ -1,147 +1,173 @@
-1. VoiceGate Logging Standards (Table of Contents)
+X Quant X Logging Standards (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Original Baseline Directive (Preserved Verbatim)
-1.7. Log File Format and Location
-1.8. Log Levels and Usage
-1.9. Structured Log Entry Contract
-1.10. Guardrail and Debug-Action Log Marking
-1.11. Summary Table
-1.12. Reconciliation Table
-1.13. Risk and Mitigation Table
-1.14. Roles and Responsibilities (RACI)
+1.6. Structured Log Schema
+1.7. Event Types and Required Payload Fields
+1.8. Severity Levels
+1.9. Log Rotation and Retention
+1.10. Audit Trail Hash Chain
+1.11. No-Print Rule
+1.12. Summary Table
+1.13. Reconciliation Table
+1.14. Risk and Mitigation Table
 1.15. Conclusion
 1.16. References and Citations
 1.17. Changelog Table
 
 1.1. Abstract
-This document specifies the logging standards for VoiceGate, carrying forward the original
-".LOG formatting" baseline directive into a structured logging contract used by the Python
-`logging` module (voice_processing_specifications/005_voicegate_coding_standards.txt §1.9)
-and consumed as the source of truth for run statistics
-(voice_processing_specifications/010_voicegate_run_statistics.txt) and verdict auditability.
+This document defines the structured log schema for all X Quant X trading events: order
+submissions, fills, risk-gate decisions, regime transitions, signal emissions, and operator
+errors. It specifies severity levels, log rotation and retention, audit trail requirements,
+and the hash-chain mechanism for tamper detection.
 
 1.2. Key Words
-logging, .LOG format, log level, structured log entry, event log, verdict event, guardrail
-trigger, statistics source, VoiceGate.
+structured logging, NDJSON, event_type, order, fill, risk gate, regime transition, signal,
+operator error, audit trail, hash chain, log rotation, severity levels, AUDIT_LOGS.
 
 1.3. Executive Summary
-VoiceGate writes structured, human-readable `.LOG` files via the Python `logging` module
-exclusively (never `print()`), at standard severity levels, with every gauntlet-run-relevant
-event (call start, persona/scenario draw, transcript turn, compliance-scoring result, verdict,
-guardrail trigger) also captured as a structured entry in the run event log
-(`src/voicegate/event_log`), which doubles as the source of truth for run statistics and for
-the Risk Report's audit trail.
+All X Quant X log entries are emitted as structured NDJSON (newline-delimited JSON) to
+AUDIT_LOGS/. Every entry includes: event_type, timestamp_ns, operator_id, session_id,
+payload, and audit_trail_hash (SHA-256 of the previous entry's content). Never use print()
+— use the structured logger exclusively. Log level ERROR triggers a ValidationOperator
+check. Risk-gate decisions must always log rule_id, verdict, triggering_value, and
+threshold. Log rotation occurs daily; entries are retained for 90 days minimum.
 
 1.4. Key Findings
-1.4.1. `.LOG` files remain the required output format for all logging, per the preserved
-baseline directive in Section 1.6.
-1.4.2. Development runs log at `DEBUG` level and above; production/scheduled gauntlet runs log
-at `INFO` level and above.
-1.4.3. Every state-mutating event in a gauntlet run (persona assignment, scenario draw,
-transcript turn, compliance-scoring evaluation, verdict issuance, patch-adviser suggestion)
-produces exactly one structured event-log entry, consumed by
-voice_processing_specifications/010_voicegate_run_statistics.txt.
-1.4.4. Guardrail triggers (prompt-injection attempt detected in transcript content, judge-model
-actor/role-confusion flag) are logged with an explicit marker distinguishing them from ordinary
-scoring events, per Section 1.10.
-1.4.5. Logging never uses `print()` statements anywhere in the codebase, per
-voice_processing_specifications/005_voicegate_coding_standards.txt §1.9.
+1.4.1. The structured log schema has six mandatory top-level fields: event_type,
+timestamp_ns, operator_id, session_id, payload, and audit_trail_hash.
+1.4.2. Six canonical event types cover all platform activity: ORDER_SUBMITTED,
+FILL_RECEIVED, RISK_GATE_DECISION, REGIME_TRANSITION, SIGNAL_EMITTED, OPERATOR_ERROR.
+1.4.3. The audit_trail_hash is SHA-256 of the previous log entry's full JSON string
+(sorted keys). This enables post-hoc tamper detection by re-computing the hash chain.
+1.4.4. Log level ERROR triggers an immediate ValidationOperator.check() call; if the
+ValidationOperator itself emits an error, the session is halted.
+1.4.5. No print() call may appear in any operator or agent implementation; all logging
+uses the xquantx.utils.logging.StructuredLogger wrapper.
 
 1.5. Philosophical Preamble
-A log is a promise that nothing important happened invisibly. In a compliance test bench this
-promise is load-bearing: a Risk Report's Pass/Fail/Flag verdict is only as trustworthy as the
-event trail behind it. The `.LOG` baseline directive, preserved verbatim below, is expanded
-into a full contract so that logging serves diagnostics for engineers and the auditable
-evidence chain that Call Review and Risk Report both depend on.
+A log is a promise that nothing important happened invisibly. In a quantitative trading
+system this promise is load-bearing: a trading session's fill records, risk-gate verdicts,
+and regime transitions are only as trustworthy as the structured event trail behind them.
+The hash-chain mechanism ensures that no log entry can be silently modified, deleted, or
+inserted after the fact — giving the platform the same auditability guarantees that
+regulators and internal risk desks require.
 
-1.6. Original Baseline Directive (Preserved Verbatim)
-".LOG formatting"
+1.6. Structured Log Schema
+The canonical log entry format (NDJSON):
+{
+  "event_type": "ORDER_SUBMITTED",
+  "timestamp_ns": 1700000000000000000,
+  "operator_id": "AlpacaPaperExecutionOperator-v1.0.0",
+  "session_id": "7f4a2b1c-8e3d-4f5a-b6c7-d8e9f0a1b2c3",
+  "payload": {
+    "order_id": "alpaca-uuid-v4",
+    "symbol": "AAPL",
+    "side": "buy",
+    "type": "market",
+    "qty": 10.0,
+    "mode": "paper"
+  },
+  "audit_trail_hash": "sha256_of_previous_entry_hex_string"
+}
+All fields are mandatory. audit_trail_hash of the first entry in a session is
+SHA-256("SESSION_START:{session_id}").
 
-1.7. Log File Format and Location
-1.7.1. Log output uses the `.LOG` file extension, per the preserved baseline directive.
-1.7.2. Each log line includes, at minimum: ISO 8601 timestamp, log level, module/logger name,
-and message, formatted via the Python `logging` module's standard formatter configuration.
-1.7.3. Log files are written to a dedicated local `logs/` directory, rotated per gauntlet run
-or by size, to avoid unbounded growth during extended test-bench sessions.
+1.7. Event Types and Required Payload Fields
+| event_type | Required payload fields |
+|------------|------------------------|
+| ORDER_SUBMITTED | order_id, symbol, side, type, qty, mode |
+| FILL_RECEIVED | order_id, symbol, fill_price, filled_qty, remaining_qty, mode |
+| RISK_GATE_DECISION | rule_id, verdict, measured_value, threshold, symbol (if applicable), mode |
+| REGIME_TRANSITION | from_regime_id, to_regime_id, confidence, entropy, timestamp_ns |
+| SIGNAL_EMITTED | operator_id, symbol, signal_score, confidence, regime_id |
+| OPERATOR_ERROR | error_type, error_message, stack_trace_hash, inputs_hash |
 
-1.8. Log Levels and Usage
-| Level | Usage |
-|-------|-------|
-| DEBUG | Detailed internal state useful only during development (development runs only) |
-| INFO | Normal run events: call start/end, persona/scenario draw, transcript turns, verdicts |
-| WARNING | Recoverable anomalies (e.g. a transcription gap, a retried API call) |
-| ERROR | Unexpected failures that do not crash the run (e.g. a single scoring-engine exception) |
-| CRITICAL | Failures that prevent the gauntlet run from continuing |
+1.8. Severity Levels
+| Level | Meaning | Action triggered |
+|-------|---------|------------------|
+| DEBUG | Detailed diagnostic (not emitted in Paper mode by default) | None |
+| INFO | Normal trading events (ORDER_SUBMITTED, FILL_RECEIVED, SIGNAL_EMITTED, REGIME_TRANSITION) | None |
+| WARNING | Recoverable anomaly (missing bars, non-ALLOW verdict frequency spike) | Logged; operator continues |
+| ERROR | Operator failure, schema validation failure | ValidationOperator.check() triggered immediately |
+| CRITICAL | Session-halting condition (FLATTEN triggered, execution timeout) | Session gracefully halted |
 
-1.9. Structured Log Entry Contract
-Each run-relevant log entry additionally captures, in a structured (not free-text-only) form:
-call/run identifier, event type (call_started, persona_assigned, scenario_drawn,
-transcript_turn, verdict_issued, patch_suggested; per
-voice_processing_specifications/006_voicegate_scaffolding.txt module list), scenario/persona
-identifiers, and outcome (e.g. `verdict: FLAG, rule_id: EU-AI-ACT-ART50`), enabling
-voice_processing_specifications/010_voicegate_run_statistics.txt to derive statistics directly
-from the log rather than a separate, parallel tracking mechanism. Example verdict-event entry:
-`INFO 2026-08-03T14:02:11Z verdict_engine call_id=run-042 event=verdict_issued
-outcome=FLAG rule_id=CA-SB243 clause=disclosure`.
+1.9. Log Rotation and Retention
+1.9.1. Log files are written to AUDIT_LOGS/{session_id}_{date}_{mode}.ndjson.
+1.9.2. Daily rotation: a new log file is created at midnight UTC. The session_id is
+stable across midnight boundaries.
+1.9.3. Retention: log files are retained for minimum 90 days. After 90 days, log files
+may be archived to compressed storage (gzip) but must not be deleted.
+1.9.4. CI test logs: stored in AUDIT_LOGS/ci/ with the CI run ID as session_id prefix.
 
-1.10. Guardrail and Debug-Action Log Marking
-Every guardrail trigger (prompt-injection attempt in caller/transcript content, judge-model
-actor/role-confusion flag) is logged with an explicit `guardrail_triggered: true` structured
-field, and every debug/dry-run action is logged with `is_debug_action: true`, ensuring neither
-is silently conflated with a genuine scored gauntlet event in statistics or the Risk Report.
+1.10. Audit Trail Hash Chain
+1.10.1. Every log entry contains audit_trail_hash =
+SHA-256(previous_entry_json_sorted_keys_utf8_encoded).hex().
+1.10.2. The hash chain is verified by the post-session audit tool:
+xquantx.utils.audit.verify_session_log(session_id).
+1.10.3. Any hash chain break (hash mismatch or missing entry) is flagged as
+AUDIT_INTEGRITY_FAILURE and logged to AUDIT_LOGS/integrity_failures.log.
+1.10.4. Hash chain verification is a mandatory step in the backtest e2e test
+(013_xquantx_end2end_testing.txt §1.6.3(h)).
 
-1.11. Summary Table
+1.11. No-Print Rule
+1.11.1. No print() call may appear in any file under src/ (all four languages). This is
+enforced by: ruff check (Python, rule T201), golangci-lint (Go, forbid fmt.Println in
+production code), clang-tidy (C++, custom check), clippy (Rust,
+allow(clippy::print_stdout) must not appear in library code).
+1.11.2. The Python structured logger is xquantx.utils.logging.StructuredLogger. It
+wraps the standard `logging` module and emits NDJSON entries to AUDIT_LOGS/.
+1.11.3. Go uses a structured logger that emits JSON to stdout (captured by the session
+orchestrator and written to AUDIT_LOGS/).
+
+1.12. Summary Table
 | Aspect | Rule |
 |--------|------|
-| File format | `.LOG` (preserved baseline) |
-| Output mechanism | Python `logging` module only, never `print()` |
-| Levels | DEBUG, INFO, WARNING, ERROR, CRITICAL |
-| Structured fields | Run/call id, event type, scenario/persona id, verdict + rule id |
-| Guardrail marking | Explicit `guardrail_triggered` field on injection/confusion-flag entries |
-| Debug marking | Explicit `is_debug_action` field on non-scored dry-run entries |
+| Format | NDJSON; one JSON object per line |
+| Location | AUDIT_LOGS/{session_id}_{date}_{mode}.ndjson |
+| Required fields | event_type, timestamp_ns, operator_id, session_id, payload, audit_trail_hash |
+| Event types | 6 canonical types (see §1.7) |
+| Severity levels | DEBUG/INFO/WARNING/ERROR/CRITICAL |
+| Log rotation | Daily at midnight UTC |
+| Retention | 90 days minimum |
+| Hash chain | SHA-256 of previous entry; verified post-session |
+| No-print rule | Enforced by CI lint in all 4 languages |
 
-1.12. Reconciliation Table
+1.13. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Original baseline (this file, pre-existing) | ".LOG formatting" | Preserved verbatim in Section 1.6; elaborated into a VoiceGate logging contract (Sections 1.7-1.10) | Reconciled |
+|--------|----------------|---------------|--------|
+| X Quant X 020 §1.6 (call transcript logging) | Call/transcript/verdict log format | Replaced with structured trading event log (NDJSON, 6 event types, hash chain) | Reconciled |
 
-1.13. Risk and Mitigation Table
+1.14. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Free-text-only logging making statistics/Risk Report derivation unreliable | Medium | High | 1.9 mandates structured fields on every run-relevant entry |
-| Guardrail/debug events polluting genuine verdict statistics | Low | Medium | 1.10 mandates explicit markers, filtered out downstream |
-| Unbounded log file growth during long gauntlet sessions | Low | Low | 1.7.3 mandates rotation by run or size |
-
-1.14. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain logging standards | R | C | A | I |
-| Enforce no-`print()` rule | C | R | A | I |
+|------|-----------|--------|------------|
+| audit_trail_hash not computed for a log entry | Low | High | StructuredLogger always computes hash; unit test asserts hash is present on every emitted entry |
+| Log file written to wrong path (not AUDIT_LOGS/) | Low | High | StructuredLogger path is determined at session start from SessionContext; not configurable per-operator |
+| print() statement slipping into production code | High | Medium | CI lint rule T201 (ruff) fails build on any print() in src/python/; same for other languages |
+| Hash chain broken by out-of-order log entries in async context | Medium | High | StructuredLogger uses a thread-safe sequential queue for hash computation; no concurrent writes to same hash chain |
 
 1.15. Conclusion
-The `.LOG` baseline directive is preserved verbatim and elaborated into a structured logging
-contract that serves both operational diagnostics and the run-statistics/event-log needs of
-the VoiceGate corpus.
+The structured NDJSON logging contract, combined with the SHA-256 audit trail hash chain
+and the mandatory no-print rule, provides X Quant X with a tamper-evident, machine-readable
+event record suitable for real-time diagnostics, post-session analysis, and regulatory
+audit. All operators are required to emit events exclusively through
+xquantx.utils.logging.StructuredLogger.
 
 1.16. References and Citations
-1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14
-(including the binding rule against removing existing baseline text).
-1.16.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (product
-scope, Test Bench/Call Review/Risk Report deliverables).
-1.16.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
-1.16.4. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt §1.9
-(`logging` module, never `print()`).
-1.16.5. Internal: voice_processing_specifications/010_voicegate_run_statistics.txt
-(statistics derived from structured log entries).
-1.16.6. Internal: voice_processing_specifications/028_statutory_ruleset_integration.txt
-(rule-id citation format used in verdict log entries).
+1.16.1. Internal: alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt §1.9.4
+(no print() rule).
+1.16.2. Internal: alpaca_paper_trading_specifications_x_quant_x/013_xquantx_end2end_testing.txt §1.6.3(h)
+(hash chain verification in e2e test).
+1.16.3. Internal: alpaca_paper_trading_specifications_x_quant_x/028_xquantx_risk_ruleset.txt §1.10.2
+(risk audit log requirements).
+1.16.4. Internal: alpaca_trading_agents_concept/prompt_patterns.md META-PROMPT 21
+(observability and provenance).
 
 1.17. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Expanded pre-existing ".LOG formatting" baseline (preserved verbatim in Section 1.6) into a full logging standards document: file format, levels, structured entry contract, debug-action marking. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 020_game_logging_standards.txt; swapped gameplay-event examples for verdict-event/guardrail-trigger examples, added guardrail-marking rule, retargeted all cross-reference citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via git mv from 020_game_logging_standards.txt; swapped gameplay-event examples for verdict-event/guardrail-trigger examples, added guardrail-marking rule, retargeted all cross-reference citations to alpaca_paper_trading_specifications_x_quant_x/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P2-15: replaced X Quant X call-transcript logging with X Quant X structured trading event logging (6 event types, NDJSON, SHA-256 audit trail hash chain). Added log rotation (§1.9), audit trail verification (§1.10), no-print rule enforcement (§1.11). | Major |

@@ -1,151 +1,142 @@
-1. VoiceGate End-to-End Testing (Table of Contents)
+X Quant X End-to-End Testing (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. End-to-End Test Scope
-1.6.1. Full-Screen-Flow Gauntlet Run
-1.6.2. Test Bench Persona/Scenario Selection and Launch
-1.6.3. Call Review Transcript and Verdict Display
-1.6.4. Risk Report Rule-Citation and Re-Run Diff
-1.6.5. Fail-to-Patch-to-Re-Run Flow
-1.6.6. Guardrail Scenario Playthrough
-1.7. Tooling
-1.8. Summary Table
-1.9. Reconciliation Table
-1.10. Risk and Mitigation Table
-1.11. Roles and Responsibilities (RACI)
-1.12. Conclusion
+1.6. Backtest Replay E2E Test
+1.6.1. Input Dataset
+1.6.2. Session Setup
+1.6.3. Assertions after Full 252-bar Replay
+1.7. Deterministic Replay Invariant Test
+1.8. Dry-run Live E2E Test
+1.9. Error Recovery E2E Test
+1.10. Summary Table
+1.11. Reconciliation Table
+1.12. Risk and Mitigation Table
 1.13. References and Citations
 1.14. Changelog Table
 
 1.1. Abstract
-This document specifies end-to-end (E2E) tests for VoiceGate: full user-facing flows across
-the three UI screens under test — Test Bench, Call Review, and Risk Report — forming the top
-tier of the testing pyramid established in 008_voicegate_testing.txt.
+This document defines the end-to-end test suite for X Quant X, covering the complete
+paper-trade cycle (data ingestion -> regime detection -> signal -> risk gate -> order
+submission -> fill -> position update -> P&L attribution), historical replay e2e, and
+clock-controlled deterministic replay for CI.
 
 1.2. Key Words
-end-to-end test, E2E, gauntlet run, Test Bench, Call Review, Risk Report, verdict badge,
-rule citation, re-run diff.
+end-to-end tests, paper-trade cycle, historical replay, deterministic replay,
+clock-controlled, temporal leakage, regime detection, risk gate, order fill, P&L
+attribution, BacktestSession, PaperSession.
 
 1.3. Executive Summary
-Where 011_voicegate_integration_tests.txt proves module-level cooperation, end-to-end tests
-prove that a human operator, interacting only through the Test Bench, Call Review, and Risk
-Report screens, can launch a gauntlet run against a mock/sandbox target agent, review the
-resulting transcript and verdict, and — on a Fail — trigger a suggested-patch re-run and
-confirm the fix, without a live production call ever being placed.
+X Quant X e2e tests verify the complete paper-trade cycle from raw market data to
+post-fill P&L attribution. Two e2e test variants exist: (1) Backtest replay e2e using
+historical dataset with synthetic clock; (2) Dry-run live e2e using the Alpaca WebSocket
+in Dry-run mode. Both must produce consistent results for the same seed and input data
+(deterministic replay invariant). The e2e tests are the last functional test layer before
+the Shadow CI gate.
 
 1.4. Key Findings
-1.4.1. At least one full playthrough test exists per verdict outcome (Pass, Fail, Flag),
-covering the full five-phase gauntlet (Greeting, Intent Discovery, Resolution Attempt,
-Compliance Check, Wrap-up).
-1.4.2. The Test Bench screen's persona/scenario selection and run-launch flow is exercised
-explicitly, including launching against a mock/sandbox target agent only.
-1.4.3. The Call Review screen's transcript display with inline findings and verdict badges
-is exercised for at least one Pass and one Fail run.
-1.4.4. The Risk Report screen's failed-call-vs-rule-text view and before/after re-run diff
-are exercised as a dedicated scenario, distinct from the Call Review scenario.
-1.4.5. The Fail-to-suggested-patch-to-re-run flow (patch proposed, never auto-applied,
-operator confirms, re-run executes) is a dedicated E2E scenario spanning all three screens.
-1.4.6. A guardrail scenario playthrough (prompt-injection payload and role-confusion
-attempt embedded in a simulated call) is a dedicated E2E scenario confirming the verdict is
-unaffected by the injected content, all the way through to the Risk Report display.
+1.4.1. Backtest replay e2e: drives BacktestSession with a 252-bar (1 trading year)
+historical dataset for 5 symbols. Asserts: no temporal leakage, all regime probabilities
+valid, all risk verdicts handled, P&L calculation correct (total_pl = sum(filled_qty x
+(fill_price - avg_entry_price)) for closed positions).
+1.4.2. Deterministic replay invariant: two runs of the same backtest e2e with the same
+seed must produce byte-identical AUDIT_LOGS/ outputs (excluding wall-clock timestamps).
+1.4.3. Dry-run live e2e: connects to Alpaca WebSocket in Dry-run mode for 5 trading
+minutes, asserts that at least one signal emission and one risk-gate verdict occur, and
+that the AUDIT_LOGS/ session file is written correctly.
+1.4.4. Error recovery e2e: injects a DataOperator WARNING (simulated 6-bar gap) and
+asserts that the pipeline continues (with WARNING log) rather than crashing.
+1.4.5. The temporal leakage assertion is repeated at the e2e level: the AUDIT_LOGS/
+output is post-processed to verify that no FeatureOperator output at bar t was produced
+using data from bar t+1 or later.
 
 1.5. Philosophical Preamble
-End-to-end tests are the closest a test suite comes to standing in the operator's seat. They
-exist to answer one question the lower tiers cannot: does the finished experience, seen
-through the actual Test Bench, Call Review, and Risk Report screens, deliver a trustworthy,
-citation-backed verdict that an operator can act on with confidence
-(001_voice_transcription_concept.txt Section 1.7)?
+End-to-end tests are the closest a test suite comes to standing in the trader's seat.
+They exist to answer one question the lower tiers cannot: does the complete paper-trade
+cycle, driven by the actual data pipeline and session infrastructure, produce a
+verifiable, auditable, deterministic result that a quantitative operator can inspect and
+act on with confidence
+(008_xquantx_testing.txt Section 1.6.3)?
 
-1.6. End-to-End Test Scope
+1.6. Backtest Replay E2E Test
+1.6.1. Input: historical dataset (252 daily bars x 5 symbols: SPY, QQQ, AAPL, MSFT,
+AMZN) from data/historical/.
+1.6.2. Session: BacktestSession(config=config/backtest.toml, seed=42).
+1.6.3. Assertions after full 252-bar replay:
+   1.6.3.1. No uncaught exceptions during the entire session.
+   1.6.3.2. Temporal leakage: for each FeatureOperator output, timestamp(output) >=
+       timestamp(latest_input_bar).
+   1.6.3.3. Every RegimeState has regime_probabilities.sum() in [1.0 - 1e-9, 1.0 + 1e-9].
+   1.6.3.4. Every Signal has signal_score in [-1.0, 1.0] and confidence in (0, 1.0].
+   1.6.3.5. Every RiskVerdict in {ALLOW, REDUCE, BLOCK, FLATTEN}.
+   1.6.3.6. PortfolioSnapshot after final bar: equity > 0, cash >= 0, total_pl is a finite
+       float64.
+   1.6.3.7. P&L math check: total_pl = sum(fill_qty x (fill_price - avg_entry_price)) for
+       all closed positions, within rounding tolerance 1e-8.
+   1.6.3.8. AUDIT_LOGS/ session file exists and contains valid NDJSON entries with
+       session_id, mode="backtest", RULESET_VERSION.
 
-1.6.1. Full-Screen-Flow Gauntlet Run
-Test Bench (launch) -> live gauntlet run through all five phases -> Call Review (transcript
-and verdict) -> Risk Report (if Fail/Flag), exercised once per verdict outcome (three
-scenarios total).
+1.7. Deterministic Replay Invariant Test
+1.7.1. Run BacktestSession(seed=42) twice on the identical historical dataset.
+1.7.2. Assert: AUDIT_LOGS/ output from run 1 and run 2 are byte-identical after
+stripping wall_ts fields (which contain actual wall-clock time).
+1.7.3. Failure of this test indicates a non-deterministic element in the pipeline (e.g.
+unseeded random, unordered dict iteration, floating-point non-determinism). The failure
+message must name the first diverging AUDIT_LOGS/ line.
 
-1.6.2. Test Bench Persona/Scenario Selection and Launch
-Selecting a persona/scenario catalog entry, confirming the run targets a mock/sandbox agent
-only (never a live production endpoint, per 015_voicegate_deployment.txt), and launching the
-run, with the live transcript rendering as the call proceeds.
+1.8. Dry-run Live E2E Test
+1.8.1. Pre-condition: ALPACA_API_KEY and ALPACA_SECRET_KEY set to paper credentials.
+1.8.2. Session: PaperSession(mode="dry_run", duration_minutes=5).
+1.8.3. Assertions after 5 minutes:
+   1.8.3.1. At least 3 OHLCVBars received (market is open during test).
+   1.8.3.2. At least 1 Signal emitted (any operator).
+   1.8.3.3. At least 1 RiskVerdict emitted.
+   1.8.3.4. AUDIT_LOGS/ session file written with correct NDJSON schema.
+   1.8.3.5. No uncaught exceptions.
+1.8.4. This test is optional in CI (controlled by RUN_LIVE_E2E=1 environment variable).
 
-1.6.3. Call Review Transcript and Verdict Display
-The dual-channel transcript renders with inline findings and a verdict badge (Pass/Fail/
-Flag); clicking a finding surfaces its supporting rule citation.
+1.9. Error Recovery E2E Test
+1.9.1. Inject a simulated 6-bar gap (missing bars) in the historical dataset at bar 100.
+1.9.2. Assert: DataOperator emits a WARNING log entry (gap_size=6, symbol="SPY",
+start_timestamp, end_timestamp).
+1.9.3. Assert: the BacktestSession continues (with halt_on_large_gap=false in this test
+config) and completes all 252 bars.
+1.9.4. Assert: the 6 forward-filled bars are marked with is_synthetic=true in the
+AUDIT_LOGS/ data entries.
 
-1.6.4. Risk Report Rule-Citation and Re-Run Diff
-The Risk Report screen displays failed calls against the cited rule text, and a before/after
-diff once a re-run has been executed following a suggested patch.
+1.10. Summary Table
+| E2E Test             | Mode     | Duration          | Key Assertions                                      |
+|----------------------|----------|-------------------|-----------------------------------------------------|
+| Backtest replay      | backtest | 252 daily bars    | Leakage, probs, scores, verdicts, P&L math          |
+| Deterministic replay | backtest | 2 x 252 bars      | Byte-identical AUDIT_LOGS/ output                   |
+| Dry-run live         | dry_run  | 5 minutes         | Bars, signal, verdict, log file                     |
+| Error recovery       | backtest | 252 bars (1 gap)  | WARNING log, continuation, is_synthetic             |
 
-1.6.5. Fail-to-Patch-to-Re-Run Flow
-A Fail verdict surfaces a suggested system-prompt patch (advisory only); the operator
-explicitly confirms before any re-run is executed against the patched configuration; the
-re-run's outcome is reflected in the Risk Report's before/after diff.
+1.11. Reconciliation Table
+| Source                                         | Prior Statement      | Current Canon                         | Status     |
+|------------------------------------------------|----------------------|---------------------------------------|------------|
+| X Quant X 013 §1.6 (voice-call e2e scenario)   | Call-lifecycle e2e   | Replaced with paper-trade cycle e2e   | Reconciled |
 
-1.6.6. Guardrail Scenario Playthrough
-A gauntlet run using a scenario fixture containing an embedded prompt-injection payload and a
-speaker-role-confusion attempt is run end-to-end; the resulting verdict, transcript, and Risk
-Report citation reflect the actual compliance content only, unaffected by the injected
-instruction or attempted role swap.
-
-1.7. Tooling
-1.7.1. A browser/UI automation framework capable of driving the actual rendered Test Bench,
-Call Review, and Risk Report screens (e.g. an in-repo Playwright-based harness), rather than
-calling engine code directly, to genuinely exercise the UI layer.
-1.7.2. E2E tests use the same seeded `rng_service` as lower tiers (009_voicegate_unit_
-tests.txt Section 1.6.9) so gauntlet-run outcomes remain deterministic and repeatable, and
-always target a mock/sandbox agent, never a live production endpoint.
-
-1.8. Summary Table
-| # | Scope | Coverage |
-|---|-------|-----------|
-| 1 | Full-screen-flow gauntlet run | One per verdict outcome (3 total) |
-| 2 | Test Bench selection/launch | Persona/scenario selection; mock/sandbox target only |
-| 3 | Call Review display | Transcript, inline findings, verdict badge, rule-citation drill-down |
-| 4 | Risk Report | Failed calls vs. rule text; before/after re-run diff |
-| 5 | Fail-to-patch-to-re-run | Advisory-only patch; explicit confirmation; re-run reflected in diff |
-| 6 | Guardrail scenario playthrough | Injection/role-confusion attempt has no effect on verdict |
-
-1.9. Reconciliation Table
-| Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Sibling project, 013_game_end2end_testing.txt (prior revision) | Six E2E scenario groups covering full playthroughs, two-step confirm, palette, responsive layout, resume, results screen | Re-mapped to six VoiceGate scenario groups covering the three UI screens (Test Bench, Call Review, Risk Report), patch-adviser re-run flow, and a new guardrail scenario playthrough | Reconciled |
-
-1.10. Risk and Mitigation Table
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| E2E suite becoming slow/flaky as the top testing tier | Medium | Medium | Seeded `rng_service` (1.7.2) and a minimal scenario count (six groups) keep the suite bounded |
-| A live production call being triggered accidentally during an E2E run | Low | High | 1.6.2/1.7.2 mandate mock/sandbox target agents only, enforced by 015_voicegate_deployment.txt |
-| Guardrail scenario playthrough missed because it is folded into an ordinary Fail scenario | Low | Medium | 1.6.6 is a dedicated, separate scenario rather than folded into 1.6.1 |
-
-1.11. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain E2E scenario scope | R | C | A | I |
-| Select/maintain UI automation tooling | R | C | A | I |
-
-1.12. Conclusion
-Six end-to-end scenario groups give VoiceGate confidence that a real operator, using the
-actual Test Bench, Call Review, and Risk Report screens against a mock/sandbox target agent,
-can obtain and act on a trustworthy, citation-backed verdict, including under an active
-guardrail-attack attempt.
+1.12. Risk and Mitigation Table
+| Risk                                                                      | Likelihood | Impact | Mitigation                                                                                           |
+|---------------------------------------------------------------------------|------------|--------|------------------------------------------------------------------------------------------------------|
+| Deterministic replay fails due to floating-point ordering non-determinism | Medium     | High   | Python: use sorted() on dict iteration; Rust: use BTreeMap not HashMap for ordered traversal         |
+| Dry-run live e2e market hours dependency (market closed during CI)        | High       | Medium | §1.8.4: marked optional (RUN_LIVE_E2E=1); CI baseline uses only Backtest e2e                         |
+| P&L math assertion rounding failure due to floating-point accumulation    | Low        | Medium | §1.6.3(g): tolerance 1e-8; if exceeded, log the diverging trades for investigation                   |
 
 1.13. References and Citations
-1.13.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
-§1.1-1.14.
-1.13.2. Internal: voice_processing_specifications/008_voicegate_testing.txt (testing
-pyramid).
-1.13.3. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.7
-(Test Bench, Call Review, Risk Report screen roles).
-1.13.4. Internal: voice_processing_specifications/015_voicegate_deployment.txt
-(sandbox/staging-only call targets, production build constraints).
-1.13.5. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (rule
-citations displayed in Call Review and Risk Report).
+1.13.1. Internal: alpaca_paper_trading_specifications_x_quant_x/008_xquantx_testing.txt
+§1.6.3 (simulation test layer).
+1.13.2. Internal: alpaca_paper_trading_specifications_x_quant_x/016_xquantx_operating_
+modes.txt (BacktestSession and PaperSession mode definitions).
+1.13.3. Internal: alpaca_paper_trading_specifications_x_quant_x/019_xquantx_data_
+structures_algorithms.txt §1.4.6 (temporal leakage invariant).
 
 1.14. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation (sibling project, as 013_game_end2end_testing.txt): six end-to-end scenario groups covering full playthroughs, interaction model, palette variants, responsive layouts, resume flow, and post-victory lock. | Major |
-| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via `git mv` from 013_game_end2end_testing.txt; six scenario groups re-mapped to the Test Bench/Call Review/Risk Report screens, the Fail-to-patch-adviser re-run flow, and a new guardrail scenario playthrough. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.00.01  | 2026-08-03 | Documentation Agent  | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via `git mv` from 013_game_end2end_testing.txt; six scenario groups re-mapped to the Test Bench/Call Review/Risk Report screens, the Fail-to-patch-adviser re-run flow, and a new guardrail scenario playthrough. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.26.00  | 2026-08-26 | Documentation Agent  | Repurposed to X Quant X per PLAN P2-13: replaced X Quant X call-lifecycle e2e scenario with X Quant X paper-trade cycle e2e tests. Added backtest replay e2e (§1.6), deterministic replay invariant test (§1.7), dry-run live e2e (§1.8), and error recovery e2e (§1.9). P&L math assertion and temporal leakage verification included. | Major |

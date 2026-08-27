@@ -1,16 +1,18 @@
-1. Master Index (Table of Contents)
+X Quant X Specification Corpus Index (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
 1.6. Document Registry
-1.6.1. Foundational Documents
-1.6.2. Product, Design, and Rules Documents
-1.6.3. Engineering Standards Documents
-1.6.4. Testing and Quality Documents
-1.6.5. Operations Documents
-1.6.6. Data, Logging, and Asset Documents
+1.6.1. Start here — concept and standards
+1.6.2. Code and build standards (read before writing any code)
+1.6.3. Data standards (read before implementing any Operator)
+1.6.4. Platform behavior (read before implementing pipeline logic)
+1.6.5. Testing and CI/CD
+1.6.6. Observability and UI
+1.6.7. Operations and product
+1.6.8. Master prompt
 1.7. Summary Table
 1.8. Reconciliation Table
 1.9. Risk and Mitigation Table
@@ -21,183 +23,174 @@
 1.14. Changelog Table
 
 1.1. Abstract
-This document is the master index for the voice_processing_specifications/ corpus governing
-VoiceGate, an automated compliance and safety test bench for voice AI agents. It enumerates
-every specification file, states its purpose, its compliance status against
-voice_processing_specifications/0000_documentation_standards.txt, and its repurposing origin
-from the sibling DarkStrategy_XParadoxX (X Paradox X) corpus. This index must be updated
-whenever a file is added, removed, or renumbered, per Section 1.6.7 of
-0000_documentation_standards.txt.
+This file is the master index of the X Quant X specification corpus. It registers all 32
+specification files in alpaca_paper_trading_specifications_x_quant_x/, summarizes their domain and
+rewrite phase, and serves as the entry point for any agent or contributor navigating the
+corpus. It was the last file rewritten in the three-phase corpus rewrite (per
+CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md §4.4). This index must be updated whenever a
+file is added, removed, or renumbered, per Section 1.6.7 of 0000_documentation_standards.txt.
 
 1.2. Key Words
-index, registry, VoiceGate, Voice Compliance QA, document map, cross-reference, dependency,
-compliance status, specification corpus, hackathon, Natively AI, Python backend, repurposing.
+corpus, document registry, index, phase-1 foundations, phase-2 domain-core,
+phase-3 product-layer, rewrite status, specification files, X Quant X.
 
 1.3. Executive Summary
-voice_processing_specifications/ contains thirty-three files: this index, the
-documentation-standards baseline (0000), the Natively AI master prompt (0001), and thirty
-topical specification files numbered 001 through 030. This repository (X_Voice_X) was forked
-from DarkStrategy_XParadoxX on 2026-08-03 per team-lead guidance recorded in
-voice_transcription_concept/voice_chat_concept.md; roughly 90% of the sibling corpus's
-structural/process standards were retained, with domain content rewritten wholesale for
-VoiceGate. Every topical file is either a product/design document (concept, aesthetics,
-philosophy, UI navigation, run statistics, operating modes, scoring rules, wishlist,
-scenario/persona/statute specializations) or a software-engineering/operations document
-(coding standards, scaffolding, virtual environment, testing tiers, CICD, deployment, data
-structures/algorithms, logging, data formats, visualization, modules/imports, naming
-conventions, and asset-creation governance) for the Python backend that implements VoiceGate.
+The X Quant X corpus consists of 32 specification files: one documentation standards baseline
+(0000), one opening-day master prompt (0001), and 30 topical files (001-031, excluding 032
+which does not exist). All 32 files have been rewritten from the prior X Quant X/X Paradox X
+domain to the X Quant X quantitative paper-trading domain per the plan in
+CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md. The rewrite was executed in three phases:
+Phase 1 (foundations: 003, 005, 006, 007, 019, 021, 023, 024), Phase 2 (domain core: 008,
+009, 011, 012, 013, 014, 016, 017, 020, 022, 025, 026, 027, 028, 030, 031), Phase 3 (product
+layer: 001, 002, 004, 010, 015, 018, 029, 0000, 0001, 000).
 
 1.4. Key Findings
-1.4.1. The corpus splits into two functional tracks — Product/Design (001-004, 010, 016-018,
-025-030) and Software Engineering (005-009, 011-015, 019, 023, 024) — with three cross-cutting
-technical-standards documents (020, 021, 022) shared by both tracks.
-1.4.2. All thirty topical files were repurposed from the sibling project's game-content
-corpus during this revision; see the Reconciliation Table (1.8) for the full file-by-file
-mapping from game concept to VoiceGate analog.
-1.4.3. Superseded game-era file bodies are preserved in this repository's git history (commit
-14726ca, "first commit") rather than duplicated in-document, per the 2026-08-03 user
-directive to rewrite the corpus efficiently.
-1.4.4. Several product-identity facts remain open items pending stakeholder confirmation
-(company/brand name, official tagline, dataset availability, exact hackathon submission) —
-see 001_voice_transcription_concept.txt Section 1.9. This index does not assert those facts
-as resolved.
-1.4.5. This repository is the authoritative Python backend implementation target (py.typed)
-for the assumed LabLab AI Factory / Natively AI hackathon submission, not a disposable
-planning-only artifact, mirroring the sibling project's own status.
+1.4.1. The corpus splits into three rewrite phases — Phase 1 foundations (003, 005, 006, 007,
+019, 021, 023, 024), Phase 2 domain core (008, 009, 011, 012, 013, 014, 016, 017, 020, 022,
+025, 026, 027, 028, 030, 031), and Phase 3 product layer (001, 002, 004, 010, 015, 018, 029,
+0000, 0001, 000).
+1.4.2. All 32 files have been rewritten from the prior X Quant X/X Paradox X domain to X
+Quant X quantitative paper-trading per CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md.
+1.4.3. The rewrite was executed across 34 tasks in three phases. This index (000_index.txt)
+was the final task (P3-10).
+1.4.4. The canonical data model is anchored in 021_xquantx_data_standards.txt (OHLCVBar,
+Order, Position, RegimeState, SignalScore, RiskVerdict); all behavioral files cite that
+schema.
+1.4.5. The risk governance layer consists of 10 named rules in 028_xquantx_risk_ruleset.txt
+(CONC-001 through EXEC-001), directly consumed by the scoring rules in
+017_xquantx_scoring_rules.txt.
 
 1.5. Philosophical Preamble
-An index is the map of a territory, not the territory itself; yet a product that exists to
-catch other systems asserting things they cannot back up owes its own documentation the same
-discipline it demands of the voice agents it tests. To leave a specification file
-half-repurposed — its title renamed but its body still describing chess pieces — is exactly
-the kind of unreconciled drift VoiceGate is built to flag in someone else's product. This
-index exists so no contributor, human or agent, ever again asks "where is this documented, and
-does it still describe the old game?" without an immediate, authoritative answer.
+A quantitative trading platform that cannot account for its own decisions in writing has no
+standing to account for the market's decisions in code. The X Quant X specification corpus
+exists because rigor applied only at the code layer — not the documentation layer — produces
+systems whose implicit assumptions erode silently under regime changes, personnel changes, or
+the simple passage of time. Every specification file in this corpus is written as a
+first-class engineering artifact: version-controlled, changelog-tracked, cross-referenced,
+and required to resolve contradictions with peer documents rather than papering over them.
+This index is the capstone of that discipline: it is not a README, not a glossary, and not a
+placeholder — it is a governed registry of every obligation the corpus places on its
+implementers, present and future.
 
 1.6. Document Registry
 
-1.6.1. Foundational Documents
-1.6.1.1. 0000_documentation_standards.txt — binding documentation contract for the entire
-repository; domain-neutral, lightly amended (VoiceOps addendum) rather than rewritten.
-1.6.1.2. 000_index.txt — this document.
-1.6.1.3. 0001_natively_ai_prompt.txt — the opening-day master prompt for the assumed LabLab AI
-Factory hackathon, synthesized from the reconciled VoiceGate canon.
+1.6.1. Start here — concept and standards
+1.6.1.1. 001_xquantx_concept.txt — platform concept, brand identity, MVP scope.
+1.6.1.2. 0000_documentation_standards.txt — binding documentation contract for the entire
+corpus; structural rules for all specification files.
+1.6.1.3. 003_xquantx_philosophy.txt — engineering philosophy and first-principles design
+constraints.
+1.6.1.4. 000_index.txt — this document.
 
-1.6.2. Product, Design, and Rules Documents
-1.6.2.1. 001_voice_transcription_concept.txt — product identity, elevator pitch, MVP scope,
-open items requiring confirmation.
-1.6.2.2. 002_voicegate_aesthetics.txt — visual identity for Test Bench/Call Review/Risk Report
-(inherits sibling palette as a starting default).
-1.6.2.3. 003_voicegate_philosophy.txt — design philosophy, guardrail-first principles.
-1.6.2.4. 004_voicegate_ui_navigation.txt — screen structure, navigation, and interaction model
-for Test Bench, Call Review, Risk Report, and Settings.
-1.6.2.5. 010_voicegate_run_statistics.txt — tracked run/verdict statistics and calibration
-metrics.
-1.6.2.6. 016_voicegate_operating_modes.txt — supported modes (scripted gauntlet, adversarial
-fuzzing, regression re-run).
-1.6.2.7. 017_voicegate_scoring_rules.txt — the authoritative scoring/verdict engine
-specification and the full game-to-VoiceGate repurposing map.
-1.6.2.8. 018_voicegate_future_wishlist.txt — deferred/stretch features explicitly out of MVP
-scope.
-1.6.2.9. 025_scenario_persona_catalog.txt — scenario/persona catalog schema (category x
-intensity tier), repurposed from the sibling project's 52-card deck.
-1.6.2.10. 026_randomization_variance_terminology.txt — bounded randomized-variance
-terminology for caller simulation, repurposed from dice-roll terminology.
-1.6.2.11. 027_persona_archetype_definitions.txt — persona archetype vocabulary and behavioral
-stat-blocks, repurposed from chess-piece definitions.
-1.6.2.12. 028_statutory_ruleset_integration.txt — bounded statutory/company-terms integration
-rules and the explicit non-import boundary, repurposed from the Monopoly-economy integration
-document.
+1.6.2. Code and build standards (read before writing any code)
+1.6.2.1. 005_xquantx_coding_standards.txt — multi-language coding standards (Python, Go,
+C++, Rust); SOLID/ACID/JPL-10/Clean-Code discipline.
+1.6.2.2. 006_xquantx_scaffolding.txt — repository layout and package scaffolding.
+1.6.2.3. 007_xquantx_virtual_env.txt — build environments for Python, Go, C++, and Rust;
+dependency policy.
+1.6.2.4. 023_xquantx_modules_imports.txt — Operator hierarchy import map and module
+boundaries.
+1.6.2.5. 024_xquantx_naming_conventions.txt — multi-language naming conventions for all
+identifiers.
 
-1.6.3. Engineering Standards Documents
-1.6.3.1. 005_voicegate_coding_standards.txt — SOLID/ACID/JPL-10/Clean-Code Python standards.
-1.6.3.2. 006_voicegate_scaffolding.txt — repository/package scaffolding layout.
-1.6.3.3. 007_voicegate_virtual_env.txt — Python virtual environment and dependency policy.
-1.6.3.4. 019_voicegate_data_structures_algorithms.txt — canonical data structures/algorithms
-used by the orchestration and scoring engines.
-1.6.3.5. 023_voicegate_modules_imports.txt — module boundaries and import discipline.
-1.6.3.6. 024_voicegate_naming_conventions.txt — naming conventions for all Python identifiers.
-
-1.6.4. Testing and Quality Documents
-1.6.4.1. 008_voicegate_testing.txt — overall testing philosophy and coverage baseline,
-including guardrail (prompt-injection/actor-role-confusion) test requirements.
-1.6.4.2. 009_voicegate_unit_tests.txt — unit-test scope and conventions.
-1.6.4.3. 011_voicegate_integration_tests.txt — integration-test scope and conventions.
-1.6.4.4. 012_voicegate_performance_tests.txt — performance/load-test scope and budgets.
-1.6.4.5. 013_voicegate_end2end_testing.txt — end-to-end/UI-level test scope.
-
-1.6.5. Operations Documents
-1.6.5.1. 014_voicegate_cicd.txt — CI/CD pipeline stages and gates.
-1.6.5.2. 015_voicegate_deployment.txt — deployment targets and release process.
-
-1.6.6. Data, Logging, and Asset Documents
-1.6.6.1. 020_voicegate_logging_standards.txt — .LOG formatting and logging discipline.
-1.6.6.2. 021_voicegate_data_standards.txt — accepted data interchange formats.
-1.6.6.3. 022_voicegate_visualization_dev_standards.txt — screenshot/diagram inclusion
+1.6.3. Data standards (read before implementing any Operator)
+1.6.3.1. 019_xquantx_data_structures_algorithms.txt — canonical data structures and
+algorithms used by the pipeline and scoring engines.
+1.6.3.2. 021_xquantx_data_standards.txt — canonical schemas: OHLCVBar, Order, Position,
+RegimeState, SignalScore, RiskVerdict.
+1.6.3.3. 031_xquantx_data_input_criteria.txt — data stream and file input validation
+criteria.
+1.6.3.4. 030_xquantx_scenario_dataset_creation.txt — historical dataset assembly and
+labeling workflow.
+1.6.3.5. 029_xquantx_scenario_asset_creation.txt — scenario asset creation and governance
 standards.
-1.6.6.4. 029_voice_persona_asset_creation.txt — synthetic caller voice/TTS asset creation and
-governance standards.
-1.6.6.5. 030_inhouse_scenario_dataset_creation.txt — in-house scenario/transcript dataset
-creation workflow, addressing the open "does a training dataset already exist" question.
+
+1.6.4. Platform behavior (read before implementing pipeline logic)
+1.6.4.1. 016_xquantx_operating_modes.txt — Paper/Backtest/Dry-run/Live-shadow operating
+modes.
+1.6.4.2. 025_xquantx_scenario_catalog.txt — 12 canonical market-regime scenario types.
+1.6.4.3. 027_xquantx_regime_archetypes.txt — HMM state definitions and transition matrix.
+1.6.4.4. 026_xquantx_variance_terminology.txt — uncertainty and Monte Carlo terminology.
+1.6.4.5. 017_xquantx_scoring_rules.txt — authoritative signal scores and risk-gate verdict
+specification.
+1.6.4.6. 028_xquantx_risk_ruleset.txt — 10 risk rules (CONC-001 through EXEC-001).
+
+1.6.5. Testing and CI/CD
+1.6.5.1. 008_xquantx_testing.txt — testing strategy overview and coverage baseline.
+1.6.5.2. 009_xquantx_unit_tests.txt — unit-test contract and conventions.
+1.6.5.3. 011_xquantx_integration_tests.txt — integration-test scope and conventions.
+1.6.5.4. 012_xquantx_performance_tests.txt — performance budgets and load-test scope.
+1.6.5.5. 013_xquantx_end2end_testing.txt — end-to-end and UI-level test scope.
+1.6.5.6. 014_xquantx_cicd.txt — GitHub Actions CI/CD pipeline stages and gates.
+
+1.6.6. Observability and UI
+1.6.6.1. 020_xquantx_logging_standards.txt — structured logging standards and audit trail.
+1.6.6.2. 022_xquantx_visualization_dev_standards.txt — dashboard chart and diagram
+specifications.
+1.6.6.3. 002_xquantx_aesthetics.txt — color palette, typography, and visual identity.
+1.6.6.4. 004_xquantx_ui_navigation.txt — dashboard panel structure and navigation model.
+
+1.6.7. Operations and product
+1.6.7.1. 010_xquantx_run_statistics.txt — per-session P&L and attribution metrics.
+1.6.7.2. 015_xquantx_deployment.txt — local deployment procedure and release process.
+1.6.7.3. 018_xquantx_future_wishlist.txt — post-MVP extension roadmap; explicitly out of
+scope for v1.
+
+1.6.8. Master prompt
+1.6.8.1. 0001_xquantx_master_prompt.txt — opening-day master prompt (copy-paste block for
+first coding session).
 
 1.7. Summary Table
-| # | File | Track | Compliance Status |
-|---|------|-------|--------------------|
-| 0000 | 0000_documentation_standards.txt | Meta | Compliant, lightly amended (VoiceOps addendum) |
-| 000 | 000_index.txt | Meta | Compliant (this revision) |
-| 0001 | 0001_natively_ai_prompt.txt | Meta | Compliant, fully repurposed (this revision) |
-| 001 | 001_voice_transcription_concept.txt | Product | Compliant, fully repurposed (this revision) |
-| 002 | 002_voicegate_aesthetics.txt | Product | Repurposed (subagent batch A) |
-| 003 | 003_voicegate_philosophy.txt | Product | Repurposed (subagent batch A) |
-| 004 | 004_voicegate_ui_navigation.txt | Product | Repurposed (subagent batch A) |
-| 005 | 005_voicegate_coding_standards.txt | Engineering | Repurposed (subagent batch B) |
-| 006 | 006_voicegate_scaffolding.txt | Engineering | Repurposed (subagent batch B) |
-| 007 | 007_voicegate_virtual_env.txt | Engineering | Repurposed (subagent batch B) |
-| 008 | 008_voicegate_testing.txt | Testing | Repurposed (subagent batch C) |
-| 009 | 009_voicegate_unit_tests.txt | Testing | Repurposed (subagent batch C) |
-| 010 | 010_voicegate_run_statistics.txt | Product | Repurposed (subagent batch A) |
-| 011 | 011_voicegate_integration_tests.txt | Testing | Repurposed (subagent batch C) |
-| 012 | 012_voicegate_performance_tests.txt | Testing | Repurposed (subagent batch C) |
-| 013 | 013_voicegate_end2end_testing.txt | Testing | Repurposed (subagent batch C) |
-| 014 | 014_voicegate_cicd.txt | Operations | Repurposed (subagent batch C) |
-| 015 | 015_voicegate_deployment.txt | Operations | Repurposed (subagent batch C) |
-| 016 | 016_voicegate_operating_modes.txt | Product | Repurposed (subagent batch A) |
-| 017 | 017_voicegate_scoring_rules.txt | Product | Repurposed (subagent batch A) |
-| 018 | 018_voicegate_future_wishlist.txt | Product | Repurposed (subagent batch A) |
-| 019 | 019_voicegate_data_structures_algorithms.txt | Engineering | Repurposed (subagent batch B) |
-| 020 | 020_voicegate_logging_standards.txt | Data | Repurposed (subagent batch D) |
-| 021 | 021_voicegate_data_standards.txt | Data | Repurposed (subagent batch D) |
-| 022 | 022_voicegate_visualization_dev_standards.txt | Data | Repurposed (subagent batch D) |
-| 023 | 023_voicegate_modules_imports.txt | Engineering | Repurposed (subagent batch B) |
-| 024 | 024_voicegate_naming_conventions.txt | Engineering | Repurposed (subagent batch B) |
-| 025 | 025_scenario_persona_catalog.txt | Product/Mechanics | Repurposed (subagent batch D) |
-| 026 | 026_randomization_variance_terminology.txt | Product/Mechanics | Repurposed (subagent batch D) |
-| 027 | 027_persona_archetype_definitions.txt | Product/Mechanics | Repurposed (subagent batch D) |
-| 028 | 028_statutory_ruleset_integration.txt | Product/Mechanics | Repurposed (subagent batch D) |
-| 029 | 029_voice_persona_asset_creation.txt | Data/Operations | Repurposed (subagent batch D) |
-| 030 | 030_inhouse_scenario_dataset_creation.txt | Data/Operations | Repurposed (subagent batch D) |
-| 031 | 031_file_input_criteria.txt | Data/Operations | Repurposed (subagent batch D) |
+| # | Filename | Title | Phase | Priority |
+|---|----------|-------|-------|---------|
+| 0 | 000_index.txt | X Quant X Specification Corpus Index | Phase 3 (last) | High |
+| — | 0000_documentation_standards.txt | Documentation Standards | Foundation | High |
+| — | 0001_xquantx_master_prompt.txt | Opening-Day Master Prompt | Phase 3 | High |
+| 1 | 001_xquantx_concept.txt | Platform Concept | Phase 3 | High |
+| 2 | 002_xquantx_aesthetics.txt | Aesthetics | Phase 3 | Medium |
+| 3 | 003_xquantx_philosophy.txt | Engineering Philosophy | Phase 1 | High |
+| 4 | 004_xquantx_ui_navigation.txt | UI Navigation | Phase 3 | Medium |
+| 5 | 005_xquantx_coding_standards.txt | Coding Standards | Phase 1 | High |
+| 6 | 006_xquantx_scaffolding.txt | Repository Scaffold | Phase 1 | High |
+| 7 | 007_xquantx_virtual_env.txt | Build Environments | Phase 1 | High |
+| 8 | 008_xquantx_testing.txt | Testing Strategy | Phase 2 | High |
+| 9 | 009_xquantx_unit_tests.txt | Unit Tests | Phase 2 | High |
+| 10 | 010_xquantx_run_statistics.txt | Run Statistics | Phase 3 | Medium |
+| 11 | 011_xquantx_integration_tests.txt | Integration Tests | Phase 2 | High |
+| 12 | 012_xquantx_performance_tests.txt | Performance Tests | Phase 2 | High |
+| 13 | 013_xquantx_end2end_testing.txt | End-to-End Testing | Phase 2 | High |
+| 14 | 014_xquantx_cicd.txt | CI/CD | Phase 2 | High |
+| 15 | 015_xquantx_deployment.txt | Deployment | Phase 3 | Medium |
+| 16 | 016_xquantx_operating_modes.txt | Operating Modes | Phase 2 | High |
+| 17 | 017_xquantx_scoring_rules.txt | Scoring Rules | Phase 2 | High |
+| 18 | 018_xquantx_future_wishlist.txt | Future Wishlist | Phase 3 | Low |
+| 19 | 019_xquantx_data_structures_algorithms.txt | Data Structures & Algorithms | Phase 1 | High |
+| 20 | 020_xquantx_logging_standards.txt | Logging Standards | Phase 2 | High |
+| 21 | 021_xquantx_data_standards.txt | Data Standards | Phase 1 | High |
+| 22 | 022_xquantx_visualization_dev_standards.txt | Visualization Dev Standards | Phase 2 | High |
+| 23 | 023_xquantx_modules_imports.txt | Module and Import Map | Phase 1 | High |
+| 24 | 024_xquantx_naming_conventions.txt | Naming Conventions | Phase 1 | High |
+| 25 | 025_xquantx_scenario_catalog.txt | Market Scenario Catalog | Phase 2 | High |
+| 26 | 026_xquantx_variance_terminology.txt | Variance and Uncertainty Terminology | Phase 2 | Medium |
+| 27 | 027_xquantx_regime_archetypes.txt | Regime Archetype Definitions | Phase 2 | High |
+| 28 | 028_xquantx_risk_ruleset.txt | Risk Rule-Set Integration | Phase 2 | High |
+| 29 | 029_xquantx_scenario_asset_creation.txt | Scenario Asset Creation | Phase 3 | Medium |
+| 30 | 030_xquantx_scenario_dataset_creation.txt | Market Scenario Dataset Creation | Phase 2 | High |
+| 31 | 031_xquantx_data_input_criteria.txt | Data Input Criteria | Phase 2 | High |
 
-1.8. Reconciliation Table (Game Concept -> VoiceGate Analog)
-| Sibling Project Element | VoiceGate Analog | Rationale |
-|-------------------------|-------------------|-----------|
-| Board / turn phases | Call flow / call lifecycle (Greeting, Intent Discovery, Resolution Attempt, Compliance Check, Wrap-up) | Both are the state machine the core loop runs through |
-| Standard 52-card deck (suit=class, rank=magnitude) | Scenario/persona catalog (category x intensity tier) | Same "class x magnitude" structure, new domain content |
-| Dice combat resolution | Randomized variance injection (tone jitter, interruption timing, escalation) | Same bounded-randomness role in the system |
-| Chess pieces with stat-blocks | Persona archetypes with behavioral stat-blocks (patience, escalation rate, deception likelihood, vulnerability flag) | Same "typed entity with numeric behavior profile" pattern |
-| Territory/Monopoly economy | Statutory ruleset integration (structured rule citations, non-import boundary) | Same "bounded external-system integration with an explicit non-import boundary" pattern |
-| Victory conditions | Verdict conditions (Pass/Fail/Flag) + Risk Report thresholds | Same "terminal state of a run" role |
-| AI Adviser ("Consult the Oracle") | Suggested Patch Adviser | Same advisory-only, non-mutating design constraint |
-| Visual palette (#000000/#FFACE9/#B76E79) | Inherited as default, marked open to revision | Explicit "90% of standards already there" reuse instruction |
-| In-house/external asset creation | Persona voice/TTS asset creation + dataset creation | Same creative-asset-governance role, new asset type |
+1.8. Reconciliation Table
+| Source | Prior Statement | Current Canon | Status |
+|--------|----------------|---------------|--------|
+| X Quant X 000_index.txt §1.6 (X Quant X corpus registry) | 32 X Quant X files | 32 X Quant X files — all rewritten 2026-08-26 | Reconciled |
+| CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md | 34-task plan across 3 phases | All 34 tasks executed; 000_index.txt is the final task (P3-10) | Reconciled |
 
 1.9. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Index drifts out of sync as files are edited | Medium | Medium | Update this index in the same edit that adds/removes/renumbers a file (0000 §1.6.7.6 discipline) |
-| A file's title is renamed but its body still describes the sibling game | Medium | High | Section 1.7's compliance-status column is spot-checked against actual file content before being marked Compliant |
-| Open product-identity items (company name, tagline, dataset) get silently asserted as resolved by a downstream document | Medium | High | 001_voice_transcription_concept.txt Section 1.9 is the single source of truth for open items; all documents must cite, not resolve, them |
-| Duplicate or conflicting canon values across files | Low | High | Single source of truth is 017_voicegate_scoring_rules.txt for scoring mechanics and 002_voicegate_aesthetics.txt for visuals; all other files cite rather than restate |
+|------|-----------|--------|------------|
+| A rewritten file still contains legacy voice-agent or statutory compliance terminology (voice_processing, SB 243, EU AI Act, VoiceOps) | Low | Medium | Post-rewrite grep scan: grep -r "voice_processing\|SB 243\|EU AI Act\|VoiceOps" alpaca_paper_trading_specifications_x_quant_x/ |
+| Index out of sync with actual files after future additions | Medium | Medium | Every new file must register in §1.7 Summary Table; 000_index.txt gets a new Changelog entry |
+| Duplicate or conflicting canon values across files | Low | High | Single source of truth is 017_xquantx_scoring_rules.txt for scoring mechanics and 021_xquantx_data_standards.txt for data schemas; all other files cite rather than restate |
+| Dependency map drifts from actual file relationships | Medium | Low | Dependency map (1.13) is reviewed whenever a new upstream file is added or an existing upstream file changes its stated scope |
 
 1.10. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
@@ -205,41 +198,47 @@ creation workflow, addressing the open "does a training dataset already exist" q
 | Maintain this index | R/A | C | A | I |
 | Approve new file additions | C | R | A | I |
 | Resolve cross-document conflicts | R | C/A | A | I |
-| Resolve open product-identity items (Section 1.8 of 001) | I | C | A | A/Stakeholder (TAQI's team) |
+| Update data schema (021) | R | C | A | I |
+| Update risk rules (028) | R | C | A | A/Stakeholder |
 
 1.11. Conclusion
-This index closes the gap between "a directory of renamed files" and "a governed, fully
-repurposed specification corpus." Every file listed above is registered, tracked for
-compliance status, and cross-referenced against its sibling-project origin. Future additions
-to voice_processing_specifications/ must register themselves here before being considered
-complete.
+This index closes the three-phase corpus rewrite from X Quant X/X Paradox X to X Quant X.
+Every file in the 32-file corpus is registered, phase-tagged, and cross-referenced in the
+Summary Table (§1.7). The Reconciliation Table (§1.8) documents what was replaced and why.
+The Dependency Map (§1.13) describes the logical read order for a first-time implementer.
+Future additions to alpaca_paper_trading_specifications_x_quant_x/ must register themselves
+in §1.7 before being considered complete.
 
 1.12. References and Citations
-1.12.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14
-(structural contract).
-1.12.2. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation
-conversation, VoiceGate pitch and team-lead repurposing guidance).
-1.12.3. Internal: this repository's git history, commit 14726ca ("first commit"), preserving
-all superseded game-era file content.
-1.12.4. Internal: all files listed in Section 1.6.
+1.12.1. Internal: CHATS/2026-08-26_alcapa-spec-rewrite-PLAN.md (execution plan for the
+corpus rewrite).
+1.12.2. Internal: CHATS/2026-08-26_alcapa-spec-rewrite-INVESTIGATE.md (pre-rewrite audit).
+1.12.3. Internal: alpaca_paper_trading_specifications_x_quant_x/0000_documentation_standards.txt
+(structural rules for all specification files).
+1.12.4. Internal: alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt
+(platform concept, brand identity, MVP scope).
 
 1.13. Appendix: Cross-Document Dependency Map
-1.13.1. 017_voicegate_scoring_rules.txt is upstream of 010, 016, 018, 019 (scoring rules
-define what statistics, modes, wishlist items, and data structures are possible).
-1.13.2. 002_voicegate_aesthetics.txt is upstream of 004 and 022 (visual identity defines
-screen appearance and screenshot standards).
-1.13.3. 005_voicegate_coding_standards.txt is upstream of 006, 007, 019, 023, 024 (coding
+1.13.1. 003_xquantx_philosophy.txt is upstream of all other files (first-principles
+constraints govern every subsequent engineering and product decision).
+1.13.2. 005_xquantx_coding_standards.txt is upstream of 006, 007, 019, 023, 024 (coding
 standards frame all subsequent engineering documents).
-1.13.4. 008_voicegate_testing.txt is upstream of 009, 011, 012, 013 (testing philosophy
-frames all test-tier documents, including guardrail test requirements).
-1.13.5. 014_voicegate_cicd.txt is upstream of 015 (pipeline gates frame the deployment
+1.13.3. 021_xquantx_data_standards.txt is upstream of 019, 025, 026, 027, 028, 030, 031
+(canonical schemas are the contract that all behavioral and dataset files must satisfy).
+1.13.4. 017_xquantx_scoring_rules.txt is upstream of 010, 016, 025, 027, 028 (scoring rules
+define what statistics, modes, scenario types, regime archetypes, and risk rules are possible).
+1.13.5. 028_xquantx_risk_ruleset.txt is upstream of 017 (risk rules are inputs to the
+scoring verdict engine).
+1.13.6. 008_xquantx_testing.txt is upstream of 009, 011, 012, 013 (testing strategy frames
+all test-tier documents).
+1.13.7. 014_xquantx_cicd.txt is upstream of 015 (pipeline gates frame the deployment
 process).
-1.13.6. 017_voicegate_scoring_rules.txt is upstream of 025, 026, 027, and 028 (scenario,
-variance, persona, and statutory-integration specialization docs).
-1.13.7. 002_voicegate_aesthetics.txt and 022_voicegate_visualization_dev_standards.txt are
-upstream of 029 (asset style and visual QA governance).
-1.13.8. 030_inhouse_scenario_dataset_creation.txt depends on 025, 026, and 027 (a dataset
-must reflect the catalog, variance terminology, and persona archetypes it trains against).
+1.13.8. 002_xquantx_aesthetics.txt is upstream of 004 and 022 (visual identity defines
+screen appearance and chart standards).
+1.13.9. 025_xquantx_scenario_catalog.txt is upstream of 027, 028, 030 (scenario catalog
+defines the regime types that archetypes, risk rules, and datasets must cover).
+1.13.10. 031_xquantx_data_input_criteria.txt is upstream of 030 (input validation criteria
+constrain dataset assembly).
 
 1.14. Changelog Table
 | Version        | Date | Author (Agent/Role) | Change Description | Type |
@@ -247,4 +246,6 @@ must reflect the catalog, variance terminology, and persona archetypes it trains
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation of master index registering all 25 files in game_specifications/. | Major |
 | 2026.00.01.00 | 2026-07-30 | Documentation Agent | Registered 0001_natively_ai_prompt.txt (opening-day Natively AI master prompt for the LabLab AI Factory hackathon) in the Document Registry (1.6.1) and Summary Table (1.7). | Minor |
 | 2026.00.02.00 | 2026-07-31 | Documentation Agent | Registered and reconciled 025-029; updated corpus counts, registry, summary table, and dependency map. | Minor |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Full repurposing to VoiceGate per user directive: renamed and rewrote all 30 topical files' registry entries, added the game-to-VoiceGate Reconciliation Table (1.8), added 030, and updated the dependency map. Prior index content preserved in git history. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Full repurposing to xquantx per user directive: renamed and rewrote all 30 topical files' registry entries, added the game-to-xquantx Reconciliation Table (1.8), added 030, and updated the dependency map. Prior index content preserved in git history. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-10 (final task): replaced X Quant X corpus registry with X Quant X corpus registry. All 32 files registered in §1.7 Summary Table. Three-phase rewrite documented in Executive Summary. X Quant X corpus history referenced in Reconciliation Table. | Major |
+| 2026.08.26.01 | 2026-08-26 | Hadrian Hu | Corrected §1.9 risk row: description changed from "X Quant X terminology" (current domain, not legacy) to "legacy voice-agent or statutory compliance terminology"; grep pattern updated to remove the X Quant X| fragment and add VoiceOps. Post-rewrite grep review. | Minor |

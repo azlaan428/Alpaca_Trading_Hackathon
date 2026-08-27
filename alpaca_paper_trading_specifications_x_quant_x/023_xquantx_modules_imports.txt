@@ -1,129 +1,308 @@
-1. VoiceGate Modules and Imports (Table of Contents)
+X Quant X Module and Import Map (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Package/Module Layout Reference
-1.7. Import Direction Rules
-1.8. Import Style Conventions
-1.9. Circular Import Prevention
-1.10. Summary Table
-1.11. Reconciliation Table
-1.12. Risk and Mitigation Table
-1.13. Roles and Responsibilities (RACI)
-1.14. Conclusion
-1.15. References and Citations
-1.16. Changelog Table
+1.6. Operator Hierarchy Import Tree
+1.7. Python Package Layout
+1.8. Go Package Path Conventions
+1.9. C++ Namespace and Include Conventions
+1.10. Rust Crate Structure
+1.11. Circular-Import Prevention Rules
+1.12. Summary Table
+1.13. Reconciliation Table
+1.14. Risk and Mitigation Table
+1.15. Roles and Responsibilities (RACI)
+1.16. Conclusion
+1.17. References and Citations
+1.18. Changelog Table
 
 1.1. Abstract
-This document specifies module-import conventions for VoiceGate, elaborating the one-way
-import direction and package layout established in 006_voicegate_scaffolding.txt into
-concrete, enforceable import-style rules.
+This document specifies the operator hierarchy import tree and per-language package and
+module organization for the X Quant X quantitative paper-trading platform. It defines
+concrete, enforceable import paths for Python, Go, C++, and Rust, and establishes the
+one-way dependency DAG that keeps Operator implementations independent of Agent composition
+layers and dashboard rendering. Referenced by 005_xquantx_coding_standards.txt and
+006_xquantx_scaffolding.txt.
 
 1.2. Key Words
-module, import, package layout, one-way dependency, circular import, absolute import.
+operator hierarchy, import tree, package layout, Python package, Go module, C++ namespace,
+Rust crate, circular import prevention, one-way dependency, xquantx.operators, xquantx.agents,
+xquantx.schemas, AlpacaPaperExecutionOperator, DataOperator, SignalOperator, RiskVerdict.
 
 1.3. Executive Summary
-VoiceGate organizes code into `src/data`, `src/voicegate`, `src/services`, and `src/api`
-packages (006_voicegate_scaffolding.txt Section 1.6), with imports permitted to flow in
-exactly one direction: `data -> voicegate -> services/api`, never reversed. Absolute imports
-are used throughout; wildcard imports are prohibited.
+X Quant X organizes all executable logic as typed Operators arranged in a DAG. The import
+hierarchy flows in exactly one direction: schemas (import root) -> operators -> agents ->
+dashboard (import leaf). Python packages are nested under xquantx/ with subpackages per
+operator layer. Go packages live under xquantx.io/alpaca-trading/ using lowercase single-word
+package names. C++ code occupies the xquantx:: top namespace with domain sub-namespaces.
+Rust code is organized as a Cargo workspace with three member crates. Circular imports are
+detected at CI time by mypy and import-linter and constitute a build failure.
 
 1.4. Key Findings
-1.4.1. `src/data` modules (personas.py, scenarios.py, statutory_rules.py,
-company_terms_snapshots.py) must not import from `src/voicegate`, `src/services`, or
-`src/api`, since they define static content, not behavior.
-1.4.2. `src/voicegate` modules may import from `src/data` but never from `src/services` or
-`src/api`, keeping the orchestration/scoring engines independent of external services and
-the command surface.
-1.4.3. `src/services` and `src/api` modules may import from both `src/data` and
-`src/voicegate`.
-1.4.4. All imports are absolute (e.g. `from src.voicegate.verdict_engine import
-render_verdict`), never relative (`from ..voicegate import verdict_engine`), for clarity and
-to avoid ambiguity as the package grows.
-1.4.5. Wildcard imports (`from module import *`) are prohibited throughout the codebase, per
-005_voicegate_coding_standards.txt Section 1.9's Clean Code discipline.
+1.4.1. The base Operator interface (Operator, OperatorInputs, OperatorOutputs, ValidationResult)
+is imported by every operator subclass from xquantx.operators.base; it is the single required
+dependency for all operator implementations.
+1.4.2. The schemas package (xquantx.schemas) has zero imports from any other xquantx package;
+it is the import root and the only inter-layer dependency that both operators and agents share.
+1.4.3. Operators import from schemas only; they never import from agents, dashboard, or
+scripts. This constraint ensures operators remain composable, testable in isolation, and
+reorderable within the DAG without breaking agent logic.
+1.4.4. Agents import from operators and schemas and never from the dashboard; the dashboard
+imports from agents, operators, and schemas as the import leaf, having no downstream
+consumers inside the platform.
+1.4.5. Cross-language data exchange (Python to Go, Go to Rust, C++ kernel to Python) occurs
+exclusively via IPC, shared files, or serialized messages; no Python package is imported from
+Go, C++, or Rust code.
+1.4.6. The RiskVerdict enum (ALLOW, REDUCE, BLOCK, FLATTEN) is the canonical decision type
+returned by all RiskOperator implementations; every downstream consumer must handle all four
+verdicts explicitly.
 
 1.5. Philosophical Preamble
-An import statement is a dependency declaration, and an undisciplined dependency graph is
-how a small, auditable orchestration/scoring engine quietly becomes an unauditable tangle.
-The one-way rule in this document exists to keep the transcript-is-data guardrail principle
-true at the level of the actual source files, not just as an aspiration: if `src/data`
-(personas, scenarios, statutory rules) could import from `src/voicegate`, the direction of
-trust between static catalog content and live orchestration logic would become ambiguous.
+An import statement is a dependency declaration, and an undisciplined dependency graph is how
+a modular, auditable signal-processing pipeline becomes an unmaintainable tangle. The one-way
+rule in this document exists to keep the operator-is-algorithm invariant true at the level of
+actual source files: if xquantx.operators could import from xquantx.agents, the direction of
+trust between stateless computation and stateful portfolio orchestration would become
+ambiguous, and the DAG guarantees that justify the platform architecture would be undermined
+silently rather than visibly.
 
-1.6. Package/Module Layout Reference
-This document does not restate the full module list; it defers entirely to
-006_voicegate_scaffolding.txt Section 1.6 as the single source of truth for package/module
-names and responsibilities.
+Every operator processes inputs and produces outputs without knowledge of how it is composed
+into an agent or what the dashboard chooses to render. That ignorance is a feature, not a
+limitation. The import rules in this document enforce it mechanically, so that a future
+developer adding a new FeatureOperator cannot accidentally couple it to Earth-domain portfolio
+logic without the CI gate raising a failure.
 
-1.7. Import Direction Rules
-| From Package | May Import From | Must Not Import From |
-|-----------------|--------------------|---------------------------|
-| `src/data` | (nothing else in this project) | `src/voicegate`, `src/services`, `src/api` |
-| `src/voicegate` | `src/data` | `src/services`, `src/api` |
-| `src/services` | `src/data`, `src/voicegate` | (none) |
-| `src/api` | `src/data`, `src/voicegate`, `src/services` | (none) |
-| `tests/` | Mirrors the package under test; may import any production package | (none) |
-This table is the concrete rule enforced by the CI import-direction/architecture gate.
+ADDENDUM (2026-08-26): This file was originally authored as a module-import specification for
+the xquantx project. It has been fully rewritten and repurposed for X Quant X, replacing
+the prior xquantx package layout and one-way import table with the X Quant X Operator/Agent
+import hierarchy, multi-language package conventions, and Rust crate structure. All prior
+xquantx-specific content has been superseded; the original version is preserved in git
+history.
 
-1.8. Import Style Conventions
-1.8.1. Absolute imports only (Section 1.4.4).
-1.8.2. One import per line; standard library imports, then third-party imports, then local
-project imports, each group separated by a blank line and alphabetized within the group.
-1.8.3. No wildcard imports (Section 1.4.5).
-1.8.4. Import only what is used; unused imports are treated as a lint failure.
+1.6. Operator Hierarchy Import Tree
+1.6.1. Base import: from xquantx.operators.base import Operator, OperatorInputs,
+OperatorOutputs, ValidationResult. Every Operator subclass must import from this path and
+no other.
+1.6.2. Data layer: from xquantx.operators.data import DataOperator, NormalizationOperator.
+DataOperator wraps raw market data ingestion; NormalizationOperator applies per-asset
+normalization transforms before feature computation.
+1.6.3. Feature layer: from xquantx.operators.feature import FeatureOperator,
+CandlestickFeatureOperator, ATROperator, RSIOperator, MACDOperator, BollingerOperator,
+OBVOperator. All technical indicator computations live here and extend FeatureOperator.
+1.6.4. Regime layer: from xquantx.operators.regime import MarketRegimeOperator,
+KalmanRegimeOperator, HMMRegimeOperator, BayesianRegimeOperator. Regime inference operators
+consume normalized feature vectors and emit RegimeState outputs.
+1.6.5. Signal layer: from xquantx.operators.signal import SignalOperator,
+MomentumSignalOperator, MeanReversionSignalOperator, VolatilitySignalOperator,
+MacroTrendSignalOperator, CrossAssetSignalOperator, NewsSentimentSignalOperator,
+SignalAggregationOperator. Signal operators consume regime and feature outputs and emit
+SignalScore values; SignalAggregationOperator fuses multi-source signals into a single score.
+1.6.6. Risk layer: from xquantx.operators.risk import RiskOperator, RiskVerdict. RiskVerdict
+is an enum with four values: ALLOW, REDUCE, BLOCK, FLATTEN. Every RiskOperator.process()
+call returns a RiskVerdict; downstream ExecutionOperator and PortfolioOperator must branch on
+all four values.
+1.6.7. Portfolio layer: from xquantx.operators.portfolio import PortfolioOperator,
+MeanVariancePortfolioOperator, RiskParityOperator, MinimumVariancePortfolioOperator.
+Portfolio operators consume SignalScore and RiskVerdict inputs and emit AllocationVector
+outputs.
+1.6.8. Execution layer: from xquantx.operators.execution import ExecutionOperator,
+AlpacaPaperExecutionOperator. AlpacaPaperExecutionOperator is the sole Alpaca API integration
+point; it converts AllocationVector targets to Order submissions via the Alpaca Paper Trading
+API.
+1.6.9. Attribution layer: from xquantx.operators.performance import PerformanceOperator,
+PerformanceSnapshot. PerformanceOperator computes realized PnL, Sharpe, drawdown, and
+regime-tagged attribution; PerformanceSnapshot is the output dataclass.
+1.6.10. Validation layer: from xquantx.operators.validation import ValidationOperator.
+ValidationOperator wraps schema validation, pre- and post-condition assertion, and data
+quality checks; invoked at DAG edge boundaries.
+1.6.11. Data types: from xquantx.schemas import OHLCVBar, Tick, Order, Position,
+PortfolioSnapshot, RegimeState, SignalScore, AllocationVector, StructuredLogEntry. All
+inter-operator data types are imported exclusively from xquantx.schemas; operators and agents
+must not define shadow types that duplicate schema definitions.
 
-1.9. Circular Import Prevention
-1.9.1. The one-way direction in Section 1.7 makes circular imports structurally impossible
-between packages, provided the rule is followed; the CI gate exists specifically to catch
-any accidental violation before it can reintroduce a cycle.
-1.9.2. Within a single package (e.g. two modules inside `src/voicegate`), avoid mutual
-imports by extracting shared types into a dedicated module (e.g. a shared `types.py` or the
-existing `event_log.py`) that both depend on instead of depending on each other.
+1.7. Python Package Layout
+1.7.1. Root package: xquantx/ maps to src/python/ in the repository. The pyproject.toml
+package source directory is src/python/; the import name is xquantx throughout.
+1.7.2. xquantx/operators/ contains all Operator implementations. Its __init__.py exports the
+base Operator class only; individual operator subclasses are imported from their subpackage
+paths, not from xquantx.operators directly.
+1.7.3. xquantx/operators/base.py defines the abstract Operator base class, the OperatorInputs
+and OperatorOutputs TypedDicts, and the ValidationResult dataclass. No other file in
+xquantx/operators/ may redefine these types.
+1.7.4. xquantx/operators/data/ contains DataOperator and NormalizationOperator with their
+Alpaca REST and WebSocket data source adapters.
+1.7.5. xquantx/operators/feature/ contains FeatureOperator and all indicator operator
+implementations (ATROperator, RSIOperator, MACDOperator, BollingerOperator, OBVOperator,
+CandlestickFeatureOperator).
+1.7.6. xquantx/operators/regime/ contains MarketRegimeOperator and all regime inference
+implementations (KalmanRegimeOperator, HMMRegimeOperator, BayesianRegimeOperator).
+1.7.7. xquantx/operators/signal/ contains SignalOperator and all signal implementations
+(MomentumSignalOperator, MeanReversionSignalOperator, VolatilitySignalOperator,
+MacroTrendSignalOperator, CrossAssetSignalOperator, NewsSentimentSignalOperator,
+SignalAggregationOperator).
+1.7.8. xquantx/operators/risk/ contains RiskOperator and the RiskVerdict enum definition.
+1.7.9. xquantx/operators/portfolio/ contains PortfolioOperator and all portfolio construction
+implementations (MeanVariancePortfolioOperator, RiskParityOperator,
+MinimumVariancePortfolioOperator).
+1.7.10. xquantx/operators/execution/ contains ExecutionOperator and AlpacaPaperExecutionOperator,
+the sole integration point with the Alpaca Paper Trading API.
+1.7.11. xquantx/operators/performance/ contains PerformanceOperator and the PerformanceSnapshot
+dataclass for realized PnL and attribution computation.
+1.7.12. xquantx/operators/validation/ contains ValidationOperator and all schema and
+pre/post-condition assertion logic.
+1.7.13. xquantx/agents/ contains composed agents per domain: earth_agent.py (portfolio and
+income, Earth domain), air_agent.py (hedging and risk, Air domain), fire_agent.py (volatility
+and options, Fire domain), water_agent.py (macro and cross-market, Water domain). Each agent
+file assembles a DAG of operators; it does not implement operator logic itself.
+1.7.14. xquantx/schemas/ contains schema dataclasses: OHLCVBar, Tick, Order, Position,
+PortfolioSnapshot, RegimeState, SignalScore, AllocationVector, StructuredLogEntry. All
+dataclasses are frozen where appropriate and annotated with field-level docstrings.
+1.7.15. xquantx/dashboard/ contains Plotly/Dash dashboard components. Dashboard code imports
+from xquantx.agents, xquantx.operators, and xquantx.schemas; it never defines operator or
+agent logic directly.
+1.7.16. Import rule: operators never import from agents; agents import from operators; dashboard
+imports from both. Violations are caught by import-linter in CI.
 
-1.10. Summary Table
-| Rule | Statement |
-|------|-----------|
-| Direction | data -> voicegate -> services/api, never reversed |
-| Import form | Absolute only, no relative, no wildcard |
-| Ordering | stdlib, then third-party, then local, alphabetized within group |
-| Enforcement | CI import-direction/architecture gate |
+1.8. Go Package Path Conventions
+1.8.1. Module root: xquantx.io/alpaca-trading declared in go.mod. All Go packages in this
+repository use this module path as prefix.
+1.8.2. xquantx.io/alpaca-trading/internal/stream contains WebSocket market data stream
+handlers. Consumed internally by the data ingestion pipeline; not exported as a public API.
+1.8.3. xquantx.io/alpaca-trading/internal/order contains low-latency order submission
+implementations via the Alpaca Go SDK. Isolated to internal/ to prevent external coupling to
+Alpaca-specific submission logic.
+1.8.4. xquantx.io/alpaca-trading/pkg/schema contains Go struct definitions for OHLCVBar,
+Tick, and related data types, serialization-compatible with the Python xquantx.schemas
+definitions via JSON field alignment.
+1.8.5. Package names: single lowercase word with no underscores (stream, order, schema,
+internal). The package name is the unit of API surface; brevity and clarity take precedence
+over mirroring the Python subpackage path structure.
+1.8.6. Cross-language data exchange: Go packages never import Python packages. Communication
+between Go and Python components occurs exclusively via IPC, shared flat files, or serialized
+JSON/Parquet messages.
 
-1.11. Reconciliation Table
+1.9. C++ Namespace and Include Conventions
+1.9.1. Top namespace: xquantx::. All X Quant X C++ types and functions live inside
+xquantx:: or one of its sub-namespaces; nothing is placed in the global namespace.
+1.9.2. Domain sub-namespaces: xquantx::earth:: (portfolio and income), xquantx::air::
+(hedging and risk), xquantx::fire:: (volatility and options), xquantx::water::
+(macro and cross-market). Domain sub-namespaces separate domain-specific logic from shared
+numerical kernels.
+1.9.3. Kernel namespace: xquantx::kernel:: contains Kalman filter implementations, numerical
+optimization routines, and matrix computation utilities shared across domains.
+1.9.4. Include paths: #include "xquantx/kernel/kalman.h" for the Kalman filter kernel;
+#include "xquantx/schema/ohlcv.h" for the OHLCV data type definition. All include paths are
+relative to the repository src/cpp/ root.
+1.9.5. No using namespace xquantx; in any header file; always use fully qualified names
+(xquantx::kernel::KalmanFilter, xquantx::schema::OHLCVBar) in headers. using namespace
+directives are acceptable in implementation (.cpp) files within a limited scope.
+
+1.10. Rust Crate Structure
+1.10.1. Workspace root: src/rust/Cargo.toml declares three member crates: xquantx-pipeline,
+xquantx-serialize, xquantx-schema. All crates share a single workspace-level Cargo.lock.
+1.10.2. xquantx-pipeline: data pipeline orchestration and concurrency management. Owns the
+Tokio async runtime configuration, channel-based operator wiring, and backpressure logic for
+real-time market data ingestion.
+1.10.3. xquantx-serialize: Parquet and Arrow serialization using the arrow2 and parquet2
+crates. All historical market data persistence and batch feature export uses this crate;
+serialization logic is isolated here to prevent deserialization dependencies from spreading
+into xquantx-pipeline or xquantx-schema.
+1.10.4. xquantx-schema: shared Rust type definitions as serde-derived structs. Provides the
+Rust equivalents of Python xquantx.schemas dataclasses (OhlcvBar, RegimeState, SignalScore,
+AllocationVector). This crate has no dependencies on the other two workspace members.
+1.10.5. Module declarations: each module is declared in lib.rs or mod.rs; pub(crate) is used
+for types and functions that are internal to the crate but needed across its module tree.
+Public API surface (pub) is minimized to what is consumed across crate boundaries.
+
+1.11. Circular-Import Prevention Rules
+1.11.1. The schemas package (xquantx.schemas) has zero imports from any other xquantx package.
+It is the import root; it defines types, not behavior. Any import of an operator, agent, or
+dashboard module into xquantx.schemas is a CI failure.
+1.11.2. Operators import from xquantx.schemas only. They never import from xquantx.agents,
+xquantx.dashboard, or any scripts/ directory. This rule makes each operator independently
+testable and composable without requiring a full agent context.
+1.11.3. Agents import from xquantx.operators and xquantx.schemas. They never import from
+xquantx.dashboard. Agent files wire operators into DAGs; they do not implement operator-level
+computation.
+1.11.4. The dashboard imports from xquantx.agents, xquantx.operators, and xquantx.schemas.
+It is the import leaf: no other xquantx package imports from xquantx.dashboard.
+1.11.5. Any circular import is detected by mypy (--strict) and import-linter (enforcing the
+contract map above) in CI. A circular import at any layer constitutes a build failure that
+blocks merge.
+
+1.12. Summary Table
+| Layer | Import Path | Exported Types |
+|-------|-------------|----------------|
+| Schemas (root) | xquantx.schemas | OHLCVBar, Tick, Order, Position, PortfolioSnapshot, RegimeState, SignalScore, AllocationVector, StructuredLogEntry |
+| Base | xquantx.operators.base | Operator, OperatorInputs, OperatorOutputs, ValidationResult |
+| Data | xquantx.operators.data | DataOperator, NormalizationOperator |
+| Feature | xquantx.operators.feature | FeatureOperator, CandlestickFeatureOperator, ATROperator, RSIOperator, MACDOperator, BollingerOperator, OBVOperator |
+| Regime | xquantx.operators.regime | MarketRegimeOperator, KalmanRegimeOperator, HMMRegimeOperator, BayesianRegimeOperator |
+| Signal | xquantx.operators.signal | SignalOperator, MomentumSignalOperator, MeanReversionSignalOperator, VolatilitySignalOperator, MacroTrendSignalOperator, CrossAssetSignalOperator, NewsSentimentSignalOperator, SignalAggregationOperator |
+| Risk | xquantx.operators.risk | RiskOperator, RiskVerdict (ALLOW, REDUCE, BLOCK, FLATTEN) |
+| Portfolio | xquantx.operators.portfolio | PortfolioOperator, MeanVariancePortfolioOperator, RiskParityOperator, MinimumVariancePortfolioOperator |
+| Execution | xquantx.operators.execution | ExecutionOperator, AlpacaPaperExecutionOperator |
+| Performance | xquantx.operators.performance | PerformanceOperator, PerformanceSnapshot |
+| Validation | xquantx.operators.validation | ValidationOperator |
+| Agents | xquantx.agents | earth_agent, air_agent, fire_agent, water_agent |
+| Dashboard | xquantx.dashboard | (import leaf; no downstream xquantx consumers) |
+| Go | xquantx.io/alpaca-trading/internal/stream, internal/order, pkg/schema | StreamHandler, OrderSubmitter, OHLCVBar |
+| C++ | xquantx::, xquantx::kernel::, domain sub-namespaces | KalmanFilter, OHLCVBar, domain operators |
+| Rust | xquantx-pipeline, xquantx-serialize, xquantx-schema | OhlcvBar, RegimeState, AllocationVector |
+
+1.13. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| 006_voicegate_scaffolding.txt Section 1.6 | High-level one-way import direction rule | Elaborated here into a full permission table (1.7) and concrete style conventions (1.8) | Reconciled |
+|--------|-----------------|---------------|--------|
+| 023_xquantx_modules_imports.txt (xquantx era, 2026-08-03) | One-way import direction for xquantx src/data -> src/xquantx -> src/services/api | One-way import direction for X Quant X schemas -> operators -> agents -> dashboard, plus Go, C++, and Rust conventions | Rewritten |
+| 006_xquantx_scaffolding.txt | High-level directory layout and operator type list | Import tree elaborated here with concrete from-import paths per operator type and per language | Reconciled |
+| 005_xquantx_coding_standards.txt | Wildcard import prohibition and absolute import requirement | Inherited here: all Python imports are absolute; wildcard imports are CI failures | Reconciled |
 
-1.12. Risk and Mitigation Table
+1.14. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| A developer accidentally introducing a reverse import (e.g. `data` importing `voicegate`) | Medium | High | CI gate mechanically blocks the merge |
-| Circular imports within a single package as it grows | Low | Medium | 1.9.2 mandates extracting shared types rather than allowing mutual imports |
+| Operator accidentally importing from an agent, coupling computation to DAG orchestration | Medium | High | import-linter contract map in CI blocks the merge; Section 1.11.2 states the rule explicitly |
+| Circular import introduced within a single operator subpackage as it grows | Low | Medium | Section 1.11.5 mandates shared types be extracted to xquantx.schemas rather than allowing mutual imports within an operator subpackage |
+| Go and Python schemas diverging (field name mismatch for cross-language IPC) | Medium | High | Section 1.8.4 requires JSON field alignment with Python schemas; schema change PRs must update both Go pkg/schema and Python xquantx.schemas |
+| Rust crate dependency on Python types (e.g. pulling in Python FFI) | Low | High | Section 1.10 isolates Rust types in xquantx-schema with no Python dependencies; cross-language exchange is serialization-only |
+| New operator added without updating the import tree in this document | Medium | Low | This document is referenced in 006_xquantx_scaffolding.txt; new operator PRs must update Section 1.6 |
 
-1.13. Roles and Responsibilities (RACI)
+1.15. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain import-direction rules | R | C | A | I |
-| Enforce via CI gate | C | R | A | I |
+|----------|----------------|----------|------------|-------------|
+| Maintain operator hierarchy import tree (Section 1.6) | R | C | A | I |
+| Maintain Python package layout (Section 1.7) | R | C | A | I |
+| Maintain Go package path conventions (Section 1.8) | R | C | A | I |
+| Maintain C++ namespace conventions (Section 1.9) | R | C | A | I |
+| Maintain Rust crate structure (Section 1.10) | R | C | A | I |
+| Enforce circular-import rules via CI gate | C | R | A | I |
+| Update this document when new operators are added | R | C | A | I |
 
-1.14. Conclusion
-A strict one-way import direction, absolute-only import style, and a mechanical CI gate keep
-VoiceGate's package dependency graph auditable as the codebase grows beyond its hackathon
-MVP scope.
+1.16. Conclusion
+The X Quant X import map is the machine-enforceable expression of the platform architecture.
+By making schemas the import root, operators the import consumers of schemas only, agents the
+composers of operators, and the dashboard the terminal consumer, the DAG guarantee that
+justifies the operator abstraction is preserved at the file level rather than as documentation
+aspiration. The Go, C++, and Rust conventions extend this discipline across all four
+implementation languages while respecting each language ecosystem's own idioms.
 
-1.15. References and Citations
-1.15.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14.
-1.15.2. Internal: voice_processing_specifications/006_voicegate_scaffolding.txt §1.6 (package
-layout and one-way import direction origin).
-1.15.3. Internal: voice_processing_specifications/005_voicegate_coding_standards.txt §1.9
-(Clean Code, wildcard-import prohibition).
-1.15.4. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-(guardrail rationale for the data/orchestration trust boundary).
+1.17. References and Citations
+1.17.1. Internal: alpaca_paper_trading_specifications_x_quant_x/0000_documentation_standards.txt
+Section 1.1 to 1.14 (document structure and changelog requirements).
+1.17.2. Internal: alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt
+Section 1.9 (absolute imports, wildcard prohibition, one-way dependency).
+1.17.3. Internal: alpaca_paper_trading_specifications_x_quant_x/006_xquantx_scaffolding.txt
+Section 1.6 (directory layout and operator type taxonomy; this document elaborates import paths).
+1.17.4. Internal: alpaca_paper_trading_specifications_x_quant_x/024_xquantx_naming_conventions.txt
+(identifier naming for all types referenced in Section 1.6 import paths).
+1.17.5. External: Alpaca Paper Trading API documentation (alpaca.markets/docs/api-references).
+1.17.6. External: Go module path conventions (golang.org/ref/mod).
+1.17.7. External: The Cargo Book, workspace configuration (doc.rust-lang.org/cargo/reference/workspaces.html).
 
-1.16. Changelog Table
+1.18. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation: import direction table, style conventions, circular-import prevention. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 023_game_modules_imports.txt; replaced `src/game` with `src/voicegate` throughout the import-direction table and rules, and reframed the philosophical preamble around the transcript-is-data guardrail principle. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed file via `git mv` from 023_game_modules_imports.txt; replaced `src/game` with `src/xquantx` throughout the import-direction table and rules, and reframed the philosophical preamble around the transcript-is-data guardrail principle. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.01.00 | 2026-08-26 | Hadrian Hu | Full rewrite for X Quant X: replaced xquantx package layout and one-way import table with the X Quant X Operator/Agent import hierarchy (Section 1.6), Python package layout (Section 1.7), Go package path conventions (Section 1.8), C++ namespace conventions (Section 1.9), Rust crate structure (Section 1.10), and circular-import prevention rules (Section 1.11). All prior xquantx-specific content superseded; original preserved in git history. | Major |

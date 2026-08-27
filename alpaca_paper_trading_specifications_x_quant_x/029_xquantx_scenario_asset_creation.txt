@@ -1,18 +1,18 @@
-1. Voice Persona Asset Creation Instructions (Table of Contents)
+X Quant X Scenario Asset Creation (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Scope and Authority
-1.7. Asset Taxonomy
-1.8. Voice Selection and Consistency Constraints
-1.9. File Formats and Technical Constraints
-1.10. Naming and Versioning Rules
-1.11. Source Attribution and Licensing Controls
-1.12. Asset QA and Acceptance Checklist
+1.6. Asset Types
+1.7. Asset Creation Lifecycle
+1.8. JSON Asset Schema
+1.9. Quality Review Checklist
+1.10. Summary Table
+1.11. Storage and Naming Conventions
+1.12. Asset Versioning Rules
 1.13. Integration Workflow with Engineering
-1.14. Summary Table
+1.14. Extended Asset Constraints
 1.15. Reconciliation Table
 1.16. Risk and Mitigation Table
 1.17. Roles and Responsibilities (RACI)
@@ -21,165 +21,200 @@
 1.20. Changelog Table
 
 1.1. Abstract
-This document defines how synthetic caller voice assets for VoiceGate's persona archetypes
-(voice_processing_specifications/027_persona_archetype_definitions.txt) are created, named,
-validated, and integrated into the repository. It operationalizes each archetype's behavioral
-identity into production-ready TTS (text-to-speech) voice asset standards for the persona
-engine (`src/voicegate/persona_engine`).
+This document defines the process for creating annotated market-scenario assets — individual
+labeled market event instances used for regime model testing, stress scenario definition, and
+educational scenario replay. It covers the asset creation lifecycle, labeling protocol,
+storage convention, asset versioning, and quality-review checklist.
 
 1.2. Key Words
-TTS, text-to-speech, synthetic voice, persona voice consistency, export format, attribution,
-license compliance, QA checklist, VoiceGate.
+scenario asset, market event, regime label, annotated scenario, stress test scenario, asset
+lifecycle, labeling protocol, asset versioning, quality review.
 
 1.3. Executive Summary
-Synthetic caller voice assets must be behaviorally consistent with the persona archetype they
-represent and technically consistent with the transcription/telephony ingestion requirements
-of the call orchestrator (`src/voicegate/call_orchestrator`). This file defines voice-asset
-categories, required formats, naming/versioning conventions, source-attribution obligations
-for TTS models/voices, and a QA gate checklist that blocks non-compliant voice assets from
-integration.
+A scenario asset is a single annotated market event — a historical period or a synthetic
+scenario defined by a set of bar sequences and associated regime labels, macro indicators, and
+event metadata. Scenario assets are used to: (1) stress-test the operator pipeline against
+specific extreme events; (2) evaluate MarketRegimeOperator precision/recall on known-regime
+periods; (3) provide illustrative examples for documentation and testing. Assets are stored in
+data/scenarios/ as JSON files with versioned metadata.
 
 1.4. Key Findings
-1.4.1. Voice-per-archetype consistency is mandatory: the same persona archetype must use the
-same TTS voice (or voice family) across every call in a gauntlet run, so variance-injection
-effects (voice_processing_specifications/026_randomization_variance_terminology.txt) are
-attributable to scripted behavior, not accidental voice-identity drift.
-1.4.2. Technical consistency (sample rate, channel layout, encoding) is mandatory for
-transcription-engine reliability and dual-channel call recording.
-1.4.3. Every TTS voice asset requires provenance metadata (voice/model identity, license) and
-license-compatibility verification before use in a scored gauntlet run.
-1.4.4. The asset QA checklist is a release gate, not an optional review note.
+1.4.1. Regime-label consistency is mandatory: every bar in a scenario asset must have a
+regime_id that matches the feature signatures in
+alpaca_paper_trading_specifications_x_quant_x/025_xquantx_scenario_catalog.txt.
+1.4.2. Scenario assets are the ground-truth input for MarketRegimeOperator evaluation; label
+errors propagate directly into precision/recall metrics.
+1.4.3. Synthetic assets must be generated using ScenarioGenerator with HMM emission
+distributions from
+alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt to ensure
+statistical realism.
+1.4.4. Every asset requires 2-person review before registration in manifest.json; the quality
+review checklist (§1.9) is a release gate, not an optional review note.
 
 1.5. Philosophical Preamble
-In a compliance test bench, a caller's voice is part of the test's realism, not decoration.
-An inconsistent or unlicensed voice asset undermines the credibility of every verdict
-produced using it.
+A labeled scenario asset is only as credible as its annotation. An incorrectly labeled
+historical period or a statistically implausible synthetic sequence undermines every
+evaluation metric derived from it. Annotation discipline is the foundation of regime-model
+validity.
 
-1.6. Scope and Authority
-1.6.1. This file governs creation and acceptance of synthetic caller voice assets.
-1.6.2. Code-level integration details are governed by
-voice_processing_specifications/006_voicegate_scaffolding.txt and
-voice_processing_specifications/023_voicegate_modules_imports.txt.
-1.6.3. If a behavioral/voice conflict occurs,
-voice_processing_specifications/027_persona_archetype_definitions.txt is the behavioral
-source of truth.
+1.6. Asset Types
+1.6.1. Historical scenario asset: a slice of the historical dataset (per
+030_xquantx_scenario_dataset_creation.txt) annotated with a confirmed ground-truth regime
+label for the entire period. Example: "2020-03-16 to 2020-03-20 (COVID-19 sell-off),
+regime=R04 bear-capitulation".
+1.6.2. Synthetic stress scenario: a programmatically generated sequence of OHLCVBars
+calibrated to produce a specific regime pattern (e.g. R07 macro-shock transition in 2 bars
+followed by R04 bear-capitulation). Generated by ScenarioGenerator using the HMM emission
+distributions from
+alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt.
+1.6.3. Regime-boundary scenario: a scenario spanning a known regime transition (e.g. R01
+bull-quiet -> R07 macro-shock -> R04 bear-capitulation -> R01 recovery) used to test
+MarketRegimeOperator's dwell-time and transition detection.
 
-1.7. Asset Taxonomy
-1.7.1. Persona voice profiles: one TTS voice (or bounded voice family) per canonical persona
-archetype (voice_processing_specifications/027_persona_archetype_definitions.txt §1.7).
-1.7.2. Prosody presets: tone, pace, and pause settings mapped to a persona's Patience and
-Escalation Rate stats.
-1.7.3. Scenario-specific voice cues: short recorded/synthesized markers for scripted
-escalation beats (e.g. a raised-voice segment at High/Extreme intensity tiers).
-1.7.4. Reference/QA audio: short sample clips used for peer review and regression checks.
+1.7. Asset Creation Lifecycle
+1.7.1. Identify: source the scenario from historical market event databases (FRED, Bloomberg,
+or Alpaca historical data) or define synthetic parameters.
+1.7.2. Extract: pull the relevant OHLCVBar sequence from the historical dataset (for
+historical assets) or generate via ScenarioGenerator (for synthetic assets).
+1.7.3. Label: assign the ground-truth regime_id for each bar in the scenario using the
+feature signatures in
+alpaca_paper_trading_specifications_x_quant_x/025_xquantx_scenario_catalog.txt. Label is
+human-reviewed.
+1.7.4. Annotate: add event metadata (event_name, event_description, data_source,
+scenario_type, ground_truth_regime_sequence, date_range).
+1.7.5. Review: a second team member reviews the labels against the feature signatures.
+Discrepancies are resolved by re-examining the feature values.
+1.7.6. Version: assign asset_version semver string; save to
+data/scenarios/{scenario_id}_v{version}.json.
+1.7.7. Register: add asset to data/scenarios/manifest.json (asset_id, asset_version,
+scenario_type, date_range, regime_sequence, created_date).
 
-1.8. Voice Selection and Consistency Constraints
-1.8.1. Each persona archetype is assigned exactly one primary TTS voice identity; a
-secondary/backup voice may be documented but is not mixed mid-run without recording the
-substitution in the run's event log.
-1.8.2. Voice pitch/pace variation driven by tone jitter
-(voice_processing_specifications/026_randomization_variance_terminology.txt §1.8.1) must stay
-within a documented bounded range so the same underlying voice remains recognizable across a
-run.
-1.8.3. Voice selection must not encode or imply real-world protected-characteristic
-stereotypes; persona behavioral traits (Section
-voice_processing_specifications/027_persona_archetype_definitions.txt §1.9) drive behavior,
-not the voice's demographic signal.
+1.8. JSON Asset Schema
+{
+  "asset_id": "covid-selloff-2020-03",
+  "asset_version": "1.0.0",
+  "scenario_type": "historical",
+  "event_name": "COVID-19 US Market Sell-Off",
+  "event_description": "Initial COVID-19 panic sell-off; VIX spike to 82; S&P 500 -12% in 5 days",
+  "data_source": "Alpaca historical data API",
+  "date_range": {"start": "2020-03-09", "end": "2020-03-20"},
+  "symbols": ["SPY", "QQQ"],
+  "ground_truth_regime_sequence": [
+    {"bar_date": "2020-03-09", "regime_id": "R03"},
+    {"bar_date": "2020-03-16", "regime_id": "R04"},
+    {"bar_date": "2020-03-17", "regime_id": "R07"},
+    {"bar_date": "2020-03-18", "regime_id": "R04"},
+    {"bar_date": "2020-03-19", "regime_id": "R04"},
+    {"bar_date": "2020-03-20", "regime_id": "R04"}
+  ],
+  "macro_snapshot": {
+    "vix_peak": 82.69,
+    "sp500_return_period": -0.32,
+    "federal_reserve_action": "Emergency rate cut 50bp 2020-03-03"
+  },
+  "bars": [ ... OHLCVBar JSON array ... ]
+}
 
-1.9. File Formats and Technical Constraints
-1.9.1. Source/master audio: WAV, 16-bit or higher, mono, minimum 16 kHz sample rate (telephony-
-compatible), higher sample rates permitted for archival masters.
-1.9.2. Runtime delivery: OGG or MP3 permitted where the call orchestrator's TTS/telephony
-pipeline requires compressed delivery; WAV preferred where bandwidth is not a constraint.
-1.9.3. Every voice-asset pack must include a manifest with persona id, voice identity/model,
-sample rate, and license reference.
+1.9. Quality Review Checklist
+Before an asset is marked as review-complete:
+1.9.1. All bars have valid OHLCVBar fields (high >= close >= low, prices > 0, volume >= 0).
+1.9.2. ground_truth_regime_sequence covers every bar in date_range with no gaps.
+1.9.3. Each regime_id in the sequence matches the feature signatures in
+alpaca_paper_trading_specifications_x_quant_x/025_xquantx_scenario_catalog.txt.
+1.9.4. event_description accurately describes the market event; data_source is cited.
+1.9.5. Asset version is bumped if any field changes after initial publication.
+1.9.6. Asset is registered in data/scenarios/manifest.json.
 
-1.10. Naming and Versioning Rules
-1.10.1. Naming convention: `voice_<persona_archetype>_<descriptor>_v<major>_<minor>.<ext>`.
-1.10.2. Examples:
-1.10.2.1. `voice_distressed_caller_primary_v1_0.wav`.
-1.10.2.2. `voice_adversarial_negotiator_escalation_cue_v1_1.wav`.
-1.10.3. Breaking voice-identity changes (switching TTS model/voice) increment major version;
-prosody-preset refinements increment minor version.
+1.10. Summary Table
+| Asset Type | Source | Generated by | Regime label | Review |
+|-----------|--------|-------------|-------------|--------|
+| Historical | Alpaca API historical data | Manual extraction | Human-reviewed | 2-person review |
+| Synthetic stress | ScenarioGenerator | Programmatic | HMM emission params from 027 | Automated validation |
+| Regime-boundary | Either | Manual or ScenarioGenerator | Human-reviewed | 2-person review |
 
-1.11. Source Attribution and Licensing Controls
-1.11.1. Every TTS-model-derived voice asset must record the model/tool identity, voice name,
-and license terms in the manifest.
-1.11.2. Voice assets with incompatible commercial-use or redistribution terms are prohibited
-from use in scored gauntlet runs.
-1.11.3. AI-generated voice assets must record prompt/configuration, model/tool identity, and
-generation date.
-1.11.4. Cloned or likeness-based voices of real, identifiable individuals are prohibited
-unless formally licensed with explicit, documented consent.
+1.11. Storage and Naming Conventions
+1.11.1. Storage path: data/scenarios/{scenario_id}_v{major}_{minor}_{patch}.json.
+1.11.2. scenario_id format: {event-slug}-{YYYY-MM} (e.g. covid-selloff-2020-03).
+1.11.3. All scenario IDs use lowercase kebab-case; no spaces or underscores in the event
+slug.
+1.11.4. Manifest file: data/scenarios/manifest.json; one entry per asset version.
+1.11.5. Breaking label changes or date_range changes require a MAJOR version increment;
+metadata-only changes require a MINOR increment; bar-value corrections require a PATCH
+increment.
 
-1.12. Asset QA and Acceptance Checklist
-1.12.1. Behavioral conformance checks:
-1.12.1.1. Voice-per-persona consistency (Section 1.8.1).
-1.12.1.2. Prosody preset alignment with the persona's Patience/Escalation Rate stats.
-1.12.2. Technical checks:
-1.12.2.1. Correct file format and sample rate.
-1.12.2.2. No corrupt or clipped audio.
-1.12.2.3. Manifest completeness.
-1.12.3. Governance checks:
-1.12.3.1. Provenance metadata present.
-1.12.3.2. License compatibility verified.
-1.12.3.3. Naming/versioning compliant.
+1.12. Asset Versioning Rules
+1.12.1. Asset versions follow semver: MAJOR.MINOR.PATCH.
+1.12.2. MAJOR increment: regime label changes or date_range changes (ground-truth altered).
+1.12.3. MINOR increment: additional metadata fields (macro_snapshot, event_description
+updates, symbol additions).
+1.12.4. PATCH increment: minor data corrections (bar value corrections, typo fixes in
+descriptive fields).
+1.12.5. No field changes are permitted without a version bump; compliance is checked in
+quality review §1.9.5.
+1.12.6. Prior versions are retained in the data/scenarios/ directory and remain listed in
+manifest.json with a deprecated flag for reproducibility of historical test runs.
 
 1.13. Integration Workflow with Engineering
-1.13.1. Voice-asset branch preparation and review.
-1.13.2. QA checklist execution and sign-off.
-1.13.3. Manifest and references added to `src/data/personas`.
-1.13.4. Integration test pass for voice loading, fallback behavior, and transcription-engine
-compatibility.
+1.13.1. Asset files are placed in data/scenarios/ and listed in data/scenarios/manifest.json.
+1.13.2. MarketRegimeOperator integration tests load scenarios from manifest.json to compute
+precision/recall on known-regime periods.
+1.13.3. StressTestRunner loads synthetic scenario assets from manifest.json to run operator
+pipeline stress tests.
+1.13.4. Asset loading failures cause test suite failure; no silent skips are permitted.
+1.13.5. A pre-integration validation script checks manifest.json for completeness and all
+asset JSON files for schema compliance before merge.
 
-1.14. Summary Table
-| Topic | Rule |
-|------|------|
-| Voice-per-persona | Exactly one primary TTS voice identity per archetype |
-| Master format | WAV, 16-bit+, mono, >=16 kHz |
-| Naming | voice_persona_descriptor_vMajor_Minor |
-| Required metadata | model/voice identity, license, generation/provenance details |
-| QA gate | behavioral + technical + governance checks |
+1.14. Extended Asset Constraints
+1.14.1. Historical assets must include at minimum 5 trading days of bars.
+1.14.2. Synthetic assets must document the HMM parameters used in generation in the asset's
+JSON metadata (hmm_emission_params field).
+1.14.3. Regime-boundary assets must span at least 2 distinct regime_ids in the
+ground_truth_regime_sequence.
+1.14.4. Assets with missing bars within date_range fail quality review §1.9.2 and may not
+be registered in manifest.json.
+1.14.5. Assets are immutable once registered; all corrections produce a new version per §1.12.
 
 1.15. Reconciliation Table
-| Prior State | Current State | Status |
-|-------------|----------------|--------|
-| File was the game's visual/audio asset creation instructions | Repurposed to synthetic caller voice (TTS) asset creation and governance | Reconciled |
-| Voice-asset guidance was implicit in the concept document | Unified voice-asset pipeline document created | Reconciled |
+| Source | Prior Statement | Current Canon | Status |
+|--------|----------------|---------------|--------|
+| X Quant X 029 §1.6 (voice-persona asset creation) | Voice-call persona audio assets | Replaced with market-scenario annotated assets | Reconciled |
+| alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt | HMM emission distributions | Referenced for synthetic scenario generation | Reconciled |
 
 1.16. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Inconsistent persona voice identity across a run | Medium | High | Enforce voice-per-persona checks in 1.12.1 |
-| TTS licensing non-compliance | Medium | High | Mandatory provenance and license checks in 1.11 |
-| Cloned-likeness voice used without consent | Low | Critical | Explicit prohibition in 1.11.4 |
-| Runtime failures due to malformed audio | Low | High | Technical QA checks and integration tests |
+|------|-----------|--------|------------|
+| Ground-truth regime labels disagreeing with feature signatures | Medium | Medium | §1.9.3 quality gate; automated check via feature extraction on asset bars |
+| Synthetic scenario unrealistic (HMM params don't match real distributions) | Medium | Medium | §1.7.2 ScenarioGenerator uses actual HMM emission distributions from 027 spec |
+| Asset version not bumped after label revision | Medium | Medium | §1.9.5 quality gate; manifest.json diff checked in code review |
 
 1.17. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Define voice-asset standards | R | C | A | I |
-| Validate incoming voice-asset packs | C | R | A | I |
-| Approve exceptions to voice-asset policy | C | R | A | A/Stakeholder |
+|----------|----------------|----------|------------|-------------|
+| Define scenario asset standards | R | C | A | I |
+| Label historical scenario assets | R | C | A | I |
+| Generate synthetic stress scenarios | R | C | A | I |
+| Review and approve asset labels | C | R | A | I |
+| Register assets in manifest.json | R | C | A | I |
 
 1.18. Conclusion
-This file makes the synthetic caller voice-asset pipeline deterministic, auditable, and
-compatible with both persona-behavioral intent and engineering constraints.
+This document makes the scenario asset creation pipeline deterministic, auditable, and
+directly connected to MarketRegimeOperator evaluation and operator pipeline stress testing.
+Every labeled asset is a verifiable ground-truth instance traceable to feature signatures,
+data sources, and review decisions.
 
 1.19. References and Citations
-1.19.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.6.
-1.19.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (dual-
-channel transcription scope).
-1.19.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
-1.19.4. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
-(persona behavioral stats driving voice/prosody).
-1.19.5. Internal: voice_processing_specifications/026_randomization_variance_terminology.txt
-(tone-jitter bounded range).
-1.19.6. Internal: voice_processing_specifications/006_voicegate_scaffolding.txt.
-1.19.7. Internal: voice_processing_specifications/023_voicegate_modules_imports.txt.
+1.19.1. Internal: alpaca_paper_trading_specifications_x_quant_x/025_xquantx_scenario_catalog.txt
+(regime feature signatures).
+1.19.2. Internal: alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt
+(HMM emission parameters for synthetic generation).
+1.19.3. Internal: alpaca_paper_trading_specifications_x_quant_x/030_xquantx_scenario_dataset_creation.txt
+(historical dataset source).
+1.19.4. Internal: alpaca_paper_trading_specifications_x_quant_x/021_xquantx_data_standards.txt §1.8.1
+(OHLCVBar schema).
 
 1.20. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of previously empty game asset creation instructions file. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 029_game_asset_creation_instructions.txt; replaced visual/audio game-asset taxonomy with synthetic caller TTS voice-asset governance (voice-per-persona consistency, licensing, consent-for-likeness prohibition), retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via git mv from 029_game_asset_creation_instructions.txt; replaced visual/audio game-asset taxonomy with synthetic caller TTS voice-asset governance (voice-per-persona consistency, licensing, consent-for-likeness prohibition), retargeted all citations to alpaca_paper_trading_specifications_x_quant_x/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-07: replaced X Quant X voice-persona audio asset creation with X Quant X market-scenario annotated asset creation. Three asset types (historical, synthetic, regime-boundary), asset lifecycle (§1.7), JSON schema (§1.8), quality review checklist (§1.9). | Major |

@@ -1,4 +1,4 @@
-1. VoiceGate UI Navigation (Table of Contents)
+X Quant X UI Navigation (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
@@ -6,17 +6,17 @@
 1.5. Philosophical Preamble
 1.6. Screen Inventory
 1.7. Navigation Structure
-1.8. Screen Layouts
-1.8.1. Test Bench Layout
-1.8.2. Call Review Layout
-1.8.3. Risk Report Layout
-1.9. Interaction and Confirmation Model
-1.10. Per-Item Action Menus
-1.10.1. Test Bench Persona/Scenario Menu
-1.10.2. Call Review Finding Menu
-1.10.3. Risk Report Call-Row Menu
-1.11. Settings Screen
-1.12. Summary Table
+1.8. Panel-Specific Display Rules
+1.8.1. P01 Portfolio Overview
+1.8.2. P02 Regime Monitor
+1.8.3. P03 Signal Dashboard
+1.8.4. P04 Position Detail
+1.8.5. P05 Order History
+1.8.6. P06 Risk Audit
+1.9. Modal Dialogs
+1.10. Summary Table
+1.11. Dashboard Header Specification
+1.12. Keyboard Shortcuts Reference
 1.13. Reconciliation Table
 1.14. Risk and Mitigation Table
 1.15. Roles and Responsibilities (RACI)
@@ -25,161 +25,186 @@
 1.18. Changelog Table
 
 1.1. Abstract
-This document specifies the screen structure, navigation model, and interaction/confirmation
-model for VoiceGate's four screens (Test Bench, Call Review, Risk Report, Settings),
-replacing the sibling project's five-screen game-menu structure
-(004_game_menu_context_menus.txt, preserved in git history) with a compliance-tool navigation
-model and a mandatory two-step confirm pattern for destructive actions.
+This document defines the UI navigation specification for the X Quant X paper-trading
+dashboard. It covers the screen inventory, navigation flow, keyboard navigation requirements,
+and screen-specific display rules for the six dashboard panels: Portfolio Overview, Regime
+Monitor, Signal Dashboard, Position Detail, Order History, and Risk Audit.
 
 1.2. Key Words
-Test Bench, Call Review, Risk Report, Settings, navigation, two-step confirm, destructive
-action, live transcript, verdict badge, per-item action menu.
+UI navigation, dashboard, portfolio overview, regime monitor, signal dashboard, position
+detail, order history, risk audit, Dash, Plotly, keyboard navigation, screen layout.
 
 1.3. Executive Summary
-VoiceGate exposes four screens (Test Bench, Call Review, Risk Report, Settings) governed by
-a single interaction rule inherited from the sibling project's confirmation model: a first
-selection previews an action, a second confirms it. No destructive action (deleting a run,
-applying a Suggested Patch Adviser recommendation, resetting run history) may be triggered by
-a single input. Navigation flows linearly from launching a run in the Test Bench, through
-reviewing individual calls in Call Review, to aggregate risk analysis in the Risk Report.
+The X Quant X dashboard is a Plotly Dash web application with six top-level panels accessible
+via a sidebar navigation. The primary view on session start is the Portfolio Overview panel.
+Navigation is sidebar-based with keyboard shortcuts. All panels auto-refresh at the per-bar
+interval (default 1 minute in Paper mode). No panel contains a "live trade" button — the
+dashboard is monitoring-only; execution is handled by the operator pipeline.
 
 1.4. Key Findings
-1.4.1. The Test Bench is the entry point: persona/scenario selection, gauntlet launch, and
-the live dual-channel transcript view for the call currently in progress.
-1.4.2. Call Review always shows, for a completed or in-progress call: the dual-channel
-transcript, inline findings anchored to specific lines, and the overall verdict badge
-(Pass/Fail/Flag) for that call.
-1.4.3. The Risk Report aggregates failed/flagged calls against the specific rule text they
-violate, plus a before/after re-run diff (Suggested Patch Adviser verification) and a
-judge-calibration chart.
-1.4.4. Every action that changes persistent state irrevocably (deleting a run, applying a
-suggested patch, resetting run history) requires the two-step select-then-confirm pattern,
-unchanged in principle from 004_game_menu_context_menus.txt Section 1.9.
-1.4.5. The Settings screen is the only place the palette-variant toggle (see
-002_voicegate_aesthetics.txt Section 1.6.3.2) and destructive administrative actions are
-exposed.
+1.4.1. Six panels cover all monitoring needs: Portfolio Overview (equity + drawdown +
+positions), Regime Monitor (regime probabilities + HMM state), Signal Dashboard (per-operator
+signal scores + aggregate), Position Detail (per-symbol drill-down), Order History (all
+submitted/filled/cancelled orders), Risk Audit (risk-gate verdict log).
+1.4.2. The dashboard is monitoring-only: no buttons that submit orders, modify positions, or
+override risk rules. All actions are observation, not execution.
+1.4.3. Every action that would trigger a configuration change (e.g. switching operating mode
+from Paper to Backtest) requires a two-step confirm in a modal dialog, never a single click.
+1.4.4. The Regime Monitor panel uses the #FFACE9 alert-critical color (from
+002_xquantx_aesthetics.txt) exclusively for R04 and R07 regime highlight states.
+1.4.5. Session context (session_id, mode, RULESET_VERSION) is displayed in the dashboard
+header at all times.
 
 1.5. Philosophical Preamble
-A navigation model is the reviewer's first and most frequent conversation with the verdict
-engine; if that conversation is ambiguous, the underlying rigor of the scoring rules is
-wasted. Every screen and action menu in VoiceGate exists to make the reviewable evidence
-visible before an action is taken, consistent with the guardrails-protect-trust and
-legibility-first design pillars (003_voicegate_philosophy.txt Sections 1.6.1 and 1.6.4).
+A dashboard that allows observation without accidental execution is the trader's first line
+of epistemic discipline. In X Quant X, the dashboard exists to make measured evidence
+visible before any consequential action is taken — consistent with the legibility-first and
+guardrails-protect-trust design pillars (003_xquantx_philosophy.txt). The monitoring-only
+constraint is not a limitation; it is a guarantee: the operator can trust that any state
+change in the live system originated from the operator pipeline, not an accidental dashboard
+click. This principle is non-negotiable and applies to every panel in §1.6.
 
 1.6. Screen Inventory
-| Screen | Purpose |
-|--------|---------|
-| Test Bench | Choose persona/scenario, launch a gauntlet run, view the live transcript |
-| Call Review | Transcript with inline findings and the call's verdict badge |
-| Risk Report | Failed calls vs. rule text, before/after re-run diff, judge-calibration chart |
-| Settings | Palette toggle, dataset/config references, destructive actions (behind two-step confirm) |
+| Panel ID | Panel Name | Primary Charts | Update Frequency |
+|---------|-----------|---------------|----------------|
+| P01 | Portfolio Overview | Equity curve, Drawdown waterfall, Portfolio treemap | Per bar |
+| P02 | Regime Monitor | Regime probability bar, Entropy gauge | Per bar |
+| P03 | Signal Dashboard | Signal score time series (per operator), Aggregate signal | Per bar |
+| P04 | Position Detail | Per-symbol P&L table, Avg entry price, Current price, Weight | Per bar |
+| P05 | Order History | All orders table (submitted, filled, cancelled) with timestamps | Per order event |
+| P06 | Risk Audit | Risk-gate verdict log table (rule_id, verdict, measured_value, threshold) | Per event |
 
 1.7. Navigation Structure
-1.7.1. Test Bench -> (launch run) -> live transcript view -> (call completes) -> Call Review
-for that call.
-1.7.2. Call Review -> (aggregate view) -> Risk Report, filtered to the current run or a
-selected historical run.
-1.7.3. Risk Report -> (accept a Suggested Patch Adviser recommendation, two-step confirm) ->
-regression re-run (016_voicegate_operating_modes.txt) -> new Call Review/Risk Report entries
-for the re-run.
-1.7.4. Settings is reachable from any screen via a persistent navigation element and never
-interrupts an in-progress run.
+1.7.1. Sidebar navigation: left sidebar with 6 panel icons + panel labels. Active panel is
+highlighted with text-accent (#7ec8e3) background.
+1.7.2. Default panel on session start: P01 Portfolio Overview.
+1.7.3. Panel switching: single click on sidebar icon or keyboard shortcut (1–6 for P01–P06).
+1.7.4. Keyboard shortcuts: 1=Portfolio Overview, 2=Regime Monitor, 3=Signal Dashboard,
+4=Position Detail, 5=Order History, 6=Risk Audit, R=force refresh, Esc=close modal.
 
-1.8. Screen Layouts
+1.8. Panel-Specific Display Rules
 
-1.8.1. Test Bench Layout
-Persona/scenario catalog (025_scenario_persona_catalog.txt) selectors occupy one panel;
-the live dual-channel transcript occupies the primary panel; a run-status indicator (idle,
-running, completed) is always visible.
+1.8.1. P01 Portfolio Overview
+- Header: current equity ($), daily P&L ($, %), total P&L ($, %), mode (PAPER/BACKTEST) badge
+- Equity curve (last 252 bars or session start, whichever is shorter)
+- Drawdown waterfall (synchronized time axis with equity curve)
+- Portfolio treemap (current positions, sized by weight, colored long=green/short=red)
+- Alert: if drawdown > 15%, header background changes to alert-critical (#FFACE9)
 
-1.8.2. Call Review Layout
-Dual-channel transcript (agent under test vs. simulated caller, per
-002_voicegate_aesthetics.txt Section 1.8.2) occupies the primary panel; inline findings and
-the overall verdict badge occupy an adjacent panel, anchored to specific transcript lines.
+1.8.2. P02 Regime Monitor
+- Stacked horizontal bar chart: regime probabilities for current bar (R01–R12)
+- R04 and R07 segments highlighted with alert-critical color
+- Entropy gauge: circular gauge, 0–1 scale, turns alert-critical when U_t > 0.75
+- Regime history: last 60 bars shown as a color-coded timeline (most-probable regime per bar)
 
-1.8.3. Risk Report Layout
-A filterable list of failed/flagged calls occupies the primary panel; selecting a call shows
-its violated rule text, the before/after re-run diff (if a patch was applied and verified),
-and the judge-calibration chart is shown in a dedicated summary panel.
+1.8.3. P03 Signal Dashboard
+- Multi-line chart: one line per active SignalOperator (last 60 bars), with +/-confidence
+  shaded bands
+- Aggregate signal line: thicker line, confidence band wider
+- Zero reference line at y=0
+- No chart element uses #FFACE9 unless aggregate signal confidence < 0.40 (shows in
+  warn-soft color)
 
-1.9. Interaction and Confirmation Model
-1.9.1. First selection of a persona/scenario, finding, or call row previews it; details are
-shown without committing to any state change.
-1.9.2. A second, explicit confirmation is required to: launch a gauntlet run, accept a
-Suggested Patch Adviser recommendation, delete a run, or reset run history.
-1.9.3. Deselecting (selecting the same item again, or an unrelated empty area) cancels the
-pending action without side effects.
-1.9.4. No destructive or state-changing action may be performed from a single, un-previewed
-input, per 003_voicegate_philosophy.txt Section 1.7.2.
+1.8.4. P04 Position Detail
+- Table: Symbol | Side | Qty | Avg Entry Price | Current Price | Unrealized P&L ($) |
+  Unrealized P&L (%) | Weight (%)
+- Color: green cells for positive P&L, red cells for negative P&L (no #FFACE9 in this table)
+- Clicking a row opens an in-panel drill-down with the last 20 fill events for that symbol
 
-1.10. Per-Item Action Menus
+1.8.5. P05 Order History
+- Table: Timestamp | order_id | Symbol | Side | Type | Qty | Filled Qty | Fill Price | Status
+- Color: filled=green, cancelled=grey, new=blue, partially_filled=orange
+- Sortable and filterable by symbol and status
 
-1.10.1. Test Bench Persona/Scenario Menu
-Shown on selecting a persona/scenario combination: Preview Scenario, Launch Gauntlet Run,
-Cancel.
+1.8.6. P06 Risk Audit
+- Table: Timestamp | session_id | Rule ID | Verdict | Symbol | Measured Value | Threshold
+- BLOCK rows: orange background; FLATTEN rows: alert-critical (#FFACE9) background;
+  REDUCE rows: light orange
+- Exportable as CSV via "Export" button
 
-1.10.2. Call Review Finding Menu
-Shown on selecting an inline finding: View Rule Citation, Flag for Human Review, Cancel.
+1.9. Modal Dialogs
+1.9.1. Mode-switch confirm dialog: if user selects "Switch to Backtest" (configuration panel,
+out of scope in MVP), a modal requires: "Type CONFIRM to switch mode" and confirmation
+button. Session must be stopped before mode switch.
+1.9.2. Session-stop confirm dialog: "Stop current session?" requires two-click confirm.
+No auto-stop.
+1.9.3. Modals are Dash dcc.ConfirmDialog or dbc.Modal components; they do not appear for
+read-only navigation actions.
 
-1.10.3. Risk Report Call-Row Menu
-Shown on selecting a failed/flagged call row: View Suggested Patch, Accept Suggested Patch
-(two-step confirm, triggers a regression re-run), Export Finding, Cancel.
+1.10. Summary Table
+| Panel | Keyboard Shortcut | Alert Color | Monitoring-Only |
+|-------|------------------|------------|----------------|
+| P01 Portfolio Overview | 1 | #FFACE9 if drawdown > 15% | Yes |
+| P02 Regime Monitor | 2 | #FFACE9 for R04/R07 | Yes |
+| P03 Signal Dashboard | 3 | warn-soft if confidence < 0.40 | Yes |
+| P04 Position Detail | 4 | None (#FFACE9 prohibited) | Yes |
+| P05 Order History | 5 | None | Yes |
+| P06 Risk Audit | 6 | #FFACE9 for FLATTEN rows | Yes |
 
-1.11. Settings Screen
-1.11.1. Palette variant toggle: Dark (Variant A) / Light (Variant B), per
-002_voicegate_aesthetics.txt Section 1.6.
-1.11.2. Reset Run History (two-step confirm dialog, since this is destructive).
-1.11.3. Dataset/config reference panel, pointing to
-030_inhouse_scenario_dataset_creation.txt for the current state of the transcript/
-violation-detection training dataset open question.
+1.11. Dashboard Header Specification
+1.11.1. The dashboard header is always visible regardless of active panel; it cannot be
+hidden or minimized.
+1.11.2. Header fields (left to right): X Quant X logo mark | session_id | mode badge
+(PAPER / BACKTEST / LIVE) | RULESET_VERSION | session elapsed time | last refresh timestamp.
+1.11.3. The mode badge background follows the aesthetics standard: PAPER=neutral,
+BACKTEST=info-blue, LIVE=alert-critical (#FFACE9) to make live-mode unmistakably
+distinguishable from paper and backtest modes.
+1.11.4. Header is rendered outside the Dash dcc.Tabs component so it persists across
+panel navigation without re-render flicker.
 
-1.12. Summary Table
-| Screen/Menu | Key Controls |
-|--------------|----------------|
-| Test Bench | Persona/scenario selectors, live transcript, Launch Gauntlet Run |
-| Call Review | Transcript, inline findings, verdict badge |
-| Risk Report | Failed-call list, rule text, before/after diff, calibration chart |
-| Settings | Palette toggle, Reset Run History, dataset/config reference |
+1.12. Keyboard Shortcuts Reference
+| Key | Action | Panel Scope |
+|-----|--------|------------|
+| 1 | Navigate to P01 Portfolio Overview | Global |
+| 2 | Navigate to P02 Regime Monitor | Global |
+| 3 | Navigate to P03 Signal Dashboard | Global |
+| 4 | Navigate to P04 Position Detail | Global |
+| 5 | Navigate to P05 Order History | Global |
+| 6 | Navigate to P06 Risk Audit | Global |
+| R | Force manual refresh of current panel | Global |
+| Esc | Close active modal dialog | Global |
+| Enter | Confirm focused modal button | Modal |
 
 1.13. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| 004_game_menu_context_menus.txt Section 1.9 | Two-step select-then-confirm interaction model | Retained as the binding interaction model for all VoiceGate destructive actions (1.9) | Reconciled |
-| 004_game_menu_context_menus.txt Section 1.10 | Three context menus (Piece, Territory, Card) | Reworked into three per-item action menus (Test Bench, Call Review, Risk Report) matching VoiceGate's own selectable entities | Reconciled |
-| 004_game_menu_context_menus.txt Section 1.6 | Five-screen inventory (Main Menu, How to Play, Game, Settings, Results) | Reworked into four-screen inventory (Test Bench, Call Review, Risk Report, Settings) matching the VoiceGate pitch | Reconciled |
+|--------|----------------|---------------|--------|
+| X Quant X 004 §1.6 (call-review UI screens) | Call Review, Risk Report, Test Bench screens | Replaced with P01–P06 portfolio dashboard panels | Reconciled |
 
 1.14. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Accidental application of a Suggested Patch Adviser recommendation | Medium | High | Mandatory two-step confirm (1.9.2, 1.10.3), never auto-applied per 003_voicegate_philosophy.txt Section 1.6.3 |
-| Accidental Reset Run History destroying audit trail | Low | High | Two-step confirm dialog required (1.11.2) |
-| Reviewer losing context switching between Call Review and Risk Report | Low | Medium | Explicit navigation structure (1.7) keeps run/call context carried across screens |
+|------|-----------|--------|------------|
+| Dashboard accidentally includes order-submission UI | Medium | High | §1.4 monitoring-only rule; code review: no Alpaca client import in xquantx/dashboard/ |
+| Alert color (#FFACE9) in non-alert context (P04) | High | Medium | §1.8.4 prohibition explicitly documented for P04 |
+| Keyboard shortcuts conflicting with browser shortcuts | Low | Low | Test shortcuts on target browser; use number keys (1–6) which rarely conflict |
 
 1.15. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
 |----------|-----------------|----------|------------|-------------|
-| Maintain screen inventory and layouts | R | C | A | I |
-| Maintain per-item action menu wiring to the verdict engine | R | C/A | A | I |
+| Maintain panel inventory and display rules | R | C | A | I |
+| Maintain keyboard shortcut table (1.12) | R | C/A | A | I |
+| Enforce monitoring-only constraint in code review | C | R/A | A | I |
 
 1.16. Conclusion
-The VoiceGate navigation and action-menu system gives a compliance reviewer an unambiguous,
-two-step-confirmed path from launching a run to reviewing individual calls to acting on
-aggregate risk findings, without exposing any destructive action without preview.
+The X Quant X dashboard navigation and panel-display system gives a quantitative analyst an
+unambiguous, observation-first view of the running paper-trading session. The monitoring-only
+constraint is enforced by design: no panel imports or exposes execution-layer APIs. All six
+panels auto-refresh at the per-bar interval; all state changes requiring confirmation are
+guarded by modal dialogs (§1.9). The keyboard-shortcut model (§1.7.4, §1.12) ensures rapid
+panel traversal without mouse dependency.
 
 1.17. References and Citations
-1.17.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
-§1.1-1.14.
-1.17.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-(three-screen pitch, Section 1.3).
-1.17.3. Internal: voice_transcription_concept/voice_chat_concept.md (source concept chat).
-1.17.4. Internal: voice_processing_specifications/002_voicegate_aesthetics.txt (visual
-language referenced by verdict badge/state indicators).
-1.17.5. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt
-(legal-action/verdict source of truth referenced by all screens).
-1.17.6. Internal (superseded, preserved in git history): 004_game_menu_context_menus.txt.
+1.17.1. Internal: alpaca_paper_trading_specifications_x_quant_x/002_xquantx_aesthetics.txt
+(color palette and typography).
+1.17.2. Internal: alpaca_paper_trading_specifications_x_quant_x/022_xquantx_visualization_dev_standards.txt
+(chart types).
+1.17.3. Internal: alpaca_paper_trading_specifications_x_quant_x/020_xquantx_logging_standards.txt
+(AUDIT_LOGS/ data source for P06).
+1.17.4. Internal: alpaca_paper_trading_specifications_x_quant_x/0000_documentation_standards.txt
+§1.1-1.14 (document structure).
 
 1.18. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/004_game_menu_context_menus.txt: screen inventory, menu structure, interaction model, and three context menus. | Major |
-| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: reworked into four-screen navigation (Test Bench, Call Review, Risk Report, Settings) with per-item action menus and a mandatory two-step confirm pattern for destructive actions (patch acceptance, run history reset). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: reworked into four-screen navigation (Test Bench, Call Review, Risk Report, Settings) with per-item action menus and a mandatory two-step confirm pattern for destructive actions (patch acceptance, run history reset). Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-03: replaced X Quant X call-review UI screens with X Quant X six-panel portfolio dashboard (P01–P06). Screen inventory table, keyboard shortcuts (§1.7), panel-specific display rules (§1.8), modal dialog requirements (§1.9). Monitoring-only rule: no order-submission UI elements. | Major |

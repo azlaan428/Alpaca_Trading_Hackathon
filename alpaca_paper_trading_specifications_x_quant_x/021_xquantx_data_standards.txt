@@ -1,4 +1,4 @@
-1. VoiceGate Data Standards (Table of Contents)
+X Quant X Data Standards (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
@@ -6,8 +6,8 @@
 1.5. Philosophical Preamble
 1.6. Original Baseline Directive (Preserved Verbatim)
 1.7. Format Selection Criteria and Use Cases
-1.8. Transcript and Verdict Record Schemas
-1.9. Statistics and Risk Report Export Formats
+1.8. Canonical Schema Definitions
+1.9. Statistics and Performance Report Export Formats
 1.10. Data Format Prohibitions
 1.11. Summary Table
 1.12. Reconciliation Table
@@ -18,130 +18,253 @@
 1.17. Changelog Table
 
 1.1. Abstract
-This document specifies which of the pre-approved data formats — CSV, JSON, HTML, XML,
-ARXML, XSLX, PICKLE, DB — apply to which VoiceGate data concern, elaborating the original
-format-list baseline directive into concrete per-use-case selection rules for transcripts,
-verdict records, and statutory/company-terms snapshots.
+This document specifies which data formats apply to which X Quant X data concern, and
+provides the canonical JSON schema definitions for all primary data types: OHLCVBar, Tick,
+Order, Position, PortfolioSnapshot, RegimeState, Signal, and PerformanceMetrics. It
+elaborates the original format-list baseline (preserved verbatim in Section 1.6) into
+concrete per-use-case selection rules for all data paths in the platform.
 
 1.2. Key Words
-data format, CSV, JSON, HTML, XML, ARXML, XLSX, pickle, database, transcript schema, verdict
-record, export, security, VoiceGate.
+data format, JSON schema, CSV, Parquet, Arrow, TOML, SQLite, OHLCV, tick, order, position,
+portfolio, regime state, signal, timestamp precision, UTC nanoseconds, null handling,
+forward-fill policy, schema versioning.
 
 1.3. Executive Summary
-VoiceGate uses JSON as its primary schema for transcripts, verdict records, and persona/
-scenario definitions (`src/data/personas`, `src/data/scenarios`,
-`src/data/statutory_rules`, `src/data/company_terms_snapshots`), CSV/XSLX for tabular Risk
-Report and run-statistics export, and reserves HTML/XML/ARXML/DB for optional downstream
-reporting. PICKLE is explicitly restricted per the security guidance in Section 1.10,
-consistent with OWASP guidance against deserializing untrusted pickled data.
+X Quant X uses JSON as the primary schema for all event-driven data (orders, fills, regime
+transitions, signals, audit log entries). Parquet/Arrow is used for bulk historical
+time-series data (OHLCV bars, ticks) in the Rust data pipeline. CSV is used for export and
+cross-run analysis (performance metrics, attribution). TOML is used for all configuration
+(config/). SQLite or TimescaleDB is used for persistent session storage (trade history, fill
+history). All timestamps are UTC nanoseconds since epoch (int64). All prices are IEEE 754
+double precision. PICKLE is restricted to trusted, same-version, local ephemeral caches
+only.
 
 1.4. Key Findings
 1.4.1. All eight formats named in the original baseline directive (Section 1.6) remain
-approved formats for this project; this document assigns each to concrete VoiceGate use
-cases rather than removing any.
-1.4.2. JSON is the primary format for transcript records and verdict records (Section 1.8),
-for human-readability, diffability, and broad tooling support during audit/review.
-1.4.3. CSV and XSLX (XLSX) are reserved for tabular Risk Report and run-statistics export,
-useful for cross-run calibration review (per the judge-calibration-chart deliverable).
-1.4.4. PICKLE is restricted to trusted, locally-generated, same-version data only (e.g.
-ephemeral development-only caches), and must never be used to deserialize transcript,
-statute, or company-terms data from an untrusted or external source, per OWASP guidance on
-insecure deserialization.
-1.4.5. HTML, XML, ARXML, and DB formats are reserved for future/optional reporting,
-interchange, or persistence needs not required by the MVP, and are not currently wired into
-any required MVP data path.
+approved for this project; this document assigns each to concrete X Quant X use cases.
+1.4.2. JSON is the primary format for event-driven data and audit log entries (Section 1.8),
+for human-readability and diffability during audit.
+1.4.3. Parquet/Arrow (via pyarrow, arrow2) is the primary format for bulk OHLCV and tick
+data stored and processed by the Rust pipeline and consumed by Python ML/research.
+1.4.4. All timestamps are int64 UTC nanoseconds since epoch. No local time. No ambiguous
+timezone strings. Conversion to display-friendly format is done only in the dashboard layer.
+1.4.5. PICKLE is restricted per OWASP insecure deserialization guidance: trusted, locally
+generated, same-version ephemeral caches only. Never for OHLCV data, order data, or any
+data from an external source.
+1.4.6. Forward-fill policy for missing bars: gaps of <= 5 consecutive bars are
+forward-filled with the last known close price (open=high=low=close=prev_close, volume=0,
+trade_count=0). Gaps > 5 bars trigger a DataOperator warning and optional replay halt.
+1.4.7. Schema versioning: every JSON schema has a `schema_version` field (semver string).
+Operators validate `schema_version` before processing. Version mismatches are hard errors
+logged to the audit trail.
 
 1.5. Philosophical Preamble
-A data format is a security boundary as much as a serialization choice. This document keeps
-faith with the original baseline's full format list while making explicit which formats are
-safe defaults for compliance-sensitive data (transcripts, statute citations, company terms)
-and which (PICKLE, in particular) require a narrower, trust-bounded use case, in keeping
-with this project's OWASP Top 10 security discipline.
+A data format is a security boundary as much as a serialization choice. A system that
+naively deserializes untrusted PICKLE data from an external market data source has violated
+OWASP insecure deserialization before writing a single line of trading logic. This document
+keeps faith with the original baseline's full format list while making explicit which
+formats are safe defaults for time-series financial data and which require a narrower,
+trust-bounded use case.
 
 1.6. Original Baseline Directive (Preserved Verbatim)
 "CSV, JSON, HTML, XML, ARXML, XSLX, PICKLE, DB formats "
 
 1.7. Format Selection Criteria and Use Cases
-| Format | Primary Use Case in VoiceGate |
-|--------|-------------------------------------|
-| JSON | Transcript records, verdict records, persona/scenario definitions, event-log export |
-| CSV | Tabular Risk Report / run-statistics export for spreadsheet analysis |
-| XSLX (XLSX) | Tabular Risk Report export where formatting/multi-sheet support is desired |
-| HTML | Optional human-readable Risk Report rendering (reserved, not MVP-required) |
-| XML | Optional structured interchange with external compliance tooling (reserved) |
-| ARXML | Reserved for potential future structured interchange (no current use case) |
-| PICKLE | Trusted, same-version, locally generated ephemeral caches only; never for untrusted/external data (Section 1.10) |
-| DB | Reserved for a potential future embedded persistence layer (reserved, not MVP-required) |
+| Format           | Primary Use Case in X Quant X                                                              |
+|------------------|--------------------------------------------------------------------------------------------|
+| JSON             | Event data: orders, fills, regime transitions, signals, audit log entries                  |
+| CSV              | Export: performance metrics, attribution reports, cross-run analysis                       |
+| XSLX (XLSX)      | Export: formatted performance reports where multi-sheet or rich formatting is desired      |
+| Parquet / Arrow  | Bulk storage: OHLCV bars, ticks (read by Python pyarrow and Rust arrow2)                  |
+| HTML             | Dashboard export: static snapshot of equity curve / report (optional)                      |
+| XML              | Reserved: structured interchange with external systems (no current use case)               |
+| ARXML            | Reserved: no current use case                                                              |
+| PICKLE           | Restricted: trusted, locally generated, same-version ephemeral caches only; never for     |
+|                  | external or untrusted data                                                                 |
+| DB (SQLite /     | Persistent session storage: trade history, fill records, position history                  |
+| TimescaleDB)     |                                                                                            |
+| TOML             | Configuration: risk thresholds, regime priors, paper-trading settings (config/)           |
 
-1.8. Transcript and Verdict Record Schemas
-1.8.1. A transcript record is serialized as JSON with, at minimum: `call_id`, dual-channel
-turns (`speaker: agent|caller`, `text`, `timestamp`), `persona_id`, and `scenario_id`.
-1.8.2. A verdict record is serialized as JSON with, at minimum: `call_id`, `verdict:
-PASS|FAIL|FLAG`, `rule_id` (voice_processing_specifications/028_statutory_ruleset_integration.txt
-citation format), `clause_or_section`, and `rationale`.
-1.8.3. Both schemas are chosen for human-readability, diffability, and freedom from the
-arbitrary-code-execution risk associated with PICKLE deserialization, consistent with OWASP
-secure-deserialization guidance, since transcripts may originate from an untrusted call.
+1.8. Canonical Schema Definitions
 
-1.9. Statistics and Risk Report Export Formats
-Run statistics (voice_processing_specifications/010_voicegate_run_statistics.txt) and Risk
-Report line items may be exported as JSON (default, structured), CSV, or XSLX (for
-spreadsheet analysis, e.g. reviewing judge-model calibration across runs).
+1.8.1. OHLCVBar (JSON):
+{
+  "schema_version": "1.0.0",
+  "symbol": "AAPL",
+  "timestamp": 1700000000000000000,
+  "open": 150.25,
+  "high": 151.10,
+  "low": 149.80,
+  "close": 150.90,
+  "volume": 1234567.0,
+  "vwap": 150.60,
+  "trade_count": 8432,
+  "timeframe": "1m"
+}
+Field invariants: high >= open, high >= close, high >= low; low <= open, low <= close;
+all prices > 0; volume >= 0.
+
+1.8.2. Tick (JSON):
+{
+  "schema_version": "1.0.0",
+  "symbol": "AAPL",
+  "timestamp": 1700000000123456789,
+  "price": 150.55,
+  "size": 100.0,
+  "exchange": "NYSE",
+  "conditions": ["R", "F"]
+}
+
+1.8.3. Order (JSON -- submitted state):
+{
+  "schema_version": "1.0.0",
+  "order_id": "uuid-v4",
+  "client_order_id": "xqx-20261231-001",
+  "symbol": "AAPL",
+  "side": "buy",
+  "type": "market",
+  "qty": 10.0,
+  "filled_qty": 0.0,
+  "limit_price": null,
+  "stop_price": null,
+  "status": "new",
+  "submitted_at": 1700000000000000000,
+  "filled_at": null
+}
+Status transitions are append-only: "new" -> "partially_filled" -> "filled" or "cancelled"
+or "expired".
+
+1.8.4. Position (JSON):
+{
+  "schema_version": "1.0.0",
+  "symbol": "AAPL",
+  "qty": 10.0,
+  "avg_entry_price": 150.25,
+  "current_price": 151.00,
+  "unrealized_pl": 7.50,
+  "unrealized_plpc": 0.005,
+  "side": "long"
+}
+
+1.8.5. PortfolioSnapshot (JSON):
+{
+  "schema_version": "1.0.0",
+  "timestamp": 1700000000000000000,
+  "equity": 105000.0,
+  "cash": 55000.0,
+  "buying_power": 55000.0,
+  "positions": [ ... ],
+  "daily_pl": 500.0,
+  "total_pl": 5000.0
+}
+
+1.8.6. RegimeState (JSON):
+{
+  "schema_version": "1.0.0",
+  "timestamp": 1700000000000000000,
+  "regime_id": "R01",
+  "regime_probabilities": {
+    "R01": 0.62, "R02": 0.15, "R03": 0.10, "R04": 0.03,
+    "R05": 0.02, "R06": 0.01, "R07": 0.02, "R08": 0.01,
+    "R09": 0.01, "R10": 0.01, "R11": 0.01, "R12": 0.01
+  },
+  "confidence": 0.74,
+  "kalman_state_vector": [0.62, -0.12, 0.08],
+  "kalman_covariance_matrix": [[0.04, 0.01, 0.00], [0.01, 0.09, 0.02], [0.00, 0.02, 0.06]]
+}
+Invariant: regime_probabilities values must sum to 1.0 +/- 1e-9.
+
+1.8.7. Signal (JSON):
+{
+  "schema_version": "1.0.0",
+  "operator_id": "MomentumSignalOperator-v1.0.0",
+  "symbol": "AAPL",
+  "timestamp": 1700000000000000000,
+  "score": 0.72,
+  "confidence": 0.85,
+  "regime_id": "R01",
+  "version": "1.0.0"
+}
+Invariants: score in [-1, 1]; confidence in (0, 1].
+
+1.9. Statistics and Performance Report Export Formats
+1.9.1. Per-session performance metrics are exported as CSV with columns: session_id, date,
+total_pl, daily_return, sharpe, sortino, calmar, max_drawdown, regime_attribution (JSON
+string), signal_attribution (JSON string).
+1.9.2. Audit log entries are exported as newline-delimited JSON (NDJSON) for streaming
+compatibility.
+1.9.3. A PortfolioSnapshot is emitted at every bar and stored in DB (SQLite) for dashboard
+queries.
 
 1.10. Data Format Prohibitions
-1.10.1. PICKLE must never be used to load data from an untrusted or externally supplied
-source (e.g. a transcript or company-terms snapshot fetched at runtime), since Python's
-`pickle` module can execute arbitrary code during deserialization; this is a binding
-OWASP-aligned security rule, not merely a style preference.
-1.10.2. Transcript records, verdict records, and any data crossing a trust boundary (call
-audio/text, scraped company terms) must use JSON, never PICKLE.
+1.10.1. PICKLE must never be used to serialize or deserialize data from any external source
+(Alpaca API, market data feeds, news sources), per OWASP insecure deserialization guidance.
+1.10.2. API keys and secrets must never appear in any data file, schema file, or
+configuration file committed to version control; load from environment variables only.
+1.10.3. Timestamps in local time or without explicit timezone are a hard error; UTC
+nanoseconds (int64) is the only accepted format.
+1.10.4. Floating-point equality comparisons on price or weight values are prohibited; use
+tolerance-based comparison (|a - b| < epsilon) only.
 
 1.11. Summary Table
-| Data Concern | Format |
-|-----------------|--------|
-| Transcript/verdict records | JSON |
-| Run statistics / Risk Report export | JSON (default), CSV, XSLX |
-| Reserved/future reporting | HTML, XML, ARXML, DB |
-| Trusted-only ephemeral cache | PICKLE (restricted, never for untrusted data) |
+| Data Type          | Primary Format     | Storage     | Key Invariant                              |
+|--------------------|-------------------|-------------|---------------------------------------------|
+| OHLCVBar           | JSON / Parquet     | File + DB   | high >= close >= low; all prices > 0        |
+| Tick               | JSON / Parquet     | File        | price > 0; size >= 0                        |
+| Order              | JSON               | DB          | Status transitions are monotonic            |
+| Position           | JSON               | DB          | Updated atomically per fill                 |
+| PortfolioSnapshot  | JSON               | DB          | Queried by dashboard per bar                |
+| RegimeState        | JSON               | DB          | probabilities sum to 1.0 +/- 1e-9          |
+| Signal             | JSON               | DB / Audit  | score in [-1,1]; confidence in (0,1]        |
+| Performance metrics| CSV                | File        | Exported per session                        |
+| Audit log          | NDJSON             | File + DB   | Hash chain for tamper detection             |
+| Config             | TOML               | File        | Declarative only; no executable logic       |
 
 1.12. Reconciliation Table
-| Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Original baseline (this file, pre-existing) | "CSV, JSON, HTML, XML, ARXML, XSLX, PICKLE, DB formats" | Preserved verbatim in Section 1.6; every format assigned a VoiceGate use case (Section 1.7), transcript/verdict schemas added (Section 1.8), PICKLE additionally security-restricted (Section 1.10) | Reconciled |
+| Source                                         | Prior Statement                                        | Current Canon                                                                                                           | Status      |
+|------------------------------------------------|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|-------------|
+| xquantx 021 Section 1.6 (original format list) | CSV, JSON, HTML, XML, ARXML, XSLX, PICKLE, DB        | Same list; use cases reassigned to X Quant X data types                                                                | Reconciled  |
+| xquantx 021 Section 1.8 (transcript/verdict) | Transcript + verdict JSON schemas                      | Replaced with OHLCVBar, Tick, Order, Position, PortfolioSnapshot, RegimeState, Signal schemas                          | Reconciled  |
+| api_references/api_refs_paper_trading.md       | Alpaca API response formats                            | Canonical schemas Section 1.8 derived from these                                                                        | Reconciled  |
 
 1.13. Risk and Mitigation Table
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Insecure deserialization via PICKLE of untrusted transcript/terms data | Low (if rule followed) | Critical | 1.10.1-1.10.2 binding prohibition; JSON mandated for all trust-boundary-crossing data |
-| Format sprawl making it unclear which format applies where | Medium | Low | 1.7 provides a single authoritative selection table |
-| Verdict/transcript schema drift across engines | Medium | Medium | 1.8 fixes minimum required fields; changes require reconciliation across dependent files |
+| Risk                                               | Likelihood | Impact   | Mitigation                                                                              |
+|----------------------------------------------------|------------|----------|-----------------------------------------------------------------------------------------|
+| PICKLE deserialization of untrusted data           | Medium     | Critical | Section 1.10.1 prohibition; OWASP insecure deserialization rule                         |
+| API keys committed in data files                   | Low        | Critical | Section 1.10.2 prohibition; CI pre-commit secret scanner                                |
+| Timestamp in local time causing bar misalignment   | Medium     | High     | Section 1.10.3 prohibition; DataOperator asserts UTC int64 on every bar                 |
+| regime_probabilities not summing to 1.0            | Medium     | High     | ValidationOperator checks sum +/- 1e-9 on every RegimeState                            |
+| Schema version mismatch silently ignored           | Medium     | High     | Section 1.4.7: schema_version is a required field; mismatch is a hard error            |
 
 1.14. Roles and Responsibilities (RACI)
-| Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
-| Maintain data-format standards | R | C | A | I |
-| Enforce PICKLE security restriction | C | R | A | I |
+| Activity                                     | Author (Agent) | Reviewer | Maintainer | Stakeholder |
+|----------------------------------------------|----------------|----------|------------|-------------|
+| Maintain canonical schemas                   | R              | C        | A          | I           |
+| Enforce data prohibitions in code review     | C              | R/A      | A          | I           |
+| Schema versioning and migration              | R              | C        | A          | I           |
 
 1.15. Conclusion
-Every format in the original baseline directive remains approved and is now assigned a
-concrete, security-conscious VoiceGate use case, with transcript/verdict schemas fixed and
-PICKLE explicitly bounded to prevent insecure deserialization of untrusted data.
+All canonical data schemas are now specified with JSON examples, field invariants, and
+format assignment rules. Every Operator implementation must validate inputs against the
+schema defined in this document before processing.
 
 1.16. References and Citations
-1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14
-(including the binding rule against removing existing baseline text).
-1.16.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (dual-
-channel transcript and verdict deliverable scope).
-1.16.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation).
-1.16.4. Internal: voice_processing_specifications/010_voicegate_run_statistics.txt
-(statistics data contract).
-1.16.5. Internal: voice_processing_specifications/028_statutory_ruleset_integration.txt
-(`rule_id` citation format referenced in verdict records).
-1.16.6. External: OWASP Top 10 - A08:2021 Software and Data Integrity Failures (insecure
-deserialization guidance).
+1.16.1. Internal: alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt
+Section 1.9.3 (OWASP security rule).
+1.16.2. Internal: alpaca_paper_trading_specifications_x_quant_x/019_xquantx_data_structures_algorithms.txt
+(data structure specifications).
+1.16.3. Internal: api_references/api_refs_paper_trading.md (Alpaca API response format
+reference).
+1.16.4. Internal: alpaca_trading_agents_concept/prompt_patterns.md META-PROMPT 15 (schemas
+and interoperability).
+1.16.5. External: OWASP Top 10 A08:2021 - Software and Data Integrity Failures (insecure
+deserialization).
+1.16.6. External: Alpaca Markets API documentation (alpaca.markets/docs).
+1.16.7. External: Apache Arrow / Parquet format specification.
 
 1.17. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Expanded pre-existing format-list baseline (preserved verbatim in Section 1.6) into a full data standards document: per-format use cases, save-file format, export formats, and a binding PICKLE security restriction. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 021_game_data_standards.txt; replaced save-file examples with transcript/verdict record JSON schemas, retargeted citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via git mv from 021_game_data_standards.txt; replaced save-file examples with transcript/verdict record JSON schemas, retargeted citations to alpaca_paper_trading_specifications_x_quant_x/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P1-05: replaced xquantx transcript/verdict schemas with X Quant X financial data schemas (OHLCVBar, Tick, Order, Position, PortfolioSnapshot, RegimeState, Signal). Added forward-fill policy, schema versioning rules, timestamp precision requirement (UTC nanoseconds int64), and Parquet/Arrow/NDJSON format assignments. PICKLE prohibition extended to all external market data. | Major |

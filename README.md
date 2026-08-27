@@ -1,4 +1,4 @@
-# VoiceGate
+# xquantx
 
 **Company:** Not yet confirmed (open item) &nbsp;|&nbsp; **Category:** Voice Compliance QA (VCQ, proposed) &nbsp;|&nbsp; **Status:** Hackathon-stage development
 
@@ -31,24 +31,24 @@ See [ABOUT.md](ABOUT.md) for the full product identity, elevator pitch, and proj
 ## Documentation
 
 All product, design, and engineering specifications live in
-[`voice_processing_specifications/`](voice_processing_specifications/), governed by a binding
+[`alpaca_paper_trading_specifications_x_quant_x/`](alpaca_paper_trading_specifications_x_quant_x/), governed by a binding
 documentation standard (`0000_documentation_standards.txt`). Start at the master index:
 
-- [`voice_processing_specifications/000_index.txt`](voice_processing_specifications/000_index.txt) — full document map
-- [`voice_processing_specifications/001_voice_transcription_concept.txt`](voice_processing_specifications/001_voice_transcription_concept.txt) — product identity, concept, MVP scope, open items
-- [`voice_processing_specifications/017_voicegate_scoring_rules.txt`](voice_processing_specifications/017_voicegate_scoring_rules.txt) — authoritative scoring/verdict engine
+- [`alpaca_paper_trading_specifications_x_quant_x/000_index.txt`](alpaca_paper_trading_specifications_x_quant_x/000_index.txt) — full document map
+- [`alpaca_paper_trading_specifications_x_quant_x/001_voice_transcription_concept.txt`](alpaca_paper_trading_specifications_x_quant_x/001_voice_transcription_concept.txt) — product identity, concept, MVP scope, open items
+- [`alpaca_paper_trading_specifications_x_quant_x/017_xquantx_scoring_rules.txt`](alpaca_paper_trading_specifications_x_quant_x/017_xquantx_scoring_rules.txt) — authoritative scoring/verdict engine
 
 ## Getting Started
 
-1. Set up the Python virtual environment per [`voice_processing_specifications/007_voicegate_virtual_env.txt`](voice_processing_specifications/007_voicegate_virtual_env.txt).
-2. Review the repository scaffolding in [`voice_processing_specifications/006_voicegate_scaffolding.txt`](voice_processing_specifications/006_voicegate_scaffolding.txt).
-3. Review coding standards in [`voice_processing_specifications/005_voicegate_coding_standards.txt`](voice_processing_specifications/005_voicegate_coding_standards.txt) before opening a Pull Request.
+1. Set up the Python virtual environment per [`alpaca_paper_trading_specifications_x_quant_x/007_xquantx_virtual_env.txt`](alpaca_paper_trading_specifications_x_quant_x/007_xquantx_virtual_env.txt).
+2. Review the repository scaffolding in [`alpaca_paper_trading_specifications_x_quant_x/006_xquantx_scaffolding.txt`](alpaca_paper_trading_specifications_x_quant_x/006_xquantx_scaffolding.txt).
+3. Review coding standards in [`alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt`](alpaca_paper_trading_specifications_x_quant_x/005_xquantx_coding_standards.txt) before opening a Pull Request.
 
 ## Project Status
 
 Active hackathon-stage development (assumed LabLab AI Factory / Natively AI, window not yet
 confirmed). No versioned release has shipped yet; see [SECURITY.md](SECURITY.md) for the
-supported-version policy and [`voice_processing_specifications/015_voicegate_deployment.txt`](voice_processing_specifications/015_voicegate_deployment.txt) for the deployment plan.
+supported-version policy and [`alpaca_paper_trading_specifications_x_quant_x/015_xquantx_deployment.txt`](alpaca_paper_trading_specifications_x_quant_x/015_xquantx_deployment.txt) for the deployment plan.
 
 ## Contributing
 

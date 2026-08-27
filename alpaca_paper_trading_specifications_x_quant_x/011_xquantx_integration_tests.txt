@@ -1,154 +1,190 @@
-1. VoiceGate Integration Tests (Table of Contents)
+﻿X Quant X Integration Tests (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Integration Test Scope
-1.6.1. Gauntlet Phase-Transition Integration
-1.6.2. Transcription-to-Scoring Integration
-1.6.3. Persona/Scenario-to-Orchestrator Integration
-1.6.4. Scoring-to-Verdict Integration
-1.6.5. Fail-to-Patch-Adviser-to-Re-Run Integration
-1.6.6. Guardrail Cross-Module Resistance
-1.7. Test Environment and Fixtures
-1.8. Summary Table
-1.9. Reconciliation Table
-1.10. Risk and Mitigation Table
-1.11. Roles and Responsibilities (RACI)
-1.12. Conclusion
-1.13. References and Citations
-1.14. Changelog Table
+1.6. Operator Chain Integration Tests
+1.6.1. Full pipeline chain test
+1.6.2. Chain test with stress-regime input
+1.6.3. SignalAggregationOperator integration test
+1.7. Multi-Asset Pipeline Integration Test
+1.7.1. 5-symbol simultaneous pipeline run
+1.7.2. AllocationVector weight assertions
+1.7.3. Shared MarketRegimeOperator assertion
+1.7.4. Portfolio-level RiskOperator constraint assertion
+1.8. Alpaca Sandbox Integration Tests
+1.8.1. Pre-condition: credentials
+1.8.2. Order submission test
+1.8.3. Account info test
+1.8.4. Cancel order test
+1.8.5. Sandbox isolation protocol
+1.8.6. CI opt-in control
+1.9. Cross-Language Integration Test
+1.9.1. Go to Python IPC integration test
+1.9.2. C++ kernel integration test
+1.10. Summary Table
+1.11. Reconciliation Table
+1.12. Risk and Mitigation Table
+1.13. Roles and Responsibilities (RACI)
+1.14. Conclusion
+1.15. References and Citations
+1.16. Changelog Table
 
 1.1. Abstract
-This document specifies the integration-test tier of VoiceGate's testing pyramid
-(008_voicegate_testing.txt Section 1.7), exercising two or more `src/voicegate/` engine
-modules together to prove that unit-verified behaviors compose correctly across module
-boundaries, for one gauntlet phase transition at a time.
+This document defines the integration test suite for X Quant X, covering Operator chain
+integration, multi-asset pipeline integration, the regime-detection-to-signal-to-risk-gate
+pipeline within a single process, and Alpaca paper-trading API integration tests using the
+Alpaca sandbox environment.
 
 1.2. Key Words
-integration test, module boundary, gauntlet phase transition, cross-module behavior,
-fixture, pytest, patch adviser re-run.
+integration tests, operator chain, multi-asset pipeline, regime-to-signal, risk gate,
+Alpaca sandbox, paper trading API, pytest integration, go test integration, contract tests,
+DAG integration.
 
 1.3. Executive Summary
-Where 009_voicegate_unit_tests.txt proves each engine module correct in isolation, this
-document proves that combinations of modules — `call_orchestrator` driving
-`transcription_engine` and `compliance_scoring_engine`, `compliance_scoring_engine` feeding
-`verdict_engine`, a Fail verdict feeding `patch_adviser` and triggering a re-run — behave
-correctly together, using the same seeded, deterministic fixtures established at the unit
-tier.
+X Quant X integration tests verify that Operators compose correctly in chains:
+DataOperator -> FeatureOperator -> MarketRegimeOperator -> SignalOperator -> RiskOperator
+-> PortfolioOperator -> ExecutionOperator. A separate Alpaca sandbox integration test suite
+verifies that AlpacaPaperExecutionOperator correctly connects to the Alpaca paper API,
+submits orders, and receives fills. Integration tests do not use mocks for the
+inter-operator data flow -- they use real OHLCVBar fixtures and assert on the actual outputs
+of the complete chain.
 
 1.4. Key Findings
-1.4.1. Integration tests operate on at least two `src/voicegate/` modules per test case,
-distinguishing them from the single-module scope of 009_voicegate_unit_tests.txt.
-1.4.2. One full gauntlet phase transition (e.g. Intent Discovery -> Resolution Attempt),
-exercised end-to-end at the module level, is the primary integration surface — short of full
-UI involvement, which is covered by 013_voicegate_end2end_testing.txt.
-1.4.3. Transcription feeding into compliance scoring, and a Fail verdict feeding into the
-`patch_adviser` and a subsequent re-run, are the two most consequential cross-module chains
-and receive dedicated test coverage.
-1.4.4. Guardrail resistance (prompt injection, actor/role confusion) is treated as an
-integration concern in addition to a unit concern, since a transcript fixture must survive
-the full `transcription_engine` -> `compliance_scoring_engine` -> `verdict_engine` chain
-without the embedded instruction or swapped role taking effect anywhere along it.
-1.4.5. Integration tests reuse the seeded `rng_service` fixtures from
-009_voicegate_unit_tests.txt Section 1.6.9 rather than redefining new randomness handling.
+1.4.1. Operator chain tests verify that each typed interface boundary (OperatorOutputs from
+one Operator matching OperatorInputs of the next) is satisfied in practice, not just in
+schema. A schema mismatch that passes unit tests may still fail at the integration boundary.
+1.4.2. The regime-to-signal-to-risk-gate pipeline test is the core integration test: it runs
+a 60-bar sequence through the full pipeline and asserts that: the regime state probability
+vector sums to 1.0, each signal score is in [-1, 1], and the risk-gate verdict is one of
+{ALLOW, REDUCE, BLOCK, FLATTEN}.
+1.4.3. Alpaca sandbox integration tests connect to https://paper-api.alpaca.markets and
+verify: account info retrieval, order submission (market order for AAPL), fill confirmation,
+and position update.
+1.4.4. Multi-asset pipeline test: runs 5 symbols simultaneously through the pipeline and
+asserts that AllocationVector weights sum to <= 1.0 and no single weight exceeds 0.20 (per
+CONC-001 risk rule).
+1.4.5. Cross-language integration: the Go streaming service integration test connects a mock
+Alpaca WebSocket server, receives OHLCVBar JSON events, and verifies they are delivered
+correctly to the Python pipeline via IPC.
 
 1.5. Philosophical Preamble
-A correct set of parts does not guarantee a correct machine. Integration tests exist because
-a compliance verdict is only trustworthy if the engines that produce it actually agree with
-each other once wired together, not merely each individually correct in a vacuum
-(001_voice_transcription_concept.txt Section 1.5).
+Unit tests verify that each Operator computes its output correctly in isolation. Integration
+tests verify that Operators speak the same language when connected. A schema-validated output
+from SignalOperator is only trustworthy at the RiskOperator input if the two sides of the
+typed interface boundary have been tested together, not just separately. Integration tests are
+the proof that the composition algebra works in practice.
 
-1.6. Integration Test Scope
+1.6. Operator Chain Integration Tests
 
-1.6.1. Gauntlet Phase-Transition Integration
-A single phase transition (e.g. Greeting -> Intent Discovery, or Compliance Check ->
-Wrap-up), executed end-to-end at the module level, produces the exact combination of state
-changes expected across `call_orchestrator`, `transcription_engine`, and `event_log`.
+1.6.1. Full pipeline chain test: DataOperator -> NormalizationOperator -> FeatureOperator
+-> MarketRegimeOperator -> MomentumSignalOperator -> RiskOperator ->
+MeanVariancePortfolioOperator. Input: 60 synthetic daily OHLCVBars for a single symbol.
+Assertions:
+   (a) RegimeState.regime_probabilities.values() sums to 1.0 +/- 1e-9
+   (b) SignalScore.signal_score in [-1, 1]
+   (c) RiskOperator.verdict in {ALLOW, REDUCE, BLOCK, FLATTEN}
+   (d) AllocationVector.weights sum to <= 1.0
+   (e) No NaN or Inf in any intermediate output
 
-1.6.2. Transcription-to-Scoring Integration
-A transcribed dual-channel exchange produced by `transcription_engine` is correctly consumed
-by `compliance_scoring_engine`, which returns a score referencing the correct
-`statutory_rules`/`company_terms_snapshots` fixture entries for that exchange's content.
+1.6.2. Chain test with stress-regime input: same test using 60 bars calibrated to produce
+R04 (bear-capitulation) regime. Assertion: RiskOperator must emit BLOCK (per REGM-001 rule)
+for any new long signal when confidence < 0.85 and regime = R04.
 
-1.6.3. Persona/Scenario-to-Orchestrator Integration
-A given persona/scenario selection (`persona_engine` + `scenario_engine`) correctly drives
-the simulated caller's behavior through `call_orchestrator`'s phase sequencing, using the
-seeded `rng_service` for reproducible variance.
+1.6.3. SignalAggregationOperator integration test: three SignalOperators (Momentum,
+MeanReversion, MacroTrend) connected to SignalAggregationOperator. Assertion: aggregate
+signal score in [-1, 1]; confidence in (0, 1]; aggregate confidence <= max(individual
+confidences).
 
-1.6.4. Scoring-to-Verdict Integration
-A `compliance_scoring_engine` output correctly resolves, via `verdict_engine`, to Pass,
-Fail, or Flag with the correct rule citation attached; a borderline score is not silently
-rounded to Pass.
+1.7. Multi-Asset Pipeline Integration Test
 
-1.6.5. Fail-to-Patch-Adviser-to-Re-Run Integration
-A Fail verdict correctly invokes `patch_adviser`, which proposes a system-prompt patch; the
-gauntlet is re-run (a new, separately logged run, per 009_voicegate_unit_tests.txt Section
-1.6.10) against the patched configuration to verify the fix, without the original patch being
-auto-applied without human confirmation.
+1.7.1. Run the full operator chain for 5 symbols simultaneously (SPY, QQQ, AAPL, MSFT,
+AMZN).
 
-1.6.6. Guardrail Cross-Module Resistance
-A transcript fixture containing an embedded instruction, or a deliberately mislabeled
-speaker channel, is exercised through the full `transcription_engine` ->
-`compliance_scoring_engine` -> `verdict_engine` chain and asserted to have no effect on the
-returned verdict at any point in the chain, extending the unit-tier guardrail cases
-(009_voicegate_unit_tests.txt Sections 1.6.11-1.6.12) to the cross-module level.
+1.7.2. Assert: PortfolioOperator produces an AllocationVector where all weights sum to
+<= 1.0 and no individual weight exceeds 0.20 (CONC-001 enforcement).
 
-1.7. Test Environment and Fixtures
-1.7.1. Integration tests run against an in-memory instantiation of the full
-`src/voicegate/` module set, with no external network dependency and no live call against a
-production voice agent — sandbox/mock target agents only, per 015_voicegate_deployment.txt.
-1.7.2. Fixtures use the smallest supported scenario/persona catalog subset by default to keep
-integration tests fast, reserving larger-sample runs for 012_voicegate_performance_tests.txt.
+1.7.3. Assert: regime state is shared across all symbols (one MarketRegimeOperator per
+session, not per symbol).
 
-1.8. Summary Table
-| # | Integration Scope | Key Assertion |
-|---|----------------------|-----------------|
-| 1 | Gauntlet phase-transition | One phase transition produces expected cross-module state |
-| 2 | Transcription -> scoring | Correct score + rule citation from a transcribed exchange |
-| 3 | Persona/scenario -> orchestrator | Selection correctly drives phase sequencing with seeded variance |
-| 4 | Scoring -> verdict | Correct Pass/Fail/Flag resolution with rule citation |
-| 5 | Fail -> patch adviser -> re-run | Advisory-only patch proposal; re-run verifies fix, never auto-applied |
-| 6 | Guardrail cross-module resistance | Embedded instructions/role swaps have no effect across the full chain |
+1.7.4. Assert: RiskOperator evaluates portfolio-level constraints (sector cap SECT-001)
+correctly across all 5 positions simultaneously.
 
-1.9. Reconciliation Table
+1.8. Alpaca Sandbox Integration Tests
+
+1.8.1. Pre-condition: ALPACA_API_KEY and ALPACA_SECRET_KEY environment variables must be
+set to paper trading credentials.
+
+1.8.2. Test: AlpacaPaperExecutionOperator.submit_order(symbol="AAPL", side="buy", qty=1,
+type="market") -> verify order_id is returned and order status is "new" or "filled".
+
+1.8.3. Test: retrieve account info -> verify equity > 0, buying_power > 0.
+
+1.8.4. Test: cancel order -> verify order status transitions to "cancelled".
+
+1.8.5. Sandbox test isolation: each sandbox test starts by cancelling all open orders and
+closing all positions to ensure a clean state.
+
+1.8.6. Sandbox tests are optional in CI (controlled by RUN_SANDBOX_TESTS=1 environment
+variable) to avoid rate limiting and network dependencies in the core CI loop.
+
+1.9. Cross-Language Integration Test
+
+1.9.1. Go -> Python IPC integration test: start the Go streaming service
+(src/go/cmd/streamer/) against a mock Alpaca WebSocket server (httptest), verify that
+OHLCVBar events arrive at the Python pipeline's DataOperator input within 500ms.
+
+1.9.2. C++ kernel integration test: Python calls the Kalman filter C++ kernel via ctypes or
+pybind11 wrapper, verifies the result matches the Python reference implementation (pure
+Python Kalman step) to within 1e-10.
+
+1.10. Summary Table
+| Test | Scope | Assertion |
+|------|-------|-----------|
+| Full pipeline chain | DataOperator -> AllocationVector | Prob sum, score bounds, verdict coverage, no NaN |
+| Stress-regime chain | R04 regime input | BLOCK verdict asserted for new long |
+| Signal aggregation | 3 operators -> aggregate | Bounds, confidence ordering |
+| Multi-asset portfolio | 5 symbols | Weights sum <= 1.0, CONC-001 enforcement |
+| Alpaca sandbox | Paper API | Order submit, fill confirm, cancel |
+| Go -> Python IPC | Streaming service | OHLCVBar delivery within 500ms |
+| C++ kernel | Kalman step | Match Python reference to 1e-10 |
+
+1.11. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Sibling project, 011_game_integration_tests.txt (prior revision) | Six integration scopes covering turn cycle, combat/territory, cards, upgrades, victory/persistence, AI Adviser | Re-mapped to six VoiceGate scopes covering gauntlet phases, transcription/scoring, persona/orchestrator, scoring/verdict, patch-adviser re-run, and guardrail cross-module resistance | Reconciled |
+|--------|----------------|---------------|--------|
+| xquantx 011 §1.6 (call-pipeline integration) | Call orchestrator integration tests | Replaced with Operator chain and Alpaca sandbox integration tests | Reconciled |
 
-1.10. Risk and Mitigation Table
+1.12. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Integration tests duplicating unit-test scope instead of covering cross-module behavior | Medium | Low | 1.4.1 requires at least two modules per test case |
-| Fail-to-re-run cycle accidentally auto-applying a patch without confirmation | Low | High | 1.6.5 explicitly asserts advisory-only behavior; auto-apply is treated as a hard test failure |
-| Slow integration suite from oversized scenario-catalog fixtures | Low | Low | 1.7.2 defaults to the smallest supported catalog subset |
+|------|-----------|--------|------------|
+| Alpaca sandbox rate-limit failures breaking core CI | Medium | Medium | §1.8.6: sandbox tests controlled by optional env var; core CI does not require them |
+| Chain test using mocks at inter-Operator boundary | Medium | High | §1.6.1: chain tests use real fixture data, not per-Operator mocks, for the pipeline integration test |
+| Go -> Python IPC timing flaky in slow CI runners | Low | Medium | 500ms assertion is configurable; CI uses a local mock WebSocket, not live Alpaca |
 
-1.11. Roles and Responsibilities (RACI)
+1.13. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
 |----------|-----------------|----------|------------|-------------|
 | Maintain integration-test scope | R | C | A | I |
 | Maintain shared fixtures | R | C | A | I |
 
-1.12. Conclusion
-Six cross-module integration-test scopes give VoiceGate confidence that its correctly
-unit-tested engines also cooperate correctly across one gauntlet phase transition at a time,
-ahead of full end-to-end validation in 013_voicegate_end2end_testing.txt.
+1.14. Conclusion
+Seven integration test scopes give X Quant X confidence that its correctly unit-tested
+Operators also cooperate correctly across typed interface boundaries, that the Alpaca sandbox
+API behaves as specified, and that the Go streaming and C++ kernel layers integrate cleanly
+with the Python pipeline, ahead of full end-to-end validation in
+013_xquantx_end2end_testing.txt.
 
-1.13. References and Citations
-1.13.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
-§1.1-1.14.
-1.13.2. Internal: voice_processing_specifications/008_voicegate_testing.txt (testing
-pyramid).
-1.13.3. Internal: voice_processing_specifications/009_voicegate_unit_tests.txt (fixture
-reuse, unit-tier scope boundary, guardrail cases 1.6.11-1.6.12).
-1.13.4. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.5
-(transcript-as-data principle).
-1.13.5. Internal: voice_processing_specifications/015_voicegate_deployment.txt
-(sandbox/staging-only call targets).
+1.15. References and Citations
+1.15.1. Internal: alpaca_paper_trading_specifications_x_quant_x/008_xquantx_testing.txt
+§1.6.2 (integration test layer).
+1.15.2. Internal: alpaca_paper_trading_specifications_x_quant_x/028_xquantx_risk_ruleset.txt
+(CONC-001, REGM-001 rules tested here).
+1.15.3. Internal: api_references/api_refs_paper_trading.md (Alpaca paper API endpoints).
 
-1.14. Changelog Table
+1.16. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation (sibling project, as 011_game_integration_tests.txt): six cross-module integration-test scopes and shared fixture rules. | Major |
-| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via `git mv` from 011_game_integration_tests.txt; six scopes re-mapped to gauntlet phase transitions, transcription/scoring, persona/orchestrator, scoring/verdict, Fail-to-patch-adviser re-run, and guardrail cross-module resistance. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.00.01 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via `git mv` from 011_game_integration_tests.txt; six scopes re-mapped to gauntlet phase transitions, transcription/scoring, persona/orchestrator, scoring/verdict, Fail-to-patch-adviser re-run, and guardrail cross-module resistance. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P2-11: replaced xquantx call-pipeline integration tests with X Quant X Operator chain tests (§1.6), multi-asset portfolio tests (§1.7), Alpaca sandbox tests (§1.8), and cross-language IPC integration tests (§1.9). Risk-rule integration (CONC-001, REGM-001) verified at integration level. | Major |

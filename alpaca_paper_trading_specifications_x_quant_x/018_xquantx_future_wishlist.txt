@@ -1,135 +1,160 @@
-1. VoiceGate Future Wishlist (Table of Contents)
+X Quant X Future Wishlist (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Deferred Modes and Features
-1.7. Deferred Compliance/Scoring Complexity
-1.8. Deferred Content Expansion
-1.9. Explicit Non-Goals
-1.10. Summary Table
-1.11. Reconciliation Table
-1.12. Risk and Mitigation Table
-1.13. Roles and Responsibilities (RACI)
-1.14. Conclusion
+1.6. Tier 1 — Execution Upgrades
+1.7. Tier 2 — Intelligence Upgrades
+1.8. Tier 3 — UI Upgrades
+1.9. Tier 4 — Research Upgrades
+1.10. Tier 5 — Infrastructure Upgrades
+1.11. Summary Table
+1.12. Reconciliation Table
+1.13. Risk and Mitigation Table
+1.14. Roles and Responsibilities (RACI)
 1.15. References and Citations
 1.16. Changelog Table
 
 1.1. Abstract
-This document is the authoritative parking lot for every feature, mode, or scoring capability
-explicitly excluded from the VoiceGate MVP (001_voice_transcription_concept.txt Section 1.9),
-replacing the sibling project's wishlist (018_future_wishlist_items.txt, preserved in git
-history), so that good ideas are recorded rather than lost and scope-creep requests during
-implementation are routed here instead of silently expanding the MVP.
+This document catalogs future platform extensions for X Quant X beyond the MVP scope. Each
+extension is grounded in the existing architecture and specifies the minimal additional
+components required. None of these extensions are implemented in the MVP sprint.
 
 1.2. Key Words
-wishlist, deferred features, backlog, stretch goals, post-hackathon roadmap, scope
-discipline, live production monitoring, multi-language personas, real-time coaching.
+future wishlist, live trading, options execution, reinforcement learning, LLM news pipeline,
+mobile dashboard, multi-broker, regime learning, walk-forward optimization.
 
 1.3. Executive Summary
-Every item below was considered during the source concept chat
-(voice_transcription_concept/voice_chat_concept.md) or this documentation pass and
-deliberately deferred, not rejected. Items are grouped into deferred modes/features, deferred
-compliance/scoring complexity, and deferred content expansion, each with a one-line rationale
-for deferral.
+The X Quant X MVP delivers paper trading, backtest, and a core Operator pipeline. Post-MVP
+extensions fall into five tiers: (1) execution upgrades (live trading, options, multi-broker);
+(2) intelligence upgrades (RL-based regime engine, streaming LLM news); (3) UI upgrades
+(mobile dashboard, alert notifications); (4) research upgrades (walk-forward optimization,
+synthetic data generation); (5) infrastructure upgrades (cloud deployment, distributed
+backtesting).
 
 1.4. Key Findings
-1.4.1. Deferral is not deletion: every item here remains a candidate for a post-hackathon
-roadmap and must be re-evaluated against 001_voice_transcription_concept.txt Section 1.9
-before being promoted into an active specification document.
-1.4.2. The largest deferred category is live/production-facing capability (live production
-monitoring, real-time coaching mode) that the MVP intentionally simplifies away in favor of
-offline, run-based gauntlet testing per 016_voicegate_operating_modes.txt.
-1.4.3. Multi-language persona support is the most frequently anticipated content-expansion
-item, restated here as the canonical wishlist entry for that theme.
+1.4.1. Deferral is not deletion: every item here remains a candidate for a post-MVP roadmap
+and must be re-evaluated against 001_xquantx_concept.txt Section 1.9.2 before being promoted
+into an active specification document.
+1.4.2. The largest deferred category is execution-facing capability (live trading, options
+execution, multi-broker support) that the MVP intentionally replaces with paper trading via
+the Alpaca paper endpoint per 016_xquantx_operating_modes.txt.
+1.4.3. RL-based regime learning and streaming LLM news pipeline are the most complex deferred
+items requiring new external dependencies and training infrastructure.
 1.4.4. Any promotion of a wishlist item to active scope requires updating
-001_voice_transcription_concept.txt Section 1.9 and the relevant mechanics/mode document in
-the same change, per the version-control discipline in
-0000_documentation_standards.txt Section 1.6.7.
+001_xquantx_concept.txt Section 1.9.2 and the relevant Operator specification in the same
+change, per 0000_documentation_standards.txt Section 1.6.7.
 
 1.5. Philosophical Preamble
 A wishlist is where ambition goes to wait its turn. Recording a deferred idea with its
-rationale protects the vertical-slice-first design pillar (003_voicegate_philosophy.txt
-Section 1.6.5) without pretending the idea was never worth having.
+rationale protects the vertical-slice-first design pillar (003_xquantx_philosophy.txt
+Section 1.6.5) and the strict paper-trading-first constraint (001_xquantx_concept.txt
+Section 1.9.2) without pretending the idea was never worth having.
 
-1.6. Deferred Modes and Features
-| Item | Rationale for Deferral |
-|------|---------------------------|
-| Live production monitoring (continuous testing against a live production agent) | MVP only requires offline, run-based scripted gauntlet and adversarial fuzzing modes |
-| Real-time coaching mode (in-call guidance to a live human agent) | Out of scope for a red-team/compliance test bench MVP; a distinct product surface |
-| Always-on autonomous fuzzing without human-reviewed run boundaries | Explicitly deferred per 016_voicegate_operating_modes.txt Section 1.10 |
-| Multi-tenant user accounts, profiles, authentication | Not required for a single-team hackathon-scale MVP |
-| Ranked/competitive benchmarking across multiple vendors' agents | Depends on a shared benchmark corpus not yet defined |
+1.6. Tier 1 — Execution Upgrades
+1.6.1. Live trading mode: connect ExecutionOperator to the Alpaca live trading endpoint
+(ALPACA_BASE_URL=https://api.alpaca.markets). Requires: risk audit sign-off, kill-switch
+mechanism, emergency FLATTEN with manual override, regulatory compliance review.
+1.6.2. Options execution: implement OptionsOperator using Alpaca Options API. Requires:
+Black-Scholes and binomial pricing in the C++ kernel, Greeks computation (delta, gamma, vega),
+options-specific risk rules (max vega exposure, max gamma exposure).
+1.6.3. Multi-broker support: abstract ExecutionOperator behind a BrokerAdapter interface to
+support additional brokers (Interactive Brokers via ib_insync, TD Ameritrade). Requires:
+additional SDK submodules, per-broker order type mapping, unified fill event schema.
+1.6.4. Fractional shares: if Alpaca supports fractional share trading, update
+PortfolioOperator to use dollar-denominated allocation (not qty-denominated) for small
+account sizes.
 
-1.7. Deferred Compliance/Scoring Complexity
-| Item | Rationale for Deferral |
-|------|---------------------------|
-| Automated legal-review upgrade of VERIFICATION-FLAGGED citations to confirmed | Requires a qualified legal reviewer sign-off per 003_voicegate_philosophy.txt Section 1.8, not an engineering task |
-| Additional statutory regimes beyond EU AI Act Article 50 and California SB 243 | 028_statutory_ruleset_integration.txt currently scopes to the two cited, verification-flagged statutes only |
-| Automatic ingestion/scraping of a company's live Terms & Conditions page | MVP assumes a manually supplied T&C snapshot per run |
-| Cross-run statistical significance testing on judge-calibration drift | 010_voicegate_run_statistics.txt tracks the trend; formal significance testing is deferred pending more run history |
+1.7. Tier 2 — Intelligence Upgrades
+1.7.1. Reinforcement-learning regime engine: replace or augment the HMM/Bayesian
+MarketRegimeOperator with a PPO or SAC agent trained on historical regime sequences. Requires:
+OpenAI Gymnasium environment wrapper for the regime inference task, stable-baselines3
+integration, walk-forward RL training loop.
+1.7.2. Real-time streaming LLM news pipeline: replace the current batch news scoring with a
+streaming NewsOperator that uses an LLM (GPT-4o or equivalent) to score incoming financial
+news in real-time. Requires: news data subscription (Alpaca News API or Bloomberg API), LLM
+API key, latency budget review (current offline batch: 5 min lag; streaming target: < 1 min
+lag).
+1.7.3. Learned signal weights: replace static regime-conditional signal weights w_i(r)
+(currently in config/regimes.toml) with a learned weight vector updated via online gradient
+descent after each bar. Requires: a bounded learning rate (to prevent catastrophic weight
+drift), a learning curriculum (warm-start from static weights).
+1.7.4. Cross-asset options strategy operators: VolatilityArbitrageOperator,
+CalendarSpreadOperator, IronCondorOperator implementing volatility-surface-based strategies.
 
-1.8. Deferred Content Expansion
-| Item | Rationale for Deferral |
-|------|---------------------------|
-| Multi-language personas (non-English simulated callers) | MVP ships English-only personas from 027_persona_archetype_definitions.txt |
-| Additional persona archetypes beyond the current catalog | MVP ships the archetypes carried forward from the source concept chat only |
-| Additional scenario categories beyond Crisis/Emotional, Minor/Age-Sensitive, Adversarial-Refund, Standard/Happy-Path | 025_scenario_persona_catalog.txt ships exactly these four categories at MVP |
-| Procedurally generated scenario scripts | Not required for the MVP vertical slice; current scenarios are pre-authored |
+1.8. Tier 3 — UI Upgrades
+1.8.1. Mobile dashboard: responsive Dash/React Native mobile app displaying the six panels
+(P01–P06) with push notifications for FLATTEN and BLOCK verdicts.
+1.8.2. Alert notification system: webhook integration (Slack, Discord, Telegram) for BLOCK and
+FLATTEN events, with rule_id and measured_value in the notification payload.
+1.8.3. Interactive strategy builder: a drag-and-drop Dash interface for composing Operator
+DAGs without code, generating a TOML config representation.
 
-1.9. Explicit Non-Goals
-1.9.1. VoiceGate will not auto-apply a Suggested Patch Adviser recommendation during a live
-or scripted run; any AI-assisted remediation remains advisory-only per
-016_voicegate_operating_modes.txt Section 1.9.3, permanently, not just for the MVP.
-1.9.2. VoiceGate will not upgrade a VERIFICATION-FLAGGED external citation (statute or
-tribunal precedent) to confirmed status without an explicit legal-review sign-off, per
-003_voicegate_philosophy.txt Section 1.8.
+1.9. Tier 4 — Research Upgrades
+1.9.1. Walk-forward optimization: automated grid/Bayesian hyperparameter search over the
+config/risk_rules.toml and config/regimes.toml parameters, with out-of-sample Sharpe as the
+objective. Requires: Optuna or Ray Tune integration, parallel backtest execution.
+1.9.2. Synthetic data generation: GAN-based or VAE-based synthetic OHLCV bar generator for
+stress-testing the pipeline on extreme-regime scenarios not present in the historical dataset.
+1.9.3. Multi-asset correlation factor model: replace the rolling 20-day pairwise correlation
+with a dynamic factor model (Fama-French 3/5-factor or PCA-based) for the
+CrossAssetSignalOperator.
 
-1.10. Summary Table
-| Category | Item Count | Example |
-|----------|------------|---------|
-| Deferred modes/features | 5 | Live production monitoring |
-| Deferred compliance/scoring complexity | 4 | Legal-review upgrade of citations |
-| Deferred content expansion | 4 | Multi-language personas |
-| Explicit non-goals (permanent) | 2 | No auto-applied patches |
+1.10. Tier 5 — Infrastructure Upgrades
+1.10.1. Cloud deployment: containerized deployment on AWS ECS or GCP Cloud Run. Requires:
+secrets via AWS Secrets Manager / GCP Secret Manager, distributed logging to CloudWatch /
+Google Cloud Logging, Terraform IaC for infrastructure provisioning.
+1.10.2. Distributed backtesting: parallel backtest execution across multiple EC2/GCE
+instances, each replaying a different historical window, with results aggregated centrally.
+1.10.3. Real-time data subscription upgrade: from Alpaca IEX feed (free tier) to SIP feed
+(full exchange coverage, paid tier) for higher signal quality.
 
-1.11. Reconciliation Table
+1.11. Summary Table
+| Tier | Extension | MVP blocker removed | Estimated complexity |
+|------|-----------|---------------------|----------------------|
+| 1 | Live trading | Risk sign-off + kill-switch | Medium |
+| 1 | Options execution | Black-Scholes kernel + options API | High |
+| 1 | Multi-broker | BrokerAdapter interface | Medium |
+| 2 | RL regime engine | RL training loop + Gymnasium wrapper | High |
+| 2 | Streaming LLM news | LLM API + latency budget | Medium |
+| 2 | Learned signal weights | Online gradient descent | Medium |
+| 3 | Mobile dashboard | React Native / responsive Dash | Medium |
+| 3 | Alert notifications | Webhook integration | Low |
+| 4 | Walk-forward optimization | Optuna/Ray Tune | Medium |
+| 4 | Synthetic data generation | GAN/VAE | High |
+| 5 | Cloud deployment | Terraform + secrets management | Medium |
+| 5 | Distributed backtesting | Parallel execution | High |
+
+1.12. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| 018_future_wishlist_items.txt Section 1.6 (Deferred Modes and Features) | Autonomous AI opponent, online multiplayer, user accounts | Reworked as live production monitoring, real-time coaching, multi-tenant accounts (1.6) | Reconciled |
-| 018_future_wishlist_items.txt Section 1.7 (Deferred Rules Complexity) | Castling, en passant, pawn promotion | Reworked as deferred compliance/scoring complexity: legal-review upgrades, additional statutes, T&C scraping (1.7) | Reconciled |
-| 018_future_wishlist_items.txt Section 1.9 (Explicit Non-Goals) | No AI-generated live rules; no silent envelope expansion | Reworked as no auto-applied patches; no unverified citation upgrades (1.9) | Reconciled |
+|--------|----------------|---------------|--------|
+| X Quant X 018 §1.6 (X Quant X future features) | Voice-agent compliance platform extensions | Replaced with X Quant X quantitative trading platform extensions | Reconciled |
+| alcapa_trading_agents_concept/high_level_concept.md | Long-term vision for live trading, options | Formalized as Tier 1 extensions | Reconciled |
 
-1.12. Risk and Mitigation Table
+1.13. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Wishlist items silently promoted into active scope without documentation update | Medium | High | 1.4.4 mandates a same-change update to 001_voice_transcription_concept.txt Section 1.9 |
-| Wishlist growing without bound, diluting hackathon focus | Medium | Medium | Every item requires a one-line deferral rationale (1.6-1.8), not just a title |
+|------|-----------|--------|------------|
+| Live trading added to MVP scope without proper risk sign-off | High | Critical | §1.9.2 of 001_xquantx_concept.txt explicitly lists live trading as out of scope for MVP |
+| Wishlist items treated as committed features in planning | Medium | Medium | All items in this document are labeled "future scope"; PLAN.md gates feature additions via explicit task entries |
 
-1.13. Roles and Responsibilities (RACI)
+1.14. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
 |----------|-----------------|----------|------------|-------------|
 | Maintain wishlist | R | C | A | I |
 | Approve promotion of a wishlist item to active scope | C | R | A | A/Stakeholder (product owner) |
 
-1.14. Conclusion
-Every deferred idea from the source concept chat and this documentation pass now has a
-recorded rationale and a clear path to promotion, protecting the MVP's vertical-slice focus
-without discarding good ideas.
-
 1.15. References and Citations
-1.15.1. Internal: voice_processing_specifications/0000_documentation_standards.txt
-§1.1-1.14.
-1.15.2. Internal: voice_transcription_concept/voice_chat_concept.md (source concept chat).
-1.15.3. Internal: voice_processing_specifications/001_voice_transcription_concept.txt §1.9
-(MVP scope boundaries).
-1.15.4. Internal: voice_processing_specifications/017_voicegate_scoring_rules.txt (scoring
-complexity deferral references).
-1.15.5. Internal (superseded, preserved in git history): 018_future_wishlist_items.txt.
+1.15.1. Internal: alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt §1.9.2
+(out-of-scope list).
+1.15.2. Internal: alcapa_trading_agents_concept/high_level_concept.md (long-term vision).
+1.15.3. Internal: alcapa_trading_agents_concept/prompt_patterns.md META-PROMPT 30 (do not
+over-engineer).
+1.15.4. External: Alpaca Options API documentation; Alpaca News API documentation.
 
 1.16. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Initial creation under game_specifications/018_future_wishlist_items.txt: deferred modes/features, deferred rules complexity, deferred content expansion, explicit permanent non-goals. | Major |
-| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: replaced deferred game modes/rules with deferred VoiceGate features (live production monitoring, multi-language personas, real-time coaching mode) and compliance/scoring complexity items. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.00.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: replaced deferred game modes/rules with deferred xquantx features (live production monitoring, multi-language personas, real-time coaching mode) and compliance/scoring complexity items. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P3-06: replaced X Quant X future wishlist with X Quant X five-tier extension roadmap: execution upgrades (live trading, options, multi-broker), intelligence upgrades (RL regime, LLM news, learned weights), UI upgrades (mobile, alerts), research upgrades (walk-forward optimization, synthetic data), infrastructure upgrades (cloud, distributed backtesting). | Major |

@@ -1,4 +1,4 @@
-1. VoiceGate Coding Standards (Table of Contents)
+1. X Quant X Coding Standards (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
@@ -7,7 +7,7 @@
 1.6. Original Baseline Directive (Preserved Verbatim)
 1.7. Structural Discipline (SOLID / ACID / JPL Power of Ten / Clean Code)
 1.8. Entry Point and Documentation Discipline
-1.9. Python-Specific Rules
+1.9. Language-Specific Rules
 1.10. Version Control and CI/CD Discipline
 1.11. Summary Table
 1.12. Reconciliation Table
@@ -18,51 +18,55 @@
 1.17. Changelog Table
 
 1.1. Abstract
-This document defines the Python coding standards for the VoiceGate backend (this
-py.typed repository, forked from the DarkStrategy_XParadoxX game codebase and repurposed
-2026-08-03). It expands the original, pre-existing baseline directive (preserved verbatim in
-Section 1.6, per voice_processing_specifications/0000_documentation_standards.txt's binding
-instruction that no agent may remove existing text) into the full structure required by that
-same standards document.
+This document defines the multi-language coding standards for the X Quant X platform — a
+Python/Go/C++/Rust quantitative paper-trading system using the Alpaca API. It expands the
+original baseline directive (preserved verbatim in Section 1.6) into a full four-language
+standard governing Operators, Agents, and shared interfaces throughout the platform.
 
 1.2. Key Words
 SOLID, ACID, JPL Power of Ten, Clean Code, modularization, type hints, PEP 8, logging,
 constants, configuration, version control, CI/CD, entry point, docstrings, complexity
-analysis.
+analysis, Operator interface, Agent composition, Python, Go, C++, Rust, multi-language,
+type safety, financial invariants.
 
 1.3. Executive Summary
-All Python code in this repository must satisfy SOLID, ACID, and NASA/JPL Power-of-Ten-style
-discipline, be modularized so no single file or function does too much, use type hints and
-logging (never print), avoid global variables/magic numbers/hardcoded strings/paths, document
-every function with WHAT/WHY/HOW/args/throws/returns/time-and-space-complexity, keep the
-entry point (`if __name__ == "__main__": main()`) as the only top-level executable code, and
-be developed under version control with meaningful commits, branching strategy, code review,
-and CI/CD automation.
+All code in this repository must satisfy SOLID, ACID, and NASA/JPL Power-of-Ten-style
+discipline across all four languages (Python, Go, C++, Rust). Python governs ML, research,
+orchestration, and Alpaca API calls. Go governs APIs, services, and low-latency streaming.
+C++ governs performance-critical numerical kernels (Kalman filter, covariance matrices,
+options pricing). Rust governs high-integrity concurrent data-pipeline components and
+serialization. Every Operator is a typed software object implementing a formal interface. No
+global variables, no magic numbers, no hardcoded strings or paths. Use structured logging
+(never print). Document every function/method with WHAT/WHY/HOW/args/throws/returns/time-
+and-space-complexity. The entry point in every language file is minimal and gated. CI/CD
+enforces standards across all four language layers.
 
 1.4. Key Findings
 1.4.1. The original baseline directive (Section 1.6) is the authoritative seed for this
-document and has been preserved verbatim, then decomposed into the numbered subsections
-below for compliance with the absolute nested enumeration rule.
-1.4.2. Every Python module must expose a `main()` function and gate execution behind
-`if __name__ == "__main__":`, with no other top-level executable statements.
-1.4.3. Documentation for every function/method/class must include WHAT it does, WHY it
-exists, HOW it works, its arguments, exceptions raised, return value, and a time/space
-complexity note.
-1.4.4. Type hints are mandatory on all function signatures; logging (the standard `logging`
-module) replaces all `print()` usage.
-1.4.5. This document is upstream of 006_voicegate_scaffolding.txt, 007_voicegate_virtual_env.txt,
-019_voicegate_data_structures_algorithms.txt, 023_voicegate_modules_imports.txt, and
-024_voicegate_naming_conventions.txt, all of which must remain consistent with the principles
-stated here.
+document and has been preserved verbatim, then extended into four language-specific sections
+below.
+1.4.2. Every Python file that is directly executable exposes a main() function gated by
+`if __name__ == "__main__": main()`, with no other top-level executable code.
+1.4.3. Every Go package exposes a clear public API; internal implementation details use
+package-private naming; the `main` package is minimal and delegates immediately to a Run()
+or Execute() function.
+1.4.4. Every C++ translation unit declares its public interface in a header file separate
+from its implementation; all numerical operations use double-precision floating point with
+explicit precision documentation.
+1.4.5. Every Rust crate uses typed error propagation (Result<T, E>); panics are reserved
+for programmer errors only, never for recoverable runtime conditions.
+1.4.6. This document is upstream of 006_xquantx_scaffolding.txt, 007_xquantx_virtual_env.txt,
+019_xquantx_data_structures_algorithms.txt, 023_xquantx_modules_imports.txt, and
+024_xquantx_naming_conventions.txt.
 
 1.5. Philosophical Preamble
 Code is documentation that executes, and documentation is code that persuades; both fail
 under the same conditions — hidden state, unexplained magic values, and untraceable
-decisions. VoiceGate's compliance-scoring and verdict engines must be as auditable as their
-own specification corpus, because a red-team compliance test bench whose backend cannot be
-trusted to compute a verdict deterministically and traceably has failed its own reason for
-existing: a Pass/Fail/Flag verdict with a rule citation is only meaningful if the code path
-producing it is itself inspectable and free of hidden state.
+decisions. X Quant X's Operators and Agents must be as auditable as their own specification
+corpus, because a risk-gated trading system whose backend cannot be trusted to compute a
+verdict deterministically and traceably has failed its own reason for existing: an
+ALLOW/REDUCE/BLOCK/FLATTEN verdict from a RiskOperator is only meaningful if the code path
+producing it is inspectable and free of hidden state.
 
 1.6. Original Baseline Directive (Preserved Verbatim)
 "SOLID, ACID, JPL 10 FP, Clean Code, modularized codes, no single file doing too much. Def
@@ -81,105 +85,115 @@ deployment (CI/CD) pipelines for automated testing and deployment."
 
 1.7. Structural Discipline (SOLID / ACID / JPL Power of Ten / Clean Code)
 1.7.1. SOLID (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation,
-Dependency Inversion) governs class and module design; e.g. `VerdictEngine` decides
-Pass/Fail/Flag and nothing else, `ComplianceScoringEngine` decides rule-vs-transcript scoring
-and nothing else — combining the two would violate Single Responsibility.
+Dependency Inversion) governs Operator and Agent class design: MarketRegimeOperator infers
+regime state and nothing else; SignalOperator generates signals and nothing else; RiskOperator
+evaluates rule compliance and nothing else — combining responsibilities violates Single
+Responsibility.
 1.7.2. ACID (Atomicity, Consistency, Isolation, Durability) governs any persistence operation
-(run history, re-run records; see `src/services` persistence client).
+(trade log, position history, audit trail; see persistence layer in services/).
 1.7.3. NASA/JPL Power-of-Ten-style discipline governs defensive coding: bounded loops, no
 uncontrolled recursion, simple control flow, and checked return values — especially important
-where transcript text (untrusted DATA) drives control flow in the transcription/scoring
-engines.
+in the numerical kernel where unbounded iteration in matrix inversion can produce silent NaN
+propagation.
 1.7.4. Modularization: no single file or function performs more than one clearly named
-responsibility; see 023_voicegate_modules_imports.txt for module boundary definitions.
+responsibility; see 023_xquantx_modules_imports.txt for module boundary definitions.
 
 1.8. Entry Point and Documentation Discipline
-1.8.1. Every Python file that is directly executable exposes a `main()` function and guards
-it with `if __name__ == "__main__": main()`; this is the only code outside of functions and
-classes.
-1.8.2. Every function, method, and class docstring records: WHAT the unit does, WHY it
-exists, HOW it accomplishes its purpose, its `Args`, any exceptions it `Raises`, its
-`Returns`, and a `Complexity:` line stating time and space complexity in Big-O notation. For
-example, `score_call(transcript: Transcript, rules: list[StatutoryRule]) -> ComplianceScore`
-documents that transcript content is treated strictly as data, never as instructions, per the
-guardrail policy in Section 1.5.
+1.8.1. Python: every executable file guards execution with `if __name__ == "__main__": main()`
+and no other top-level code outside functions and classes.
+1.8.2. Go: every `main` package delegates to a named function (e.g. `Run()`) within a few
+lines; the `main()` function itself sets up logging and calls `Run()` only.
+1.8.3. C++: every executable translation unit has a `main()` of <= 20 lines that parses
+arguments and delegates to a named class or function.
+1.8.4. Rust: every binary crate has a `main()` of <= 20 lines; all logic is in library crate
+functions called from `main()`.
+1.8.5. Every function, method, and class docstring records: WHAT the unit does, WHY it
+exists, HOW it accomplishes its purpose, its Args, any exceptions it Raises, its Returns, and
+a Complexity: line stating time and space complexity in Big-O notation. Example:
+`compute_kalman_update(state: KalmanState, observation: f64) -> KalmanState` documents that
+it is a pure function with no side effects, O(n^2) in state dimension.
 
-1.9. Python-Specific Rules
-1.9.1. No global variables; shared state is passed explicitly or encapsulated in a class
-(e.g. a `RunContext` object passed through `call_orchestrator`, never a module-level mutable
-singleton).
-1.9.2. No magic numbers or hardcoded strings/paths; use named constants or configuration
-files (see `src/data` for accepted persona/scenario/statutory-rule data formats).
-1.9.3. Type hints are mandatory on all function/method signatures, per
-024_voicegate_naming_conventions.txt.
-1.9.4. Use the standard `logging` module exclusively; `print()` is disallowed outside of
-throwaway local debugging never committed to version control.
-1.9.5. PEP 8 style is mandatory across the codebase.
-1.9.6. Dependencies are managed inside a virtual environment, per
-007_voicegate_virtual_env.txt.
+1.9. Language-Specific Rules
+1.9.1. Python rules: No global variables (shared state is in a context object like
+`SessionContext`); no magic numbers or hardcoded strings/paths (use constants and config
+files); type hints mandatory on all signatures (per 024_xquantx_naming_conventions.txt); use
+`logging` module exclusively (`print()` disallowed outside throwaway debugging); PEP 8
+mandatory; dependencies in virtual environment (per 007_xquantx_virtual_env.txt); `mypy
+--strict` must pass.
+1.9.2. Go rules: All exported identifiers have documentation comments; errors are returned,
+not panicked (except truly unrecoverable programmer errors); goroutines are documented with
+their lifetime and cancellation mechanism; no naked `interface{}` (use typed interfaces);
+`go vet` and `golangci-lint` must pass.
+1.9.3. C++ rules: All headers use `#pragma once` or include guards; all numerical results are
+checked for NaN/Inf before propagation; no raw pointers in new code (use smart pointers);
+`clang-tidy` must pass; all floating-point arithmetic is IEEE 754 double precision unless
+explicitly documented otherwise.
+1.9.4. Rust rules: All public items have rustdoc comments; `Result<T, E>` for all fallible
+operations; no `unwrap()` or `expect()` in library code; `clippy` must pass at
+deny(warnings); no `unsafe` without a documented safety invariant.
 
 1.10. Version Control and CI/CD Discipline
-1.10.1. Git is the version-control system; commit messages are clear, concise, and follow
-Conventional Commits style where practical.
-1.10.2. A branching strategy separates feature branches, bug-fix branches, and release
-branches.
+1.10.1. Git is the version-control system; commit messages follow Conventional Commits style.
+1.10.2. A branching strategy separates feature, bug-fix, and release branches.
 1.10.3. Every change is code-reviewed before merge.
-1.10.4. CI/CD pipelines automate testing and deployment on every merge, including a
-prompt-injection/guardrail regression suite specific to the transcription and scoring
-engines.
+1.10.4. CI/CD pipelines run tests and linters for all four languages on every merge: `pytest`
++ `mypy` (Python), `go test` + `golangci-lint` (Go), `ctest` + `clang-tidy` (C++), `cargo
+test` + `clippy` (Rust). No language gate may be bypassed.
 
 1.11. Summary Table
 | Rule Category | Requirement |
-|-----------------|-------------|
+|---------------|------------|
 | Structural | SOLID, ACID, JPL Power of Ten, Clean Code, modularization |
-| Entry point | `main()` + `if __name__ == "__main__":` only |
+| Entry point | Minimal main() in all four languages; delegates to named functions |
 | Documentation | WHAT/WHY/HOW/Args/Raises/Returns/Complexity on every unit |
 | State | No globals, no magic numbers, no hardcoded strings/paths |
-| Typing | Type hints mandatory |
-| Logging | `logging` module only, never `print()` |
-| Testing | Unit tests for all functions/classes |
-| Environment | Virtual environment for all dependencies (see 007_voicegate_virtual_env.txt) |
-| Style | PEP 8 |
-| VCS/CI/CD | Git, branching strategy, code review, automated CI/CD |
+| Typing | Type hints (Python), typed interfaces (Go), smart pointers (C++), Result<T,E> (Rust) |
+| Logging | Structured logging only; never print()/fmt.Print()/std::cout in production |
+| Testing | Unit tests for all Operators; property tests for financial invariants |
+| Environment | Per-language build env per 007_xquantx_virtual_env.txt |
+| Style | PEP 8 (Python), gofmt (Go), clang-format (C++), rustfmt (Rust) |
+| VCS/CI/CD | Git, branching strategy, code review, automated four-language CI/CD |
 
 1.12. Reconciliation Table
 | Source | Prior Statement | Current Canon | Status |
-|--------|------------------|-----------------|--------|
-| Pre-existing baseline (this file, prior revision) | Single unstructured paragraph of rules | Preserved verbatim in Section 1.6; decomposed into Sections 1.7-1.10 | Reconciled |
+|--------|----------------|---------------|--------|
+| Pre-existing baseline (this file) | Single Python-only rules paragraph | Preserved verbatim in §1.6; extended to four languages in §1.9 | Reconciled |
+| xquantx 005 §1.9 | Python-Specific Rules | Renamed to Language-Specific Rules; three new language sections added (Go, C++, Rust) | Extended |
 
 1.13. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| A contributor bypasses type hints or logging discipline | Medium | Medium | CI lint/type-check gate blocking merge on violation |
-| Hardcoded magic numbers reintroduced under time pressure (hackathon context) | High | Medium | Code review checklist item explicitly citing 1.9.2 |
-| Entry-point discipline drifting as the codebase grows | Low | Medium | 1.8.1 rule re-checked in code review and CI |
-| Transcript content accidentally treated as instructions rather than data in a new code path | Medium | High | Guardrail-specific code review item citing Section 1.5; regression suite per 1.10.4 |
+|------|-----------|--------|------------|
+| A contributor bypasses type hints or logging discipline in Python | Medium | Medium | CI mypy --strict gate blocking merge on violation |
+| Magic numbers reintroduced in numerical kernel (C++) | High | High | clang-tidy check + code review checklist citing §1.9.3 |
+| Language boundary violated (Python re-implementing C++ kernel logic) | Medium | High | 023_xquantx_modules_imports.txt module boundary definitions enforced in code review |
+| NaN propagation from C++ kernel silently corrupting portfolio allocation | Low | Critical | §1.9.3 NaN/Inf check rule; unit tests assert finite output on all numerical Operators |
 
 1.14. Roles and Responsibilities (RACI)
 | Activity | Author (Agent) | Reviewer | Maintainer | Stakeholder |
-|----------|-----------------|----------|------------|-------------|
+|----------|---------------|----------|-----------|------------|
 | Maintain coding standards | R | C | A | I |
 | Enforce standards in code review | C | R/A | A | I |
-| CI lint/type-check gate maintenance | R | C | A | I |
+| CI lint/type-check gate maintenance (all 4 languages) | R | C | A | I |
 
 1.15. Conclusion
-The original baseline directive is fully preserved and now structurally decomposed into
-actionable, citable rule sections. Every Python file in this repository must satisfy Sections
-1.7 through 1.10 before merge.
+The original baseline directive is fully preserved and now structurally extended into an
+actionable four-language standard. Every file in this repository must satisfy Sections 1.7
+through 1.10 before merge, across all four implementation languages.
 
 1.16. References and Citations
-1.16.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.1-1.14
-(structural contract; "no agent must remove any existing texts" instruction honored in
-Section 1.6).
-1.16.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt
-(product concept and guardrail rationale).
-1.16.3. External: PEP 8 - Style Guide for Python Code (Python Software Foundation).
-1.16.4. External: NASA/JPL Institutional Coding Standard for the C Programming Language
-("Power of Ten" rules), adapted here for Python.
-1.16.5. External: SOLID principles (Robert C. Martin).
+1.16.1. Internal: alpaca_paper_trading_specifications_x_quant_x/0000_documentation_standards.txt §1.1-1.14.
+1.16.2. Internal: alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt
+(platform concept).
+1.16.3. Internal: alpaca_trading_agents_concept/prompt_patterns.md META-PROMPT 4
+(multi-language responsibility boundaries).
+1.16.4. External: PEP 8 - Style Guide for Python Code (Python Software Foundation).
+1.16.5. External: NASA/JPL Institutional Coding Standard (Power of Ten rules).
+1.16.6. External: SOLID principles (Robert C. Martin).
+1.16.7. External: Conventional Commits specification (conventionalcommits.org).
 
 1.17. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-30 | Documentation Agent | Restructured pre-existing baseline directive into full 0000-compliant document; original text preserved verbatim in Section 1.6. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed file via `git mv` from 005_game_coding_standards.txt; replaced game-specific engine/example references (rules engine, chess pieces, dice combat) with VoiceGate examples (`VerdictEngine`, `ComplianceScoringEngine`, `score_call()`) and updated cross-references to sibling VoiceGate spec files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed file via `git mv` from 005_game_coding_standards.txt; replaced game-specific engine/example references (rules engine, chess pieces, dice combat) with xquantx examples (`VerdictEngine`, `ComplianceScoringEngine`, `score_call()`) and updated cross-references to sibling xquantx spec files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Minor |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P1-01: extended Python-only xquantx coding standards into a four-language standard (Python/Go/C++/Rust). §1.9 renamed to Language-Specific Rules with four subsections. All xquantx examples (VerdictEngine, ComplianceScoringEngine) replaced with X Quant X Operator examples (MarketRegimeOperator, RiskOperator, SignalOperator). Original baseline directive preserved verbatim in §1.6. | Major |

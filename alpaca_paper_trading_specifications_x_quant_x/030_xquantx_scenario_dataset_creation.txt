@@ -1,17 +1,17 @@
-1. In-House Scenario and Transcript Dataset Creation (Table of Contents)
+X Quant X Market Scenario Dataset Creation (Table of Contents)
 1.1. Abstract
 1.2. Key Words
 1.3. Executive Summary
 1.4. Key Findings
 1.5. Philosophical Preamble
-1.6. Scope and Authority
-1.7. Open Question: Does a Training Dataset Already Exist?
-1.8. Fallback Bootstrap Workflow (Assumed, Pending Confirmation)
-1.9. Toolchain for Synthetic Transcript Generation
-1.10. Version Control and Dataset Lineage
+1.6. Dataset Assembly Procedure
+1.7. Ground-Truth Regime Labeling
+1.8. Train / Validate / Test Split
+1.9. Dataset Versioning
+1.10. Summary Table
 1.11. Quality Gates and Acceptance Criteria
 1.12. Team Collaboration and Escalation Path
-1.13. Summary Table
+1.13. Data Pipeline Checklist
 1.14. Reconciliation Table
 1.15. Risk and Mitigation Table
 1.16. Roles and Responsibilities (RACI)
@@ -20,187 +20,196 @@
 1.19. Changelog Table
 
 1.1. Abstract
-This document defines the in-house workflow, toolchain, and governance for building
-VoiceGate's scenario/transcript training dataset — the data used to develop and validate
-violation-detection and compliance-scoring behavior. It extends
-voice_processing_specifications/029_voice_persona_asset_creation.txt by operationalizing
-dataset creation itself, and it explicitly records an unresolved open question rather than
-inventing an answer to it.
+This document defines the procedure for assembling, annotating, and versioning the in-house
+historical market-scenario dataset used for backtesting, regime model calibration, and
+walk-forward validation in X Quant X.
 
 1.2. Key Words
-training dataset, synthetic transcript, bootstrap workflow, reverse engineering, dataset
-lineage, violation detection, open question, team-lead confirmation, VoiceGate.
+historical dataset, OHLCV, regime annotation, train/validate/test split, data provenance,
+data leakage prevention, Parquet, dataset versioning, ground-truth labeling, walk-forward
+validation.
 
 1.3. Executive Summary
-It is not yet known whether the team already has an existing transcript/violation-detection
-training dataset, or whether one must be built from scratch. This document treats that as an
-explicit open risk (Section 1.7), assumes the from-scratch case as its working fallback
-(Section 1.8), and describes a reverse-engineering/bootstrap workflow for generating synthetic
-scenario transcripts using the persona archetypes
-(voice_processing_specifications/027_persona_archetype_definitions.txt) and scenario catalog
-(voice_processing_specifications/025_scenario_persona_catalog.txt) already defined elsewhere
-in this corpus.
+The X Quant X in-house dataset consists of historical OHLCV bars and associated macro
+indicators, annotated with ground-truth regime labels (R01–R12 from
+025_xquantx_scenario_catalog.txt) for supervised regime model evaluation. The dataset is
+assembled from the Alpaca historical data API, stored in Parquet format, versioned in a
+dataset registry, and split into train/validate/test partitions with strict anti-leakage
+rules.
 
 1.4. Key Findings
-1.4.1. The existence of a pre-existing training dataset is unconfirmed; this document does
-not assert one exists or does not exist (Section 1.7).
-1.4.2. Absent confirmation, the team must assume no dataset exists and follow the bootstrap
-workflow in Section 1.8 to synthesize an initial one.
-1.4.3. Synthetic transcripts must be generated using the already-canonical persona archetypes
-and scenario catalog, not ad hoc personas invented outside those two files.
-1.4.4. Every synthesized dataset batch must carry lineage metadata (Section 1.10) so it can
-be distinguished from any real-world or externally sourced data if one is later confirmed to
-exist.
-1.4.5. This open question must be escalated to the team lead per Section 1.12 before the
-dataset is treated as authoritative for training or evaluation.
+1.4.1. Historical OHLCV data is pulled from the Alpaca historical data API using alpaca-py
+and stored as Parquet files in data/historical/ (gitignored).
+1.4.2. Ground-truth regime labels are assigned by a human-reviewed annotation procedure (not
+by the model under evaluation) to enable objective regime model evaluation.
+1.4.3. Train/validate/test split is time-based (walk-forward): train on earliest period,
+validate on middle period, test on most recent period. No random shuffling across time
+periods.
+1.4.4. The temporal leakage invariant (per 019_xquantx_data_structures_algorithms.txt
+§1.4.6) applies to dataset assembly: no feature computed on bar t may use data from bar t+1
+or later.
+1.4.5. Dataset provenance is recorded in a JSON manifest (data/historical/manifest.json)
+documenting: data source, pull timestamp, symbol list, date range, data schema version, and
+annotation version.
 
 1.5. Philosophical Preamble
-An unconfirmed assumption stated plainly is safer than a confident guess. Where the sibling
-project's in-house asset creation governance could assume a known creative pipeline, this
-document instead has to govern a genuinely open question: whether the raw material for
-compliance-model training already exists. The discipline here is to build a usable fallback
-without pretending the open question is closed.
+Data discipline is the foundation of reproducible quantitative research. A backtest that
+appears profitable on corrupted, mis-labeled, or look-ahead-biased data is not a valid
+backtest — it is an artifact. This document treats the dataset as a first-class engineering
+artifact with the same rigor applied to source code: versioning, provenance, quality gates,
+and explicit anti-leakage invariants. Where uncertainty exists (e.g. gap-fill policy edge
+cases), the uncertainty is recorded explicitly rather than silently resolved with a guess.
 
-1.6. Scope and Authority
-1.6.1. This document governs the dataset-creation phase only; asset/voice acceptance and
-integration are governed by
-voice_processing_specifications/029_voice_persona_asset_creation.txt.
-1.6.2. Toolchain/environment setup is governed by
-voice_processing_specifications/007_voicegate_virtual_env.txt and
-voice_processing_specifications/006_voicegate_scaffolding.txt.
-1.6.3. This document does not resolve the open question in Section 1.7; only the team lead
-or stakeholder can close it, per the RACI in Section 1.16.
+1.6. Dataset Assembly Procedure
+1.6.1. Source: Alpaca historical data API via alpaca-py client. Data pulled using
+`StockHistoricalDataClient.get_stock_bars()` with timeframe=TimeFrame.Day or
+TimeFrame.Minute depending on the backtest resolution.
+1.6.2. Symbol universe (MVP): S&P 500 constituent ETFs (SPY, QQQ, IWM) plus up to 20
+individual equity tickers selected at dataset-assembly time and documented in the manifest.
+1.6.3. Date range: minimum 2 years of daily OHLCV data; minimum 6 months of 1-minute OHLCV
+data for intraday backtest support.
+1.6.4. Storage: each symbol is stored as a separate Parquet file:
+data/historical/{symbol}_{timeframe}_{date_range}.parquet. Field names match the OHLCVBar
+schema in 021_xquantx_data_standards.txt §1.8.1.
+1.6.5. Macro indicator supplement: for each trading day, the following macro indicators are
+stored in a companion file data/historical/macro_{date_range}.parquet: VIX daily close,
+2-year yield, 10-year yield, 2s10s spread, DXY (dollar index), CRB commodity index close.
+1.6.6. Missing bar handling: follow the forward-fill policy defined in
+021_xquantx_data_standards.txt §1.4.6 (gaps ≤ 5 bars are forward-filled; larger gaps
+produce a DataOperator warning in the manifest).
 
-1.7. Open Question: Does a Training Dataset Already Exist?
-1.7.1. Status: OPEN, UNRESOLVED. Not yet confirmed with the team lead as of 2026-08-03.
-1.7.2. The question: does an existing transcript/violation-detection training dataset already
-exist for this team (from a prior project, licensed source, or partner), or must the team
-build one from scratch by generating synthetic scenario transcripts?
-1.7.3. This document takes no position on the answer. It records the question, assigns an
-owner for resolving it (Section 1.16), and defines a fallback workflow (Section 1.8) so work
-is not blocked while the question is open.
-1.7.4. If an existing dataset is later confirmed, this document's Section 1.8 fallback
-workflow becomes supplementary (for coverage gaps) rather than primary.
+1.7. Ground-Truth Regime Labeling
+1.7.1. Each daily bar is assigned a ground-truth regime label (R01–R12) by a human reviewer
+using the feature signatures defined in 025_xquantx_scenario_catalog.txt §1.6.1–§1.6.12.
+1.7.2. Annotation is stored in data/historical/regime_labels_{date_range}.json as a mapping:
+{timestamp_ns: regime_id}.
+1.7.3. Annotation review: each label is reviewed by at least one additional team member
+before the dataset is marked as annotation-complete.
+1.7.4. The ground-truth labels are used ONLY for evaluation of MarketRegimeOperator outputs
+(precision/recall per regime class); they are NEVER used as training inputs to the
+MarketRegimeOperator itself (that would constitute data leakage).
 
-1.8. Fallback Bootstrap Workflow (Assumed, Pending Confirmation)
-1.8.1. Step 1 - Scenario/persona sampling: draw (category, intensity tier) combinations from
-voice_processing_specifications/025_scenario_persona_catalog.txt and bind each to a persona
-archetype from voice_processing_specifications/027_persona_archetype_definitions.txt, per the
-catalog's resolution contract.
-1.8.2. Step 2 - Synthetic call generation: generate a scripted or LLM-assisted synthetic
-transcript for each sampled combination, applying variance injection
-(voice_processing_specifications/026_randomization_variance_terminology.txt) to vary tone,
-interruption timing, and escalation within the sampled persona's bounds.
-1.8.3. Step 3 - Weak-label annotation: label each synthetic transcript with its intended
-verdict outcome (Pass/Fail/Flag) and rule citation
-(voice_processing_specifications/028_statutory_ruleset_integration.txt), since the scenario
-was authored to probe a specific compliance boundary.
-1.8.4. Step 4 - Human spot-check: a reviewer samples a subset of synthesized transcripts to
-confirm the weak label matches what a human reviewer would independently conclude.
-1.8.5. Step 5 - Reverse-engineering pass: where behavior of a real target agent is later
-observed (e.g. during early Test Bench runs), transcripts and verdicts from those real runs
-are folded back into the dataset, reducing reliance on purely synthetic data over time.
-1.8.6. This workflow produces a bootstrap dataset sufficient for initial development; it is
-explicitly not a substitute for the confirmation in Section 1.7.
+1.8. Train / Validate / Test Split
+1.8.1. Split policy: time-based, non-overlapping, strictly forward in time.
+1.8.2. Default split: train = first 60% of date range, validate = next 20%, test = most
+recent 20%.
+1.8.3. No shuffling across time periods. No random split. The test set is always the most
+recent period.
+1.8.4. Walk-forward validation: the validate set is used for operator hyperparameter tuning;
+the test set is held out until final evaluation. No hyperparameter decisions are made by
+inspecting the test set.
+1.8.5. Anti-leakage rule: no feature computed on the validate or test set may have used any
+data from those partitions during train-set feature operator calibration.
 
-1.9. Toolchain for Synthetic Transcript Generation
-1.9.1. Scenario/persona binding: `src/voicegate/scenario_engine` and
-`src/voicegate/persona_engine`.
-1.9.2. Transcript synthesis: LLM-assisted generation constrained to the persona's behavioral
-stats and the scenario's scripted escalation beats (no free-form persona invention).
-1.9.3. Storage: synthetic transcripts are JSON per
-voice_processing_specifications/021_voicegate_data_standards.txt §1.8.1, stored under
-`src/data/scenarios` alongside their originating scenario definition.
-1.9.4. Every synthesis run must be reproducible from its recorded seed
-(voice_processing_specifications/026_randomization_variance_terminology.txt §1.7.1).
+1.9. Dataset Versioning
+1.9.1. Dataset version is a semver string stored in data/historical/manifest.json
+(e.g. "1.0.0").
+1.9.2. A new MINOR version is created whenever: new symbols are added, date range is
+extended, or macro supplement is updated.
+1.9.3. A new MAJOR version is created when: the OHLCVBar schema changes, the regime label
+annotation is revised, or the forward-fill policy changes.
+1.9.4. The manifest.json is committed to version control (data/historical/manifest.json is
+not gitignored); only the Parquet data files are gitignored.
 
-1.10. Version Control and Dataset Lineage
-1.10.1. Each dataset batch is stored on a feature branch named
-`feature/dataset_<batch_descriptor>` and includes a lineage log
-(`<batch_descriptor>_LINEAGE.md`) recording: generation date, scenario/persona sampling
-parameters, seed, generation tool/model identity, and human-spot-check outcome.
-1.10.2. Commit message format: `[DATASET] <batch_descriptor> vMajor.Minor: <change
-description>`.
-1.10.3. Merge to main requires the quality gate in Section 1.11 to be recorded in the commit
-message.
+1.10. Summary Table
+| Aspect | Rule |
+|--------|------|
+| Source | Alpaca historical data API via alpaca-py |
+| Storage format | Parquet (per symbol per timeframe) |
+| Schema | OHLCVBar from 021_xquantx_data_standards.txt §1.8.1 |
+| Regime labels | Human-reviewed, JSON annotation file, not model-generated |
+| Split | Train 60% / Validate 20% / Test 20%; time-based only |
+| Leakage prevention | Temporal leakage invariant enforced; test set held out |
+| Versioning | manifest.json semver; Parquet data gitignored |
 
 1.11. Quality Gates and Acceptance Criteria
-1.11.1. Coverage check: batch includes at least one scenario per category
-(voice_processing_specifications/025_scenario_persona_catalog.txt §1.11.1).
-1.11.2. Label-quality check: human spot-check (Section 1.8.4) agreement rate meets the
-project's minimum threshold (threshold value TBD, pending team-lead confirmation).
-1.11.3. Provenance check: lineage log complete, seed recorded, generation tool identified.
-1.11.4. Non-reproduction check: no statutory or company-terms text reproduced verbatim in
-generated transcripts beyond what
-voice_processing_specifications/028_statutory_ruleset_integration.txt §1.9 permits.
+1.11.1. Completeness check: all symbols in the declared symbol universe have Parquet files
+covering the full declared date range; manifest.json records any DataOperator warnings for
+gap-fill events.
+1.11.2. Annotation-completeness check: regime_labels_{date_range}.json covers 100% of daily
+bars in the declared date range with no NULL labels before a dataset version is marked
+annotation-complete.
+1.11.3. Provenance check: manifest.json is present, complete, and committed to version
+control with the correct semver version string.
+1.11.4. Anti-leakage check: a code-path trace confirms no feature operator reads beyond its
+declared temporal scope (no bar t+k, k > 0, in any rolling window or lookback calculation).
+1.11.5. Schema conformance check: each Parquet file passes the OHLCVBar schema validator
+defined in 021_xquantx_data_standards.txt §1.8.1 before the dataset version is accepted.
 
 1.12. Team Collaboration and Escalation Path
-1.12.1. The open question in Section 1.7 must be raised with the team lead (TAQI's team, per
-voice_processing_specifications/001_voice_transcription_concept.txt) before the dataset is
-relied upon for any production-facing compliance-scoring decision.
-1.12.2. If the team lead confirms an existing dataset, this document must be revised in the
-same change set to reconcile Section 1.7 and reprioritize Section 1.8 as supplementary.
-1.12.3. If the team lead confirms no dataset exists, Section 1.8 becomes the primary,
-confirmed workflow and this document's status updates accordingly in the Changelog.
+1.12.1. The data-pull owner is responsible for executing the Alpaca API pull, storing output
+in data/historical/, and updating manifest.json before triggering annotation.
+1.12.2. The annotation-review owner is responsible for cross-checking at least 10% of
+ground-truth regime labels per dataset version before the dataset is marked
+annotation-complete.
+1.12.3. Any disagreement on regime label assignment (between initial annotator and reviewer)
+must be escalated to the team lead for adjudication before the label is committed.
+1.12.4. A new MAJOR dataset version triggered by a schema change (§1.9.3) requires explicit
+sign-off from the team lead before any downstream module (backtester, regime model evaluator)
+is migrated to the new version.
 
-1.13. Summary Table
-| Topic | Rule |
-|------|------|
-| Open question | Existing dataset vs. build-from-scratch: UNRESOLVED, escalate to team lead |
-| Fallback assumption | Build from scratch via bootstrap workflow (Section 1.8) |
-| Sampling source | Scenario catalog (025) x persona archetypes (027) only |
-| Labeling | Weak label from scenario design, human spot-checked |
-| Reproducibility | Every synthesis run reproducible from its recorded seed |
+1.13. Data Pipeline Checklist
+| Step | Owner | Gate |
+|------|-------|------|
+| API pull (alpaca-py) | Data Engineer | Parquet files present, manifest.json updated |
+| Gap-fill audit | Data Engineer | DataOperator warnings reviewed, manifest annotated |
+| Ground-truth annotation | Annotator | 100% of daily bars labeled, no NULLs |
+| Annotation review | Reviewer | ≥10% spot-check completed, disagreements escalated |
+| Schema validation | QA | All Parquet files pass OHLCVBar schema validator |
+| Anti-leakage trace | QA | Code-path trace shows no look-ahead in any operator |
+| Manifest commit | Data Engineer | manifest.json committed to version control |
+| Dataset version bump | Team Lead | semver incremented per §1.9.2 / §1.9.3 rules |
 
 1.14. Reconciliation Table
 | Prior State | Current State | Status |
 |-------------|----------------|--------|
-| File was the game's in-house visual/audio asset creation and governance document | Repurposed to in-house scenario/transcript dataset creation, preserving the phased-workflow/lineage-log/quality-gate structure | Reconciled |
-| Dataset-existence question was implicit in prior ideation | Recorded explicitly as an open, unresolved question (Section 1.7) rather than answered | Reconciled |
+| File was the xquantx in-house scenario/transcript dataset creation document | Repurposed to X Quant X historical OHLCV market dataset assembly, preserving section-numbering structure, quality-gate pattern, and lineage-tracking discipline | Reconciled |
+| Dataset-existence was an open question (xquantx era open risk) | Data source is confirmed: Alpaca historical data API via alpaca-py; dataset must be assembled per §1.6 | Reconciled |
 
 1.15. Risk and Mitigation Table
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| Team proceeds as if a dataset exists without confirming | Medium | High | Section 1.7 keeps the question explicitly open and escalated (1.12.1) |
-| Synthetic-only data fails to generalize to real target-agent behavior | Medium | Medium | Reverse-engineering pass (1.8.5) folds real observed runs back into the dataset |
-| Weak labels accepted without human review | Low | High | Human spot-check gate (1.8.4, 1.11.2) required before batch acceptance |
-| Verbatim statutory/T&C text leaking into synthetic transcripts | Low | Critical | Non-reproduction check (1.11.4) tied to 028's binding boundary |
+| Look-ahead bias in feature computation | Medium | Critical | Anti-leakage code-path trace (§1.11.4); temporal leakage invariant from 019 §1.4.6 |
+| Ground-truth labels annotated by the same model being evaluated | Low | Critical | §1.7.4 prohibition: labels are human-reviewed, never model-generated |
+| Parquet data accidentally committed to version control | Low | Medium | .gitignore covering data/historical/*.parquet enforced; manifest.json explicitly exempted |
+| Dataset version mismatch between modules | Medium | High | semver in manifest.json; downstream modules record their consumed dataset version in run logs |
+| Missing bars not detected before training | Low | High | Gap-fill audit gate (§1.11.1) and DataOperator warning log required before annotation begins |
 
 1.16. Roles and Responsibilities (RACI)
-| Activity | Creator | Reviewer | Team Lead | Stakeholder |
-|----------|---------|----------|-----------|-------------|
-| Resolve open dataset-existence question (1.7) | I | C | R/A | I |
-| Synthetic batch generation (1.8-1.9) | R/A | C | I | I |
-| Lineage log maintenance (1.10) | R/A | C | I | I |
-| Quality gate execution (1.11) | C | R/A | I | I |
-| Escalation decision on dataset status (1.12) | C | C | R/A | I |
+| Activity | Data Engineer | Annotator | Reviewer | Team Lead |
+|----------|--------------|-----------|----------|-----------|
+| API pull and Parquet storage (§1.6) | R/A | I | I | I |
+| Manifest.json authoring and commit (§1.9) | R/A | I | C | I |
+| Ground-truth regime annotation (§1.7) | I | R/A | C | I |
+| Annotation cross-review (§1.12.2) | I | C | R/A | I |
+| Label disagreement adjudication (§1.12.3) | C | C | C | R/A |
+| Schema validation and anti-leakage trace (§1.11) | C | I | R/A | I |
+| Major version sign-off (§1.9.3, §1.12.4) | C | I | C | R/A |
 (R = Responsible, A = Accountable, C = Consulted, I = Informed)
 
 1.17. Conclusion
-Rather than inventing an answer to whether a training dataset already exists, this document
-records the question as open, assigns it an owner, and provides a concrete, reproducible
-fallback workflow for building one from the scenario catalog and persona archetypes already
-canonical in this corpus, so development is not blocked while confirmation is pending.
+The X Quant X in-house historical market dataset is a first-class engineering artifact
+governed by explicit assembly procedures (§1.6), human-reviewed regime annotation (§1.7),
+time-based train/validate/test split with strict anti-leakage invariants (§1.8), and semver
+dataset versioning (§1.9). The quality gates in §1.11 and the RACI in §1.16 ensure that no
+dataset version reaches downstream modules without passing completeness, annotation,
+provenance, and anti-leakage checks.
 
 1.18. References and Citations
-1.18.1. Internal: voice_processing_specifications/0000_documentation_standards.txt §1.0-1.14.
-1.18.2. Internal: voice_processing_specifications/001_voice_transcription_concept.txt (open
-dataset question origin, team ownership).
-1.18.3. Internal: voice_transcription_concept/voice_chat_concept.md (source ideation, open
-dataset question).
-1.18.4. Internal: voice_processing_specifications/025_scenario_persona_catalog.txt (sampling
-source).
-1.18.5. Internal: voice_processing_specifications/026_randomization_variance_terminology.txt
-(seeded reproducibility).
-1.18.6. Internal: voice_processing_specifications/027_persona_archetype_definitions.txt
-(sampling source).
-1.18.7. Internal: voice_processing_specifications/028_statutory_ruleset_integration.txt
-(non-reproduction boundary applied to synthetic transcripts).
-1.18.8. Internal: voice_processing_specifications/029_voice_persona_asset_creation.txt
-(extended by this document).
+1.18.1. Internal: alpaca_paper_trading_specifications_x_quant_x/021_xquantx_data_standards.txt
+§1.8.1 (OHLCVBar schema and forward-fill policy).
+1.18.2. Internal: alpaca_paper_trading_specifications_x_quant_x/025_xquantx_scenario_catalog.txt
+(regime taxonomy for annotation).
+1.18.3. Internal:
+alpaca_paper_trading_specifications_x_quant_x/019_xquantx_data_structures_algorithms.txt
+§1.4.6 (temporal leakage invariant).
+1.18.4. Internal: alpaca_trading_agents_concept/prompt_patterns.md META-PROMPT 6,
+META-PROMPT 11 (data pipeline, anti-leakage).
+1.18.5. External: Alpaca Markets historical data API documentation (alpaca.markets/docs).
 
 1.19. Changelog Table
 | Version | Date | Author (Agent/Role) | Change Description | Type |
 |---------|------|----------------------|---------------------|------|
 | 2026.00.00.00 | 2026-07-31 | Documentation Agent | Initial population of in-house asset creation and governance document, extending 029 with detailed workflow, toolchain standards, lineage tracking, and collaboration protocols. | Major |
-| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to VoiceGate per explicit user directive 2026-08-03: renamed via git mv from 030_game_inhouse_asset_creation.txt; replaced in-house visual/audio asset workflow with in-house scenario/transcript dataset creation, explicitly recording the training-dataset-existence question as OPEN/UNRESOLVED (Section 1.7) with a reverse-engineering bootstrap fallback workflow (Section 1.8) pending team-lead confirmation, retargeted all citations to voice_processing_specifications/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.03.00 | 2026-08-03 | Documentation Agent | Repurposed to xquantx per explicit user directive 2026-08-03: renamed via git mv from 030_game_inhouse_asset_creation.txt; replaced in-house visual/audio asset workflow with in-house scenario/transcript dataset creation, explicitly recording the training-dataset-existence question as OPEN/UNRESOLVED (Section 1.7) with a reverse-engineering bootstrap fallback workflow (Section 1.8) pending team-lead confirmation, retargeted all citations to alpaca_paper_trading_specifications_x_quant_x/ files. Prior game-era content superseded; preserved in git history rather than duplicated in-document. | Major |
+| 2026.08.26.00 | 2026-08-26 | Documentation Agent | Repurposed to X Quant X per PLAN P2-07: replaced xquantx in-house call-scenario dataset with X Quant X historical OHLCV market dataset assembly procedure. Added regime annotation (§1.7), train/validate/test split policy (§1.8), dataset versioning (§1.9), temporal leakage invariant cross-reference. | Major |
