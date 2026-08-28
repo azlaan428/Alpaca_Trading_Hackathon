@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 
 from execution import place_order, get_option_contract
+from memory import log_decision, already_hedged_recently
 
 load_dotenv()
 
@@ -25,28 +26,40 @@ def get_recent_prices(symbol, days=10):
 
 
 def check_for_drop(symbol):
-    """Return True if the stock dropped more than DROP_THRESHOLD_PCT from its recent high."""
+    """Return (dropped, drop_pct) -- dropped is True if price fell more than DROP_THRESHOLD_PCT from its recent high."""
     prices = get_recent_prices(symbol)
     if len(prices) < 2:
         print(f"Not enough price data for {symbol}")
-        return False
+        return False, 0.0
 
     recent_high = max(prices)
     current_price = prices[-1]
     drop_pct = (recent_high - current_price) / recent_high
 
     print(f"{symbol}: high={recent_high:.2f}, current={current_price:.2f}, drop={drop_pct:.2%}")
-    return drop_pct >= DROP_THRESHOLD_PCT
+    return drop_pct >= DROP_THRESHOLD_PCT, drop_pct
 
 
 def run_hedge_check(symbol):
-    """If the stock has dropped enough, buy a protective put."""
-    if check_for_drop(symbol):
-        contract = get_option_contract(symbol, option_type="put")
-        print(f"Drop detected on {symbol} -- buying protective put {contract.symbol}")
-        place_order(contract.symbol, "buy", qty=1, price_per_contract=float(contract.close_price or 0))
-    else:
+    """If the stock has dropped enough and we haven't already hedged recently, buy a protective put."""
+    dropped, drop_pct = check_for_drop(symbol)
+
+    if not dropped:
         print(f"No significant drop on {symbol}, no action taken")
+        return
+
+    if already_hedged_recently(symbol):
+        return
+
+    contract = get_option_contract(symbol, option_type="put")
+    price = float(contract.close_price or 0)
+    print(f"Drop detected on {symbol} -- buying protective put {contract.symbol}")
+    result = place_order(contract.symbol, "buy", qty=1, price_per_contract=price)
+
+    if result:
+        log_decision(symbol, drop_pct, "buy", result.id, price)
+    else:
+        print(f"Order for {symbol} was blocked by safety check, not logging as a hedge")
 
 
 if __name__ == "__main__":
