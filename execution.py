@@ -1,7 +1,6 @@
 from alpaca.trading.enums import OrderSide, TimeInForce, ContractType
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest, GetOptionContractsRequest
-from alpaca.trading.enums import OrderSide, TimeInForce
 from dotenv import load_dotenv
 import os
 
@@ -30,6 +29,10 @@ MAX_POSITION_PCT = 0.05  # never risk more than 5% of buying power on one trade
 
 
 def is_trade_safe(symbol, qty, price_per_contract):
+    if not price_per_contract or price_per_contract <= 0:
+        print(f"BLOCKED: no valid price for {symbol}, can't verify trade size safely")
+        return False
+
     account = client.get_account()
     buying_power = float(account.buying_power)
     trade_cost = qty * price_per_contract * 100  # options are priced per share, 100 shares per contract
@@ -38,7 +41,6 @@ def is_trade_safe(symbol, qty, price_per_contract):
         print(f"BLOCKED: trade costs ${trade_cost:.2f}, limit is ${max_allowed:.2f}")
         return False
     return True
-
 
 def place_order(symbol, side, qty, price_per_contract):
     """Place a market order (stock or option symbol) and return the order result, after a safety check."""
