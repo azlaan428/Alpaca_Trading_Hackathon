@@ -2,6 +2,19 @@
 
 # About xquantx
 
+> **Current project notice (2026-08-28).** The active project is **X Quant X**, a
+> quantitative paper-trading and market-intelligence platform. This document's
+> remaining Voice Compliance QA content is preserved as a historical baseline and
+> must not be treated as the current product definition. The canonical source is
+> `alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt`.
+
+## Current Project Facts
+
+X Quant X ingests live and historical market data, estimates market regimes, applies
+risk gates, and submits paper orders through the Alpaca API. The MVP includes Alpaca
+paper trading, a P&L and risk-audit dashboard, optional backtesting, and options paper
+trading. Live-money trading is explicitly out of scope.
+
 ## Company
 
 **Not yet confirmed** — no company/brand name has been supplied for this project (unlike the
@@ -76,3 +89,17 @@ standards, and testing requirements.
 - Full specification index: `alpaca_paper_trading_specifications_x_quant_x/000_index.txt`
 - Product concept, brand identity, and open items: `alpaca_paper_trading_specifications_x_quant_x/001_voice_transcription_concept.txt`
 - Scoring/verdict engine (single source of truth for mechanics): `alpaca_paper_trading_specifications_x_quant_x/017_xquantx_scoring_rules.txt`
+
+## Reconciliation
+
+| Historical statement | Current canonical fact | Authority |
+| --- | --- | --- |
+| xquantx is a voice-compliance test bench | X Quant X is a quantitative paper-trading platform | `001_xquantx_concept.txt` Sections 1.1 and 1.3 |
+| Natively AI is a project dependency | Alpaca paper-trading tools are the primary API dependency | `001_xquantx_concept.txt` Section 1.4.3 |
+| Voice-call scoring is the core product workflow | Market-data processing, risk gating, and paper-order execution are the core workflow | `001_xquantx_concept.txt` Section 1.7 |
+
+## Changelog
+
+| Version | Date | Author | Description |
+| --- | --- | --- | --- |
+| 2026.8.28.1 | 2026-08-28 | GitHub Copilot | Added current X Quant X product reconciliation; preserved prior product wording as a historical baseline. |

@@ -1,5 +1,17 @@
 # Security Policy
 
+> **Current project notice (2026-08-28).** This policy applies to **X Quant X**, a
+> quantitative paper-trading platform. The voice-agent security examples retained
+> below are historical baseline content, not a statement of current product scope.
+> Current scope is defined in `alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt`.
+
+## Current Security Scope
+
+Priority reports include authentication or authorization defects, exposed credentials,
+dependency vulnerabilities, market-data integrity defects, risk-gate bypasses,
+unauthorized Alpaca paper-order placement, audit-log tampering, and dashboard data
+exposure. The MVP has no live-money trading capability.
+
 ## Supported Versions
 
 `xquantx` is currently in active hackathon-stage development (assumed LabLab AI Factory / Natively AI, 2026-08-03 to 2026-08-10, window inherited from a sibling project and not yet independently confirmed) and has not yet reached a tagged `1.0.0` release. Security fixes are applied to the `main` branch only until a formal release cadence is established.
@@ -60,3 +72,16 @@ We follow **coordinated disclosure**: please give us a reasonable opportunity to
 ### Safe Harbor
 
 We will not pursue legal action against security researchers who make a good-faith effort to comply with this policy, report privately, avoid privacy violations and data destruction, and give us reasonable time to remediate before any public disclosure.
+
+## Reconciliation
+
+| Retained baseline scope | Current X Quant X scope | Authority |
+| --- | --- | --- |
+| Voice-agent guardrail bypass | Risk-gate bypass, paper-order authorization, market-data integrity, and audit-log integrity | `001_xquantx_concept.txt` Sections 1.3 and 1.9 |
+| Voice-call orchestration | Alpaca paper-trading order workflow | `001_xquantx_concept.txt` Section 1.7 |
+
+## Changelog
+
+| Version | Date | Author | Description |
+| --- | --- | --- |
+| 2026.8.28.1 | 2026-08-28 | GitHub Copilot | Added current X Quant X security scope and historical-baseline reconciliation. |

@@ -1,5 +1,10 @@
 # License
 
+> **Current project notice (2026-08-28).** This is the license for **X Quant X**, a
+> proprietary, source-available quantitative paper-trading platform. The earlier
+> voice-compliance product descriptions elsewhere in this document are historical
+> baseline wording only and do not alter the license grant or restrictions below.
+
 **xquantx** — Copyright (c) 2026 [Company name not yet confirmed — OPEN ITEM, see
 `alpaca_paper_trading_specifications_x_quant_x/001_voice_transcription_concept.txt §1.9.1`; this line must be
 completed with the confirmed legal entity name before this license is relied upon]. All rights
@@ -76,6 +81,22 @@ Except for the license expressly granted in Section 1, no recipient of this mate
 
 Organizations or individuals seeking rights beyond Section 1 (e.g., commercial use, white-labeling, or removal of the NonCommercial restriction) must obtain a separate written commercial license from the copyright holder. Contact the repository maintainer via GitHub (`@psi16181918161phi`) to initiate a request.
 
+### 2.5.1. Commercial Use Requires a Written Agreement
+
+No person or organization may copy, paste, deploy, distribute, sublicense, market,
+sell, host, use in a revenue-generating workflow, or otherwise commercially exploit
+this repository or a derivative without a separate written commercial license signed
+by the confirmed copyright holder. The CC BY-NC 4.0 grant permits only uses that are
+noncommercial and compliant with its attribution, notice, and other terms; it does not
+authorize commercialization merely because source is visible or copied into another
+project.
+
+### 2.5.2. No Implied Commercial License
+
+No repository access, source download, fork, pull request, issue discussion, or
+informal communication grants a commercial license. A commercial permission is valid
+only when expressed in a written agreement executed by the confirmed copyright holder.
+
 ### 2.6. Termination
 
 Your rights under this license terminate automatically if you fail to comply with any term in Section 1 or Section 2. Reinstatement is at the sole discretion of the copyright holder.
@@ -98,3 +119,10 @@ THE MATERIAL IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 - Full CC BY-NC 4.0 legal code: https://creativecommons.org/licenses/by-nc/4.0/legalcode
 - See also: [CONTRIBUTION.md](CONTRIBUTION.md), [SECURITY.md](SECURITY.md), [ABOUT.md](ABOUT.md)
+- Current project definition: `alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt`
+
+## Changelog
+
+| Version | Date | Author | Description |
+| --- | --- | --- | --- |
+| 2026.8.28.1 | 2026-08-28 | GitHub Copilot | Clarified that X Quant X is proprietary and source-available under CC BY-NC 4.0 terms, and that commercial use requires a separately executed written license agreement. |

@@ -1,5 +1,16 @@
 # Contributing to xquantx
 
+> **Current project notice (2026-08-28).** Contributions target **X Quant X**, the
+> current quantitative paper-trading platform. Voice-compliance references in the
+> retained baseline below are historical only. Current implementation and product
+> behavior are governed by `alpaca_paper_trading_specifications_x_quant_x/001_xquantx_concept.txt`.
+
+## Current Contribution Scope
+
+Contributions may address market-data ingestion, regime estimation, signal operators,
+risk gates, Alpaca paper-order execution, paper-trading dashboards, audit logging, and
+the corresponding tests. Live-money execution is outside the MVP scope.
+
 Thank you for your interest in contributing to **xquantx**, an automated compliance and red-team test bench for voice AI agents (company name not yet confirmed; category proposed as **Voice Compliance QA (VCQ)**). This document explains how to propose changes, the rules that govern contributions, and the standards your contribution must meet.
 
 Before contributing, please read [LICENSE.md](LICENSE.md) in full — it is not a standard open-source license, and contributing implies you accept its terms, including Section 2.3 (Contribution License Grant).
@@ -112,3 +123,16 @@ Do **not** open a public issue for security vulnerabilities. See [SECURITY.md](S
 ## Contributor Recognition
 
 Because all contributions arrive via fork and Pull Request (LICENSE.md §2.2), your authorship is preserved permanently in this repository's Git and Pull Request history. Significant contributors may also be listed in [ABOUT.md](ABOUT.md) at maintainer discretion.
+
+## Reconciliation
+
+| Retained baseline | Current contribution target | Authority |
+| --- | --- | --- |
+| Voice-agent orchestration and transcript scoring | Risk-gated quantitative paper trading via Alpaca | `001_xquantx_concept.txt` Sections 1.3 and 1.7 |
+| VoiceOps guardrail suite | QuantOps and the testing specifications | `0000_documentation_standards.txt` addendum and `008_xquantx_testing.txt` |
+
+## Changelog
+
+| Version | Date | Author | Description |
+| --- | --- | --- |
+| 2026.8.28.1 | 2026-08-28 | GitHub Copilot | Reconciled contribution scope with the current X Quant X platform while retaining prior baseline content. |
