@@ -42,7 +42,7 @@ def check_for_drop(symbol):
 def run_hedge_check(symbol):
     """If the stock has dropped enough, buy a protective put."""
     if check_for_drop(symbol):
-        contract = get_option_contract(symbol)
+        contract = get_option_contract(symbol, option_type="put")
         print(f"Drop detected on {symbol} -- buying protective put {contract.symbol}")
         place_order(contract.symbol, "buy", qty=1, price_per_contract=float(contract.close_price or 0))
     else:
