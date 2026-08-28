@@ -34,8 +34,10 @@ def is_trade_safe(symbol, qty, price_per_contract):
     return True
 
 
-def place_order(symbol, side, qty=1):
-    """Place a market order (stock or option symbol) and return the order result."""
+def place_order(symbol, side, qty, price_per_contract):
+    """Place a market order (stock or option symbol) and return the order result, after a safety check."""
+    if not is_trade_safe(symbol, qty, price_per_contract):
+        return None
     order_side = OrderSide.BUY if side.lower() == "buy" else OrderSide.SELL
     order = MarketOrderRequest(
         symbol=symbol,
@@ -47,7 +49,6 @@ def place_order(symbol, side, qty=1):
     print(f"{side.upper()} {qty}x {symbol} -> status: {result.status}, id: {result.id}")
     return result
 
-
 def get_account_summary():
     """Return current account status and buying power."""
     account = client.get_account()
@@ -57,4 +58,4 @@ def get_account_summary():
 if __name__ == "__main__":
     print(get_account_summary())
     contract = get_option_contract("AAPL")
-    place_order(contract.symbol, "buy", qty=1)
+    place_order(contract.symbol, "buy", qty=1, price_per_contract=float(contract.close_price or 0))
