@@ -1,3 +1,4 @@
+from alpaca.trading.enums import OrderSide, TimeInForce, ContractType
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest, GetOptionContractsRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
@@ -11,8 +12,13 @@ client = TradingClient(os.getenv("APCA_API_KEY_ID"), os.getenv("APCA_API_SECRET_
 
 def get_option_contract(underlying_symbol, expiration=None, strike=None, option_type=None):
     """Fetch a single option contract matching the given criteria."""
+    contract_type = None
+    if option_type:
+        contract_type = ContractType.PUT if option_type.lower() == "put" else ContractType.CALL
+
     request = GetOptionContractsRequest(
         underlying_symbols=[underlying_symbol],
+        type=contract_type,
         limit=1,
     )
     contracts = client.get_option_contracts(request).option_contracts
