@@ -27,13 +27,18 @@ not a disposable planning artifact.
 
 ## Table of Contents
 
-- [About](#about)
-- [Documentation](#documentation)
-- [Getting Started](#getting-started)
-- [Project Status](#project-status)
-- [Contributing](#contributing)
-- [Security](#security)
-- [License](#license)
+- [xquantx](#xquantx)
+  - [Current Status](#current-status)
+  - [Table of Contents](#table-of-contents)
+  - [About](#about)
+  - [Documentation](#documentation)
+  - [Getting Started](#getting-started)
+  - [Project Status](#project-status)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [License](#license)
+  - [Reconciliation](#reconciliation)
+  - [Changelog](#changelog)
 
 ## About
 
@@ -84,5 +89,5 @@ See [LICENSE.md](LICENSE.md) for full license terms.
 ## Changelog
 
 | Version | Date | Author | Description |
-| --- | --- | --- |
+| --- | --- | --- | --- |
 | 2026.8.28.1 | 2026-08-28 | GitHub Copilot | Added current project facts and reconciled retained voice-era content with the X Quant X canon. |
