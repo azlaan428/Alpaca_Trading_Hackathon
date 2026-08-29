@@ -239,6 +239,7 @@ _[Mm][Ii][Nn][Tt][Ee][Dd].[Ee][Rr][Rr]
 .venv-alpaca-trading/
 .venv-alpaca-*/
 .venv-xquantx/
+src/rust/target/
 
 # Keep VS Code MCP config (credentials are NOT stored in it — they use input prompts)
 !.vscode/
