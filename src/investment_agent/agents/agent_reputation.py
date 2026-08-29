@@ -228,9 +228,17 @@ class AgentReputationTracker:
         self._beta: Dict[tuple[str, str], float] = {}
         self._observations: Dict[tuple[str, str], int] = {}
 
-        # Preserve original prior inputs for faithful serialization round-trip
-        self._original_prior_alpha = prior_alpha
-        self._original_prior_beta = prior_beta
+        # Preserve original prior inputs for faithful serialization round-trip.
+        # Defensive copies ensure external mutation of caller's dicts cannot alter tracker state.
+        if isinstance(prior_alpha, dict):
+            self._original_prior_alpha = dict(prior_alpha)
+        else:
+            self._original_prior_alpha = prior_alpha
+
+        if isinstance(prior_beta, dict):
+            self._original_prior_beta = dict(prior_beta)
+        else:
+            self._original_prior_beta = prior_beta
 
         # Prior resolution
         is_dict_alpha = isinstance(prior_alpha, dict)

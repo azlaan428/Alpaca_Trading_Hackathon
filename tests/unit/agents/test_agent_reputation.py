@@ -841,6 +841,30 @@ class TestAgentReputationTracker(unittest.TestCase):
         restored = AgentReputationTracker.from_dict(state)
         self.assertAlmostEqual(restored.get_reputation_weight("a1", "R01"), 5.0 / 7.0)
 
+    def test_dict_prior_defensive_copy_prevents_external_mutation(self):
+        """Verify that mutating the caller's dictionary after construction does not affect tracker serialization."""
+        prior_alpha = {("a1", "R01"): 5.0}
+        prior_beta = {("a1", "R01"): 2.0}
+
+        tracker = AgentReputationTracker(
+            agent_ids=["a1"],
+            regimes=["R01"],
+            prior_alpha=prior_alpha,
+            prior_beta=prior_beta,
+        )
+
+        # Mutate caller's dictionaries after construction
+        prior_alpha[("a1", "R01")] = 999.0
+        prior_beta[("a1", "R01")] = 888.0
+
+        # Serialized state must still reflect the original values, not the mutated ones
+        state = tracker.to_dict()
+        self.assertEqual(state["prior_alpha"]["a1|R01"], 5.0)
+        self.assertEqual(state["prior_beta"]["a1|R01"], 2.0)
+
+        # Tracker's internal state must also remain unchanged
+        self.assertAlmostEqual(tracker.get_reputation_weight("a1", "R01"), 5.0 / 7.0)
+
 
 if __name__ == "__main__":
     unittest.main()
