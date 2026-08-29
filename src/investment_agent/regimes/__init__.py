@@ -1,0 +1,52 @@
+"""Regimes Subpackage — Market Regime Taxonomy Layer.
+
+WHAT
+====
+Defines the canonical set of 12 market regime identifiers (R01 through R12)
+used across the X Quant X quantitative intelligence pipeline.
+
+WHY
+===
+Market regimes represent distinct macroeconomic and microstructural operating
+environments (e.g., bull quiet, bear volatile, crisis deleveraging). Risk
+rules, agent reputation weights, and allocation parameters vary by regime.
+Centralizing the authoritative set of valid regimes prevents domain invalidity,
+regime spoofing, and inconsistent regime validation across modules.
+
+HOW
+===
+Uses lazy attribute resolution to expose the public API without triggering
+circular imports during package initialization.
+
+Architectural Role
+==================
+Analytical constant module. Defines domain boundaries and contains no state,
+side effects, or trading execution code.
+"""
+
+from __future__ import annotations
+
+_public_api: dict = {}
+
+
+def __getattr__(name: str):
+    """Lazy import resolver for regimes subpackage namespace."""
+    if name in _public_api:
+        module_path, attr = _public_api[name]
+        import importlib
+        module = importlib.import_module(module_path)
+        return getattr(module, attr)
+    raise AttributeError(f"module 'investment_agent.regimes' has no attribute {name!r}")
+
+
+def __dir__() -> list:
+    """Return sorted list of public API names for IDE autocompletion."""
+    return sorted(set(dir(__builtins__)) | set(_public_api.keys()))
+
+
+_public_api["VALID_REGIMES"] = (
+    "investment_agent.regimes.regimes",
+    "VALID_REGIMES",
+)
+
+__all__ = list(_public_api.keys())
