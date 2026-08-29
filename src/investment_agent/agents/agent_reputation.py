@@ -101,13 +101,13 @@ class AgentReputationTracker:
        The caller must pass the regime active at prediction emission time. Because this module
        does not store prediction lineage or timestamps, regime alignment is an external workflow contract.
 
-    3. Implementation Capacity Cap & State Invariants:
-       The tracker stores `alpha`, `beta`, and `observations`. Individual parameter values are capped at 1e12 as an
-       explicit implementation capacity bound. This is an engineering safeguard, not a mathematical requirement
-       of the Beta-Bernoulli model. The authoritative model defines α = α_0 + k and β = β_0 + (n - k) with
-       no upper bound. The Beta-Bernoulli identity is maintained across updates and validated during `from_dict()`
-       deserialization with absolute error bounds (|Δα - round(Δα)| <= 1e-9). Initializing prior_alpha or prior_beta
-       at 1e12 puts that parameter at the implementation capacity boundary.
+     3. Implementation Capacity Cap & State Invariants:
+        The tracker stores `alpha`, `beta`, and `observations`. Individual parameter values are capped at 1e12 as an
+        explicit implementation capacity bound. This is an engineering safeguard, not a mathematical requirement
+        of the Beta-Bernoulli model. The authoritative model defines α = α_0 + k and β = β_0 + (n - k) with
+        no upper bound. The Beta-Bernoulli identity is maintained across updates and validated during `from_dict()`
+        deserialization with strict absolute error bounds (|Δα - round(Δα)| <= 1e-9). Initializing prior_alpha or prior_beta
+        at 1e12 puts that parameter at the implementation capacity boundary.
 
     4. String Normalization Distinction:
        User-defined agent IDs are stripped of surrounding whitespace (`agent_id.strip()`).
@@ -228,33 +228,49 @@ class AgentReputationTracker:
         self._beta: Dict[tuple[str, str], float] = {}
         self._observations: Dict[tuple[str, str], int] = {}
 
+        # Preserve original prior inputs for faithful serialization round-trip
+        self._original_prior_alpha = prior_alpha
+        self._original_prior_beta = prior_beta
+
         # Prior resolution
         is_dict_alpha = isinstance(prior_alpha, dict)
         is_dict_beta = isinstance(prior_beta, dict)
 
         if not is_dict_alpha:
             single_alpha = _validate_float_param(prior_alpha, "prior_alpha")
-            self._prior_alpha = single_alpha
         else:
-            self._prior_alpha = 1.0  # Fallback baseline prior for serialization
+            single_alpha = None
 
         if not is_dict_beta:
             single_beta = _validate_float_param(prior_beta, "prior_beta")
-            self._prior_beta = single_beta
         else:
-            self._prior_beta = 1.0  # Fallback baseline prior for serialization
+            single_beta = None
 
         for aid in self._registered_agents:
             for r in self._registered_regimes:
                 key = (aid, r)
                 if is_dict_alpha:
-                    val_a = prior_alpha.get(key, prior_alpha.get(aid, 1.0))
+                    val_a = prior_alpha.get(key)
+                    if val_a is None:
+                        val_a = prior_alpha.get(aid)
+                    if val_a is None:
+                        raise ValueError(
+                            f"prior_alpha dictionary is missing required entry for registered pair ({aid}, {r}). "
+                            f"Dictionary priors must explicitly define every (agent_id, regime) pair or agent-level default."
+                        )
                     a_init = _validate_float_param(val_a, f"prior_alpha for ({aid}, {r})")
                 else:
                     a_init = single_alpha
 
                 if is_dict_beta:
-                    val_b = prior_beta.get(key, prior_beta.get(aid, 1.0))
+                    val_b = prior_beta.get(key)
+                    if val_b is None:
+                        val_b = prior_beta.get(aid)
+                    if val_b is None:
+                        raise ValueError(
+                            f"prior_beta dictionary is missing required entry for registered pair ({aid}, {r}). "
+                            f"Dictionary priors must explicitly define every (agent_id, regime) pair or agent-level default."
+                        )
                     b_init = _validate_float_param(val_b, f"prior_beta for ({aid}, {r})")
                 else:
                     b_init = single_beta
@@ -827,8 +843,8 @@ class AgentReputationTracker:
             {
                 'agent_ids': List[str],
                 'regimes': List[str],
-                'prior_alpha': float,
-                'prior_beta': float,
+                'prior_alpha': float | Dict[str, float],
+                'prior_beta': float | Dict[str, float],
                 'state': Dict[str, Dict[str, Any]]
             }
 
@@ -850,11 +866,23 @@ class AgentReputationTracker:
         ---------------------
         1
         """
+        # Serialize priors faithfully: scalar stays scalar, dict keys converted to strings
+        def _serialize_prior(prior):
+            if not isinstance(prior, dict):
+                return prior
+            serialized = {}
+            for k, v in prior.items():
+                if isinstance(k, tuple):
+                    serialized[f"{k[0]}|{k[1]}"] = v
+                else:
+                    serialized[str(k)] = v
+            return serialized
+
         return {
             "agent_ids": sorted(self._registered_agents),
             "regimes": sorted(self._registered_regimes),
-            "prior_alpha": self._prior_alpha,
-            "prior_beta": self._prior_beta,
+            "prior_alpha": _serialize_prior(self._original_prior_alpha),
+            "prior_beta": _serialize_prior(self._original_prior_beta),
             "state": {
                 f"{aid}|{r}": {
                     "alpha": self._alpha[(aid, r)],
@@ -936,11 +964,35 @@ class AgentReputationTracker:
         if extra_top_keys:
             raise ValueError(f"Serialized data contains unexpected top-level fields: {sorted(extra_top_keys)}")
 
+        # Deserialize priors: convert string keys back to native format for constructor
+        def _deserialize_prior(prior_data, registered_agents, registered_regimes):
+            if not isinstance(prior_data, dict):
+                return prior_data
+            result = {}
+            for k, v in prior_data.items():
+                if "|" in str(k):
+                    parts = str(k).split("|", 1)
+                    result[(parts[0], parts[1])] = v
+                else:
+                    result[str(k)] = v
+            return result
+
+        deserialized_prior_alpha = _deserialize_prior(
+            data["prior_alpha"],
+            set(data["agent_ids"]),
+            set(data["regimes"]),
+        )
+        deserialized_prior_beta = _deserialize_prior(
+            data["prior_beta"],
+            set(data["agent_ids"]),
+            set(data["regimes"]),
+        )
+
         tracker = cls(
             agent_ids=data["agent_ids"],
             regimes=data["regimes"],
-            prior_alpha=data["prior_alpha"],
-            prior_beta=data["prior_beta"],
+            prior_alpha=deserialized_prior_alpha,
+            prior_beta=deserialized_prior_beta,
         )
 
         state_map = data.get("state")
@@ -1025,13 +1077,13 @@ class AgentReputationTracker:
             k_alpha = int(round(alpha_val - prior_a))
             k_beta = int(round(beta_val - prior_b))
 
-            if k_alpha < 0 or abs(alpha_val - (prior_a + float(k_alpha))) > max(1e-9, 1e-12 * alpha_val):
+            if k_alpha < 0 or abs(alpha_val - (prior_a + float(k_alpha))) > 1e-9:
                 raise ValueError(
                     f"Mathematical invariant breach for '{key_str}': "
                     f"alpha ({alpha_val}) must be an integer step from prior_alpha ({prior_a})"
                 )
 
-            if k_beta < 0 or abs(beta_val - (prior_b + float(k_beta))) > max(1e-9, 1e-12 * beta_val):
+            if k_beta < 0 or abs(beta_val - (prior_b + float(k_beta))) > 1e-9:
                 raise ValueError(
                     f"Mathematical invariant breach for '{key_str}': "
                     f"beta ({beta_val}) must be an integer step from prior_beta ({prior_b})"

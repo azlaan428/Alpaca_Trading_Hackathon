@@ -711,6 +711,136 @@ class TestAgentReputationTracker(unittest.TestCase):
         # triggering ECONF-001 and/or DISAG-001, changing verdict from ALLOW to REDUCE
         self.assertNotEqual(verdict_after, verdict_before)
 
+    def test_scalar_prior_round_trip(self):
+        """Verify scalar prior serializes and deserializes faithfully."""
+        tracker = AgentReputationTracker(
+            agent_ids=["a1", "a2"],
+            regimes=["R01", "R02"],
+            prior_alpha=2.0,
+            prior_beta=3.0,
+        )
+        tracker.record_outcome("a1", "R01", was_correct=True)
+        tracker.record_outcome("a2", "R02", was_correct=False)
+
+        state = tracker.to_dict()
+        restored = AgentReputationTracker.from_dict(state)
+
+        self.assertEqual(state["prior_alpha"], 2.0)
+        self.assertEqual(state["prior_beta"], 3.0)
+        # a1/R01: alpha=3, beta=3 -> weight = 3/6 = 0.5
+        self.assertAlmostEqual(restored.get_reputation_weight("a1", "R01"), 0.5)
+        # a2/R02: alpha=2, beta=4 -> weight = 2/6 = 1/3
+        self.assertAlmostEqual(restored.get_reputation_weight("a2", "R02"), 1.0 / 3.0)
+
+    def test_dict_prior_by_pair_round_trip(self):
+        """Verify dictionary prior keyed by (agent_id, regime) serializes and round-trips."""
+        tracker = AgentReputationTracker(
+            agent_ids=["a1", "a2"],
+            regimes=["R01", "R02"],
+            prior_alpha={("a1", "R01"): 5.0, ("a1", "R02"): 5.0, ("a2", "R01"): 2.0, ("a2", "R02"): 2.0},
+            prior_beta={("a1", "R01"): 2.0, ("a1", "R02"): 2.0, ("a2", "R01"): 4.0, ("a2", "R02"): 4.0},
+        )
+
+        state = tracker.to_dict()
+        self.assertIsInstance(state["prior_alpha"], dict)
+        self.assertIsInstance(state["prior_beta"], dict)
+        self.assertEqual(state["prior_alpha"]["a1|R01"], 5.0)
+        self.assertEqual(state["prior_beta"]["a1|R01"], 2.0)
+
+        restored = AgentReputationTracker.from_dict(state)
+        # a1/R01: alpha=5, beta=2 -> weight = 5/7
+        self.assertAlmostEqual(restored.get_reputation_weight("a1", "R01"), 5.0 / 7.0)
+        # a2/R02: alpha=2, beta=4 -> weight = 2/6 = 1/3
+        self.assertAlmostEqual(restored.get_reputation_weight("a2", "R02"), 1.0 / 3.0)
+
+    def test_dict_prior_by_agent_round_trip(self):
+        """Verify dictionary prior keyed by agent_id applies to all regimes for that agent."""
+        tracker = AgentReputationTracker(
+            agent_ids=["a1", "a2"],
+            regimes=["R01", "R02"],
+            prior_alpha={"a1": 5.0, "a2": 2.0},
+            prior_beta={"a1": 2.0, "a2": 4.0},
+        )
+
+        state = tracker.to_dict()
+        restored = AgentReputationTracker.from_dict(state)
+
+        # a1 gets prior 5,2 in both regimes -> weight = 5/7
+        self.assertAlmostEqual(restored.get_reputation_weight("a1", "R01"), 5.0 / 7.0)
+        self.assertAlmostEqual(restored.get_reputation_weight("a1", "R02"), 5.0 / 7.0)
+        # a2 gets prior 2,4 in both regimes -> weight = 2/6 = 1/3
+        self.assertAlmostEqual(restored.get_reputation_weight("a2", "R01"), 1.0 / 3.0)
+        self.assertAlmostEqual(restored.get_reputation_weight("a2", "R02"), 1.0 / 3.0)
+
+    def test_dict_prior_missing_key_fails_closed(self):
+        """Verify dictionary prior missing a required (agent, regime) pair raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            AgentReputationTracker(
+                agent_ids=["a1", "a2"],
+                regimes=["R01"],
+                prior_alpha={("a1", "R01"): 5.0},
+                prior_beta={("a1", "R01"): 2.0},
+            )
+        self.assertIn("missing required entry", str(ctx.exception))
+
+    def test_dict_prior_after_observations_round_trip(self):
+        """Verify dictionary prior with observations serializes and round-trips correctly."""
+        tracker = AgentReputationTracker(
+            agent_ids=["a1"],
+            regimes=["R01", "R02"],
+            prior_alpha={("a1", "R01"): 5.0, ("a1", "R02"): 3.0},
+            prior_beta={("a1", "R01"): 2.0, ("a1", "R02"): 1.0},
+        )
+        tracker.record_outcome("a1", "R01", was_correct=True)
+        tracker.record_outcome("a1", "R01", was_correct=True)
+        tracker.record_outcome("a1", "R02", was_correct=False)
+
+        state = tracker.to_dict()
+        restored = AgentReputationTracker.from_dict(state)
+
+        # a1/R01: alpha=7, beta=2 -> weight = 7/9
+        self.assertAlmostEqual(restored.get_reputation_weight("a1", "R01"), 7.0 / 9.0)
+        # a1/R02: alpha=3, beta=2 -> weight = 3/5
+        self.assertAlmostEqual(restored.get_reputation_weight("a1", "R02"), 3.0 / 5.0)
+        self.assertEqual(restored.get_observation_count("a1", "R01"), 2)
+        self.assertEqual(restored.get_observation_count("a1", "R02"), 1)
+
+    def test_dict_prior_invariant_validation_rejects_non_integer_deltas(self):
+        """Verify from_dict rejects state where deltas from dict prior are not integer steps."""
+        tracker = AgentReputationTracker(
+            agent_ids=["a1"],
+            regimes=["R01"],
+            prior_alpha={("a1", "R01"): 5.0},
+            prior_beta={("a1", "R01"): 2.0},
+        )
+        valid_dict = tracker.to_dict()
+
+        # Corrupt alpha to be non-integer step from prior
+        bad_dict = dict(valid_dict)
+        bad_dict["state"]["a1|R01"] = {
+            "alpha": 5.5,
+            "beta": 2.0,
+            "observations": 0,
+        }
+        with self.assertRaises(ValueError):
+            AgentReputationTracker.from_dict(bad_dict)
+
+    def test_dict_prior_extra_keys_ignored(self):
+        """Verify extra keys in dictionary prior that don't match registered pairs are ignored."""
+        tracker = AgentReputationTracker(
+            agent_ids=["a1"],
+            regimes=["R01"],
+            prior_alpha={("a1", "R01"): 5.0, ("ghost", "R99"): 10.0},
+            prior_beta={("a1", "R01"): 2.0, ("ghost", "R99"): 3.0},
+        )
+        # Extra keys for unregistered pairs should be silently ignored
+        self.assertAlmostEqual(tracker.get_reputation_weight("a1", "R01"), 5.0 / 7.0)
+
+        # But serialization should only include the actual prior for registered pairs
+        state = tracker.to_dict()
+        restored = AgentReputationTracker.from_dict(state)
+        self.assertAlmostEqual(restored.get_reputation_weight("a1", "R01"), 5.0 / 7.0)
+
 
 if __name__ == "__main__":
     unittest.main()
