@@ -3,7 +3,8 @@
 WHAT
 ====
 Defines the canonical set of 12 market regime identifiers (R01 through R12)
-used across the X Quant X quantitative intelligence pipeline.
+used across the X Quant X quantitative intelligence pipeline, and provides
+a rule-based regime detector for classifying market conditions.
 
 WHY
 ===
@@ -20,8 +21,8 @@ circular imports during package initialization.
 
 Architectural Role
 ==================
-Analytical constant module. Defines domain boundaries and contains no state,
-side effects, or trading execution code.
+Analytical constant and classification module. Defines domain boundaries and
+contains no state, side effects, or trading execution code.
 """
 
 from __future__ import annotations
@@ -44,9 +45,28 @@ def __dir__() -> list:
     return sorted(set(dir(__builtins__)) | set(_public_api.keys()))
 
 
+# regimes
 _public_api["VALID_REGIMES"] = (
     "investment_agent.regimes.regimes",
     "VALID_REGIMES",
+)
+
+# regime_detector
+_public_api["RegimeClassification"] = (
+    "investment_agent.regimes.regime_detector",
+    "RegimeClassification",
+)
+_public_api["MarketFeatures"] = (
+    "investment_agent.regimes.regime_detector",
+    "MarketFeatures",
+)
+_public_api["RegimeDetector"] = (
+    "investment_agent.regimes.regime_detector",
+    "RegimeDetector",
+)
+_public_api["detect_regime"] = (
+    "investment_agent.regimes.regime_detector",
+    "detect_regime",
 )
 
 __all__ = list(_public_api.keys())
