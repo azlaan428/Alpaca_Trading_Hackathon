@@ -44,6 +44,7 @@ def __dir__() -> list:
     return sorted(set(dir(__builtins__)) | set(_public_api.keys()))
 
 
+# execution
 _public_api["MAX_POSITION_PCT"] = (
     "investment_agent.execution.execution",
     "MAX_POSITION_PCT",
@@ -63,6 +64,28 @@ _public_api["is_trade_safe"] = (
 _public_api["place_order"] = (
     "investment_agent.execution.execution",
     "place_order",
+)
+
+# hedge_capital_bridge
+_public_api["HedgeRiskAssessment"] = (
+    "investment_agent.execution.hedge_capital_bridge",
+    "HedgeRiskAssessment",
+)
+_public_api["evaluate_hedge_risk"] = (
+    "investment_agent.execution.hedge_capital_bridge",
+    "evaluate_hedge_risk",
+)
+_public_api["record_hedge_placement"] = (
+    "investment_agent.execution.hedge_capital_bridge",
+    "record_hedge_placement",
+)
+_public_api["cleanup_hedge_history"] = (
+    "investment_agent.execution.hedge_capital_bridge",
+    "cleanup_hedge_history",
+)
+_public_api["get_recent_hedge_symbols"] = (
+    "investment_agent.execution.hedge_capital_bridge",
+    "get_recent_hedge_symbols",
 )
 
 __all__ = list(_public_api.keys())
