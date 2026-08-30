@@ -213,11 +213,16 @@ def _validate_volumes(volumes: Optional[List[float]]) -> None:
 
 
 def _validate_lengths(prices: List[float], volumes: Optional[List[float]]) -> None:
-    """Validate that price and volume series have compatible lengths."""
-    if volumes is not None and len(volumes) < len(prices):
+    """Validate that price and volume series are aligned by timestamp.
+
+    In a financial pipeline, prices and volumes must represent the same time
+    period with aligned timestamps. Therefore the volume series, when provided,
+    must match the price series length exactly.
+    """
+    if volumes is not None and len(volumes) != len(prices):
         raise ValueError(
-            f"Volume series shorter than price series: {len(prices)} prices, "
-            f"{len(volumes)} volumes. Volumes must be at least as long as prices."
+            f"Price and volume series must have equal length for timestamp alignment: "
+            f"{len(prices)} prices, {len(volumes)} volumes"
         )
 
 
@@ -238,7 +243,8 @@ def _extract_features(
         Historical price series (oldest first). Must contain at least 2 finite,
         positive values.
     volumes : Optional[List[float]]
-        Historical volume series (oldest first). If None or insufficient length,
+        Historical volume series (oldest first). Must align exactly with prices
+        by timestamp (same dates, same length). If None or insufficient length,
         volume features are marked as unavailable.
     lookback_days : int
         Lookback window for feature calculation.
@@ -541,7 +547,8 @@ class RegimeDetector:
             Historical price series (oldest first). Must contain at least 2
             finite, positive values.
         volumes : Optional[List[float]]
-            Historical volume series (oldest first). If None or shorter than
+            Historical volume series (oldest first). Must align exactly with prices
+            by timestamp (same dates, same length). If None or shorter than
             2x lookback_days, volume features are marked as unavailable.
         timestamp : Optional[datetime]
             Classification timestamp. Defaults to datetime.now().
@@ -653,7 +660,8 @@ def detect_regime(
         Historical price series (oldest first). Must contain at least 2
         finite, positive values.
     volumes : Optional[List[float]]
-        Historical volume series (oldest first).
+        Historical volume series (oldest first). Must align exactly with prices
+        by timestamp (same dates, same length).
     lookback_days : int, optional
         Lookback window for feature extraction (default 20).
     timestamp : Optional[datetime]

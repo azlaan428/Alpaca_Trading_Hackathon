@@ -106,11 +106,17 @@ class TestValidationHelpers(unittest.TestCase):
         """Verify volume series shorter than prices raises ValueError."""
         with self.assertRaises(ValueError) as ctx:
             _validate_lengths([100.0, 101.0], [1000.0])
-        self.assertIn("shorter", str(ctx.exception))
+        self.assertIn("equal length", str(ctx.exception))
 
-    def test_volume_longer_than_prices_accepted(self):
-        """Verify volume series longer than prices is accepted."""
-        _validate_lengths([100.0, 101.0], [1000.0, 2000.0, 3000.0])
+    def test_volume_longer_than_prices_rejected(self):
+        """Verify volume series longer than prices raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_lengths([100.0, 101.0], [1000.0, 2000.0, 3000.0])
+        self.assertIn("equal length", str(ctx.exception))
+
+    def test_volume_equal_length_accepted(self):
+        """Verify volume series equal length to prices is accepted."""
+        _validate_lengths([100.0, 101.0], [1000.0, 2000.0])
 
     def test_exactly_40_volume_observations_accepted(self):
         """Verify exactly 40 volume observations are accepted for 20-day lookback."""
@@ -155,8 +161,9 @@ class TestFeatureExtraction(unittest.TestCase):
 
     def test_volume_ratio_calculation(self):
         """Verify volume ratio is computed correctly."""
-        prices = [100.0] * 25
-        volumes = [1000.0] * 30 + [2000.0] * 10
+        prices = [100.0] * 45
+        volumes = [1000.0] * 45
+        volumes[-10:] = [2000.0] * 10
         features = _extract_features(prices, volumes, lookback_days=10)
         self.assertEqual(features.volume_regime, "elevated")
         self.assertGreater(features.volume_ratio, 1.5)
@@ -334,8 +341,8 @@ class TestRegimeDetector(unittest.TestCase):
     def test_elevated_volume_detected(self):
         """Verify elevated volume is detected when recent volume exceeds long-term baseline."""
         prices = [100.0] * 45
-        # Need 2x lookback_days volumes for long-term comparison
-        volumes = [1000.0] * 40 + [2000.0] * 20
+        volumes = [1000.0] * 45
+        volumes[-20:] = [2000.0] * 20
         detector = RegimeDetector(lookback_days=20)
         result = detector.classify(prices, volumes)
         self.assertEqual(result.features["volume_regime"], "elevated")
