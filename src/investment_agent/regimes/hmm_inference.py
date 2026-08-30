@@ -101,11 +101,24 @@ class HMMParameters:
 
     def __post_init__(self) -> None:
         """Validate HMM parameters."""
+        import numpy as np
+        
         # Validate transition matrix
         if self.transition_matrix.shape != (N_STATES, N_STATES):
             raise ValueError(
                 f"transition_matrix must be {N_STATES}x{N_STATES}, got {self.transition_matrix.shape}"
             )
+        
+        # Check for NaN/Inf
+        if np.any(np.isnan(self.transition_matrix)):
+            raise ValueError("transition_matrix contains NaN values")
+        if np.any(np.isinf(self.transition_matrix)):
+            raise ValueError("transition_matrix contains Infinity values")
+        
+        # Check for negative values
+        if np.any(self.transition_matrix < 0):
+            raise ValueError("transition_matrix contains negative probabilities")
+        
         row_sums = self.transition_matrix.sum(axis=1)
         if not np.allclose(row_sums, 1.0, atol=1e-9):
             raise ValueError(
@@ -117,6 +130,14 @@ class HMMParameters:
             raise ValueError(
                 f"prior must be length {N_STATES}, got {self.prior.shape}"
             )
+        
+        if np.any(np.isnan(self.prior)):
+            raise ValueError("prior contains NaN values")
+        if np.any(np.isinf(self.prior)):
+            raise ValueError("prior contains Infinity values")
+        if np.any(self.prior < 0):
+            raise ValueError("prior contains negative probabilities")
+        
         prior_sum = self.prior.sum()
         if not math.isclose(prior_sum, 1.0, abs_tol=1e-9):
             raise ValueError(f"prior must sum to 1.0, got {prior_sum}")
@@ -126,12 +147,24 @@ class HMMParameters:
             raise ValueError(
                 f"emission_means must be {N_STATES}x{N_FEATURES}, got {self.emission_means.shape}"
             )
+        
+        if np.any(np.isnan(self.emission_means)):
+            raise ValueError("emission_means contains NaN values")
+        if np.any(np.isinf(self.emission_means)):
+            raise ValueError("emission_means contains Infinity values")
 
         # Validate emission covariances
         if self.emission_covariances.shape != (N_STATES, N_FEATURES):
             raise ValueError(
                 f"emission_covariances must be {N_STATES}x{N_FEATURES}, got {self.emission_covariances.shape}"
             )
+        
+        if np.any(np.isnan(self.emission_covariances)):
+            raise ValueError("emission_covariances contains NaN values")
+        if np.any(np.isinf(self.emission_covariances)):
+            raise ValueError("emission_covariances contains Infinity values")
+        if np.any(self.emission_covariances <= 0):
+            raise ValueError("emission_covariances must be strictly positive")
 
 
 @dataclass(frozen=True)
@@ -442,16 +475,29 @@ def load_hmm_parameters(config: dict) -> HMMParameters:
     prior /= prior.sum()
 
     # Build transition matrix
-    # Diagonal from config, off-diagonal distributed proportionally
+    # NOTE: config/regimes.toml currently provides only diagonal persistence values.
+    # The authoritative architecture (027_xquantx_regime_archetypes.txt §1.7) specifies
+    # a full 12x12 transition matrix. Until the full matrix is provided in config,
+    # off-diagonal probabilities are distributed uniformly. This is an implementation
+    # approximation, not the authoritative transition structure.
     A = np.zeros((N_STATES, N_STATES))
     for i in range(N_STATES):
         regime_id = f"R{i + 1:02d}"
         p_ii = diag.get(regime_id, 0.85)
-        # Clamp diagonal
+        # Clamp diagonal to valid probability range
         p_ii = max(0.0, min(1.0, p_ii))
         off_diag = (1.0 - p_ii) / (N_STATES - 1)
         A[i, :] = off_diag
         A[i, i] = p_ii
+    
+    # If full transition matrix is provided in config, use it instead
+    full_matrix = config.get("transition_matrix", None)
+    if full_matrix is not None:
+        A = np.array(full_matrix, dtype=np.float64)
+        # Normalize rows to ensure stochasticity
+        row_sums = A.sum(axis=1, keepdims=True)
+        row_sums[row_sums < _EPSILON] = 1.0
+        A = A / row_sums
 
     # Build emission means
     means = np.zeros((N_STATES, N_FEATURES))
@@ -518,6 +564,11 @@ class HMMRegimeDetectorImpl:
         -------
         HMMInferenceResult
             HMM-based regime classification with calibrated probabilities.
+        
+        Raises
+        ------
+        ValueError
+            If features have invalid shape, contain NaN/Inf, or have wrong feature count.
         """
         if features.ndim == 1:
             features = features.reshape(1, -1)
@@ -529,6 +580,12 @@ class HMMRegimeDetectorImpl:
             raise ValueError(
                 f"Expected {N_FEATURES} features per observation, got {features.shape[1]}"
             )
+        
+        # Strict validation: finite values only
+        if np.any(np.isnan(features)):
+            raise ValueError("Feature vector contains NaN values")
+        if np.any(np.isinf(features)):
+            raise ValueError("Feature vector contains Infinity values")
 
         # Run forward-backward
         gamma, log_likelihood, _, _ = self._inference.forward_backward(features)

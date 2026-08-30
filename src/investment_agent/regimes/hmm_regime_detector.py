@@ -68,6 +68,16 @@ from .hmm_inference import (
 )
 
 
+# Try to import tomllib (Python 3.11+) or tomli
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib  # type: ignore
+    except ModuleNotFoundError:
+        tomllib = None  # type: ignore
+
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -105,16 +115,6 @@ def _load_regime_config(path: Optional[Path] = None) -> Dict[str, Any]:
         return {}
 
 
-# Try to import tomllib (Python 3.11+) or tomli
-try:
-    import tomllib
-except ModuleNotFoundError:
-    try:
-        import tomli as tomllib  # type: ignore
-    except ModuleNotFoundError:
-        tomllib = None  # type: ignore
-
-
 _REGIME_CONFIG = _load_regime_config()
 
 
@@ -135,10 +135,12 @@ class RegimeProbability:
         These ARE computed by the forward-backward algorithm, not heuristic scores.
     entropy : float
         Regime entropy H_t = -sum_k P(r_k|x_t) ln P(r_k|x_t).
+    normalized_entropy : float
+        Normalized entropy U_t = H_t / ln(12) in [0, 1].
     dwell_time : int
         Minimum dwell time in bars for the classified regime.
     is_confident : bool
-        True if normalized entropy U_t = H_t / ln(12) < 0.5.
+        True if normalized entropy U_t < 0.5.
     timestamp : datetime
         Inference timestamp.
     """
@@ -146,6 +148,7 @@ class RegimeProbability:
     regime: str
     probabilities: Dict[str, float]
     entropy: float
+    normalized_entropy: float
     dwell_time: int
     is_confident: bool
     timestamp: datetime = field(default_factory=datetime.now)
@@ -199,6 +202,11 @@ class HMMRegimeDetector:
         -------
         RegimeProbability
             HMM-based regime classification with statistically calibrated probabilities.
+        
+        Note: Dwell-time enforcement is applied as post-processing on the Viterbi path.
+        The authoritative architecture specifies constrained Viterbi inference under dwell-time
+        constraints; this implementation uses unconstrained Viterbi followed by run-length
+        filtering as an approximation.
         """
         obs = np.array(features, dtype=np.float64)
         result = self._impl.classify(obs)
@@ -217,6 +225,7 @@ class HMMRegimeDetector:
             regime=result.regime,
             probabilities=probs,
             entropy=result.entropy,
+            normalized_entropy=result.normalized_entropy,
             dwell_time=dwell_time,
             is_confident=result.is_confident,
         )

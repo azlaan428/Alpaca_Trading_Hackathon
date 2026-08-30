@@ -412,5 +412,180 @@ class TestHMMProvenance(unittest.TestCase):
         self.assertEqual(len(detector.get_history()), 0)
 
 
+class TestStrictInputValidation(unittest.TestCase):
+    """Test strict input validation for HMM inference."""
+
+    def test_nan_features_raise_error(self):
+        """Verify NaN in features raises ValueError."""
+        detector = HMMRegimeDetector()
+        with self.assertRaises(ValueError) as ctx:
+            detector.classify([[50.0, float("nan"), 1.0, 20.0, 1.0, 0.5, 0.5]])
+        self.assertIn("NaN", str(ctx.exception))
+
+    def test_inf_features_raise_error(self):
+        """Verify Infinity in features raises ValueError."""
+        detector = HMMRegimeDetector()
+        with self.assertRaises(ValueError) as ctx:
+            detector.classify([[50.0, 0.0, float("inf"), 20.0, 1.0, 0.5, 0.5]])
+        self.assertIn("Infinity", str(ctx.exception))
+
+    def test_wrong_feature_count_raises_error(self):
+        """Verify wrong number of features raises ValueError."""
+        detector = HMMRegimeDetector()
+        with self.assertRaises(ValueError) as ctx:
+            detector.classify([[50.0, 0.0]])
+        self.assertIn("7 features", str(ctx.exception))
+
+    def test_empty_sequence_raises_error(self):
+        """Verify empty feature sequence raises ValueError."""
+        detector = HMMRegimeDetector()
+        with self.assertRaises(ValueError) as ctx:
+            detector.classify([])
+        self.assertIn("Expected 7 features", str(ctx.exception))
+
+
+class TestHMMParameterValidation(unittest.TestCase):
+    """Test HMM parameter validation edge cases."""
+
+    def test_negative_transition_probability_raises(self):
+        """Verify negative transition probabilities raise ValueError."""
+        A = np.ones((12, 12)) / 12
+        A[0, 0] = -0.1  # negative value
+        # Compensate to keep row sum = 1.0
+        A[0, 1] = 1.0 - (-0.1) - 10 * (1/12)
+        with self.assertRaises(ValueError) as ctx:
+            HMMParameters(
+                transition_matrix=A,
+                prior=np.ones(12) / 12,
+                emission_means=np.zeros((12, 7)),
+                emission_covariances=np.ones((12, 7)),
+            )
+        self.assertIn("negative", str(ctx.exception))
+
+    def test_nan_transition_raises(self):
+        """Verify NaN in transition matrix raises ValueError."""
+        A = np.ones((12, 12)) / 12
+        A[0, 0] = float("nan")
+        with self.assertRaises(ValueError) as ctx:
+            HMMParameters(
+                transition_matrix=A,
+                prior=np.ones(12) / 12,
+                emission_means=np.zeros((12, 7)),
+                emission_covariances=np.ones((12, 7)),
+            )
+        self.assertIn("NaN", str(ctx.exception))
+
+    def test_zero_covariance_raises(self):
+        """Verify zero covariance raises ValueError."""
+        covs = np.ones((12, 7))
+        covs[0, 0] = 0.0
+        with self.assertRaises(ValueError) as ctx:
+            HMMParameters(
+                transition_matrix=np.ones((12, 12)) / 12,
+                prior=np.ones(12) / 12,
+                emission_means=np.zeros((12, 7)),
+                emission_covariances=covs,
+            )
+        self.assertIn("strictly positive", str(ctx.exception))
+
+    def test_negative_covariance_raises(self):
+        """Verify negative covariance raises ValueError."""
+        covs = np.ones((12, 7))
+        covs[0, 0] = -1.0
+        with self.assertRaises(ValueError) as ctx:
+            HMMParameters(
+                transition_matrix=np.ones((12, 12)) / 12,
+                prior=np.ones(12) / 12,
+                emission_means=np.zeros((12, 7)),
+                emission_covariances=covs,
+            )
+        self.assertIn("strictly positive", str(ctx.exception))
+
+
+class TestRegimeProbabilityNormalizedEntropy(unittest.TestCase):
+    """Test that RegimeProbability exposes normalized_entropy."""
+
+    def test_normalized_entropy_in_range(self):
+        """Verify normalized_entropy is in [0, 1]."""
+        detector = HMMRegimeDetector()
+        features = [[50.0, 0.0, 1.0, 20.0, 1.0, 0.5, 0.5]]
+        result = detector.classify(features)
+        self.assertIsInstance(result, RegimeProbability)
+        self.assertTrue(hasattr(result, "normalized_entropy"))
+        self.assertGreaterEqual(result.normalized_entropy, 0.0)
+        self.assertLessEqual(result.normalized_entropy, 1.0)
+
+    def test_normalized_entropy_matches_hmm_result(self):
+        """Verify normalized_entropy matches HMMInferenceResult."""
+        detector = HMMRegimeDetector()
+        features = [[50.0, 0.0, 1.0, 20.0, 1.0, 0.5, 0.5]]
+        result = detector.classify(features)
+        history = detector.get_history()
+        self.assertEqual(len(history), 1)
+        self.assertAlmostEqual(
+            result.normalized_entropy,
+            history[0].normalized_entropy,
+            places=5,
+        )
+
+
+class TestDwellTimeTransitions(unittest.TestCase):
+    """Test dwell-time transition behavior."""
+
+    def test_dwell_time_blocks_short_runs(self):
+        """Verify dwell-time blocks regime runs shorter than minimum."""
+        from investment_agent.regimes.hmm_inference import HMMInference
+        inference = HMMInference(make_test_params())
+        
+        # Path with short runs: R01,R01,R02,R01
+        # R01 (stay), R01 (stay), R02 (new, run_length=1<3, fill with R01), R01 (stay)
+        path = ["R01", "R01", "R02", "R01"]
+        result = inference.enforce_dwell_time(path, min_dwell=3)
+        self.assertEqual(result, ["R01", "R01", "R01", "R01"])
+
+    def test_dwell_time_preserves_long_runs(self):
+        """Verify dwell-time preserves runs longer than minimum."""
+        from investment_agent.regimes.hmm_inference import HMMInference
+        inference = HMMInference(make_test_params())
+        
+        # Path with long runs: R01 x 5, R02 x 5
+        path = ["R01"] * 5 + ["R02"] * 5
+        result = inference.enforce_dwell_time(path, min_dwell=3)
+        self.assertEqual(result[:5], ["R01"] * 5)
+        self.assertEqual(result[5:], ["R02"] * 5)
+
+    def test_dwell_time_single_value_unchanged(self):
+        """Verify single-value path is unchanged."""
+        from investment_agent.regimes.hmm_inference import HMMInference
+        inference = HMMInference(make_test_params())
+        path = ["R01"]
+        result = inference.enforce_dwell_time(path, min_dwell=3)
+        self.assertEqual(result, ["R01"])
+
+
+class TestPosteriorProbabilitiesSumToOne(unittest.TestCase):
+    """Test that posterior probabilities always sum to 1.0."""
+
+    def test_single_observation_probabilities_sum_to_one(self):
+        """Verify probabilities sum to 1.0 for single observation."""
+        detector = HMMRegimeDetector()
+        features = [[50.0, 0.0, 1.0, 20.0, 1.0, 0.5, 0.5]]
+        result = detector.classify(features)
+        total = sum(result.probabilities.values())
+        self.assertAlmostEqual(total, 1.0, places=5)
+
+    def test_multiple_observation_probabilities_sum_to_one(self):
+        """Verify probabilities sum to 1.0 for multiple observations."""
+        detector = HMMRegimeDetector()
+        features = [
+            [50.0, 0.0, 1.0, 20.0, 1.0, 0.5, 0.5],
+            [55.0, 0.5, 1.2, 22.0, 1.1, 0.6, 0.52],
+            [60.0, 1.0, 1.5, 25.0, 1.3, 0.7, 0.55],
+        ]
+        result = detector.classify(features)
+        total = sum(result.probabilities.values())
+        self.assertAlmostEqual(total, 1.0, places=5)
+
+
 if __name__ == "__main__":
     unittest.main()
