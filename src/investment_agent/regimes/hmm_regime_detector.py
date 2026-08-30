@@ -2,8 +2,8 @@
 
 WHAT
 ====
-Interface and baseline implementation for HMM-based market regime classification.
-This module implements the authoritative architecture specified in:
+Operational HMM-based market regime classification implementing the authoritative
+architecture specified in:
     alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt
 
 WHY
@@ -18,26 +18,26 @@ HOW
 ===
 - Loads regime definitions from config/regimes.toml
 - Computes emission probabilities from feature vector using multivariate Gaussian
-- Applies Viterbi decoding or forward-backward smoothing for regime inference
-- Enforces dwell-time constraints (MIN_REGIME_DWELL_BARS)
+- Applies forward-backward inference for posterior regime probabilities
+- Applies Viterbi decoding with dwell-time enforcement for regime classification
 - Computes regime entropy H_t for uncertainty gating
 
-The current implementation provides:
-1. A clear interface contract (HMMRegimeDetector base class)
+The implementation provides:
+1. Concrete HMMRegimeDetector with full inference
 2. Configuration loading from config/regimes.toml
-3. A stub implementation that raises NotImplementedError for the core inference
-4. A factory function that returns the rule-based detector as fallback
+3. 12-state HMM with 7-feature emission model
+4. Scaled forward-backward for posterior probabilities
+5. Viterbi decoding with dwell-time enforcement
+6. Regime entropy computation
 
 IMPLEMENTATION STATUS
 =====================
 - Configuration loading: ✅ Implemented
 - Interface contract: ✅ Implemented
-- HMM inference (Baum-Welch, Viterbi): ❌ Stub (future enhancement)
-- Dwell-time enforcement: ❌ Stub (future enhancement)
-- Regime entropy computation: ❌ Stub (future enhancement)
-
-The rule-based detector remains the active implementation until HMM inference
-is fully implemented and tested.
+- HMM inference (forward-backward, Viterbi): ✅ Implemented
+- Dwell-time enforcement: ✅ Implemented
+- Regime entropy computation: ✅ Implemented
+- Baum-Welch parameter learning: ❌ Future enhancement (uses fixed priors from config)
 
 Architectural Role
 ==================
@@ -49,15 +49,23 @@ and capital_gate.py.
 from __future__ import annotations
 
 import math
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import tomllib
+import numpy as np
 
-from ..regimes.regimes import VALID_REGIMES
+from .regimes import VALID_REGIMES
+from .hmm_inference import (
+    HMMParameters,
+    HMMInferenceResult,
+    HMMInference,
+    HMMRegimeDetectorImpl,
+    load_hmm_parameters,
+    MIN_DWELL_BARS,
+    N_STATES,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +105,16 @@ def _load_regime_config(path: Optional[Path] = None) -> Dict[str, Any]:
         return {}
 
 
+# Try to import tomllib (Python 3.11+) or tomli
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib  # type: ignore
+    except ModuleNotFoundError:
+        tomllib = None  # type: ignore
+
+
 _REGIME_CONFIG = _load_regime_config()
 
 
@@ -113,8 +131,8 @@ class RegimeProbability:
     regime : str
         Most probable regime identifier (R01-R12).
     probabilities : Dict[str, float]
-        Probability distribution over all 12 regimes summing to 1.0.
-        These ARE statistically calibrated HMM posterior probabilities.
+        Statistically calibrated HMM posterior probabilities P(r_k|x_t) summing to 1.0.
+        These ARE computed by the forward-backward algorithm, not heuristic scores.
     entropy : float
         Regime entropy H_t = -sum_k P(r_k|x_t) ln P(r_k|x_t).
     dwell_time : int
@@ -134,109 +152,110 @@ class RegimeProbability:
 
 
 # ---------------------------------------------------------------------------
-# Interface
+# HMM Regime Detector
 # ---------------------------------------------------------------------------
 
-class HMMRegimeDetector(ABC):
-    """Abstract base class for HMM-based regime detectors.
+class HMMRegimeDetector:
+    """Concrete HMM-based regime detector.
 
-    Subclasses must implement the core HMM inference methods.
+    Uses 12-state Hidden Markov Model with:
+    - Forward-backward inference for posterior probabilities
+    - Viterbi decoding with dwell-time enforcement for regime classification
+    - Multivariate Gaussian emission distributions
+    - Regime entropy computation for uncertainty gating
+
+    The HMM parameters are loaded from config/regimes.toml.
     """
 
-    @abstractmethod
-    def classify(self, features: List[float]) -> RegimeProbability:
-        """Classify regime from feature vector using HMM inference.
+    def __init__(self, config_path: Optional[Path] = None) -> None:
+        """Initialize HMM regime detector.
 
         Parameters
         ----------
-        features : List[float]
-            Feature vector [RSI, MACD, ATR, VIX, VolRatio, Corr, Hurst].
+        config_path : Optional[Path]
+            Path to regimes.toml configuration file.
+        """
+        config = _load_regime_config(config_path)
+        if not config:
+            raise ValueError(
+                "Could not load regime configuration. "
+                "Ensure config/regimes.toml exists."
+            )
+
+        params = load_hmm_parameters(config)
+        self._impl = HMMRegimeDetectorImpl(params)
+        self._config = config
+
+    def classify(self, features: List[List[float]]) -> RegimeProbability:
+        """Classify regime from feature sequence using HMM inference.
+
+        Parameters
+        ----------
+        features : List[List[float]]
+            Feature matrix where each row is [RSI, MACD, ATR, VIX, VolRatio, Corr, Hurst].
+            Must contain at least 1 observation.
 
         Returns
         -------
         RegimeProbability
-            HMM-based regime classification with calibrated probabilities.
+            HMM-based regime classification with statistically calibrated probabilities.
         """
-        pass
+        obs = np.array(features, dtype=np.float64)
+        result = self._impl.classify(obs)
 
-    @abstractmethod
-    def update_transition_matrix(self, new_matrix: List[List[float]]) -> None:
-        """Update the HMM transition matrix.
+        # Get dwell time from config
+        dwell_times = self._config.get("min_dwell_bars", {})
+        dwell_time = dwell_times.get(result.regime, MIN_DWELL_BARS)
 
-        Parameters
-        ----------
-        new_matrix : List[List[float]]
-            12x12 transition matrix where each row sums to 1.0.
-        """
-        pass
+        # Convert numpy array to dict
+        probs = {}
+        for i in range(N_STATES):
+            regime_id = f"R{i + 1:02d}"
+            probs[regime_id] = float(result.posterior_probabilities[i])
 
-    @abstractmethod
-    def get_emission_parameters(self, regime: str) -> Dict[str, float]:
-        """Get emission distribution parameters for a regime.
-
-        Parameters
-        ----------
-        regime : str
-            Regime identifier (R01-R12).
-
-        Returns
-        -------
-        Dict[str, float]
-            Emission distribution parameters (mean, covariance).
-        """
-        pass
-
-
-# ---------------------------------------------------------------------------
-# Stub implementation
-# ---------------------------------------------------------------------------
-
-class StubHMMRegimeDetector(HMMRegimeDetector):
-    """Stub HMM regime detector.
-
-    This implementation raises NotImplementedError for all core methods,
-    clearly indicating that HMM inference is a future enhancement.
-
-    Use get_hmm_detector() to obtain an instance; it returns this stub
-    unless a full implementation is available.
-    """
-
-    def classify(self, features: List[float]) -> RegimeProbability:
-        """Raise NotImplementedError — HMM inference not yet implemented."""
-        raise NotImplementedError(
-            "HMM regime inference is not yet implemented. "
-            "Use regime_detector.RegimeDetector for the current rule-based approximation."
+        return RegimeProbability(
+            regime=result.regime,
+            probabilities=probs,
+            entropy=result.entropy,
+            dwell_time=dwell_time,
+            is_confident=result.is_confident,
         )
 
-    def update_transition_matrix(self, new_matrix: List[List[float]]) -> None:
-        """Raise NotImplementedError — HMM transition matrix update not yet implemented."""
-        raise NotImplementedError(
-            "HMM transition matrix update is not yet implemented."
-        )
+    def get_transition_matrix(self) -> np.ndarray:
+        """Return the current HMM transition matrix."""
+        return self._impl._params.transition_matrix.copy()
 
-    def get_emission_parameters(self, regime: str) -> Dict[str, float]:
-        """Raise NotImplementedError — HMM emission parameters not yet implemented."""
-        raise NotImplementedError(
-            "HMM emission parameters are not yet implemented."
-        )
+    def get_emission_means(self) -> np.ndarray:
+        """Return the current HMM emission means."""
+        return self._impl._params.emission_means.copy()
+
+    def get_history(self) -> List[HMMInferenceResult]:
+        """Return inference history."""
+        return self._impl.get_history()
+
+    def clear_history(self) -> None:
+        """Clear inference history."""
+        self._impl.clear_history()
 
 
 # ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
 
-def get_hmm_detector() -> HMMRegimeDetector:
+def get_hmm_detector(config_path: Optional[Path] = None) -> HMMRegimeDetector:
     """Get the HMM regime detector.
 
-    Currently returns the stub implementation. When HMM inference is implemented,
-    this factory will return the production HMM detector.
+    Parameters
+    ----------
+    config_path : Optional[Path]
+        Path to regimes.toml configuration file.
 
     Returns
     -------
     HMMRegimeDetector
-        HMM regime detector instance.
+        Operational HMM regime detector instance.
     """
-    return StubHMMRegimeDetector()
+    return HMMRegimeDetector(config_path)
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +264,6 @@ def get_hmm_detector() -> HMMRegimeDetector:
 
 __all__ = [
     "HMMRegimeDetector",
-    "StubHMMRegimeDetector",
     "RegimeProbability",
     "get_hmm_detector",
     "_load_regime_config",

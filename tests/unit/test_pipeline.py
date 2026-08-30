@@ -27,7 +27,7 @@ from investment_agent.capital.capital_gate import (
     CapitalGateResult,
     RiskVerdict,
 )
-from investment_agent.pipeline import XQuantXPipeline, PipelineResult
+from investment_agent.pipeline import XQuantXPipeline, PipelineResult, ProvenanceTrace
 
 
 # ---------------------------------------------------------------------------
@@ -380,6 +380,17 @@ class TestEndToEndPipeline(unittest.TestCase):
         self.assertIsInstance(result.ensemble, EnsembleAggregate)
         self.assertIsInstance(result.kalman_state, KalmanState)
         self.assertIsInstance(result.capital_gate, CapitalGateResult)
+        self.assertIsInstance(result.provenance, ProvenanceTrace)
+
+        # Verify provenance trace completeness
+        self.assertIn(result.provenance.regime, VALID_REGIMES)
+        self.assertEqual(result.provenance.regime, result.regime.regime)
+        self.assertEqual(result.provenance.kalman_gain, result.kalman_gain)
+        self.assertEqual(
+            result.provenance.capital_gate["verdict"],
+            result.capital_gate.verdict.value,
+        )
+        self.assertEqual(len(result.provenance.agent_outputs), 7)
 
         # Verify regime affects weights
         weights = result.weights

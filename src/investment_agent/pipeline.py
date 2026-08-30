@@ -48,6 +48,51 @@ from investment_agent.filters.kalman_filter import KalmanFilter, KalmanState
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
+class ProvenanceTrace:
+    """Immutable provenance trace for pipeline execution.
+
+    Records the data flow through each pipeline stage for audit and dashboard display.
+
+    Attributes
+    ----------
+    market_data : Dict[str, Any]
+        Input market data (prices, volumes, timestamp).
+    features : Dict[str, float]
+        Extracted market features (trend, volatility, volume).
+    regime : str
+        Active regime identifier.
+    regime_probabilities : Optional[Dict[str, float]]
+        HMM posterior probabilities if HMM used, None if rule-based.
+    weights : Dict[str, float]
+        Per-agent reputation weights.
+    agent_outputs : List[Dict[str, float]]
+        Agent signal outputs (agent_id, signal, confidence).
+    ensemble : Dict[str, float]
+        Ensemble aggregate (signal, disagreement, effective_confidence).
+    kalman_state : Dict[str, float]
+        Kalman filter state (estimated_price, trend, uncertainty, price_variance).
+    kalman_gain : float
+        Investment Kalman gain K_t.
+    capital_gate : Dict[str, Any]
+        Capital gate result (verdict, effective_cap, triggered_rules).
+    timestamp : datetime
+        Pipeline execution timestamp.
+    """
+
+    market_data: Dict[str, Any]
+    features: Dict[str, float]
+    regime: str
+    regime_probabilities: Optional[Dict[str, float]]
+    weights: Dict[str, float]
+    agent_outputs: List[Dict[str, float]]
+    ensemble: Dict[str, float]
+    kalman_state: Dict[str, float]
+    kalman_gain: float
+    capital_gate: Dict[str, Any]
+    timestamp: datetime = field(default_factory=datetime.now)
+
+
+@dataclass(frozen=True)
 class PipelineResult:
     """Immutable end-to-end pipeline result.
 
@@ -66,6 +111,8 @@ class PipelineResult:
         and disagreement. Exposed explicitly for audit transparency.
     capital_gate : CapitalGateResult
         Seven-State Capital Gate evaluation result.
+    provenance : ProvenanceTrace
+        Complete data flow trace for audit and dashboard display.
     timestamp : datetime
         Pipeline execution timestamp.
     """
@@ -76,6 +123,7 @@ class PipelineResult:
     kalman_state: KalmanState
     kalman_gain: float
     capital_gate: CapitalGateResult
+    provenance: ProvenanceTrace
     timestamp: datetime = field(default_factory=datetime.now)
 
 
@@ -321,6 +369,47 @@ class XQuantXPipeline:
             ensemble_agg=ensemble,
         )
 
+        # 6. Build provenance trace for audit and dashboard display
+        provenance = ProvenanceTrace(
+            market_data={
+                "prices_count": len(prices),
+                "volumes_count": len(volumes) if volumes else 0,
+                "latest_price": float(prices[-1]),
+            },
+            features=dict(regime_result.features),
+            regime=active_regime,
+            regime_probabilities=None,  # Rule-based detector doesn't produce HMM probabilities
+            weights=dict(weights),
+            agent_outputs=[
+                {
+                    "agent_id": a.agent_id,
+                    "signal": float(a.s),
+                    "confidence": float(a.c),
+                }
+                for a in agent_outputs
+            ],
+            ensemble={
+                "signal": float(ensemble.ensemble_signal),
+                "disagreement": float(ensemble.disagreement),
+                "effective_confidence": float(ensemble.effective_confidence),
+            },
+            kalman_state={
+                "estimated_price": float(kalman_state.estimated_price),
+                "trend": float(kalman_state.trend),
+                "uncertainty": float(kalman_state.uncertainty),
+                "price_variance": float(kalman_state.price_variance),
+            },
+            kalman_gain=float(capital_gate.kalman_gain),
+            capital_gate={
+                "verdict": capital_gate.verdict.value,
+                "effective_cap": float(capital_gate.effective_cap),
+                "gating_factor": float(capital_gate.gating_factor),
+                "reduce_factor": float(capital_gate.reduce_factor),
+                "triggered_rules": list(capital_gate.triggered_rules),
+                "reason": capital_gate.reason,
+            },
+        )
+
         return PipelineResult(
             regime=regime_result,
             weights=weights,
@@ -328,6 +417,7 @@ class XQuantXPipeline:
             kalman_state=kalman_state,
             kalman_gain=capital_gate.kalman_gain,
             capital_gate=capital_gate,
+            provenance=provenance,
         )
 
     def get_regime_history(self) -> List[Tuple[datetime, str]]:
@@ -347,4 +437,5 @@ class XQuantXPipeline:
 __all__ = [
     "XQuantXPipeline",
     "PipelineResult",
+    "ProvenanceTrace",
 ]
