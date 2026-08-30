@@ -63,6 +63,7 @@ from .hmm_inference import (
     HMMInference,
     HMMRegimeDetectorImpl,
     load_hmm_parameters,
+    HMMUnderflowError,
     MIN_DWELL_BARS,
     N_STATES,
 )
@@ -281,6 +282,7 @@ def get_hmm_detector(config_path: Optional[Path] = None) -> HMMRegimeDetector:
 __all__ = [
     "HMMRegimeDetector",
     "RegimeProbability",
+    "HMMUnderflowError",
     "get_hmm_detector",
     "_load_regime_config",
 ]

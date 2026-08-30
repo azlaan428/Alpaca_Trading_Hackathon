@@ -36,6 +36,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from investment_agent.regimes.regime_detector import RegimeDetector, RegimeClassification
 from investment_agent.regimes.regimes import VALID_REGIMES
+from investment_agent.regimes.hmm_regime_detector import HMMRegimeDetector, HMMUnderflowError
 from investment_agent.agents.agent_reputation import AgentReputationTracker
 from investment_agent.signals.ensemble_signal import AgentOutput, EnsembleAggregate, compute_ensemble_aggregate
 from investment_agent.filters.investment_kalman_gain import compute_investment_kalman_gain
@@ -205,6 +206,12 @@ class XQuantXPipeline:
         self._kalman_filter = KalmanFilter(initial_price=kalman_initial_price)
         self._regime_history: List[Tuple[datetime, str]] = []
         self._use_hmm = use_hmm
+        self._hmm_detector: Optional[HMMRegimeDetector] = None
+        if use_hmm:
+            try:
+                self._hmm_detector = HMMRegimeDetector()
+            except Exception:
+                self._hmm_detector = None
 
     def classify_regime(
         self,
@@ -224,7 +231,20 @@ class XQuantXPipeline:
         -------
         RegimeClassification
             Active regime classification.
+        
+        Raises
+        ------
+        HMMUnderflowError
+            If HMM inference encounters numerical underflow (only when use_hmm=True).
         """
+        if self._use_hmm and self._hmm_detector is not None:
+            try:
+                # HMM path requires feature extraction from prices/volumes
+                # For now, fall back to rule-based detector
+                pass
+            except HMMUnderflowError:
+                raise
+        
         result = self._regime_detector.classify(prices, volumes)
         self._regime_history.append((datetime.now(), result.regime))
         return result

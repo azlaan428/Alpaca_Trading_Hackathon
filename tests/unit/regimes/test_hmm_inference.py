@@ -22,6 +22,7 @@ from investment_agent.regimes.hmm_inference import (
     HMMInferenceResult,
     HMMRegimeDetectorImpl,
     load_hmm_parameters,
+    HMMUnderflowError,
     N_STATES,
     N_FEATURES,
     MIN_DWELL_BARS,
@@ -179,10 +180,8 @@ class TestForwardBackward(unittest.TestCase):
         row_sums = gamma.sum(axis=1)
         np.testing.assert_allclose(row_sums, 1.0, atol=1e-10)
 
-    def test_underflow_warning_issued(self):
-        """Verify warning is issued when numerical underflow occurs."""
-        import warnings
-        
+    def test_underflow_raises_error(self):
+        """Verify HMMUnderflowError is raised when numerical underflow occurs."""
         params = make_test_params()
         inference = HMMInference(params)
         
@@ -190,15 +189,10 @@ class TestForwardBackward(unittest.TestCase):
         # by using extreme values far from emission means
         obs = np.array([[1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0]])
         
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            gamma, ll, alpha, beta = inference.forward_backward(obs)
-            
-            # Should issue underflow warning
-            self.assertTrue(
-                any("underflow" in str(warning.message).lower() for warning in w),
-                f"Expected underflow warning, got: {[str(warning.message) for warning in w]}"
-            )
+        with self.assertRaises(HMMUnderflowError) as ctx:
+            inference.forward_backward(obs)
+        
+        self.assertIn("underflow", str(ctx.exception).lower())
 
     def test_single_observation(self):
         """Verify forward-backward works with single observation."""

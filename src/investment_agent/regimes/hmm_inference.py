@@ -45,7 +45,6 @@ statistically calibrated regime probabilities consumed by hmm_regime_detector.py
 from __future__ import annotations
 
 import math
-import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional, Tuple
@@ -53,6 +52,19 @@ from typing import List, Optional, Tuple
 import numpy as np
 
 from .regimes import VALID_REGIMES
+
+
+# ---------------------------------------------------------------------------
+# Exceptions
+# ---------------------------------------------------------------------------
+
+class HMMUnderflowError(RuntimeError):
+    """Raised when numerical underflow occurs during HMM inference.
+
+    This indicates the observation sequence has effectively zero likelihood
+    under the current model parameters. The inference cannot produce
+    calibrated posterior probabilities and must be rejected.
+    """
 
 
 # ---------------------------------------------------------------------------
@@ -72,7 +84,7 @@ MIN_DWELL_BARS: int = 3
 # Default emission covariance diagonal variance (tunable)
 _DEFAULT_EMISSION_VARIANCE: float = 1.0
 
-# Small constant to prevent log(0)
+# Small constant for numerical stability
 _EPSILON: float = 1e-300
 
 
@@ -282,14 +294,11 @@ class HMMInference:
         alpha[0, :] = pi * B[0, :]
         scale[0] = alpha[0, :].sum()
         if scale[0] < _EPSILON:
-            warnings.warn(
+            raise HMMUnderflowError(
                 f"Numerical underflow at t=0: scale={scale[0]:.2e}. "
-                f"Observation sequence likelihood is effectively zero. "
-                f"Assigning artificial floor of {_EPSILON:.0e}.",
-                RuntimeWarning,
-                stacklevel=2,
+                f"Observation sequence has effectively zero likelihood under current model. "
+                f"Inference cannot produce calibrated posterior probabilities."
             )
-            scale[0] = _EPSILON
         alpha[0, :] /= scale[0]
 
         # Recursion
@@ -298,14 +307,11 @@ class HMMInference:
                 alpha[t, j] = B[t, j] * sum(alpha[t - 1, i] * A[i, j] for i in range(N))
             scale[t] = alpha[t, :].sum()
             if scale[t] < _EPSILON:
-                warnings.warn(
+                raise HMMUnderflowError(
                     f"Numerical underflow at t={t}: scale={scale[t]:.2e}. "
-                    f"Observation sequence likelihood is effectively zero. "
-                    f"Assigning artificial floor of {_EPSILON:.0e}.",
-                    RuntimeWarning,
-                    stacklevel=2,
+                    f"Observation sequence has effectively zero likelihood under current model. "
+                    f"Inference cannot produce calibrated posterior probabilities."
                 )
-                scale[t] = _EPSILON
             alpha[t, :] /= scale[t]
 
         # Scaled backward pass
@@ -671,6 +677,7 @@ class HMMRegimeDetectorImpl:
 # ---------------------------------------------------------------------------
 
 __all__ = [
+    "HMMUnderflowError",
     "HMMParameters",
     "HMMInferenceResult",
     "HMMInference",
