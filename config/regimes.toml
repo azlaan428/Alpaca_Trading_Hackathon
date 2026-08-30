@@ -1,0 +1,186 @@
+# X Quant X Regime Definitions
+# Authoritative source: alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt
+# 
+# This file defines the 12 canonical market regime archetypes as HMM states.
+# The rule-based detector (regime_detector.py) provides a deterministic approximation;
+# the HMM-based detector (hmm_regime_detector.py) is the authoritative implementation.
+
+[regimes]
+# Regime identifiers and semantic labels
+R01 = "bull-quiet"
+R02 = "bull-volatile"
+R03 = "bear-trending"
+R04 = "bear-capitulation"
+R05 = "high-volatility"
+R06 = "low-liquidity"
+R07 = "macro-shock"
+R08 = "correlation-breakdown"
+R09 = "sector-rotation"
+R10 = "mean-reversion"
+R11 = "momentum-continuation"
+R12 = "rate-hike-cycle"
+
+# Bayesian prior probabilities (sum should approximate 1.0)
+[priors]
+R01 = 0.22
+R02 = 0.15
+R03 = 0.12
+R04 = 0.04
+R05 = 0.08
+R06 = 0.05
+R07 = 0.03
+R08 = 0.04
+R09 = 0.06
+R10 = 0.07
+R11 = 0.08
+R12 = 0.06
+
+# Minimum dwell time in bars before a regime transition is confirmed
+[min_dwell_bars]
+R01 = 3
+R02 = 3
+R03 = 3
+R04 = 2
+R05 = 3
+R06 = 3
+R07 = 2
+R08 = 3
+R09 = 3
+R10 = 3
+R11 = 3
+R12 = 3
+
+# Transition matrix diagonal elements (regime persistence)
+[transition_diagonal]
+R01 = 0.92
+R02 = 0.87
+R03 = 0.88
+R04 = 0.72
+R05 = 0.85
+R06 = 0.78
+R07 = 0.60
+R08 = 0.80
+R09 = 0.82
+R10 = 0.86
+R11 = 0.88
+R12 = 0.85
+
+# Emission distribution means (feature space)
+# Features: RSI, MACD, ATR(s), VIX, VolRatio, Corr, Hurst
+[emission_mean.R01]
+RSI = 62.0
+MACD = 1.0
+ATR = 0.8
+VIX = 13.0
+VolRatio = 1.0
+Corr = 0.55
+Hurst = 0.52
+
+[emission_mean.R02]
+RSI = 58.0
+MACD = 0.5
+ATR = 1.3
+VIX = 20.0
+VolRatio = 1.4
+Corr = 0.60
+Hurst = 0.50
+
+[emission_mean.R03]
+RSI = 42.0
+MACD = -0.7
+ATR = 1.4
+VIX = 24.0
+VolRatio = 1.2
+Corr = 0.65
+Hurst = 0.55
+
+[emission_mean.R04]
+RSI = 28.0
+MACD = -2.0
+ATR = 2.5
+VIX = 38.0
+VolRatio = 2.5
+Corr = 0.82
+Hurst = 0.45
+
+[emission_mean.R05]
+RSI = 50.0
+MACD = 0.0
+ATR = 2.0
+VIX = 28.0
+VolRatio = 1.6
+Corr = 0.70
+Hurst = 0.48
+
+[emission_mean.R06]
+RSI = 50.0
+MACD = 0.0
+ATR = 0.5
+VIX = 14.0
+VolRatio = 0.3
+Corr = 0.50
+Hurst = 0.50
+
+[emission_mean.R07]
+RSI = 35.0
+MACD = -1.5
+ATR = 3.0
+VIX = 42.0
+VolRatio = 3.0
+Corr = 0.90
+Hurst = 0.40
+
+[emission_mean.R08]
+RSI = 50.0
+MACD = 0.0
+ATR = 1.2
+VIX = 20.0
+VolRatio = 1.0
+Corr = 0.20
+Hurst = 0.50
+
+[emission_mean.R09]
+RSI = 52.0
+MACD = 0.2
+ATR = 1.0
+VIX = 17.0
+VolRatio = 1.1
+Corr = 0.35
+Hurst = 0.52
+
+[emission_mean.R10]
+RSI = 50.0
+MACD = 0.0
+ATR = 0.9
+VIX = 15.0
+VolRatio = 0.9
+Corr = 0.55
+Hurst = 0.43
+
+[emission_mean.R11]
+RSI = 65.0
+MACD = 1.5
+ATR = 1.1
+VIX = 14.0
+VolRatio = 1.3
+Corr = 0.60
+Hurst = 0.58
+
+[emission_mean.R12]
+RSI = 48.0
+MACD = -0.3
+ATR = 1.1
+VIX = 18.0
+VolRatio = 1.0
+Corr = 0.60
+Hurst = 0.50
+
+# Risk rules (regime-conditional)
+[risk_rules]
+# R04 and R07 block new longs unless confidence > 0.85
+block_new_longs = ["R04", "R07"]
+new_long_confidence_threshold = 0.85
+
+# Entropy gate thresholds
+entropy_soft_reduce = 0.75
+entropy_hard_block = 0.90

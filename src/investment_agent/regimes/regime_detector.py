@@ -1,4 +1,4 @@
-"""Regime Detector — Market Regime Classification Layer for X Quant X.
+"""Regime Detector — Deterministic Market Regime Classification Layer for X Quant X.
 
 WHAT
 ====
@@ -19,12 +19,30 @@ HOW
 - Tracks regime history and computes regime affinity scores (NOT statistically calibrated probabilities)
 - Does NOT use ML/HMM (rule-based for auditability and testability)
 
-Note: The authoritative X Quant X architecture specifies HMM-based regime modeling.
-This module implements the deterministic feature-based classifier for auditability,
-deterministic testability, and immediate operational use. HMM integration is a separate
-future enhancement.
+AUTHORITATIVE ARCHITECTURE NOTE
+================================
+The X Quant X architecture specifies HMM-based regime modeling with emission distributions,
+transition matrices, and dwell-time constraints (see config/regimes.toml and
+alpaca_paper_trading_specifications_x_quant_x/027_xquantx_regime_archetypes.txt).
 
-The 12 regimes are organized as:
+This module implements a deterministic feature-based approximation for:
+- Immediate operational use
+- Auditability and deterministic testability
+- Environments where HMM inference is not yet available
+
+The HMM implementation is provided separately in hmm_regime_detector.py.
+This detector should NOT be used when authoritative HMM regime probabilities are required.
+
+SEMANTIC MAPPING NOTE
+=====================
+The R01-R12 identifiers are architectural constants. This module's Trend × Volatility × Volume
+mapping (3×2×2) may not match the semantic definitions in the authoritative regime archetype
+document. Specifically:
+- R04 (bear-capitulation) and R07 (macro-shock) have special risk rules in the architecture
+- This detector's R04/R07 may not correspond to those semantic definitions
+- Use the HMM detector for authoritative regime classification
+
+The 12 regimes in this approximation are organized as:
     Trend × Volatility × Volume
     - Trend: Bullish (3), Neutral (3), Bearish (3)
     - Volatility: Normal, Elevated

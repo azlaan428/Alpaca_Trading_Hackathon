@@ -517,6 +517,57 @@ class TestEndToEndPipeline(unittest.TestCase):
         updated_state = pipeline.get_kalman_state()
         self.assertGreater(updated_state.estimated_price, 99.0)
 
+    def test_pipeline_exposes_kalman_gain(self):
+        """Verify pipeline result exposes kalman_gain from capital gate."""
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS)
+        prices = [100.0 + i * 0.1 for i in range(45)]
+        volumes = [1000.0] * 45
+        agents = make_agent_outputs(
+            signals=[0.5] * 7,
+            confidences=[0.9] * 7,
+        )
+        states = full_charge_state()
+        ctx = default_portfolio_context()
+
+        result = pipeline.evaluate(
+            prices=prices,
+            volumes=volumes,
+            agent_outputs=agents,
+            states=states,
+            portfolio_context=ctx,
+        )
+
+        self.assertIsInstance(result.kalman_gain, float)
+        self.assertGreaterEqual(result.kalman_gain, 0.0)
+        self.assertLessEqual(result.kalman_gain, 1.0)
+        self.assertEqual(
+            result.kalman_gain,
+            result.capital_gate.kalman_gain,
+        )
+
+    def test_pipeline_ensemble_chain_of_custody(self):
+        """Verify the same EnsembleAggregate object flows into capital gate."""
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS)
+        prices = [100.0 + i * 0.1 for i in range(45)]
+        volumes = [1000.0] * 45
+        agents = make_agent_outputs(
+            signals=[0.5] * 7,
+            confidences=[0.9] * 7,
+        )
+        states = full_charge_state()
+        ctx = default_portfolio_context()
+
+        result = pipeline.evaluate(
+            prices=prices,
+            volumes=volumes,
+            agent_outputs=agents,
+            states=states,
+            portfolio_context=ctx,
+        )
+
+        # Same object identity, not just equal values
+        self.assertIs(result.ensemble, result.capital_gate.ensemble_agg)
+
 
 if __name__ == "__main__":
     unittest.main()

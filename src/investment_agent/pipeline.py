@@ -58,9 +58,12 @@ class PipelineResult:
     weights : Dict[str, float]
         Per-agent reputation weights for the active regime.
     ensemble : EnsembleAggregate
-        Atomic ensemble aggregation result.
+        Atomic ensemble aggregation result (same object passed to capital gate).
     kalman_state : KalmanState
         Posterior Kalman filter state after ingesting latest price.
+    kalman_gain : float
+        Investment Kalman gain K_t derived from ensemble effective confidence
+        and disagreement. Exposed explicitly for audit transparency.
     capital_gate : CapitalGateResult
         Seven-State Capital Gate evaluation result.
     timestamp : datetime
@@ -71,6 +74,7 @@ class PipelineResult:
     weights: Dict[str, float]
     ensemble: EnsembleAggregate
     kalman_state: KalmanState
+    kalman_gain: float
     capital_gate: CapitalGateResult
     timestamp: datetime = field(default_factory=datetime.now)
 
@@ -95,11 +99,21 @@ class XQuantXPipeline:
 
     HOW
     ====
-    1. Classify regime from price/volume history.
+    1. Classify regime from price/volume history using rule-based detector.
     2. Derive per-agent weights from reputation tracker for the active regime.
     3. Aggregate agent outputs into ensemble signal with those weights.
     4. Update Kalman filter with latest price observation.
     5. Evaluate capital gate using real ensemble and Kalman outputs.
+
+    NOTE: The authoritative architecture requires HMM-based regime modeling.
+    This pipeline uses the deterministic rule-based detector as a fallback.
+    The HMM detector (hmm_regime_detector.py) is available when implemented.
+
+    NOTE: The seven-dimensional State-of-Charge vector (economic, financial, fiscal,
+    portfolio, fundamental, market, sector) is currently provided by the caller.
+    The authoritative architecture specifies state charge/discharge dynamics that
+    are not yet implemented in this pipeline. The capital gate validates and gates
+    on the provided states, but does not compute their evolution.
 
     Parameters
     ----------
@@ -113,6 +127,8 @@ class XQuantXPipeline:
         Initial price for Kalman filter (default 100.0).
     regime_lookback_days : int, optional
         Lookback window for regime detection (default 20).
+    use_hmm : bool, optional
+        If True, use HMM regime detector when available (default False).
     """
 
     def __init__(
@@ -122,6 +138,7 @@ class XQuantXPipeline:
         prior_beta: Any = 1.0,
         kalman_initial_price: float = 100.0,
         regime_lookback_days: int = 20,
+        use_hmm: bool = False,
     ) -> None:
         if not agent_ids:
             raise ValueError("agent_ids must be non-empty")
@@ -139,6 +156,7 @@ class XQuantXPipeline:
         )
         self._kalman_filter = KalmanFilter(initial_price=kalman_initial_price)
         self._regime_history: List[Tuple[datetime, str]] = []
+        self._use_hmm = use_hmm
 
     def classify_regime(
         self,
@@ -287,7 +305,12 @@ class XQuantXPipeline:
         else:
             kalman_state = self.get_kalman_state()
 
-        # 4. Evaluate capital gate with real ensemble and Kalman outputs
+        # 4. Compute ensemble aggregate FIRST (chain-of-custody)
+        ensemble = compute_ensemble_aggregate(agent_outputs, weights)
+
+        # 5. Evaluate capital gate with pre-computed ensemble to preserve
+        #    chain-of-custody: the same EnsembleAggregate object flows into
+        #    the gate and is returned in PipelineResult.
         capital_gate = evaluate(
             kalman_state=kalman_state,
             states=states,
@@ -295,16 +318,15 @@ class XQuantXPipeline:
             agents=agent_outputs,
             agent_weights=weights,
             sigma_base_squared=sigma_base_squared,
+            ensemble_agg=ensemble,
         )
-
-        # 5. Compute ensemble aggregate for transparency
-        ensemble = compute_ensemble_aggregate(agent_outputs, weights)
 
         return PipelineResult(
             regime=regime_result,
             weights=weights,
             ensemble=ensemble,
             kalman_state=kalman_state,
+            kalman_gain=capital_gate.kalman_gain,
             capital_gate=capital_gate,
         )
 

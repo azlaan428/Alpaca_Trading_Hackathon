@@ -434,5 +434,22 @@ class TestDetectRegimeConvenience(unittest.TestCase):
         self.assertIsInstance(result, RegimeClassification)
 
 
+class TestRegimeDetectorDocumentation(unittest.TestCase):
+    """Test that regime detector documentation is honest about limitations."""
+
+    def test_detector_docstring_mentions_hmm_gap(self):
+        """Verify module docstring acknowledges HMM architecture gap."""
+        import investment_agent.regimes.regime_detector as rd
+        self.assertIn("HMM", rd.__doc__)
+        self.assertIn("not yet available", rd.__doc__)
+
+    def test_detector_docstring_mentions_semantic_mapping_gap(self):
+        """Verify module docstring warns about semantic mapping."""
+        import investment_agent.regimes.regime_detector as rd
+        self.assertIn("semantic", rd.__doc__.lower())
+        self.assertIn("R04", rd.__doc__)
+        self.assertIn("R07", rd.__doc__)
+
+
 if __name__ == "__main__":
     unittest.main()

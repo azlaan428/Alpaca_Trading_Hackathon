@@ -737,3 +737,123 @@ class TestAdversarialAuditingAndEdgeCases(unittest.TestCase):
         incomplete_weights = {f"agent{i}": 1.0 for i in range(1, 7)}
         with self.assertRaises(ValueError):
             self._eval(agents=seven_agents, weights=incomplete_weights)
+
+
+class TestCapitalGateBoundaryConditions(unittest.TestCase):
+    """Test boundary conditions for capital gate evaluation."""
+
+    def test_state_at_minimum_returns_zero_gate(self):
+        """Verify state at exactly minimum returns 0.0 gating via linear branch."""
+        from investment_agent.capital.capital_gate import compute_individual_gating
+        g_val = compute_individual_gating("economic", 0.15)
+        self.assertEqual(g_val, 0.0)
+
+    def test_state_below_minimum_returns_zero_gate(self):
+        """Verify state below minimum returns 0.0 gating."""
+        from investment_agent.capital.capital_gate import compute_individual_gating
+        g_val = compute_individual_gating("economic", 0.149999)
+        self.assertEqual(g_val, 0.0)
+
+    def test_state_at_full_returns_one_gate(self):
+        """Verify state at exactly full returns 1.0 gating."""
+        from investment_agent.capital.capital_gate import compute_individual_gating
+        g_val = compute_individual_gating("economic", 0.70)
+        self.assertEqual(g_val, 1.0)
+
+    def test_state_above_full_returns_one_gate(self):
+        """Verify state above full returns 1.0 gating."""
+        from investment_agent.capital.capital_gate import compute_individual_gating
+        g_val = compute_individual_gating("economic", 0.700001)
+        self.assertEqual(g_val, 1.0)
+
+
+class TestCapitalGateResultFields(unittest.TestCase):
+    """Test CapitalGateResult includes kalman_gain and ensemble_agg."""
+
+    def test_result_includes_kalman_gain(self):
+        """Verify CapitalGateResult includes kalman_gain field."""
+        from investment_agent.capital.capital_gate import evaluate
+        from investment_agent.filters.kalman_filter import KalmanState
+        from investment_agent.signals.ensemble_signal import AgentOutput
+        agents = [
+            AgentOutput(s=1.0, c=0.8, u=0.0, d=0.0, p_plus=0.8, p_minus=0.0, delta_t=1.0, r=0.0, agent_id=f"agent{i}")
+            for i in range(1, 8)
+        ]
+        weights = {f"agent{i}": 1.0 for i in range(1, 8)}
+        result = evaluate(
+            kalman_state=KalmanState(
+                estimated_price=100.0,
+                trend=0.01,
+                uncertainty=1.0,
+                trend_uncertainty=0.1,
+                price_variance=1.0,
+                trend_variance=0.01,
+                innovation=0.0,
+                kalman_gain_price=0.5,
+            ),
+            states=SevenStateVector(
+                economic=1.0, financial=1.0, fiscal=1.0,
+                portfolio=1.0, fundamental=1.0, market=1.0, sector=1.0
+            ),
+            portfolio_context={
+                "position_pct": 0.05,
+                "gross_leverage": 0.5,
+                "entropy": 0.1,
+                "drawdown_pct": 0.01,
+                "execution_timeout_seconds": 5.0,
+                "sector_exposure_pct": 0.1,
+                "is_new_long": False,
+                "regime": "R01",
+            },
+            agents=agents,
+            agent_weights=weights,
+        )
+        self.assertTrue(hasattr(result, "kalman_gain"))
+        self.assertIsInstance(result.kalman_gain, float)
+        self.assertGreaterEqual(result.kalman_gain, 0.0)
+        self.assertLessEqual(result.kalman_gain, 1.0)
+
+    def test_result_includes_ensemble_agg(self):
+        """Verify CapitalGateResult includes ensemble_agg field."""
+        from investment_agent.capital.capital_gate import evaluate
+        from investment_agent.filters.kalman_filter import KalmanState
+        from investment_agent.signals.ensemble_signal import AgentOutput, EnsembleAggregate
+        agents = [
+            AgentOutput(s=1.0, c=0.8, u=0.0, d=0.0, p_plus=0.8, p_minus=0.0, delta_t=1.0, r=0.0, agent_id=f"agent{i}")
+            for i in range(1, 8)
+        ]
+        weights = {f"agent{i}": 1.0 for i in range(1, 8)}
+        result = evaluate(
+            kalman_state=KalmanState(
+                estimated_price=100.0,
+                trend=0.01,
+                uncertainty=1.0,
+                trend_uncertainty=0.1,
+                price_variance=1.0,
+                trend_variance=0.01,
+                innovation=0.0,
+                kalman_gain_price=0.5,
+            ),
+            states=SevenStateVector(
+                economic=1.0, financial=1.0, fiscal=1.0,
+                portfolio=1.0, fundamental=1.0, market=1.0, sector=1.0
+            ),
+            portfolio_context={
+                "position_pct": 0.05,
+                "gross_leverage": 0.5,
+                "entropy": 0.1,
+                "drawdown_pct": 0.01,
+                "execution_timeout_seconds": 5.0,
+                "sector_exposure_pct": 0.1,
+                "is_new_long": False,
+                "regime": "R01",
+            },
+            agents=agents,
+            agent_weights=weights,
+        )
+        self.assertTrue(hasattr(result, "ensemble_agg"))
+        self.assertIsInstance(result.ensemble_agg, EnsembleAggregate)
+
+
+if __name__ == "__main__":
+    unittest.main()

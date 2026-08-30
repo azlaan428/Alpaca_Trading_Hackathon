@@ -246,6 +246,10 @@ class CapitalGateResult:
         Immutable sequence of rule identifiers triggered during evaluation (e.g. CONC-001, DD-001).
     reason : str
         Human-readable summary of evaluation rationale and rule triggers.
+    kalman_gain : float
+        Investment Kalman gain K_t computed from ensemble effective confidence and disagreement.
+    ensemble_agg : EnsembleAggregate
+        Immutable ensemble aggregate used for this evaluation (chain-of-custody).
     """
     verdict: RiskVerdict
     gating_factor: float
@@ -255,6 +259,8 @@ class CapitalGateResult:
     state_gatings: Mapping[str, float]
     triggered_rules: tuple
     reason: str
+    kalman_gain: float
+    ensemble_agg: EnsembleAggregate
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +283,13 @@ STATE_THRESHOLDS: Dict[str, Dict[str, float]] = {
 # ---------------------------------------------------------------------------
 
 def compute_individual_gating(state_name: str, value: float) -> float:
-    """Compute the piecewise-linear gating function g_d(S) for a state dimension."""
+    """Compute the piecewise-linear gating function g_d(S) for a state dimension.
+    
+    Boundary convention: S == minimum returns 0.0 via the linear interpolation
+    branch ((value - minimum) / (full - minimum) = 0.0). This matches the
+    inclusive lower-bound interpretation (S <= minimum → gate = 0) documented
+    in the authoritative specification.
+    """
     if not isinstance(state_name, str):
         raise TypeError(f"state_name must be a string, got {type(state_name).__name__}")
     if state_name not in STATE_THRESHOLDS:
@@ -455,6 +467,7 @@ def evaluate(
     agents: List[AgentOutput],
     agent_weights: Dict[str, float],
     sigma_base_squared: float = 1.0,
+    ensemble_agg: Optional[EnsembleAggregate] = None,
 ) -> CapitalGateResult:
     r"""Evaluate the Seven-State Capital Gate and return an authoritative RiskVerdict.
 
@@ -474,6 +487,10 @@ def evaluate(
         Dictionary mapping agent_id to positive reputation weight w_i.
     sigma_base_squared : float, optional
         Base model variance σ²_base > 0.0 (default 1.0).
+    ensemble_agg : Optional[EnsembleAggregate], optional
+        Pre-computed ensemble aggregate. If provided, the gate uses this object
+        directly instead of recomputing from agents/weights. This preserves
+        chain-of-custody for downstream audit.
 
     Returns
     -------
@@ -555,20 +572,25 @@ def evaluate(
     # -----------------------------------------------------------------------
     # 2. Compute Ensemble Aggregate (G-005: Atomic aggregation prevents inconsistency)
     # -----------------------------------------------------------------------
-    # Use compute_ensemble_aggregate() to compute S_t, D_t, c̄_t atomically.
-    # This solves G-005 (ensemble signal verification), prevents redundant triple validation,
-    # and ensures mathematical consistency across all three metrics.
-    ensemble_agg: EnsembleAggregate = compute_ensemble_aggregate(agents, agent_weights)
-    
-    ensemble_signal = ensemble_agg.ensemble_signal
-    disagreement = ensemble_agg.disagreement
-    effective_confidence = ensemble_agg.effective_confidence
+    # Use pre-computed ensemble if provided (preserves chain-of-custody);
+    # otherwise compute atomically from agents/weights.
+    if ensemble_agg is not None:
+        if not isinstance(ensemble_agg, EnsembleAggregate):
+            raise TypeError(f"ensemble_agg must be an EnsembleAggregate, got {type(ensemble_agg).__name__}")
+        _ensemble_signal = ensemble_agg.ensemble_signal
+        _disagreement = ensemble_agg.disagreement
+        _effective_confidence = ensemble_agg.effective_confidence
+    else:
+        ensemble_agg = compute_ensemble_aggregate(agents, agent_weights)
+        _ensemble_signal = ensemble_agg.ensemble_signal
+        _disagreement = ensemble_agg.disagreement
+        _effective_confidence = ensemble_agg.effective_confidence
 
     # NOTE: kalman_state.price_variance is used as a single-asset variance proxy for P_{t|t-1}
     k_t = compute_investment_kalman_gain(
         prediction_covariance=kalman_state.price_variance,
-        effective_confidence=effective_confidence,
-        disagreement=disagreement,
+        effective_confidence=_effective_confidence,
+        disagreement=_disagreement,
         sigma_base_squared=sigma_sq_float,
     )
 
@@ -689,7 +711,7 @@ def evaluate(
         block_rules.append("LEV-001")
 
     # Rule REGM-001: Bear capitulation (R04) or Macro shock (R07) new long without > 0.85 effective confidence
-    if is_new_long and regime in ("R04", "R07") and effective_confidence <= 0.85:
+    if is_new_long and regime in ("R04", "R07") and _effective_confidence <= 0.85:
         block_rules.append("REGM-001")
 
     # Rule ENT-002: Hard entropy block > 0.90
@@ -720,15 +742,15 @@ def evaluate(
 
     # Rule ECONF-001: Low ensemble effective confidence < 0.40
     # Whitepaper §1.7.2: "scale the proposed position by (confidence / 0.40)"
-    if effective_confidence < 0.40:
+    if _effective_confidence < 0.40:
         reduce_rules.append("ECONF-001")
-        reduce_factor *= effective_confidence / 0.40
+        reduce_factor *= _effective_confidence / 0.40
 
     # Rule DISAG-001: High ensemble disagreement > 0.50
     # Quantitative penalty: scale by (1 - D_t), floored at 0.
-    if disagreement > 0.50:
+    if _disagreement > 0.50:
         reduce_rules.append("DISAG-001")
-        reduce_factor *= max(0.0, 1.0 - disagreement)
+        reduce_factor *= max(0.0, 1.0 - _disagreement)
 
     reduce_factor = max(0.0, min(1.0, reduce_factor))
 
@@ -767,6 +789,8 @@ def evaluate(
         state_charges=types.MappingProxyType(state_charges),
         state_gatings=types.MappingProxyType(state_gatings),
         triggered_rules=tuple(triggered),
-        reason=reason
+        reason=reason,
+        kalman_gain=k_t,
+        ensemble_agg=ensemble_agg,
     )
 
