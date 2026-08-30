@@ -501,6 +501,48 @@ class TestHMMParameterValidation(unittest.TestCase):
             )
         self.assertIn("strictly positive", str(ctx.exception))
 
+    def test_zero_transition_probability_raises(self):
+        """Verify zero transition probabilities raise ValueError."""
+        A = np.ones((12, 12)) / 12
+        A[0, 1] = 0.0  # zero transition
+        # Compensate to keep row sum = 1.0
+        A[0, 2] = 1.0 - 10 * (1/12)
+        with self.assertRaises(ValueError) as ctx:
+            HMMParameters(
+                transition_matrix=A,
+                prior=np.ones(12) / 12,
+                emission_means=np.zeros((12, 7)),
+                emission_covariances=np.ones((12, 7)),
+            )
+        self.assertIn("zero probabilities", str(ctx.exception))
+
+    def test_zero_prior_probability_raises(self):
+        """Verify zero prior probabilities raise ValueError."""
+        prior = np.ones(12) / 12
+        prior[0] = 0.0  # zero prior
+        # Compensate to keep sum = 1.0
+        prior[1] = 1.0 - 10 * (1/12)
+        with self.assertRaises(ValueError) as ctx:
+            HMMParameters(
+                transition_matrix=np.ones((12, 12)) / 12,
+                prior=prior,
+                emission_means=np.zeros((12, 7)),
+                emission_covariances=np.ones((12, 7)),
+            )
+        self.assertIn("zero probabilities", str(ctx.exception))
+
+    def test_arrays_are_readonly(self):
+        """Verify NumPy arrays in HMMParameters are read-only."""
+        params = make_test_params()
+        with self.assertRaises(ValueError):
+            params.transition_matrix[0, 0] = 0.5
+        with self.assertRaises(ValueError):
+            params.prior[0] = 0.5
+        with self.assertRaises(ValueError):
+            params.emission_means[0, 0] = 0.5
+        with self.assertRaises(ValueError):
+            params.emission_covariances[0, 0] = 0.5
+
 
 class TestRegimeProbabilityNormalizedEntropy(unittest.TestCase):
     """Test that RegimeProbability exposes normalized_entropy."""

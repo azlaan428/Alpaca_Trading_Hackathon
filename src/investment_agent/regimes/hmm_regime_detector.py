@@ -207,6 +207,13 @@ class HMMRegimeDetector:
         The authoritative architecture specifies constrained Viterbi inference under dwell-time
         constraints; this implementation uses unconstrained Viterbi followed by run-length
         filtering as an approximation.
+
+        Feature Scaling:
+        The 7 features have very different natural scales (RSI: 0-100, MACD: unbounded,
+        ATR: dollars, VIX: percentage, etc.). The HMM assumes Gaussian emissions, so
+        features should be standardized (zero mean, unit variance) before inference.
+        The configuration in config/regimes.toml provides emission means that should
+        be calibrated to the same feature scale.
         """
         obs = np.array(features, dtype=np.float64)
         result = self._impl.classify(obs)

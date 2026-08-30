@@ -115,9 +115,14 @@ class HMMParameters:
         if np.any(np.isinf(self.transition_matrix)):
             raise ValueError("transition_matrix contains Infinity values")
         
-        # Check for negative values
+        # Check for negative or zero values (zero = impossible transition)
         if np.any(self.transition_matrix < 0):
             raise ValueError("transition_matrix contains negative probabilities")
+        if np.any(self.transition_matrix == 0):
+            raise ValueError(
+                "transition_matrix contains zero probabilities. "
+                "Zero transitions are treated as impossible and must be represented as -inf in log-space."
+            )
         
         row_sums = self.transition_matrix.sum(axis=1)
         if not np.allclose(row_sums, 1.0, atol=1e-9):
@@ -137,6 +142,11 @@ class HMMParameters:
             raise ValueError("prior contains Infinity values")
         if np.any(self.prior < 0):
             raise ValueError("prior contains negative probabilities")
+        if np.any(self.prior == 0):
+            raise ValueError(
+                "prior contains zero probabilities. "
+                "Zero priors are treated as impossible initial states."
+            )
         
         prior_sum = self.prior.sum()
         if not math.isclose(prior_sum, 1.0, abs_tol=1e-9):
@@ -165,6 +175,12 @@ class HMMParameters:
             raise ValueError("emission_covariances contains Infinity values")
         if np.any(self.emission_covariances <= 0):
             raise ValueError("emission_covariances must be strictly positive")
+        
+        # Make arrays read-only to enforce immutability
+        self.transition_matrix.flags.writeable = False
+        self.prior.flags.writeable = False
+        self.emission_means.flags.writeable = False
+        self.emission_covariances.flags.writeable = False
 
 
 @dataclass(frozen=True)
@@ -318,19 +334,20 @@ class HMMInference:
         covs = self._params.emission_covariances
 
         # Precompute log emission probabilities
+        # Zero probability -> -inf in log-space
         log_B = np.zeros((T, N))
         for t in range(T):
             for i in range(N):
-                log_B[t, i] = math.log(
-                    max(self._gaussian_pdf(observations[t], means[i], covs[i]), _EPSILON)
-                )
+                pdf_val = self._gaussian_pdf(observations[t], means[i], covs[i])
+                log_B[t, i] = math.log(pdf_val) if pdf_val > 0 else -np.inf
 
-        # Log transition matrix
-        log_A = np.log(A + _EPSILON)
-        log_pi = np.log(pi + _EPSILON)
+        # Log transition matrix with proper handling of zeros
+        # Zero probability -> -inf (impossible transition)
+        log_A = np.where(A > 0, np.log(A), -np.inf)
+        log_pi = np.where(pi > 0, np.log(pi), -np.inf)
 
         # Viterbi forward pass
-        delta = np.zeros((T, N))
+        delta = np.full((T, N), -np.inf)
         psi = np.zeros((T, N), dtype=int)
 
         delta[0, :] = log_pi + log_B[0, :]
@@ -356,6 +373,12 @@ class HMMInference:
         A regime transition is only confirmed if the new regime has been the
         most probable for >= min_dwell consecutive steps.
 
+        NOTE: This is an operational post-processing filter, NOT a mathematically
+        constrained Viterbi decoder. The authoritative architecture specifies
+        dwell-time constraints within the HMM inference itself. A proper
+        constrained Viterbi algorithm would incorporate the minimum-dwell constraint
+        into the state recursion, which is a future enhancement.
+
         Parameters
         ----------
         path : List[str]
@@ -366,7 +389,7 @@ class HMMInference:
         Returns
         -------
         List[str]
-            Path with dwell-time constraints enforced.
+            Path with dwell-time constraints enforced via run-length filtering.
         """
         if len(path) <= min_dwell:
             return path
