@@ -212,12 +212,29 @@ class HMMRegimeDetector:
         Feature Scaling:
         The 7 features have very different natural scales (RSI: 0-100, MACD: unbounded,
         ATR: dollars, VIX: percentage, etc.). The HMM assumes Gaussian emissions, so
-        features should be standardized (zero mean, unit variance) before inference.
-        The configuration in config/regimes.toml provides emission means that should
-        be calibrated to the same feature scale.
+        features are standardized (zero mean, unit variance) before inference.
+        The configuration in config/regimes.toml provides emission means in standardized space.
         """
         obs = np.array(features, dtype=np.float64)
-        result = self._impl.classify(obs)
+        
+        # Validate before standardization
+        if obs.size == 0:
+            raise ValueError("Feature sequence is empty")
+        if obs.ndim != 2 or obs.shape[1] != 7:
+            raise ValueError(f"Expected N x 7 feature matrix, got shape {obs.shape}")
+        if np.any(np.isnan(obs)):
+            raise ValueError("Feature vector contains NaN values")
+        if np.any(np.isinf(obs)):
+            raise ValueError("Feature vector contains Infinity values")
+        
+        # Standardize features to match emission distribution assumptions
+        # Emission means in config are in standardized space (zero mean, unit variance)
+        feature_means = np.mean(obs, axis=0)
+        feature_stds = np.std(obs, axis=0)
+        feature_stds = np.where(feature_stds < 1e-10, 1.0, feature_stds)
+        obs_standardized = (obs - feature_means) / feature_stds
+        
+        result = self._impl.classify(obs_standardized)
 
         # Get dwell time from config
         dwell_times = self._config.get("min_dwell_bars", {})

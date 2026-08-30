@@ -34,6 +34,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
+
 from investment_agent.regimes.regime_detector import RegimeDetector, RegimeClassification
 from investment_agent.regimes.regimes import VALID_REGIMES
 from investment_agent.regimes.hmm_regime_detector import HMMRegimeDetector, HMMUnderflowError
@@ -208,10 +210,7 @@ class XQuantXPipeline:
         self._use_hmm = use_hmm
         self._hmm_detector: Optional[HMMRegimeDetector] = None
         if use_hmm:
-            try:
-                self._hmm_detector = HMMRegimeDetector()
-            except Exception:
-                self._hmm_detector = None
+            self._hmm_detector = HMMRegimeDetector()
 
     def classify_regime(
         self,
@@ -236,15 +235,44 @@ class XQuantXPipeline:
         ------
         HMMUnderflowError
             If HMM inference encounters numerical underflow (only when use_hmm=True).
+        ValueError
+            If HMM is enabled but not initialized, or if feature extraction fails.
         """
-        if self._use_hmm and self._hmm_detector is not None:
-            try:
-                # HMM path requires feature extraction from prices/volumes
-                # For now, fall back to rule-based detector
-                pass
-            except HMMUnderflowError:
-                raise
+        if self._use_hmm:
+            if self._hmm_detector is None:
+                raise ValueError(
+                    "HMM regime detector requested but not initialized. "
+                    "Check config/regimes.toml exists and is valid."
+                )
+            
+            # Extract features for HMM
+            from investment_agent.regimes.market_feature_extractor import extract_features
+            features = extract_features(prices, volumes, lookback_days=self._regime_detector._lookback_days)
+            
+            # Run HMM inference
+            hmm_result = self._hmm_detector.classify(features.tolist())
+            
+            # Convert HMM result to RegimeClassification (adapter)
+            regime_result = RegimeClassification(
+                regime=hmm_result.regime,
+                confidence=1.0 - hmm_result.normalized_entropy,  # Map entropy to confidence
+                timestamp=hmm_result.timestamp,
+                features={
+                    "rsi": float(np.mean(features[:, 0])),
+                    "macd": float(np.mean(features[:, 1])),
+                    "atr": float(np.mean(features[:, 2])),
+                    "vix": float(np.mean(features[:, 3])),
+                    "vol_ratio": float(np.mean(features[:, 4])),
+                    "corr": float(np.mean(features[:, 5])),
+                    "hurst": float(np.mean(features[:, 6])),
+                },
+                regime_affinity=hmm_result.probabilities,
+            )
+            
+            self._regime_history.append((datetime.now(), regime_result.regime))
+            return regime_result
         
+        # Rule-based detector fallback
         result = self._regime_detector.classify(prices, volumes)
         self._regime_history.append((datetime.now(), result.regime))
         return result

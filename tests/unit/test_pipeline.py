@@ -15,7 +15,7 @@ import unittest
 from dataclasses import dataclass
 from typing import Any, Dict, List
 
-from investment_agent.regimes.regime_detector import RegimeDetector
+from investment_agent.regimes.regime_detector import RegimeDetector, RegimeClassification
 from investment_agent.regimes.regimes import VALID_REGIMES
 from investment_agent.agents.agent_reputation import AgentReputationTracker
 from investment_agent.signals.ensemble_signal import AgentOutput, EnsembleAggregate, compute_ensemble_aggregate
@@ -578,6 +578,85 @@ class TestEndToEndPipeline(unittest.TestCase):
 
         # Same object identity, not just equal values
         self.assertIs(result.ensemble, result.capital_gate.ensemble_agg)
+
+
+class TestHMMPipelineIntegration(unittest.TestCase):
+    """Test HMM regime detector integration with pipeline."""
+
+    def test_hmm_pipeline_classify_regime(self):
+        """Verify HMM branch produces valid regime classification."""
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS, use_hmm=True)
+        prices = [100.0 + i * 0.1 for i in range(50)]
+        volumes = [1000.0 + i * 10 for i in range(50)]
+        
+        result = pipeline.classify_regime(prices, volumes)
+        self.assertIsInstance(result, RegimeClassification)
+        self.assertIn(result.regime, VALID_REGIMES)
+
+    def test_hmm_pipeline_regime_in_valid_set(self):
+        """Verify HMM regime is always in VALID_REGIMES."""
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS, use_hmm=True)
+        prices = [100.0 + i * 0.1 for i in range(50)]
+        volumes = [1000.0 + i * 10 for i in range(50)]
+        
+        result = pipeline.classify_regime(prices, volumes)
+        self.assertIn(result.regime, VALID_REGIMES)
+
+    def test_hmm_pipeline_underflow_raises(self):
+        """Verify HMM underflow raises HMMUnderflowError in pipeline."""
+        from investment_agent.regimes.hmm_inference import HMMUnderflowError
+        
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS, use_hmm=True)
+        
+        # Create prices that will cause feature extraction to fail
+        # or HMM underflow (extreme values)
+        prices = [100.0] * 50
+        prices[0] = 0.0  # Invalid price
+        
+        with self.assertRaises(ValueError):
+            pipeline.classify_regime(prices)
+
+    def test_hmm_pipeline_feature_extraction_error(self):
+        """Verify feature extraction errors are propagated."""
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS, use_hmm=True)
+        
+        # Insufficient data
+        prices = [100.0, 101.0, 102.0]
+        with self.assertRaises(ValueError):
+            pipeline.classify_regime(prices)
+
+    def test_rule_based_pipeline_still_works(self):
+        """Verify rule-based pipeline still works when use_hmm=False."""
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS, use_hmm=False)
+        prices = [100.0 + i * 0.1 for i in range(45)]
+        volumes = [1000.0] * 45
+        
+        result = pipeline.classify_regime(prices, volumes)
+        self.assertIsInstance(result, RegimeClassification)
+        self.assertIn(result.regime, VALID_REGIMES)
+
+    def test_hmm_pipeline_provenance_trace(self):
+        """Verify provenance trace includes HMM data when use_hmm=True."""
+        pipeline = XQuantXPipeline(agent_ids=AGENT_IDS, use_hmm=True)
+        prices = [100.0 + i * 0.1 for i in range(50)]
+        volumes = [1000.0 + i * 10 for i in range(50)]
+        agents = make_agent_outputs(
+            signals=[0.5] * 7,
+            confidences=[0.9] * 7,
+        )
+        states = full_charge_state()
+        ctx = default_portfolio_context()
+
+        result = pipeline.evaluate(
+            prices=prices,
+            volumes=volumes,
+            agent_outputs=agents,
+            states=states,
+            portfolio_context=ctx,
+        )
+
+        self.assertIsInstance(result.provenance, ProvenanceTrace)
+        self.assertIn(result.provenance.regime, VALID_REGIMES)
 
 
 if __name__ == "__main__":

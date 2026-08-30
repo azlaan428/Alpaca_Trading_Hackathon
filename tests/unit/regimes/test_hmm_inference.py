@@ -465,14 +465,14 @@ class TestStrictInputValidation(unittest.TestCase):
         detector = HMMRegimeDetector()
         with self.assertRaises(ValueError) as ctx:
             detector.classify([[50.0, 0.0]])
-        self.assertIn("7 features", str(ctx.exception))
+        self.assertIn("7", str(ctx.exception))
 
     def test_empty_sequence_raises_error(self):
         """Verify empty feature sequence raises ValueError."""
         detector = HMMRegimeDetector()
         with self.assertRaises(ValueError) as ctx:
             detector.classify([])
-        self.assertIn("Expected 7 features", str(ctx.exception))
+        self.assertIn("empty", str(ctx.exception).lower())
 
 
 class TestHMMParameterValidation(unittest.TestCase):
