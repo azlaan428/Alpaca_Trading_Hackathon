@@ -16,14 +16,16 @@ HOW
 ===
 - Extracts features from price/volume history: trend direction, volatility regime, volume regime
 - Maps features to 12 canonical regimes using a deterministic rule-based classifier
-- Tracks regime history and computes transition probabilities
+- Tracks regime history and computes regime affinity scores (NOT statistically calibrated probabilities)
 - Does NOT use ML/HMM (rule-based for auditability and testability)
 
 The 12 regimes are organized as:
     Trend × Volatility × Volume
-    - Trend: Bullish (3), Neutral (3), Bearish (3), Sideways (3)
+    - Trend: Bullish (3), Neutral (3), Bearish (3)
     - Volatility: Normal, Elevated
     - Volume: Normal, Elevated
+
+    This produces exactly 3 × 2 × 2 = 12 regimes: R01-R12.
 
 Architectural Role
 ==================
@@ -47,21 +49,23 @@ from investment_agent.regimes.regimes import VALID_REGIMES
 # ---------------------------------------------------------------------------
 
 # Trend thresholds (annualized return)
-_TREND_STRONG_BULL: float = 0.20   # >20% annualized return
-_TREND_WEAK_BULL: float = 0.05     # >5% annualized return
-_TREND_WEAK_BEAR: float = -0.05    # <-5% annualized return
-_TREND_STRONG_BEAR: float = -0.20  # <-20% annualized return
+_TREND_STRONG_BULL: float = 0.20   # >=20% annualized return
+_TREND_WEAK_BULL: float = 0.05     # >=5% annualized return
+_TREND_WEAK_BEAR: float = -0.05    # <=-5% annualized return
+_TREND_STRONG_BEAR: float = -0.20  # <=-20% annualized return
 
 # Volatility thresholds (annualized std dev)
-_VOL_NORMAL_MAX: float = 0.15      # <15% annualized vol = normal
-_VOL_ELEVATED_MAX: float = 0.30    # <30% annualized vol = elevated, >30% = crisis
+_VOL_NORMAL_MAX: float = 0.15      # <=15% annualized vol = normal
+_VOL_ELEVATED_MAX: float = 0.30    # <=30% annualized vol = elevated, >30% = crisis
 
 # Volume thresholds (relative to moving average)
-_VOL_RATIO_NORMAL_MAX: float = 1.5       # <1.5x average = normal volume
-_VOL_RATIO_ELEVATED_MIN: float = 1.5     # >=1.5x average = elevated volume
+_VOL_RATIO_ELEVATED_MIN: float = 1.5  # >=1.5x average = elevated volume
 
 # Lookback window for feature extraction (trading days)
 _DEFAULT_LOOKBACK_DAYS: int = 20
+
+# Minimum volume history required for reliable volume-ratio computation
+_MIN_VOLUME_HISTORY_DAYS: int = 40  # 2x lookback for baseline comparison
 
 
 # ---------------------------------------------------------------------------
@@ -75,21 +79,25 @@ class RegimeClassification:
     Attributes
     ----------
     regime : str
-        Current regime identifier (one of R01-R12).
+        Current regime identifier (one of R01-R12 from VALID_REGIMES).
     confidence : float
-        Classification confidence in [0.0, 1.0].
+        Classification confidence in [0.0, 1.0]. This is a heuristic measure of
+        feature clarity, NOT a statistical probability of correctness.
     timestamp : datetime
         Classification timestamp.
     features : Dict[str, float]
         Extracted market features used for classification.
-    transition_probs : Dict[str, float]
-        Probability distribution over all 12 regimes.
+    regime_affinity : Dict[str, float]
+        Heuristic similarity scores over all 12 regimes summing to 1.0.
+        These are NOT statistically calibrated probabilities. They represent
+        a deterministic distance-based heuristic for regime similarity only.
     """
 
     regime: str
     confidence: float
     timestamp: datetime
     features: Dict[str, float]
+    regime_affinity: Dict[str, float]
     transition_probs: Dict[str, float]
 
 
@@ -106,13 +114,13 @@ class MarketFeatures:
     annualized_volatility : float
         Annualized standard deviation of returns.
     volume_ratio : float
-        Recent average volume / long-term average volume.
+        Recent average volume / long-term average volume. NaN if insufficient history.
     trend_strength : float
         Absolute trend strength (|annualized_return|).
     volatility_regime : str
         "normal", "elevated", or "crisis".
     volume_regime : str
-        "normal" or "elevated".
+        "normal", "elevated", or "unavailable" (when insufficient volume history).
     """
 
     returns: List[float]
@@ -129,6 +137,10 @@ class MarketFeatures:
 # ---------------------------------------------------------------------------
 
 # 12-regime mapping: (trend_category, volatility_regime, volume_regime) -> regime_id
+# Trend: bullish/neutral/bearish (3)
+# Volatility: normal/elevated (2)
+# Volume: normal/elevated (2)
+# Total: 3 x 2 x 2 = 12 regimes
 _REGIME_MAP: Dict[Tuple[str, str, str], str] = {
     # Bullish trend
     ("bullish", "normal", "normal"): "R01",
@@ -152,6 +164,51 @@ _REVERSE_REGIME_MAP: Dict[str, Tuple[str, str, str]] = {v: k for k, v in _REGIME
 
 
 # ---------------------------------------------------------------------------
+# Validation helpers
+# ---------------------------------------------------------------------------
+
+def _validate_prices(prices: List[float]) -> None:
+    """Validate price series for NaN, Inf, negative values, and empty input."""
+    if not prices:
+        raise ValueError("Price series must be non-empty")
+    if len(prices) < 2:
+        raise ValueError(f"Price series must contain at least 2 values, got {len(prices)}")
+
+    for i, price in enumerate(prices):
+        if math.isnan(price):
+            raise ValueError(f"Price at index {i} is NaN")
+        if math.isinf(price):
+            raise ValueError(f"Price at index {i} is Infinity")
+        if price < 0.0:
+            raise ValueError(f"Price at index {i} is negative: {price}")
+
+
+def _validate_volumes(volumes: Optional[List[float]]) -> None:
+    """Validate volume series for NaN, Inf, negative values."""
+    if volumes is None:
+        return
+    if not volumes:
+        raise ValueError("Volume series must be non-empty if provided")
+
+    for i, volume in enumerate(volumes):
+        if math.isnan(volume):
+            raise ValueError(f"Volume at index {i} is NaN")
+        if math.isinf(volume):
+            raise ValueError(f"Volume at index {i} is Infinity")
+        if volume < 0.0:
+            raise ValueError(f"Volume at index {i} is negative: {volume}")
+
+
+def _validate_lengths(prices: List[float], volumes: Optional[List[float]]) -> None:
+    """Validate that price and volume series have compatible lengths."""
+    if volumes is not None and len(volumes) < len(prices):
+        raise ValueError(
+            f"Volume series shorter than price series: {len(prices)} prices, "
+            f"{len(volumes)} volumes. Volumes must be at least as long as prices."
+        )
+
+
+# ---------------------------------------------------------------------------
 # Feature extraction
 # ---------------------------------------------------------------------------
 
@@ -165,9 +222,11 @@ def _extract_features(
     Parameters
     ----------
     prices : List[float]
-        Historical price series (oldest first).
+        Historical price series (oldest first). Must contain at least 2 finite,
+        positive values.
     volumes : Optional[List[float]]
-        Historical volume series (oldest first). If None, volume features are set to defaults.
+        Historical volume series (oldest first). If None or insufficient length,
+        volume features are marked as unavailable.
     lookback_days : int
         Lookback window for feature calculation.
 
@@ -175,9 +234,16 @@ def _extract_features(
     -------
     MarketFeatures
         Extracted market features.
+
+    Raises
+    ------
+    ValueError
+        If inputs contain NaN, Inf, negative prices, zero prices, mismatched lengths,
+        or insufficient data points.
     """
-    if len(prices) < 2:
-        raise ValueError(f"Insufficient price data: need at least 2 prices, got {len(prices)}")
+    _validate_prices(prices)
+    _validate_volumes(volumes)
+    _validate_lengths(prices, volumes)
 
     # Use recent window
     recent_prices = prices[-lookback_days:] if len(prices) >= lookback_days else prices
@@ -207,19 +273,22 @@ def _extract_features(
         std_dev = 0.0
     annualized_volatility = std_dev * annualization_factor
 
-    # Volume ratio
-    volume_ratio = 1.0
-    if volumes and len(volumes) >= lookback_days:
+    # Volume ratio: require sufficient history for meaningful comparison
+    volume_ratio = float('nan')
+    volume_regime = "unavailable"
+
+    if volumes is not None and len(volumes) >= _MIN_VOLUME_HISTORY_DAYS:
         recent_volumes = volumes[-lookback_days:]
-        if len(volumes) >= 2 * lookback_days:
-            long_term_volumes = volumes[-2 * lookback_days : -lookback_days]
-            long_term_avg = sum(long_term_volumes) / len(long_term_volumes)
-            if long_term_avg > 0.0:
-                recent_avg = sum(recent_volumes) / len(recent_volumes)
-                volume_ratio = recent_avg / long_term_avg
-        else:
+        long_term_volumes = volumes[-2 * lookback_days : -lookback_days]
+        long_term_avg = sum(long_term_volumes) / len(long_term_volumes)
+        if long_term_avg > 0.0:
             recent_avg = sum(recent_volumes) / len(recent_volumes)
-            volume_ratio = recent_avg / max(recent_avg, 1.0)
+            volume_ratio = recent_avg / long_term_avg
+            volume_regime = "elevated" if volume_ratio >= _VOL_RATIO_ELEVATED_MIN else "normal"
+    elif volumes is not None and len(volumes) >= lookback_days:
+        # Insufficient history for baseline comparison; mark as unavailable
+        volume_regime = "unavailable"
+        volume_ratio = float('nan')
 
     # Classify trend
     if annualized_return >= _TREND_STRONG_BULL:
@@ -240,9 +309,6 @@ def _extract_features(
         volatility_regime = "elevated"
     else:
         volatility_regime = "normal"
-
-    # Classify volume
-    volume_regime = "elevated" if volume_ratio >= _VOL_RATIO_ELEVATED_MIN else "normal"
 
     # Clamp crisis volatility to elevated for regime mapping
     if volatility_regime == "crisis":
@@ -271,7 +337,10 @@ def _compute_confidence(features: MarketFeatures) -> float:
     Higher confidence when:
     - Trend is strong (far from zero)
     - Volatility is clearly in one regime
-    - Volume is clearly normal or elevated
+    - Volume is clearly normal or elevated (if available)
+
+    Note: This is a heuristic measure of feature clarity, NOT a statistical
+    probability of classification correctness.
     """
     # Trend clarity: 0.0 at neutral, 1.0 at strong trend
     trend_clarity = min(1.0, features.trend_strength / 0.20)
@@ -287,19 +356,24 @@ def _compute_confidence(features: MarketFeatures) -> float:
 
     vol_clarity = max(0.0, min(1.0, vol_clarity))
 
-    # Volume clarity: 0.0 at boundary, 1.0 deep in a regime
-    vol_ratio_mid = (_VOL_RATIO_NORMAL_MAX + _VOL_RATIO_ELEVATED_MIN) / 2.0
-    if features.volume_ratio < _VOL_RATIO_NORMAL_MAX:
-        volume_clarity = 1.0 - (_VOL_RATIO_NORMAL_MAX - features.volume_ratio) / _VOL_RATIO_NORMAL_MAX
-    elif features.volume_ratio < _VOL_RATIO_ELEVATED_MIN:
-        volume_clarity = 1.0 - abs(features.volume_ratio - vol_ratio_mid) / (vol_ratio_mid - _VOL_RATIO_NORMAL_MAX)
+    # Volume clarity: 0.0 at boundary or unavailable, 1.0 deep in a regime
+    if features.volume_regime == "unavailable" or math.isnan(features.volume_ratio):
+        volume_clarity = 0.0
     else:
-        volume_clarity = min(1.0, (features.volume_ratio - _VOL_RATIO_ELEVATED_MIN) / _VOL_RATIO_ELEVATED_MIN)
+        vol_ratio_mid = 1.5  # boundary between normal and elevated
+        if features.volume_ratio < 1.5:
+            volume_clarity = 1.0 - (1.5 - features.volume_ratio) / 1.5
+        else:
+            volume_clarity = min(1.0, (features.volume_ratio - 1.5) / 1.5)
 
-    volume_clarity = max(0.0, min(1.0, volume_clarity))
+        volume_clarity = max(0.0, min(1.0, volume_clarity))
 
-    # Combined confidence
-    confidence = (trend_clarity + vol_clarity + volume_clarity) / 3.0
+    # Combined confidence: trend and volatility weighted more when volume unavailable
+    if features.volume_regime == "unavailable" or math.isnan(features.volume_ratio):
+        confidence = (trend_clarity + vol_clarity) / 2.0
+    else:
+        confidence = (trend_clarity + vol_clarity + volume_clarity) / 3.0
+
     return max(0.0, min(1.0, confidence))
 
 
@@ -308,24 +382,44 @@ def _compute_transition_probabilities(
     confidence: float,
     features: MarketFeatures,
 ) -> Dict[str, float]:
-    """Compute transition probabilities over all 12 regimes.
+    """Backward-compatible alias for _compute_regime_affinity.
+
+    Returns heuristic regime affinity scores over all 12 regimes summing to 1.0.
+    These are NOT statistically calibrated probabilities. They represent
+    a deterministic distance-based heuristic for regime similarity only.
+    """
+    return _compute_regime_affinity(regime, confidence, features)
+
+
+def _compute_regime_affinity(
+    regime: str,
+    confidence: float,
+    features: MarketFeatures,
+) -> Dict[str, float]:
+    """Compute heuristic regime affinity scores over all 12 regimes.
 
     Uses a simple distance-based model: regimes closer to the classified one
-    receive higher probability mass proportional to confidence.
+    receive higher affinity scores proportional to classification confidence.
+
+    IMPORTANT: These are NOT statistically calibrated probabilities. They are
+    deterministic heuristic similarity scores based on feature-space distance.
+    Do NOT interpret them as transition probabilities or likelihoods.
 
     Parameters
     ----------
     regime : str
         Current classified regime.
     confidence : float
-        Classification confidence in [0.0, 1.0].
+        Classification confidence in [0.0, 1.0]. Higher confidence concentrates
+        affinity on the classified regime; lower confidence spreads affinity
+        more uniformly.
     features : MarketFeatures
         Extracted market features.
 
     Returns
     -------
     Dict[str, float]
-        Probability distribution over all 12 regimes summing to 1.0.
+        Heuristic affinity scores over all 12 regimes summing to 1.0.
     """
     probs: Dict[str, float] = {}
 
@@ -347,14 +441,22 @@ def _compute_transition_probabilities(
 
         trend, vol, vol_ratio = key
 
-        # Distance: 0 if same trend, 1 if adjacent, 2 if opposite
-        trend_dist = 0.0 if trend == current_trend else 2.0
+        # Distance: 0 if same trend, 2 if opposite trend (bullish vs bearish), 1 if neutral
+        if trend == current_trend:
+            trend_dist = 0.0
+        elif trend == "neutral" or current_trend == "neutral":
+            trend_dist = 1.0
+        else:
+            trend_dist = 2.0
+
         vol_dist = 0.0 if vol == current_vol else 1.0
         vol_ratio_dist = 0.0 if vol_ratio == current_vol_ratio else 1.0
 
         distance = trend_dist + vol_dist + vol_ratio_dist
 
         # Weight: higher for closer regimes, modulated by confidence
+        # At confidence=1.0, only the exact regime gets weight
+        # At confidence=0.0, all regimes get equal weight
         weight = math.exp(-distance * (1.0 - confidence + 0.1))
         probs[r] = weight
         total_weight += weight
@@ -390,11 +492,12 @@ class RegimeDetector:
 
     HOW
     ====
-    1. Accept price and optional volume history.
-    2. Extract features: annualized return, annualized volatility, volume ratio.
-    3. Classify trend (bullish/neutral/bearish), volatility (normal/elevated), volume (normal/elevated).
-    4. Map feature combination to regime ID via lookup table.
-    5. Compute confidence and transition probabilities.
+    1. Validate input data for numerical correctness.
+    2. Accept price and optional volume history.
+    3. Extract features: annualized return, annualized volatility, volume ratio.
+    4. Classify trend (bullish/neutral/bearish), volatility (normal/elevated), volume (normal/elevated/unavailable).
+    5. Map feature combination to regime ID via lookup table.
+    6. Compute confidence (heuristic) and regime affinity scores.
 
     Parameters
     ----------
@@ -425,16 +528,24 @@ class RegimeDetector:
         Parameters
         ----------
         prices : List[float]
-            Historical price series (oldest first).
+            Historical price series (oldest first). Must contain at least 2
+            finite, positive values.
         volumes : Optional[List[float]]
-            Historical volume series (oldest first).
+            Historical volume series (oldest first). If None or shorter than
+            2x lookback_days, volume features are marked as unavailable.
         timestamp : Optional[datetime]
             Classification timestamp. Defaults to datetime.now().
 
         Returns
         -------
         RegimeClassification
-            Classification result with regime ID, confidence, features, and transition probs.
+            Classification result with regime ID, confidence, features, and regime affinity.
+
+        Raises
+        ------
+        ValueError
+            If inputs contain NaN, Inf, negative prices, zero prices, mismatched lengths,
+            or insufficient data points.
         """
         if timestamp is None:
             timestamp = datetime.now()
@@ -453,13 +564,23 @@ class RegimeDetector:
         else:
             trend_category = "neutral"
 
+        # Use "normal" volume regime when unavailable for mapping purposes
+        volume_regime_for_mapping = features.volume_regime if features.volume_regime != "unavailable" else "normal"
+
         regime = _REGIME_MAP.get(
-            (trend_category, features.volatility_regime, features.volume_regime),
+            (trend_category, features.volatility_regime, volume_regime_for_mapping),
             "R05",  # Default to neutral-normal-normal
         )
 
+        # Explicit validation: output regime must be in VALID_REGIMES
+        if regime not in VALID_REGIMES:
+            raise ValueError(
+                f"Classified regime '{regime}' is not in VALID_REGIMES. "
+                f"This indicates a bug in the regime mapping table."
+            )
+
         confidence = _compute_confidence(features)
-        transition_probs = _compute_transition_probabilities(regime, confidence, features)
+        regime_affinity = _compute_regime_affinity(regime, confidence, features)
 
         # Record history
         self._history.append((timestamp, regime, confidence))
@@ -477,7 +598,8 @@ class RegimeDetector:
                 "volatility_regime": features.volatility_regime,
                 "volume_regime": features.volume_regime,
             },
-            transition_probs=transition_probs,
+            regime_affinity=regime_affinity,
+            transition_probs=regime_affinity,
         )
 
     def get_history(self, lookback_days: Optional[int] = None) -> List[Tuple[datetime, str, float]]:
@@ -519,7 +641,8 @@ def detect_regime(
     Parameters
     ----------
     prices : List[float]
-        Historical price series (oldest first).
+        Historical price series (oldest first). Must contain at least 2
+        finite, positive values.
     volumes : Optional[List[float]]
         Historical volume series (oldest first).
     lookback_days : int, optional
@@ -545,4 +668,5 @@ __all__ = [
     "MarketFeatures",
     "RegimeDetector",
     "detect_regime",
+    "_compute_transition_probabilities",
 ]
