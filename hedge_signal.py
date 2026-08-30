@@ -4,9 +4,16 @@ from alpaca.data.timeframe import TimeFrame
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
+import sys
+from pathlib import Path
+
+_src = str(Path(__file__).parent / "src")
+if _src not in sys.path:
+    sys.path.insert(0, _src)
 
 from execution import place_order, get_option_contract
 from memory import log_decision, already_hedged_recently
+from investment_agent.execution.hedge_capital_bridge import evaluate_hedge_risk, record_hedge_placement
 
 load_dotenv()
 
@@ -41,11 +48,15 @@ def check_for_drop(symbol):
 
 
 def run_hedge_check(symbol):
-    """If the stock has dropped enough and we haven't already hedged recently, buy a protective put."""
-    dropped, drop_pct = check_for_drop(symbol)
+    """If the stock has dropped enough and we haven't already hedged recently, buy a protective put
+    sized according to the risk-adjusted assessment from hedge_capital_bridge."""
+    assessment = evaluate_hedge_risk(symbol)
 
-    if not dropped:
-        print(f"No significant drop on {symbol}, no action taken")
+    for reason in assessment.reasons:
+        print(f"[{symbol}] {reason}")
+
+    if assessment.verdict == "BLOCK":
+        print(f"Hedge blocked for {symbol}, no action taken")
         return
 
     if already_hedged_recently(symbol):
@@ -53,11 +64,13 @@ def run_hedge_check(symbol):
 
     contract = get_option_contract(symbol, option_type="put")
     price = float(contract.close_price or 0)
-    print(f"Drop detected on {symbol} -- buying protective put {contract.symbol}")
-    result = place_order(contract.symbol, "buy", qty=1, price_per_contract=price)
+    qty = assessment.adjusted_quantity
+    print(f"Drop detected on {symbol} ({assessment.verdict}) -- buying {qty} protective put(s) {contract.symbol}")
+    result = place_order(contract.symbol, "buy", qty=qty, price_per_contract=price)
 
     if result:
-        log_decision(symbol, drop_pct, "buy", result.id, price)
+        log_decision(symbol, assessment.drop_pct, "buy", result.id, price)
+        record_hedge_placement(symbol)
     else:
         print(f"Order for {symbol} was blocked by safety check, not logging as a hedge")
 
