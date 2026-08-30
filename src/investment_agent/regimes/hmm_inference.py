@@ -34,6 +34,7 @@ Mathematical Specification
 - Emission: P(O_t | q_t=i, lambda) = N(O_t | mu_i, Sigma_i)
 - Entropy: H_t = -sum_i gamma_t(i) * log(gamma_t(i))
 - Normalized: U_t = H_t / ln(N)
+- Log-likelihood: log P(O|lambda) = sum_t log(scale[t])
 
 Architectural Role
 ==================
@@ -44,6 +45,7 @@ statistically calibrated regime probabilities consumed by hmm_regime_detector.py
 from __future__ import annotations
 
 import math
+import warnings
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional, Tuple
@@ -280,6 +282,13 @@ class HMMInference:
         alpha[0, :] = pi * B[0, :]
         scale[0] = alpha[0, :].sum()
         if scale[0] < _EPSILON:
+            warnings.warn(
+                f"Numerical underflow at t=0: scale={scale[0]:.2e}. "
+                f"Observation sequence likelihood is effectively zero. "
+                f"Assigning artificial floor of {_EPSILON:.0e}.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             scale[0] = _EPSILON
         alpha[0, :] /= scale[0]
 
@@ -289,18 +298,25 @@ class HMMInference:
                 alpha[t, j] = B[t, j] * sum(alpha[t - 1, i] * A[i, j] for i in range(N))
             scale[t] = alpha[t, :].sum()
             if scale[t] < _EPSILON:
+                warnings.warn(
+                    f"Numerical underflow at t={t}: scale={scale[t]:.2e}. "
+                    f"Observation sequence likelihood is effectively zero. "
+                    f"Assigning artificial floor of {_EPSILON:.0e}.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
                 scale[t] = _EPSILON
             alpha[t, :] /= scale[t]
 
         # Scaled backward pass
         beta = np.zeros((T, N))
-        beta[T - 1, :] = 1.0 / scale[T - 1]
+        beta[T - 1, :] = 1.0
 
         for t in range(T - 2, -1, -1):
             for i in range(N):
                 beta[t, i] = sum(
                     A[i, j] * B[t + 1, j] * beta[t + 1, j] for j in range(N)
-                ) / scale[t]
+                ) / scale[t + 1]
 
         # Compute posterior probabilities
         gamma = alpha * beta
@@ -308,8 +324,9 @@ class HMMInference:
         gamma_sum[gamma_sum < _EPSILON] = _EPSILON
         gamma /= gamma_sum
 
-        # Log-likelihood
-        log_likelihood = -np.sum(np.log(scale))
+        # Log-likelihood: P(O|lambda) = prod_t(scale[t])
+        # so log P(O|lambda) = sum_t(log(scale[t]))
+        log_likelihood = np.sum(np.log(scale))
 
         return gamma, log_likelihood, alpha, beta
 
