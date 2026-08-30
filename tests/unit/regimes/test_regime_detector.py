@@ -1,9 +1,10 @@
 """Adversarial unit test suite for regime_detector.py.
 
 Verifies market regime classification, feature extraction, confidence calculation,
-transition probabilities, and history tracking.
+regime affinity scores, and history tracking.
 """
 
+import math
 import unittest
 from datetime import datetime, timedelta
 from typing import List
@@ -15,7 +16,11 @@ from investment_agent.regimes.regime_detector import (
     detect_regime,
     _extract_features,
     _compute_confidence,
+    _compute_regime_affinity,
     _compute_transition_probabilities,
+    _validate_prices,
+    _validate_volumes,
+    _validate_lengths,
     _REGIME_MAP,
 )
 
@@ -50,6 +55,76 @@ class TestMarketFeatures(unittest.TestCase):
         )
         with self.assertRaises(AttributeError):
             features.volatility_regime = "elevated"
+
+
+class TestValidationHelpers(unittest.TestCase):
+    """Test input validation functions."""
+
+    def test_zero_price_raises_error(self):
+        """Verify zero price raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_prices([0.0, 100.0, 101.0])
+        self.assertIn("non-positive", str(ctx.exception))
+
+    def test_negative_price_raises_error(self):
+        """Verify negative price raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_prices([-1.0, 100.0])
+        self.assertIn("non-positive", str(ctx.exception))
+
+    def test_nan_price_raises_error(self):
+        """Verify NaN price raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_prices([float("nan"), 100.0])
+        self.assertIn("NaN", str(ctx.exception))
+
+    def test_inf_price_raises_error(self):
+        """Verify infinite price raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_prices([float("inf"), 100.0])
+        self.assertIn("Infinity", str(ctx.exception))
+
+    def test_negative_volume_raises_error(self):
+        """Verify negative volume raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_volumes([-1.0, 1000.0])
+        self.assertIn("negative", str(ctx.exception))
+
+    def test_nan_volume_raises_error(self):
+        """Verify NaN volume raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_volumes([float("nan"), 1000.0])
+        self.assertIn("NaN", str(ctx.exception))
+
+    def test_inf_volume_raises_error(self):
+        """Verify infinite volume raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_volumes([float("inf"), 1000.0])
+        self.assertIn("Infinity", str(ctx.exception))
+
+    def test_volume_shorter_than_prices_raises_error(self):
+        """Verify volume series shorter than prices raises ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _validate_lengths([100.0, 101.0], [1000.0])
+        self.assertIn("shorter", str(ctx.exception))
+
+    def test_volume_longer_than_prices_accepted(self):
+        """Verify volume series longer than prices is accepted."""
+        _validate_lengths([100.0, 101.0], [1000.0, 2000.0, 3000.0])
+
+    def test_exactly_40_volume_observations_accepted(self):
+        """Verify exactly 40 volume observations are accepted for 20-day lookback."""
+        prices = [100.0] * 45
+        volumes = [1000.0] * 40 + [2000.0] * 5
+        _validate_lengths(prices, volumes)
+
+    def test_39_volume_observations_marked_unavailable(self):
+        """Verify 39 volume observations are marked as unavailable for 20-day lookback."""
+        prices = [100.0] * 39
+        volumes = [1000.0] * 39
+        features = _extract_features(prices, volumes, lookback_days=20)
+        self.assertEqual(features.volume_regime, "unavailable")
+        self.assertTrue(math.isnan(features.volume_ratio))
 
 
 class TestFeatureExtraction(unittest.TestCase):
@@ -91,11 +166,10 @@ class TestFeatureExtraction(unittest.TestCase):
         with self.assertRaises(ValueError):
             _extract_features([100.0])
 
-    def test_zero_price_handled(self):
-        """Verify zero price doesn't cause division by zero."""
-        prices = [0.0, 100.0, 101.0]
-        features = _extract_features(prices)
-        self.assertIsInstance(features.returns, list)
+    def test_zero_price_raises_error(self):
+        """Verify zero price raises ValueError."""
+        with self.assertRaises(ValueError):
+            _extract_features([0.0, 100.0, 101.0])
 
 
 class TestRegimeMapping(unittest.TestCase):
@@ -165,11 +239,11 @@ class TestConfidenceComputation(unittest.TestCase):
         self.assertLessEqual(confidence, 1.0)
 
 
-class TestTransitionProbabilities(unittest.TestCase):
-    """Test _compute_transition_probabilities() function."""
+class TestRegimeAffinity(unittest.TestCase):
+    """Test _compute_regime_affinity() function."""
 
-    def test_probabilities_sum_to_one(self):
-        """Verify transition probabilities sum to 1.0."""
+    def test_affinity_scores_sum_to_one(self):
+        """Verify regime affinity scores sum to 1.0."""
         features = MarketFeatures(
             returns=[0.02],
             annualized_return=0.10,
@@ -179,11 +253,11 @@ class TestTransitionProbabilities(unittest.TestCase):
             volatility_regime="normal",
             volume_regime="normal",
         )
-        probs = _compute_transition_probabilities("R01", 0.8, features)
+        probs = _compute_regime_affinity("R01", 0.8, features)
         self.assertAlmostEqual(sum(probs.values()), 1.0, places=5)
 
-    def test_current_regime_has_highest_probability(self):
-        """Verify current regime receives highest probability mass."""
+    def test_current_regime_has_highest_affinity(self):
+        """Verify current regime receives highest affinity score."""
         features = MarketFeatures(
             returns=[0.02],
             annualized_return=0.10,
@@ -193,7 +267,7 @@ class TestTransitionProbabilities(unittest.TestCase):
             volatility_regime="normal",
             volume_regime="normal",
         )
-        probs = _compute_transition_probabilities("R01", 0.9, features)
+        probs = _compute_regime_affinity("R01", 0.9, features)
         self.assertEqual(probs["R01"], max(probs.values()))
 
     def test_uniform_fallback_for_invalid_regime(self):
@@ -207,10 +281,24 @@ class TestTransitionProbabilities(unittest.TestCase):
             volatility_regime="normal",
             volume_regime="normal",
         )
-        probs = _compute_transition_probabilities("INVALID", 0.5, features)
+        probs = _compute_regime_affinity("INVALID", 0.5, features)
         uniform = 1.0 / len(probs)
         for prob in probs.values():
             self.assertAlmostEqual(prob, uniform, places=5)
+
+    def test_backward_compat_transition_probs_alias(self):
+        """Verify _compute_transition_probabilities is a backward-compatible alias."""
+        features = MarketFeatures(
+            returns=[0.02],
+            annualized_return=0.10,
+            annualized_volatility=0.15,
+            volume_ratio=1.0,
+            trend_strength=0.10,
+            volatility_regime="normal",
+            volume_regime="normal",
+        )
+        probs = _compute_transition_probabilities("R01", 0.8, features)
+        self.assertAlmostEqual(sum(probs.values()), 1.0, places=5)
 
 
 class TestRegimeDetector(unittest.TestCase):
@@ -253,11 +341,17 @@ class TestRegimeDetector(unittest.TestCase):
         self.assertEqual(result.features["volume_regime"], "elevated")
         self.assertGreater(result.features["volume_ratio"], 1.5)
 
-    def test_transition_probs_sum_to_one(self):
-        """Verify transition probabilities sum to 1.0."""
+    def test_affinity_scores_sum_to_one(self):
+        """Verify regime affinity scores sum to 1.0."""
         prices = [100.0 + i * 0.5 for i in range(25)]
         result = self.detector.classify(prices)
-        self.assertAlmostEqual(sum(result.transition_probs.values()), 1.0, places=5)
+        self.assertAlmostEqual(sum(result.regime_affinity.values()), 1.0, places=5)
+
+    def test_transition_probs_property_returns_affinity(self):
+        """Verify backward-compatible transition_probs property returns regime_affinity."""
+        prices = [100.0 + i * 0.5 for i in range(25)]
+        result = self.detector.classify(prices)
+        self.assertIs(result.transition_probs, result.regime_affinity)
 
     def test_history_tracking(self):
         """Verify classification history is recorded."""
@@ -308,6 +402,11 @@ class TestRegimeDetector(unittest.TestCase):
             "volume_regime",
         }
         self.assertEqual(set(result.features.keys()), expected_keys)
+
+    def test_zero_price_raises_error(self):
+        """Verify zero price raises ValueError in classifier."""
+        with self.assertRaises(ValueError):
+            self.detector.classify([0.0, 100.0, 101.0])
 
 
 class TestDetectRegimeConvenience(unittest.TestCase):

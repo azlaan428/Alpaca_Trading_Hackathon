@@ -19,6 +19,11 @@ HOW
 - Tracks regime history and computes regime affinity scores (NOT statistically calibrated probabilities)
 - Does NOT use ML/HMM (rule-based for auditability and testability)
 
+Note: The authoritative X Quant X architecture specifies HMM-based regime modeling.
+This module implements the deterministic feature-based classifier for auditability,
+deterministic testability, and immediate operational use. HMM integration is a separate
+future enhancement.
+
 The 12 regimes are organized as:
     Trend × Volatility × Volume
     - Trend: Bullish (3), Neutral (3), Bearish (3)
@@ -98,7 +103,15 @@ class RegimeClassification:
     timestamp: datetime
     features: Dict[str, float]
     regime_affinity: Dict[str, float]
-    transition_probs: Dict[str, float]
+
+    @property
+    def transition_probs(self) -> Dict[str, float]:
+        """Backward-compatible accessor returning regime_affinity.
+
+        .. deprecated::
+            Use ``regime_affinity`` instead. These are NOT transition probabilities.
+        """
+        return self.regime_affinity
 
 
 @dataclass(frozen=True)
@@ -168,7 +181,7 @@ _REVERSE_REGIME_MAP: Dict[str, Tuple[str, str, str]] = {v: k for k, v in _REGIME
 # ---------------------------------------------------------------------------
 
 def _validate_prices(prices: List[float]) -> None:
-    """Validate price series for NaN, Inf, negative values, and empty input."""
+    """Validate price series for NaN, Inf, non-positive, and empty input."""
     if not prices:
         raise ValueError("Price series must be non-empty")
     if len(prices) < 2:
@@ -179,8 +192,8 @@ def _validate_prices(prices: List[float]) -> None:
             raise ValueError(f"Price at index {i} is NaN")
         if math.isinf(price):
             raise ValueError(f"Price at index {i} is Infinity")
-        if price < 0.0:
-            raise ValueError(f"Price at index {i} is negative: {price}")
+        if price <= 0.0:
+            raise ValueError(f"Price at index {i} is non-positive: {price}")
 
 
 def _validate_volumes(volumes: Optional[List[float]]) -> None:
@@ -252,11 +265,8 @@ def _extract_features(
     # Compute returns
     returns = []
     for i in range(1, n):
-        if recent_prices[i - 1] != 0.0:
-            ret = (recent_prices[i] - recent_prices[i - 1]) / recent_prices[i - 1]
-            returns.append(ret)
-        else:
-            returns.append(0.0)
+        ret = (recent_prices[i] - recent_prices[i - 1]) / recent_prices[i - 1]
+        returns.append(ret)
 
     if not returns:
         returns = [0.0]
@@ -599,7 +609,6 @@ class RegimeDetector:
                 "volume_regime": features.volume_regime,
             },
             regime_affinity=regime_affinity,
-            transition_probs=regime_affinity,
         )
 
     def get_history(self, lookback_days: Optional[int] = None) -> List[Tuple[datetime, str, float]]:
