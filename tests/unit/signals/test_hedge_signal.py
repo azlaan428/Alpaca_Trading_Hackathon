@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-import hedge_signal
+from investment_agent.signals import hedge_signal
 from investment_agent.execution.hedge_capital_bridge import _hedge_state
 
 

@@ -458,7 +458,7 @@ class XQuantXOrchestrator:
 
         # Lazy import of execution module
         try:
-            from execution import place_order, get_account_summary
+            from investment_agent.execution.execution import place_order, get_account_summary
             account = get_account_summary()
             # Simplified execution - in production would use decision.quantity
             return place_order(

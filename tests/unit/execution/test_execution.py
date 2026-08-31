@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-import execution
+from investment_agent.execution import execution
 
 
 class TestIsTradeSafe(unittest.TestCase):

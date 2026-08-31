@@ -1,5 +1,12 @@
+import sys
 import time
-from hedge_signal import run_hedge_check
+from pathlib import Path
+
+_src = str(Path(__file__).parent / "src")
+if _src not in sys.path:
+    sys.path.insert(0, _src)
+
+from investment_agent.signals.hedge_signal import run_hedge_check
 
 WATCHLIST = ["AAPL", "MSFT", "TSLA"]
 CHECK_INTERVAL_SECONDS = 300  # 5 minutes

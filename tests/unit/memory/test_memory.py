@@ -6,7 +6,7 @@ import unittest
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-import memory
+from investment_agent.memory import memory
 
 
 class MemoryTestCase(unittest.TestCase):

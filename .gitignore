@@ -240,6 +240,8 @@ _[Mm][Ii][Nn][Tt][Ee][Dd].[Ee][Rr][Rr]
 .venv-alpaca-*/
 .venv-xquantx/
 src/rust/target/
+memory_log.json
+trade_memory.json
 
 # Keep VS Code MCP config (credentials are NOT stored in it — they use input prompts)
 !.vscode/

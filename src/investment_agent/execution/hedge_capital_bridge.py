@@ -48,11 +48,11 @@ from typing import Dict, List, Optional, Tuple
 # lazily inside functions rather than at module load time.
 
 def _get_check_for_drop():
-    from hedge_signal import check_for_drop, DROP_THRESHOLD_PCT
+    from investment_agent.signals.hedge_signal import check_for_drop, DROP_THRESHOLD_PCT
     return check_for_drop, DROP_THRESHOLD_PCT
 
 def _get_execution_utils():
-    from execution import is_trade_safe, MAX_POSITION_PCT, get_option_contract
+    from investment_agent.execution.execution import is_trade_safe, MAX_POSITION_PCT, get_option_contract
     return is_trade_safe, MAX_POSITION_PCT, get_option_contract
 
 

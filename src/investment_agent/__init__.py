@@ -72,25 +72,25 @@ _public_api["evaluate"] = (
     "evaluate",
 )
 
-# execution (tracked root module)
+# execution
 _public_api["MAX_POSITION_PCT"] = (
-    "execution",
+    "investment_agent.execution.execution",
     "MAX_POSITION_PCT",
 )
 _public_api["get_account_summary"] = (
-    "execution",
+    "investment_agent.execution.execution",
     "get_account_summary",
 )
 _public_api["get_option_contract"] = (
-    "execution",
+    "investment_agent.execution.execution",
     "get_option_contract",
 )
 _public_api["is_trade_safe"] = (
-    "execution",
+    "investment_agent.execution.execution",
     "is_trade_safe",
 )
 _public_api["place_order"] = (
-    "execution",
+    "investment_agent.execution.execution",
     "place_order",
 )
 
@@ -112,21 +112,21 @@ _public_api["KalmanState"] = (
     "KalmanState",
 )
 
-# memory (tracked root module)
+# memory
 _public_api["MEMORY_FILE"] = (
-    "memory",
+    "investment_agent.memory.memory",
     "MEMORY_FILE",
 )
 _public_api["already_hedged_recently"] = (
-    "memory",
+    "investment_agent.memory.memory",
     "already_hedged_recently",
 )
 _public_api["log_decision"] = (
-    "memory",
+    "investment_agent.memory.memory",
     "log_decision",
 )
 _public_api["reflect"] = (
-    "memory",
+    "investment_agent.memory.memory",
     "reflect",
 )
 
@@ -145,21 +145,21 @@ _public_api["EnsembleAggregate"] = (
     "investment_agent.signals.ensemble_signal",
     "EnsembleAggregate",
 )
-# hedge_signal (tracked root module)
+# hedge_signal
 _public_api["DROP_THRESHOLD_PCT"] = (
-    "hedge_signal",
+    "investment_agent.signals.hedge_signal",
     "DROP_THRESHOLD_PCT",
 )
 _public_api["check_for_drop"] = (
-    "hedge_signal",
+    "investment_agent.signals.hedge_signal",
     "check_for_drop",
 )
 _public_api["get_recent_prices"] = (
-    "hedge_signal",
+    "investment_agent.signals.hedge_signal",
     "get_recent_prices",
 )
 _public_api["run_hedge_check"] = (
-    "hedge_signal",
+    "investment_agent.signals.hedge_signal",
     "run_hedge_check",
 )
 

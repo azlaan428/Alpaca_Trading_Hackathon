@@ -4,15 +4,9 @@ from alpaca.data.timeframe import TimeFrame
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
-import sys
-from pathlib import Path
 
-_src = str(Path(__file__).parent / "src")
-if _src not in sys.path:
-    sys.path.insert(0, _src)
-
-from execution import place_order, get_option_contract
-from memory import log_decision, already_hedged_recently
+from investment_agent.execution.execution import place_order, get_option_contract
+from investment_agent.memory.memory import log_decision, already_hedged_recently
 from investment_agent.execution.hedge_capital_bridge import evaluate_hedge_risk, record_hedge_placement
 
 load_dotenv()
