@@ -377,6 +377,7 @@ class TestOrchestrator(unittest.TestCase):
                 "sector_exposure_pct": 0.1,
                 "is_new_long": False,
                 "regime": "R01",
+                "available_liquidity": 100000.0,
             },
         )
 
@@ -414,6 +415,7 @@ class TestOrchestrator(unittest.TestCase):
                 "sector_exposure_pct": 0.1,
                 "is_new_long": False,
                 "regime": "R01",
+                "available_liquidity": 100000.0,
             },
         )
 
@@ -450,6 +452,7 @@ class TestOrchestrator(unittest.TestCase):
                 "sector_exposure_pct": 0.1,
                 "is_new_long": False,
                 "regime": "R01",
+                "available_liquidity": 100000.0,
             },
         )
 

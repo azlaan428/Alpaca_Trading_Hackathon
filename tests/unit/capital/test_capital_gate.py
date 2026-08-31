@@ -247,6 +247,7 @@ full = 0.71
                         "is_new_long": False,
                         "sector_exposure_pct": 0.1,
                         "regime": "R01",
+                        "available_liquidity": 100000.0,
                     },
                     agents=[
                         AgentOutput(s=1.0, c=0.80, u=0.0, d=0.0, p_plus=0.8, p_minus=0.1, delta_t=1.0, r=0.0, agent_id=f"agent{i}")
@@ -347,6 +348,7 @@ class TestCompositeGating(unittest.TestCase):
                     "is_new_long": False,
                     "sector_exposure_pct": 0.1,
                     "regime": "R01",
+                    "available_liquidity": 100000.0,
                 },
                 agents=agents,
                 agent_weights=weights,
@@ -378,6 +380,7 @@ class TestCapitalGateEvaluation(unittest.TestCase):
             "execution_timeout_seconds": 5.0,
             "is_new_long": False,
             "sector_exposure_pct": 0.15,
+            "available_liquidity": 100000.0,
         }
         base_agent = AgentOutput(s=1.0, c=0.80, u=0.0, d=0.0, p_plus=0.8, p_minus=0.1, delta_t=1.0, r=0.0, agent_id="agent1")
         dummy_agent_template = lambda i: AgentOutput(
@@ -594,6 +597,7 @@ class TestAdversarialAuditingAndEdgeCases(unittest.TestCase):
             "execution_timeout_seconds": 5.0,
             "is_new_long": False,
             "sector_exposure_pct": 0.15,
+            "available_liquidity": 100000.0,
         }
         base_agent = AgentOutput(s=1.0, c=0.80, u=0.0, d=0.0, p_plus=0.8, p_minus=0.1, delta_t=1.0, r=0.1, agent_id="agent1")
         dummy_agent_template = lambda i: AgentOutput(
@@ -636,6 +640,7 @@ class TestAdversarialAuditingAndEdgeCases(unittest.TestCase):
             "sector_exposure_pct",
             "session_peak_equity",
             "current_equity",
+            "available_liquidity",
         ]
         for field in numeric_fields:
             for bad_val in bad_values:
@@ -766,6 +771,132 @@ class TestCapitalGateBoundaryConditions(unittest.TestCase):
         g_val = compute_individual_gating("economic", 0.700001)
         self.assertEqual(g_val, 1.0)
 
+    def test_liquidity_floor_blocks_below_5000(self):
+        """Verify available_liquidity < $5,000 triggers LIQ-001 BLOCK."""
+        from investment_agent.capital.capital_gate import evaluate
+        from investment_agent.filters.kalman_filter import KalmanState
+        from investment_agent.signals.ensemble_signal import AgentOutput
+        from investment_agent.capital.capital_gate import SevenStateVector
+        ctx = {
+            "position_pct": 0.10,
+            "gross_leverage": 0.50,
+            "regime": "R01",
+            "entropy": 0.20,
+            "drawdown_pct": 0.02,
+            "execution_timeout_seconds": 5.0,
+            "is_new_long": False,
+            "sector_exposure_pct": 0.15,
+            "available_liquidity": 4999.99,
+        }
+        res = evaluate(
+            kalman_state=KalmanState(
+                estimated_price=100.0,
+                trend=0.5,
+                uncertainty=1.0,
+                trend_uncertainty=0.1,
+                price_variance=1.0,
+                trend_variance=0.01,
+                innovation=0.2,
+                kalman_gain_price=0.8,
+            ),
+            states=SevenStateVector(
+                economic=1.0, financial=1.0, fiscal=1.0,
+                portfolio=1.0, fundamental=1.0, market=1.0, sector=1.0
+            ),
+            portfolio_context=ctx,
+            agents=[
+                AgentOutput(s=1.0, c=0.80, u=0.0, d=0.0, p_plus=0.8, p_minus=0.1, delta_t=1.0, r=0.0, agent_id=f"agent{i}")
+                for i in range(1, 8)
+            ],
+            agent_weights={f"agent{i}": 1.0 for i in range(1, 8)},
+        )
+        self.assertEqual(res.verdict, RiskVerdict.BLOCK)
+        self.assertIn("LIQ-001", res.triggered_rules)
+        self.assertEqual(res.effective_cap, 0.0)
+
+    def test_liquidity_floor_allows_at_5000(self):
+        """Verify available_liquidity >= $5,000 does not trigger LIQ-001."""
+        from investment_agent.capital.capital_gate import evaluate
+        from investment_agent.filters.kalman_filter import KalmanState
+        from investment_agent.signals.ensemble_signal import AgentOutput
+        from investment_agent.capital.capital_gate import SevenStateVector
+        ctx = {
+            "position_pct": 0.10,
+            "gross_leverage": 0.50,
+            "regime": "R01",
+            "entropy": 0.20,
+            "drawdown_pct": 0.02,
+            "execution_timeout_seconds": 5.0,
+            "is_new_long": False,
+            "sector_exposure_pct": 0.15,
+            "available_liquidity": 5000.00,
+        }
+        res = evaluate(
+            kalman_state=KalmanState(
+                estimated_price=100.0,
+                trend=0.5,
+                uncertainty=1.0,
+                trend_uncertainty=0.1,
+                price_variance=1.0,
+                trend_variance=0.01,
+                innovation=0.2,
+                kalman_gain_price=0.8,
+            ),
+            states=SevenStateVector(
+                economic=1.0, financial=1.0, fiscal=1.0,
+                portfolio=1.0, fundamental=1.0, market=1.0, sector=1.0
+            ),
+            portfolio_context=ctx,
+            agents=[
+                AgentOutput(s=1.0, c=0.80, u=0.0, d=0.0, p_plus=0.8, p_minus=0.1, delta_t=1.0, r=0.0, agent_id=f"agent{i}")
+                for i in range(1, 8)
+            ],
+            agent_weights={f"agent{i}": 1.0 for i in range(1, 8)},
+        )
+        self.assertNotIn("LIQ-001", res.triggered_rules)
+
+    def test_liquidity_floor_blocks_at_zero(self):
+        """Verify zero liquidity triggers LIQ-001."""
+        from investment_agent.capital.capital_gate import evaluate
+        from investment_agent.filters.kalman_filter import KalmanState
+        from investment_agent.signals.ensemble_signal import AgentOutput
+        from investment_agent.capital.capital_gate import SevenStateVector
+        ctx = {
+            "position_pct": 0.10,
+            "gross_leverage": 0.50,
+            "regime": "R01",
+            "entropy": 0.20,
+            "drawdown_pct": 0.02,
+            "execution_timeout_seconds": 5.0,
+            "is_new_long": False,
+            "sector_exposure_pct": 0.15,
+            "available_liquidity": 0.0,
+        }
+        res = evaluate(
+            kalman_state=KalmanState(
+                estimated_price=100.0,
+                trend=0.5,
+                uncertainty=1.0,
+                trend_uncertainty=0.1,
+                price_variance=1.0,
+                trend_variance=0.01,
+                innovation=0.2,
+                kalman_gain_price=0.8,
+            ),
+            states=SevenStateVector(
+                economic=1.0, financial=1.0, fiscal=1.0,
+                portfolio=1.0, fundamental=1.0, market=1.0, sector=1.0
+            ),
+            portfolio_context=ctx,
+            agents=[
+                AgentOutput(s=1.0, c=0.80, u=0.0, d=0.0, p_plus=0.8, p_minus=0.1, delta_t=1.0, r=0.0, agent_id=f"agent{i}")
+                for i in range(1, 8)
+            ],
+            agent_weights={f"agent{i}": 1.0 for i in range(1, 8)},
+        )
+        self.assertEqual(res.verdict, RiskVerdict.BLOCK)
+        self.assertIn("LIQ-001", res.triggered_rules)
+
 
 class TestCapitalGateResultFields(unittest.TestCase):
     """Test CapitalGateResult includes kalman_gain and ensemble_agg."""
@@ -804,6 +935,7 @@ class TestCapitalGateResultFields(unittest.TestCase):
                 "sector_exposure_pct": 0.1,
                 "is_new_long": False,
                 "regime": "R01",
+                "available_liquidity": 100000.0,
             },
             agents=agents,
             agent_weights=weights,
@@ -847,6 +979,7 @@ class TestCapitalGateResultFields(unittest.TestCase):
                 "sector_exposure_pct": 0.1,
                 "is_new_long": False,
                 "regime": "R01",
+                "available_liquidity": 100000.0,
             },
             agents=agents,
             agent_weights=weights,
@@ -883,6 +1016,7 @@ class TestPropertyInvariantTests(unittest.TestCase):
             "sector_exposure_pct": 0.1,
             "is_new_long": False,
             "regime": "R01",
+            "available_liquidity": 100000.0,
         }
 
     def _eval(self, **overrides):
