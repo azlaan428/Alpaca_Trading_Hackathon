@@ -260,7 +260,7 @@ class XQuantXOrchestrator:
             sigma_base_squared=sigma_base_squared,
         )
 
-        # 6. Evaluate capital gate
+        # 6. Evaluate capital gate (pass pre-computed ensemble to avoid recomputation)
         capital_gate = evaluate(
             kalman_state=kalman_state,
             states=states,
@@ -268,6 +268,7 @@ class XQuantXOrchestrator:
             agents=agent_outputs,
             agent_weights=weights,
             sigma_base_squared=sigma_base_squared,
+            ensemble_agg=ensemble,
         )
 
         # 7. Make trading decision
@@ -361,6 +362,11 @@ class XQuantXOrchestrator:
         2. Apply risk circuit breakers
         3. Determine position action and size
         4. Build provenance trace
+
+        Note: The LLM/interpreter layer may provide hypothesis/lesson context,
+        but the deterministic mathematical layer (ensemble → Kalman → capital gate)
+        remains the ultimate risk authority. The LLM does not directly modify
+        capital gate parameters or override risk controls.
         """
         circuit_breakers: List[str] = []
         reasoning_parts = []
@@ -525,6 +531,133 @@ class XQuantXOrchestrator:
                 self._reputation_tracker.record_outcome(
                     agent_id, experience.regime, was_correct
                 )
+
+    def get_historical_context(
+        self, current_experience: TradeExperience, top_k: int = 5
+    ) -> Dict[str, Any]:
+        """Get historical context for current situation.
+
+        This is the "learning" component: find similar past trades and
+        summarize what happened to inform the current decision.
+
+        Parameters
+        ----------
+        current_experience : TradeExperience
+            Current situation to match against.
+        top_k : int
+            Maximum number of similar experiences to retrieve.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Historical context including similar trades and aggregated lessons.
+        """
+        similar = self._trade_memory.find_similar(current_experience, top_k=top_k)
+
+        if not similar:
+            return {
+                "similar_trades": [],
+                "historical_win_rate": 0.0,
+                "avg_pnl": 0.0,
+                "lessons": [],
+                "confidence_adjustment": 0.0,
+            }
+
+        # Aggregate statistics from similar trades
+        pnls = [s.experience.pnl for s in similar]
+        wins = sum(1 for p in pnls if p > 0)
+        losses = sum(1 for p in pnls if p < 0)
+        win_rate = wins / len(pnls) if pnls else 0.0
+        avg_pnl = sum(pnls) / len(pnls) if pnls else 0.0
+
+        # Extract lessons
+        lessons = [s.experience.lesson for s in similar if s.experience.lesson]
+        unique_lessons = list(dict.fromkeys(lessons))  # preserve order, remove duplicates
+
+        # Compute confidence adjustment based on historical performance
+        # If similar trades had high win rate, boost confidence; otherwise reduce
+        confidence_adjustment = (win_rate - 0.5) * 0.2  # ±10% max adjustment
+        confidence_adjustment = max(-0.1, min(0.1, confidence_adjustment))
+
+        return {
+            "similar_trades": [
+                {
+                    "timestamp": s.experience.timestamp.isoformat(),
+                    "symbol": s.experience.symbol,
+                    "action": s.experience.position_action,
+                    "pnl": s.experience.pnl,
+                    "similarity": s.similarity_score,
+                    "reasons": s.match_reasons,
+                }
+                for s in similar
+            ],
+            "historical_win_rate": win_rate,
+            "avg_pnl": avg_pnl,
+            "wins": wins,
+            "losses": losses,
+            "lessons": unique_lessons[:5],  # Top 5 unique lessons
+            "confidence_adjustment": confidence_adjustment,
+        }
+
+    def learn_from_outcome(
+        self,
+        experience: TradeExperience,
+        realized_pnl: float,
+        realized_outcome: str,
+        lesson: str = "",
+    ) -> None:
+        """Learn from a completed trade outcome.
+
+        This is the feedback loop: trade → outcome → evaluation → update.
+
+        Parameters
+        ----------
+        experience : TradeExperience
+            The original experience to update.
+        realized_pnl : float
+            Realized profit/loss from the trade.
+        realized_outcome : str
+            Description of the actual outcome.
+        lesson : str
+            Extracted lesson/reflection from this trade.
+        """
+        # Update experience with outcome
+        experience_dict = {
+            "timestamp": experience.timestamp,
+            "symbol": experience.symbol,
+            "regime": experience.regime,
+            "regime_probabilities": experience.regime_probabilities,
+            "agent_signals": experience.agent_signals,
+            "ensemble_signal": experience.ensemble_signal,
+            "disagreement": experience.disagreement,
+            "effective_confidence": experience.effective_confidence,
+            "kalman_gain": experience.kalman_gain,
+            "kalman_price": experience.kalman_price,
+            "kalman_trend": experience.kalman_trend,
+            "capital_gate_verdict": experience.capital_gate_verdict,
+            "effective_cap": experience.effective_cap,
+            "state_charges": experience.state_charges,
+            "position_action": experience.position_action,
+            "quantity": experience.quantity,
+            "confidence": experience.confidence,
+            "expected_outcome": experience.expected_outcome,
+            "realized_outcome": realized_outcome,
+            "pnl": realized_pnl,
+            "lesson": lesson,
+        }
+
+        # Create updated experience
+        updated_experience = TradeExperience(**experience_dict)
+
+        # Update in memory
+        self._trade_memory.log_experience(updated_experience)
+
+        # Update agent reputations based on outcome
+        was_correct = realized_pnl > 0
+        for agent_id in self._agent_ids:
+            self._reputation_tracker.record_outcome(
+                agent_id, experience.regime, was_correct
+            )
 
     def find_similar_past_trades(
         self, current: TradeExperience, top_k: int = 5

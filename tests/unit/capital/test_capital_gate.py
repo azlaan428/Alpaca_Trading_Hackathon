@@ -855,5 +855,138 @@ class TestCapitalGateResultFields(unittest.TestCase):
         self.assertIsInstance(result.ensemble_agg, EnsembleAggregate)
 
 
+class TestPropertyInvariantTests(unittest.TestCase):
+    """Property-based invariant tests for capital gate evaluation."""
+
+    def setUp(self):
+        self.kalman_state = KalmanState(
+            estimated_price=100.0,
+            trend=0.01,
+            uncertainty=1.0,
+            trend_uncertainty=0.1,
+            price_variance=1.0,
+            trend_variance=0.01,
+            innovation=0.0,
+            kalman_gain_price=0.5,
+        )
+        self.agents = [
+            AgentOutput(s=1.0, c=0.8, u=0.0, d=0.0, p_plus=0.8, p_minus=0.0, delta_t=1.0, r=0.0, agent_id=f"agent{i}")
+            for i in range(1, 8)
+        ]
+        self.weights = {f"agent{i}": 1.0 for i in range(1, 8)}
+        self.default_context = {
+            "position_pct": 0.05,
+            "gross_leverage": 0.5,
+            "entropy": 0.1,
+            "drawdown_pct": 0.01,
+            "execution_timeout_seconds": 5.0,
+            "sector_exposure_pct": 0.1,
+            "is_new_long": False,
+            "regime": "R01",
+        }
+
+    def _eval(self, **overrides):
+        ctx = dict(self.default_context)
+        ctx.update(overrides)
+        return evaluate(
+            kalman_state=self.kalman_state,
+            states=SevenStateVector(
+                economic=1.0, financial=1.0, fiscal=1.0,
+                portfolio=1.0, fundamental=1.0, market=1.0, sector=1.0
+            ),
+            portfolio_context=ctx,
+            agents=self.agents,
+            agent_weights=self.weights,
+        )
+
+    def test_gating_factor_in_zero_one(self):
+        """Gating factor must be in [0.0, 1.0] for any valid input."""
+        for entropy in [0.0, 0.5, 0.75, 0.90]:
+            for drawdown in [0.0, 0.10, 0.15]:
+                res = self._eval(entropy=entropy, drawdown_pct=drawdown)
+                self.assertGreaterEqual(res.gating_factor, 0.0)
+                self.assertLessEqual(res.gating_factor, 1.0)
+
+    def test_effective_cap_in_zero_one(self):
+        """Effective cap must be in [0.0, 1.0] for any valid input."""
+        for verdict in [RiskVerdict.ALLOW, RiskVerdict.REDUCE, RiskVerdict.BLOCK, RiskVerdict.FLATTEN]:
+            if verdict == RiskVerdict.ALLOW:
+                res = self._eval()
+            elif verdict == RiskVerdict.REDUCE:
+                res = self._eval(entropy=0.80)
+            elif verdict == RiskVerdict.BLOCK:
+                res = self._eval(entropy=0.95)
+            else:
+                res = self._eval(drawdown_pct=0.20)
+            self.assertGreaterEqual(res.effective_cap, 0.0)
+            self.assertLessEqual(res.effective_cap, 1.0)
+
+    def test_reduce_factor_in_zero_one(self):
+        """Reduce factor must be in [0.0, 1.0]."""
+        res = self._eval(entropy=0.80, sector_exposure_pct=0.40)
+        self.assertGreaterEqual(res.reduce_factor, 0.0)
+        self.assertLessEqual(res.reduce_factor, 1.0)
+
+    def test_kalman_gain_non_negative(self):
+        """Kalman gain must be >= 0."""
+        res = self._eval()
+        self.assertGreaterEqual(res.kalman_gain, 0.0)
+
+    def test_ensemble_signal_in_range(self):
+        """Ensemble signal must be in [-1.0, 1.0]."""
+        res = self._eval()
+        self.assertGreaterEqual(res.ensemble_agg.ensemble_signal, -1.0)
+        self.assertLessEqual(res.ensemble_agg.ensemble_signal, 1.0)
+
+    def test_effective_confidence_in_range(self):
+        """Effective confidence must be in [0.0, 1.0]."""
+        res = self._eval()
+        self.assertGreaterEqual(res.ensemble_agg.effective_confidence, 0.0)
+        self.assertLessEqual(res.ensemble_agg.effective_confidence, 1.0)
+
+    def test_disagreement_in_range(self):
+        """Disagreement must be in [0.0, 2.0]."""
+        res = self._eval()
+        self.assertGreaterEqual(res.ensemble_agg.disagreement, 0.0)
+        self.assertLessEqual(res.ensemble_agg.disagreement, 2.0)
+
+    def test_state_charges_in_zero_one(self):
+        """All state charges must be in [0.0, 1.0]."""
+        res = self._eval()
+        for name, val in res.state_charges.items():
+            self.assertGreaterEqual(val, 0.0, msg=f"State {name} below 0")
+            self.assertLessEqual(val, 1.0, msg=f"State {name} above 1")
+
+    def test_agent_weights_non_negative(self):
+        """Agent weights used in evaluation must be non-negative."""
+        for wid, wval in self.weights.items():
+            self.assertGreaterEqual(wval, 0.0, msg=f"Weight {wid} negative")
+
+    def test_flatten_sets_effective_cap_zero(self):
+        """FLATTEN verdict must force effective_cap to 0.0."""
+        res = self._eval(drawdown_pct=0.20)
+        self.assertEqual(res.verdict, RiskVerdict.FLATTEN)
+        self.assertEqual(res.effective_cap, 0.0)
+
+    def test_block_sets_effective_cap_zero(self):
+        """BLOCK verdict must force effective_cap to 0.0."""
+        res = self._eval(entropy=0.95)
+        self.assertEqual(res.verdict, RiskVerdict.BLOCK)
+        self.assertEqual(res.effective_cap, 0.0)
+
+    def test_reduce_preserves_raw_cap_relationship(self):
+        """REDUCE effective_cap should be <= raw_cap (kalman_gain * gating_factor)."""
+        res = self._eval(entropy=0.80)
+        raw_cap = res.kalman_gain * res.gating_factor
+        self.assertLessEqual(res.effective_cap, raw_cap + 1e-9)
+
+    def test_all_state_gatings_in_zero_one(self):
+        """Individual state gatings must be in [0.0, 1.0]."""
+        res = self._eval()
+        for name, val in res.state_gatings.items():
+            self.assertGreaterEqual(val, 0.0)
+            self.assertLessEqual(val, 1.0)
+
+
 if __name__ == "__main__":
     unittest.main()
