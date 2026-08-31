@@ -42,6 +42,7 @@ placement as its primary side-effect.
 from __future__ import annotations
 
 import math
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -72,6 +73,8 @@ class TradingDecision:
 
     Attributes
     ----------
+    decision_id : str
+        Unique identifier for this decision (UUID4).
     action : str
         Trading action: BUY, SELL, HOLD, REDUCE, FLATTEN.
     symbol : str
@@ -88,6 +91,7 @@ class TradingDecision:
         Complete data flow trace for audit.
     """
 
+    decision_id: str
     action: str
     symbol: str
     quantity: float
@@ -103,6 +107,8 @@ class CycleResult:
 
     Attributes
     ----------
+    decision_id : str
+        Unique identifier linking this cycle to its decision and audit log.
     decision : TradingDecision
         Final trading decision.
     regime : RegimeClassification
@@ -121,6 +127,7 @@ class CycleResult:
         Cycle execution timestamp.
     """
 
+    decision_id: str
     decision: TradingDecision
     regime: RegimeClassification
     weights: Dict[str, float]
@@ -129,6 +136,98 @@ class CycleResult:
     capital_gate: CapitalGateResult
     experience: TradeExperience
     timestamp: datetime = field(default_factory=datetime.now)
+
+
+# ---------------------------------------------------------------------------
+# Audit / Event Log
+# ---------------------------------------------------------------------------
+
+AUDIT_LOG_FILE = "audit_log.jsonl"
+
+
+@dataclass(frozen=True)
+class AuditEvent:
+    """Immutable audit event for decision/outcome tracking."""
+
+    event_id: str
+    event_type: str
+    decision_id: Optional[str]
+    timestamp: datetime
+    symbol: str
+    payload: Dict[str, Any]
+
+
+class AuditLog:
+    """Append-only audit log backed by a JSONL file.
+
+    Provides:
+    - atomic append writes
+    - event replay for deterministic testing
+    - query by decision_id
+    """
+
+    def __init__(self, log_file: str = AUDIT_LOG_FILE) -> None:
+        self._log_file = log_file
+        self._events: List[AuditEvent] = []
+
+    def record_decision(
+        self,
+        decision_id: str,
+        symbol: str,
+        payload: Dict[str, Any],
+    ) -> AuditEvent:
+        """Record a new decision event."""
+        event = AuditEvent(
+            event_id=str(uuid.uuid4()),
+            event_type="DECISION",
+            decision_id=decision_id,
+            timestamp=datetime.now(),
+            symbol=symbol,
+            payload=payload,
+        )
+        self._events.append(event)
+        self._append(event)
+        return event
+
+    def record_outcome(
+        self,
+        decision_id: str,
+        symbol: str,
+        payload: Dict[str, Any],
+    ) -> AuditEvent:
+        """Record an outcome event linked to a prior decision."""
+        event = AuditEvent(
+            event_id=str(uuid.uuid4()),
+            event_type="OUTCOME",
+            decision_id=decision_id,
+            timestamp=datetime.now(),
+            symbol=symbol,
+            payload=payload,
+        )
+        self._events.append(event)
+        self._append(event)
+        return event
+
+    def query_by_decision_id(self, decision_id: str) -> List[AuditEvent]:
+        return [e for e in self._events if e.decision_id == decision_id]
+
+    def _append(self, event: AuditEvent) -> None:
+        import json
+
+        record = {
+            "event_id": event.event_id,
+            "event_type": event.event_type,
+            "decision_id": event.decision_id,
+            "timestamp": event.timestamp.isoformat(),
+            "symbol": event.symbol,
+            "payload": event.payload,
+        }
+        try:
+            with open(self._log_file, "x", encoding="utf-8") as f:
+                f.write(json.dumps(record, default=str) + "\n")
+        except (PermissionError, OSError):
+            with open(self._log_file, "a", encoding="utf-8") as f:
+                f.write(json.dumps(record, default=str) + "\n")
 
 
 # ---------------------------------------------------------------------------
@@ -207,6 +306,7 @@ class XQuantXOrchestrator:
         )
         self._kalman_filter = KalmanFilter(initial_price=100.0)
         self._trade_memory = TradeMemory(memory_file)
+        self._audit_log = AuditLog()
 
     def run_cycle(
         self,
@@ -282,6 +382,30 @@ class XQuantXOrchestrator:
             agent_outputs=agent_outputs,
         )
 
+        self._audit_log.record_decision(
+            decision_id=decision.decision_id,
+            symbol=self._symbol,
+            payload={
+                "action": decision.action,
+                "quantity": decision.quantity,
+                "confidence": decision.confidence,
+                "verdict": capital_gate.verdict.name,
+                "effective_cap": capital_gate.effective_cap,
+                "kalman_gain": kalman_gain,
+                "ensemble_signal": ensemble.ensemble_signal,
+                "disagreement": ensemble.disagreement,
+                "regime": regime_result.regime,
+                "regime_probabilities": regime_result.regime_affinity,
+                "state_charges": dict(capital_gate.state_charges),
+                "state_gatings": dict(capital_gate.state_gatings),
+                "triggered_rules": capital_gate.triggered_rules,
+                "weights": weights,
+                "circuit_breakers": decision.circuit_breakers,
+                "reasoning": decision.reasoning,
+                "provenance": decision.provenance,
+            },
+        )
+
         # 8. Execute order (if enabled)
         order_result = self._execute_order(decision)
 
@@ -296,10 +420,22 @@ class XQuantXOrchestrator:
             order_result=order_result,
         )
 
+        self._audit_log.record_outcome(
+            decision_id=decision.decision_id,
+            symbol=self._symbol,
+            payload={
+                "order_result": order_result,
+                "pnl": experience.pnl,
+                "realized_outcome": experience.realized_outcome,
+                "lesson": experience.lesson,
+            },
+        )
+
         # 10. Update agent reputations (if outcome known)
         self._update_reputations(experience)
 
         return CycleResult(
+            decision_id=decision.decision_id,
             decision=decision,
             regime=regime_result,
             weights=weights,
@@ -421,6 +557,7 @@ class XQuantXOrchestrator:
         reasoning = "; ".join(reasoning_parts) if reasoning_parts else "No specific triggers"
 
         return TradingDecision(
+            decision_id=str(uuid.uuid4()),
             action=action,
             symbol=self._symbol,
             quantity=quantity,
